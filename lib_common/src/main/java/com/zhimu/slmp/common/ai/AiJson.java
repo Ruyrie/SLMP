@@ -34,10 +34,58 @@ public final class AiJson {
         String candidate = end > start ? text.substring(start, end + 1) : text.substring(start);
         JsonObject obj = parseLenient(candidate);
         if (obj == null && end < 0) {
-            // 回答被截断：补齐括号后再试一次
-            obj = parseLenient(candidate + closers(candidate));
+            obj = repairTruncated(candidate);
         }
         return obj;
+    }
+
+    /** 最多回退的次数（每次退到上一个结构逗号） */
+    static final int MAX_REPAIR_STEPS = 8;
+
+    /**
+     * 回答被截断：补齐引号和括号后解析；仍失败（停在键名、冒号后）就退到上一个结构逗号再试。
+     */
+    @Nullable
+    static JsonObject repairTruncated(@NonNull String candidate) {
+        String cut = candidate;
+        for (int i = 0; i < MAX_REPAIR_STEPS && cut.length() > 1; i++) {
+            JsonObject obj = parseLenient(cut + closers(cut));
+            if (obj != null) {
+                return obj;
+            }
+            int comma = lastStructuralComma(cut);
+            if (comma <= 0) {
+                return null;
+            }
+            cut = cut.substring(0, comma);
+        }
+        return null;
+    }
+
+    /** 字符串外最后一个逗号的下标；没有返回 -1 */
+    static int lastStructuralComma(@NonNull String text) {
+        int last = -1;
+        boolean inString = false;
+        boolean escape = false;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (inString) {
+                if (escape) {
+                    escape = false;
+                } else if (c == '\\') {
+                    escape = true;
+                } else if (c == '"') {
+                    inString = false;
+                }
+                continue;
+            }
+            if (c == '"') {
+                inString = true;
+            } else if (c == ',') {
+                last = i;
+            }
+        }
+        return last;
     }
 
     /** 去掉 Markdown 代码块标记 */

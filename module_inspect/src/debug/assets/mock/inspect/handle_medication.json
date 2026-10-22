@@ -1,0 +1,20 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "report_id": 6001,
+    "handle_id": 7702,
+    "status": "HANDLED",
+    "closed": false,
+    "culled_count": 0,
+    "medication_prefill": {
+      "pen_id": 2003,
+      "batch_id": 3001,
+      "report_id": 6001,
+      "diagnosis_id": 9901,
+      "reason": "AI 诊断：疑似猪流行性腹泻"
+    },
+    "version": 1
+  },
+  "trace_id": "mock-inspect-handle_medication"
+}

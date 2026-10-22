@@ -1,0 +1,13 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "report_id": 6001,
+    "handle_id": 7702,
+    "status": "CLOSED",
+    "closed": true,
+    "culled_count": 0,
+    "version": 1
+  },
+  "trace_id": "mock-inspect-handle_closed"
+}

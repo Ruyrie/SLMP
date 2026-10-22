@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "report_id": 6003,
+    "status": "PENDING",
+    "ai_state": "DIAGNOSING",
+    "auto_retry_pending": false
+  },
+  "trace_id": "mock-inspect-state_6003_diagnosing"
+}

@@ -1,0 +1,39 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "inspection_id": 50101,
+      "pen_id": 2003,
+      "pen_name": "3 号育肥舍",
+      "inspect_date": "2026-10-18",
+      "issue_type": "OVERDUE",
+      "issue_type_text": "超时",
+      "registrant_name": "李明",
+      "registered_at": "2026-10-18 18:36:00",
+      "can_backfill": false
+    },
+    {
+      "inspection_id": 50081,
+      "pen_id": 2003,
+      "pen_name": "3 号育肥舍",
+      "inspect_date": "2026-10-16",
+      "issue_type": "BACKFILL",
+      "issue_type_text": "补录",
+      "registrant_name": "王建国",
+      "registered_at": "2026-10-17 10:05:00",
+      "can_backfill": false
+    },
+    {
+      "inspection_id": 50103,
+      "pen_id": 2002,
+      "pen_name": "2 号保育舍",
+      "inspect_date": "2026-10-18",
+      "issue_type": "MISSED",
+      "issue_type_text": "漏巡",
+      "backfill_until": "2026-10-21",
+      "can_backfill": true
+    }
+  ],
+  "trace_id": "mock-inspect-recent_issues"
+}

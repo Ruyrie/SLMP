@@ -1,0 +1,124 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "report_id": 6003,
+    "version": 1,
+    "status": "PENDING",
+    "status_text": "待诊断",
+    "ai_state": "UNAVAILABLE",
+    "ai_state_text": "暂不可用",
+    "report": {
+      "pen_id": 2004,
+      "pen_name": "4 号育肥舍",
+      "batch_id": 3002,
+      "batch_no": "ZM2610-019",
+      "reporter": {
+        "user_id": 10003,
+        "name": "李明",
+        "role": "STAFF",
+        "role_text": "员工"
+      },
+      "reported_at": "2026-10-19 10:05:00",
+      "source": "DIRECT",
+      "sick_count": 5,
+      "stock_snapshot": 150,
+      "sick_rate": 0.0333,
+      "symptom_names": [
+        "咳嗽",
+        "发热",
+        "呼吸困难"
+      ],
+      "description": "5 头咳嗽、呼吸急促，体温偏高，采食略减。",
+      "media": [
+        {
+          "file_id": 9005,
+          "url": "file:///android_asset/mock/media/inspection.jpg",
+          "thumb_url": "file:///android_asset/mock/media/inspection.jpg",
+          "media_type": "IMAGE",
+          "mime_type": "image/jpeg",
+          "status": "READY",
+          "sort_no": 1,
+          "source_text": "异常上报 · 4 号育肥舍",
+          "shot_by": "李明",
+          "shot_at": "2026-10-19 10:01:00"
+        },
+        {
+          "file_id": 9003,
+          "url": "file:///android_asset/mock/media/farm_env.jpg",
+          "thumb_url": "file:///android_asset/mock/media/farm_env.jpg",
+          "media_type": "IMAGE",
+          "mime_type": "image/jpeg",
+          "status": "READY",
+          "sort_no": 2,
+          "source_text": "异常上报 · 4 号育肥舍",
+          "shot_by": "李明",
+          "shot_at": "2026-10-19 10:02:00"
+        },
+        {
+          "file_id": 9004,
+          "url": "file:///android_asset/mock/media/death_photo.jpg",
+          "thumb_url": "file:///android_asset/mock/media/death_photo.jpg",
+          "media_type": "IMAGE",
+          "mime_type": "image/jpeg",
+          "status": "READY",
+          "sort_no": 3,
+          "source_text": "异常上报 · 4 号育肥舍",
+          "shot_by": "李明",
+          "shot_at": "2026-10-19 10:03:00"
+        },
+        {
+          "file_id": 9007,
+          "url": "file:///android_asset/mock/media/inspection.jpg",
+          "thumb_url": "file:///android_asset/mock/media/inspection.jpg",
+          "media_type": "IMAGE",
+          "mime_type": "image/jpeg",
+          "status": "READY",
+          "sort_no": 4,
+          "source_text": "异常上报 · 4 号育肥舍",
+          "shot_by": "李明",
+          "shot_at": "2026-10-19 10:04:00"
+        }
+      ],
+      "media_count": 4
+    },
+    "steps": [
+      {
+        "code": "PENDING",
+        "state": "CURRENT"
+      },
+      {
+        "code": "DIAGNOSED",
+        "state": "TODO"
+      },
+      {
+        "code": "HANDLED",
+        "state": "TODO"
+      },
+      {
+        "code": "CLOSED",
+        "state": "TODO"
+      }
+    ],
+    "notified_names": [
+      "李明",
+      "王建国",
+      "刘芳"
+    ],
+    "timeline": [],
+    "permissions": {
+      "can_handle": false,
+      "can_modify_handle": false,
+      "can_rediagnose": true,
+      "can_view_inspection": true,
+      "can_view_revisions": false,
+      "can_convert_medication": false
+    },
+    "last_failure": {
+      "failed_at": "2026-10-19 10:06:00",
+      "reason_text": "诊断请求超时",
+      "trigger_type": "SUBMIT"
+    }
+  },
+  "trace_id": "mock-inspect-diag_6003_staff"
+}

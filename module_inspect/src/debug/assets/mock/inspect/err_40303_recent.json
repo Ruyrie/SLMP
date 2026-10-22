@@ -1,0 +1,6 @@
+{
+  "code": 40303,
+  "message": "只有所有者和场长可以查看前 3 天的超时与补录",
+  "data": null,
+  "trace_id": "mock-inspect-err_40303_recent"
+}

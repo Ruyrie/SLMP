@@ -2,15 +2,6 @@
   {
     "method": "POST",
     "path": "/api/v1/files",
-    "when": {
-      "body": "video/mp4"
-    },
-    "file": "upload_video.json",
-    "delay": 2000
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/files",
     "file": "upload.json",
     "delay": 1200
   },

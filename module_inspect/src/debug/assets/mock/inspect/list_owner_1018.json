@@ -1,0 +1,121 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "inspection_id": 50101,
+        "pen_id": 2003,
+        "pen_code": "YF-03",
+        "pen_name": "3 号育肥舍",
+        "display_status": "DONE",
+        "display_status_text": "已巡",
+        "batch_nos": [
+          "ZM2610-031"
+        ],
+        "stock_count": 200,
+        "responsible_names": [
+          "李明"
+        ],
+        "is_overdue": true,
+        "is_backfill": false,
+        "deadline_passed": false,
+        "can_register": false,
+        "can_modify": false,
+        "can_report": false,
+        "can_view_diagnosis": false,
+        "version": 1,
+        "registrant_name": "李明",
+        "registered_at": "2026-10-18 18:36:00",
+        "location_status": "ON_SITE",
+        "distance_m": 110
+      },
+      {
+        "inspection_id": 50102,
+        "pen_id": 2004,
+        "pen_code": "YF-04",
+        "pen_name": "4 号育肥舍",
+        "display_status": "DONE",
+        "display_status_text": "已巡",
+        "batch_nos": [
+          "ZM2610-019"
+        ],
+        "stock_count": 150,
+        "responsible_names": [
+          "李明"
+        ],
+        "is_overdue": false,
+        "is_backfill": false,
+        "deadline_passed": false,
+        "can_register": false,
+        "can_modify": false,
+        "can_report": false,
+        "can_view_diagnosis": false,
+        "version": 1,
+        "registrant_name": "李明",
+        "registered_at": "2026-10-18 08:50:00",
+        "location_status": "ON_SITE",
+        "distance_m": 95
+      },
+      {
+        "inspection_id": 50103,
+        "pen_id": 2002,
+        "pen_code": "BY-02",
+        "pen_name": "2 号保育舍",
+        "display_status": "MISSED",
+        "display_status_text": "漏巡",
+        "batch_nos": [
+          "ZM2609-038"
+        ],
+        "stock_count": 200,
+        "responsible_names": [],
+        "is_overdue": false,
+        "is_backfill": false,
+        "deadline_passed": false,
+        "can_register": false,
+        "can_modify": false,
+        "can_report": false,
+        "can_view_diagnosis": false,
+        "version": 0
+      },
+      {
+        "inspection_id": 50104,
+        "pen_id": 2001,
+        "pen_code": "BY-01",
+        "pen_name": "1 号保育舍",
+        "display_status": "DONE",
+        "display_status_text": "已巡",
+        "batch_nos": [
+          "ZM2610-045"
+        ],
+        "stock_count": 320,
+        "responsible_names": [
+          "张伟"
+        ],
+        "is_overdue": false,
+        "is_backfill": false,
+        "deadline_passed": false,
+        "can_register": false,
+        "can_modify": false,
+        "can_report": false,
+        "can_view_diagnosis": false,
+        "version": 1,
+        "registrant_name": "张伟",
+        "registered_at": "2026-10-18 08:36:00",
+        "location_status": "ON_SITE",
+        "distance_m": 80
+      }
+    ],
+    "total": 4,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "ALL": 4,
+      "PENDING": 0,
+      "ABNORMAL": 0,
+      "DONE": 3
+    }
+  },
+  "trace_id": "mock-inspect-list_owner_1018"
+}

@@ -771,7 +771,7 @@ public abstract class InspectFormViewModel extends BaseViewModel {
             return "已保存修改";
         }
         String pen = r.getPenName() != null ? r.getPenName() : infoTitle.getValue();
-        return r.isAbnormal() ? "已登记巡检，" + pen + "已标为异常" : "已登记 " + pen + " 的巡检";
+        return r.isAbnormal() ? "已登记巡检，" + pen + "已标为异常" : "已登记 " + pen + "的巡检";
     }
 
     /** 提交失败：超时查 API-I25；断网保留内容并提供“重试”；40902 提供“刷新”；字段错误写入输入框 */

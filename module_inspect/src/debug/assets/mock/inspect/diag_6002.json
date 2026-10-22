@@ -1,0 +1,124 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "report_id": 6002,
+    "version": 1,
+    "status": "DIAGNOSED",
+    "status_text": "已诊断",
+    "ai_state": "DONE",
+    "ai_state_text": "已完成",
+    "report": {
+      "pen_id": 2001,
+      "pen_name": "1 号保育舍",
+      "batch_id": 3003,
+      "batch_no": "ZM2610-045",
+      "reporter": {
+        "user_id": 10004,
+        "name": "张伟",
+        "role": "STAFF",
+        "role_text": "员工"
+      },
+      "reported_at": "2026-10-19 09:26:00",
+      "source": "DIRECT",
+      "sick_count": 8,
+      "stock_snapshot": 320,
+      "sick_rate": 0.025,
+      "symptom_names": [
+        "高热",
+        "皮肤发紫",
+        "食欲废绝"
+      ],
+      "description": "8 头高热不退，耳尖和腹下皮肤发紫，不吃料。",
+      "media": [
+        {
+          "file_id": 9004,
+          "url": "file:///android_asset/mock/media/death_photo.jpg",
+          "thumb_url": "file:///android_asset/mock/media/death_photo.jpg",
+          "media_type": "IMAGE",
+          "mime_type": "image/jpeg",
+          "status": "READY",
+          "sort_no": 1,
+          "source_text": "异常上报 · 1 号保育舍",
+          "shot_by": "张伟",
+          "shot_at": "2026-10-19 09:24:00"
+        }
+      ],
+      "media_count": 1
+    },
+    "steps": [
+      {
+        "code": "PENDING",
+        "state": "DONE"
+      },
+      {
+        "code": "DIAGNOSED",
+        "state": "CURRENT"
+      },
+      {
+        "code": "HANDLED",
+        "state": "TODO"
+      },
+      {
+        "code": "CLOSED",
+        "state": "TODO"
+      }
+    ],
+    "notified_names": [
+      "张伟",
+      "王建国",
+      "刘芳"
+    ],
+    "timeline": [],
+    "permissions": {
+      "can_handle": true,
+      "can_modify_handle": true,
+      "can_rediagnose": false,
+      "can_view_inspection": true,
+      "can_view_revisions": true,
+      "can_convert_medication": true
+    },
+    "diagnosis": {
+      "diagnosis_id": 9902,
+      "generated_at": "2026-10-19 09:27:00",
+      "conclusion": "命中重大动物疫病，紧急程度定为“紧急”。",
+      "disclaimer": "仅供参考，需执业兽医确认",
+      "urgency": "URGENT",
+      "urgency_text": "紧急",
+      "urgency_basis": "MAJOR_EPIDEMIC",
+      "is_major_epidemic": true,
+      "suggest_vet": true,
+      "emergency_notice": "疑似重大动物疫病。请联系执业兽医并向当地动物防疫机构报告。",
+      "causes": [
+        {
+          "rank_no": 1,
+          "disease_name": "非洲猪瘟",
+          "likelihood": "HIGH",
+          "likelihood_text": "较高",
+          "is_major_epidemic": true
+        },
+        {
+          "rank_no": 2,
+          "disease_name": "猪丹毒",
+          "likelihood": "MEDIUM",
+          "likelihood_text": "中等",
+          "is_major_epidemic": false
+        },
+        {
+          "rank_no": 3,
+          "disease_name": "副猪嗜血杆菌病",
+          "likelihood": "LOW",
+          "likelihood_text": "较低",
+          "is_major_epidemic": false
+        }
+      ],
+      "advices": [
+        "立即封锁栏舍，禁止人员、车辆和猪只进出。",
+        "不要自行用药、转移或出售猪只。",
+        "病死猪不要自行处理，等待防疫机构处置。",
+        "场区出入口和通道严格消毒。"
+      ]
+    }
+  },
+  "trace_id": "mock-inspect-diag_6002"
+}

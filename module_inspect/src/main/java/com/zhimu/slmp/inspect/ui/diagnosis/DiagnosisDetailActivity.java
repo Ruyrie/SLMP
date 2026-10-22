@@ -109,26 +109,7 @@ public class DiagnosisDetailActivity extends BaseActivity {
         if (d == null) {
             return;
         }
-        int step;
-        switch (d.getStatus() == null ? "" : d.getStatus()) {
-            case DiagnosisDetailVO.STATUS_CLOSED:
-                step = 4;
-                break;
-            case DiagnosisDetailVO.STATUS_HANDLED:
-                step = 2;
-                break;
-            case DiagnosisDetailVO.STATUS_DIAGNOSED:
-                step = 1;
-                break;
-            default:
-                step = 0;
-                break;
-        }
-        boolean waiting = step == 0;
-        binding.inspectSteps.setStep(Math.min(step, 3), waiting);
-        if (step == 4) {
-            binding.inspectSteps.setStep(4, false);
-        }
+        renderSteps(d);
         DiagnosisDetailVO.DiagnosisReport r = d.getReport();
         if (r != null) {
             binding.inspectReportPen.setText(r.getPenName());
@@ -231,6 +212,31 @@ public class DiagnosisDetailActivity extends BaseActivity {
         }
     }
 
+    /** 进度条：待诊断、已诊断、已处理、已结案；AI 占位时停在“待诊断”转圈 */
+    private void renderSteps(@NonNull DiagnosisDetailVO d) {
+        Integer ai = vm.getAiCardState().getValue();
+        if (ai != null && ai == DiagnosisDetailViewModel.AI_PLACEHOLDER) {
+            binding.inspectSteps.setStep(0, true);
+            return;
+        }
+        int step;
+        switch (d.getStatus() == null ? "" : d.getStatus()) {
+            case DiagnosisDetailVO.STATUS_CLOSED:
+                step = 4;
+                break;
+            case DiagnosisDetailVO.STATUS_HANDLED:
+                step = 2;
+                break;
+            case DiagnosisDetailVO.STATUS_DIAGNOSED:
+                step = 1;
+                break;
+            default:
+                step = 0;
+                break;
+        }
+        binding.inspectSteps.setStep(step, step == 0);
+    }
+
     private void renderAi() {
         Integer state = vm.getAiCardState().getValue();
         DiagnosisResultVO dx = vm.getDiagnosis().getValue();
@@ -239,8 +245,11 @@ public class DiagnosisDetailActivity extends BaseActivity {
         binding.inspectAiPlaceholder.setVisibility(placeholder ? View.VISIBLE : View.GONE);
         binding.inspectAiCard.setVisibility(result ? View.VISIBLE : View.GONE);
         animateSkeleton(placeholder);
+        DiagnosisDetailVO detail = vm.getDetail().getValue();
         if (placeholder) {
             binding.inspectSteps.setStep(0, true);
+        } else if (detail != null) {
+            renderSteps(detail);
         }
         if (!result) {
             renderActions();

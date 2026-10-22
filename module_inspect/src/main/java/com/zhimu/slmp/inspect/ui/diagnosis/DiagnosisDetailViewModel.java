@@ -146,6 +146,9 @@ public class DiagnosisDetailViewModel extends BaseViewModel
 
     /** 直连诊断中：先显示上报信息与“AI 正在诊断”，结果到达后替换 */
     private void applyDirectOverlay(@NonNull DiagnosisDetailVO base) {
+        // 直连代替本次轮询；直连失败时再改回轮询服务端
+        freshSubmit = false;
+        getSavedState().set("inspect_diag_done", true);
         DirectDiagnosisInput input = direct.inputOf(reportId);
         if (input != null) {
             base.setReport(reportFromInput(base, input));
@@ -281,6 +284,9 @@ public class DiagnosisDetailViewModel extends BaseViewModel
         boolean wasRediagnosing = Boolean.TRUE.equals(rediagnosing.getValue());
         launch(repository.getDiagnosis(reportId), d -> {
             rediagnosing.setValue(false);
+            if (directResult != null) {
+                overlay(d, directResult);
+            }
             apply(d);
             if (wasRediagnosing && !DiagnosisDetailVO.AI_DONE.equals(d.getAiState())) {
                 showMessage(MSG_STILL_UNAVAILABLE);

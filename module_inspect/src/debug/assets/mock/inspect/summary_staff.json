@@ -1,0 +1,24 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "farm_name": "东山猪场",
+    "date": "2026-10-19",
+    "deadline_time": "18:00",
+    "remind_time": "17:00",
+    "scope": "MY_PENS",
+    "responsible_pen_count": 2,
+    "should_count": 2,
+    "done_count": 1,
+    "pending_count": 1,
+    "abnormal_count": 1,
+    "missed_count": 0,
+    "completion_rate": 0.5,
+    "deadline_passed": false,
+    "all_done": false,
+    "can_edit_deadline": false,
+    "first_abnormal_pen_name": "3 号育肥舍",
+    "first_abnormal_reported": false
+  },
+  "trace_id": "mock-inspect-summary_staff"
+}

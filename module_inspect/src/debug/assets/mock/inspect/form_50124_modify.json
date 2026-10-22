@@ -1,0 +1,219 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "mode": "MODIFY",
+    "pen": {
+      "pen_id": 2001,
+      "pen_code": "BY-01",
+      "pen_name": "1 号保育舍",
+      "responsible_names": [
+        "张伟"
+      ]
+    },
+    "batches": [
+      {
+        "batch_id": 3003,
+        "batch_no": "ZM2610-045",
+        "stock_count": 320
+      }
+    ],
+    "stock_count": 320,
+    "category_id": 101,
+    "inspect_date": "2026-10-19",
+    "registrant": {
+      "user_id": 10001,
+      "name": "王建国",
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "can_choose_executor": true,
+    "can_manual_mark": true,
+    "default_executor_id": 10004,
+    "template": {
+      "template_id": 11,
+      "template_version": 2,
+      "items": [
+        {
+          "item_id": 101,
+          "item_name": "精神状态",
+          "sort_no": 1,
+          "options": [
+            {
+              "option_id": 1011,
+              "option_name": "正常",
+              "is_abnormal": false,
+              "sort_no": 1
+            },
+            {
+              "option_id": 1012,
+              "option_name": "沉郁",
+              "is_abnormal": true,
+              "sort_no": 2
+            },
+            {
+              "option_id": 1013,
+              "option_name": "兴奋不安",
+              "is_abnormal": true,
+              "sort_no": 3
+            }
+          ]
+        },
+        {
+          "item_id": 102,
+          "item_name": "采食",
+          "sort_no": 2,
+          "options": [
+            {
+              "option_id": 1021,
+              "option_name": "正常",
+              "is_abnormal": false,
+              "sort_no": 1
+            },
+            {
+              "option_id": 1022,
+              "option_name": "减少",
+              "is_abnormal": true,
+              "sort_no": 2
+            },
+            {
+              "option_id": 1023,
+              "option_name": "废绝",
+              "is_abnormal": true,
+              "sort_no": 3
+            }
+          ]
+        },
+        {
+          "item_id": 103,
+          "item_name": "粪便",
+          "sort_no": 3,
+          "options": [
+            {
+              "option_id": 1031,
+              "option_name": "正常",
+              "is_abnormal": false,
+              "sort_no": 1
+            },
+            {
+              "option_id": 1032,
+              "option_name": "稀软",
+              "is_abnormal": true,
+              "sort_no": 2
+            },
+            {
+              "option_id": 1033,
+              "option_name": "水样",
+              "is_abnormal": true,
+              "sort_no": 3
+            },
+            {
+              "option_id": 1034,
+              "option_name": "带血",
+              "is_abnormal": true,
+              "sort_no": 4
+            }
+          ]
+        }
+      ]
+    },
+    "deadline_time": "18:00",
+    "deadline_passed": false,
+    "can_report": true,
+    "farm_latitude": 42.3025,
+    "farm_longitude": 118.8516,
+    "members": [
+      {
+        "value": "10001",
+        "label": "王建国",
+        "hint": "所有者",
+        "disabled": false
+      },
+      {
+        "value": "10002",
+        "label": "刘芳",
+        "hint": "场长",
+        "disabled": false
+      },
+      {
+        "value": "10003",
+        "label": "李明",
+        "hint": "员工",
+        "disabled": false
+      },
+      {
+        "value": "10004",
+        "label": "张伟",
+        "hint": "员工",
+        "disabled": false
+      }
+    ],
+    "record": {
+      "inspection_id": 50124,
+      "pen_id": 2001,
+      "pen_name": "1 号保育舍",
+      "batch_nos": [
+        "ZM2610-045"
+      ],
+      "inspect_date": "2026-10-19",
+      "inspect_status": "DONE",
+      "inspect_status_text": "已巡",
+      "item_results": [
+        {
+          "item_id": 101,
+          "item_name": "精神状态",
+          "option_id": 1011,
+          "option_name": "正常",
+          "option_abnormal": false,
+          "sort_no": 1
+        },
+        {
+          "item_id": 102,
+          "item_name": "采食",
+          "option_id": 1021,
+          "option_name": "正常",
+          "option_abnormal": false,
+          "sort_no": 2
+        },
+        {
+          "item_id": 103,
+          "item_name": "粪便",
+          "option_id": 1031,
+          "option_name": "正常",
+          "option_abnormal": false,
+          "sort_no": 3
+        }
+      ],
+      "is_abnormal": false,
+      "is_proxy": false,
+      "is_overdue": false,
+      "is_backfill": false,
+      "has_revisions": false,
+      "media": [],
+      "registrant": {
+        "user_id": 10004,
+        "name": "张伟",
+        "role": "STAFF",
+        "role_text": "员工"
+      },
+      "executor": {
+        "user_id": 10004,
+        "name": "张伟",
+        "role": "STAFF",
+        "role_text": "员工"
+      },
+      "registered_at": "2026-10-19 08:40:00",
+      "location_status": "ON_SITE",
+      "location_status_text": "现场",
+      "distance_m": 86,
+      "template_version": 2,
+      "edit_mode": "DIRECT",
+      "change_state": {
+        "can_edit": true,
+        "edit_deadline": "2026-10-22 24:00"
+      },
+      "version": 1
+    }
+  },
+  "trace_id": "mock-inspect-form_50124_modify"
+}

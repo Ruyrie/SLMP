@@ -1,0 +1,6 @@
+{
+  "code": 40903,
+  "message": "这个栏舍已没有在栏批次，不需要巡检",
+  "data": null,
+  "trace_id": "mock-inspect-err_40903_no_batch"
+}

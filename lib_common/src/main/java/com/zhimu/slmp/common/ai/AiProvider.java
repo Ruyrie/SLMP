@@ -1,7 +1,5 @@
 package com.zhimu.slmp.common.ai;
 
-import android.text.TextUtils;
-
 import androidx.annotation.NonNull;
 
 /**
@@ -40,7 +38,7 @@ public final class AiProvider {
 
     /** Key 为空视为未开启 */
     public boolean isEnabled() {
-        return !TextUtils.isEmpty(apiKey) && !TextUtils.isEmpty(model);
+        return apiKey != null && !apiKey.trim().isEmpty() && model != null && !model.trim().isEmpty();
     }
 
     @NonNull

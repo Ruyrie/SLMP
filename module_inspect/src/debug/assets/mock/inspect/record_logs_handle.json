@@ -1,0 +1,31 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 7201,
+      "operator": {
+        "user_id": 10001,
+        "name": "王建国",
+        "role": "OWNER",
+        "role_text": "所有者"
+      },
+      "op_action": "UPDATE",
+      "op_action_text": "修改",
+      "changes": [
+        {
+          "field_name": "治愈",
+          "before": "6 头",
+          "after": "9 头"
+        },
+        {
+          "field_name": "死淘",
+          "before": "0 头",
+          "after": "1 头"
+        }
+      ],
+      "created_at": "2026-10-18 16:20:00"
+    }
+  ],
+  "trace_id": "mock-inspect-record_logs_handle"
+}

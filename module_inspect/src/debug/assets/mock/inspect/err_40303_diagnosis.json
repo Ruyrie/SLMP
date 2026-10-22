@@ -1,0 +1,6 @@
+{
+  "code": 40303,
+  "message": "你没有这条诊断记录的查看权限。员工只能查看自己上报的诊断。",
+  "data": null,
+  "trace_id": "mock-inspect-err_40303_diagnosis"
+}

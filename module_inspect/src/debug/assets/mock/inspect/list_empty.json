@@ -1,0 +1,18 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [],
+    "total": 0,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "ALL": 0,
+      "PENDING": 0,
+      "ABNORMAL": 0,
+      "DONE": 0
+    }
+  },
+  "trace_id": "mock-inspect-list_empty"
+}

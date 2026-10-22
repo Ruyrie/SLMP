@@ -1,0 +1,50 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "pen_id": 2003,
+    "pen_name": "3 号育肥舍",
+    "batch_nos": [
+      "ZM2610-031"
+    ],
+    "responsible_names": [
+      "李明"
+    ],
+    "recent7_done_days": 7,
+    "recent7_should_days": 7,
+    "today": "2026-10-19",
+    "backfill_from": "2026-10-16",
+    "backfill_to": "2026-10-18",
+    "days": [
+      {
+        "date": "2026-10-19",
+        "day_tag": "ABNORMAL"
+      },
+      {
+        "date": "2026-10-18",
+        "day_tag": "OVERDUE"
+      },
+      {
+        "date": "2026-10-17",
+        "day_tag": "DONE"
+      },
+      {
+        "date": "2026-10-16",
+        "day_tag": "BACKFILL"
+      },
+      {
+        "date": "2026-10-15",
+        "day_tag": "DONE"
+      },
+      {
+        "date": "2026-10-14",
+        "day_tag": "ABNORMAL"
+      },
+      {
+        "date": "2026-10-13",
+        "day_tag": "DONE"
+      }
+    ]
+  },
+  "trace_id": "mock-inspect-overview_2003"
+}

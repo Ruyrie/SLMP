@@ -1,0 +1,12 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "report_id": 6001,
+    "status": "PENDING",
+    "ai_state": "DIAGNOSING",
+    "poll_interval_sec": 3,
+    "poll_max_sec": 90
+  },
+  "trace_id": "mock-inspect-report_created"
+}

@@ -1,0 +1,76 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "inspection_id": 50071,
+    "pen_id": 2003,
+    "pen_name": "3 号育肥舍",
+    "batch_nos": [
+      "ZM2610-031"
+    ],
+    "inspect_date": "2026-10-14",
+    "inspect_status": "DONE",
+    "inspect_status_text": "已巡",
+    "item_results": [
+      {
+        "item_id": 101,
+        "item_name": "精神状态",
+        "option_id": 1011,
+        "option_name": "正常",
+        "option_abnormal": false,
+        "sort_no": 1
+      },
+      {
+        "item_id": 102,
+        "item_name": "采食",
+        "option_id": 1021,
+        "option_name": "正常",
+        "option_abnormal": false,
+        "sort_no": 2
+      },
+      {
+        "item_id": 103,
+        "item_name": "粪便",
+        "option_id": 1031,
+        "option_name": "正常",
+        "option_abnormal": false,
+        "sort_no": 3
+      }
+    ],
+    "is_abnormal": true,
+    "is_proxy": false,
+    "is_overdue": false,
+    "is_backfill": false,
+    "has_revisions": false,
+    "media": [],
+    "registrant": {
+      "user_id": 10003,
+      "name": "李明",
+      "role": "STAFF",
+      "role_text": "员工"
+    },
+    "executor": {
+      "user_id": 10003,
+      "name": "李明",
+      "role": "STAFF",
+      "role_text": "员工"
+    },
+    "registered_at": "2026-10-14 08:44:00",
+    "location_status": "ON_SITE",
+    "location_status_text": "现场",
+    "distance_m": 120,
+    "template_version": 2,
+    "edit_mode": "CHANGE_REQUEST",
+    "change_state": {
+      "can_edit": false,
+      "edit_deadline": "2026-10-17 24:00"
+    },
+    "version": 1,
+    "abnormal_source": "MANUAL",
+    "is_manual_marked": true,
+    "manual_reason": "部分猪只咳嗽，舍内氨味较重",
+    "manual_marked_by_name": "刘芳",
+    "manual_marked_at": "2026-10-14 10:05:00"
+  },
+  "trace_id": "mock-inspect-detail_50071"
+}

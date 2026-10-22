@@ -1,0 +1,96 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "inspection_id": 50123,
+        "inspect_date": "2026-10-19",
+        "is_today": true,
+        "inspect_status": "PENDING",
+        "tags": [],
+        "registrant_name": null,
+        "registered_at": null,
+        "can_modify": false,
+        "can_change_request": false,
+        "has_revisions": false,
+        "can_backfill": false,
+        "backfill_expired": false
+      },
+      {
+        "inspection_id": 50103,
+        "inspect_date": "2026-10-18",
+        "is_today": false,
+        "inspect_status": "MISSED",
+        "tags": [
+          "MISSED"
+        ],
+        "registrant_name": null,
+        "registered_at": null,
+        "can_modify": false,
+        "can_change_request": false,
+        "has_revisions": false,
+        "can_backfill": true,
+        "backfill_expired": false,
+        "backfill_until": "2026-10-21"
+      },
+      {
+        "inspection_id": 50093,
+        "inspect_date": "2026-10-17",
+        "is_today": false,
+        "inspect_status": "DONE",
+        "tags": [
+          "ON_SITE"
+        ],
+        "registrant_name": "王建国",
+        "registered_at": "2026-10-17 09:20:00",
+        "can_modify": true,
+        "can_change_request": false,
+        "has_revisions": false,
+        "can_backfill": false,
+        "backfill_expired": false,
+        "modify_target": "BACKFILL",
+        "result_summary": "正常"
+      },
+      {
+        "inspection_id": 50083,
+        "inspect_date": "2026-10-16",
+        "is_today": false,
+        "inspect_status": "DONE",
+        "tags": [
+          "ON_SITE"
+        ],
+        "registrant_name": "刘芳",
+        "registered_at": "2026-10-16 09:05:00",
+        "can_modify": true,
+        "can_change_request": false,
+        "has_revisions": false,
+        "can_backfill": false,
+        "backfill_expired": false,
+        "modify_target": "BACKFILL",
+        "result_summary": "正常"
+      },
+      {
+        "inspection_id": 50063,
+        "inspect_date": "2026-10-14",
+        "is_today": false,
+        "inspect_status": "MISSED",
+        "tags": [
+          "MISSED"
+        ],
+        "registrant_name": null,
+        "registered_at": null,
+        "can_modify": false,
+        "can_change_request": false,
+        "has_revisions": false,
+        "can_backfill": false,
+        "backfill_expired": true
+      }
+    ],
+    "total": 5,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-inspect-history_2002"
+}

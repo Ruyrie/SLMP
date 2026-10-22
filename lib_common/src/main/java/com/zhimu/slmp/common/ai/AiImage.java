@@ -1,12 +1,12 @@
 package com.zhimu.slmp.common.ai;
 
 import android.graphics.Bitmap;
-import android.util.Base64;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Base64;
 
 /**
  * 请求中的一张图片：压缩后的 JPEG，以 base64 data URL（data:image/jpeg;base64,...）放入 image_url。
@@ -33,7 +33,7 @@ public final class AiImage {
     /** 已压缩好的 JPEG 字节 */
     @NonNull
     public static AiImage jpeg(@NonNull byte[] jpegBytes, @NonNull String label) {
-        String b64 = Base64.encodeToString(jpegBytes, Base64.NO_WRAP);
+        String b64 = Base64.getEncoder().encodeToString(jpegBytes);
         return new AiImage("data:image/jpeg;base64," + b64, jpegBytes.length, label);
     }
 

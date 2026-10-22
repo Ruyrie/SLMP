@@ -1,0 +1,17 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "inspection_id": 50103,
+    "version": 1,
+    "pen_name": "2 号保育舍",
+    "inspect_date": "2026-10-18",
+    "is_abnormal": false,
+    "is_overdue": false,
+    "is_backfill": true,
+    "todo_completed": false,
+    "location_status": "ON_SITE",
+    "distance_m": 120
+  },
+  "trace_id": "mock-inspect-submit_backfill"
+}

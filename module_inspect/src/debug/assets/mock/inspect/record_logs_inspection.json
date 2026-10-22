@@ -1,0 +1,45 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 7101,
+      "operator": {
+        "user_id": 10001,
+        "name": "王建国",
+        "role": "OWNER",
+        "role_text": "所有者"
+      },
+      "op_action": "UPDATE",
+      "op_action_text": "修改",
+      "changes": [
+        {
+          "field_name": "说明",
+          "before": "",
+          "after": "当天已巡检，未及时登记。"
+        }
+      ],
+      "created_at": "2026-10-19 08:20:00"
+    },
+    {
+      "id": 7100,
+      "operator": {
+        "user_id": 10003,
+        "name": "李明",
+        "role": "STAFF",
+        "role_text": "员工"
+      },
+      "op_action": "UPDATE",
+      "op_action_text": "修改",
+      "changes": [
+        {
+          "field_name": "粪便",
+          "before": "稀软",
+          "after": "正常"
+        }
+      ],
+      "created_at": "2026-10-18 19:02:00"
+    }
+  ],
+  "trace_id": "mock-inspect-record_logs_inspection"
+}

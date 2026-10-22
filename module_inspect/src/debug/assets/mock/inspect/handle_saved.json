@@ -1,0 +1,18 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "report_id": 6001,
+    "handle_id": 7702,
+    "status": "HANDLED",
+    "closed": false,
+    "culled_count": 1,
+    "death_prompt": {
+      "pen_id": 2003,
+      "batch_id": 3001,
+      "culled_count": 1
+    },
+    "version": 1
+  },
+  "trace_id": "mock-inspect-handle_saved"
+}

@@ -1,7 +1,5 @@
 package com.zhimu.slmp.inspect.ui.form;
 
-import android.text.TextUtils;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -98,7 +96,7 @@ public final class InspectFormRules {
                 parts.add(item.getItemName() + "为“" + o.getOptionName() + "”");
             }
         }
-        return parts.isEmpty() ? null : TextUtils.join("、", parts);
+        return parts.isEmpty() ? null : String.join("、", parts);
     }
 
     /**
@@ -107,7 +105,7 @@ public final class InspectFormRules {
     @NonNull
     public static Map<String, String> validate(@NonNull Input in) {
         Map<String, String> e = new LinkedHashMap<>();
-        if (in.requireDate && TextUtils.isEmpty(in.inspectDate)) {
+        if (in.requireDate && (in.inspectDate == null || in.inspectDate.trim().isEmpty())) {
             e.put(F_DATE, MSG_DATE_REQUIRED);
         }
         if (in.requireExecutor && in.executorId == null) {
