@@ -1,7 +1,28 @@
 apply from: rootProject.file('gradle/lib-component.gradle')
 
+def props = rootProject.ext.localProps
+// 测试直连（2026-10-22 确认）：Key 只进 debug 包，release 包为空，直连自动关闭、走服务端接口
+def directFields = [
+        DASHSCOPE_API_KEY    : props.getProperty('ai.dashscopeKey', ''),
+        DASHSCOPE_MODEL      : props.getProperty('ai.dashscopeModel', 'qwen3.8-max'),
+        DEEPSEEK_API_KEY     : props.getProperty('ai.deepseekKey', ''),
+        DEEPSEEK_MODEL       : props.getProperty('ai.deepseekModel', 'deepseek-flash'),
+        ALIYUN_ACCESS_KEY_ID : props.getProperty('aliyun.accessKeyId', ''),
+        ALIYUN_ACCESS_SECRET : props.getProperty('aliyun.accessKeySecret', ''),
+        ALIYUN_SMS_SIGN_NAME : props.getProperty('aliyun.smsSignName', '')
+]
+
 android {
     namespace 'com.zhimu.slmp.common'
+
+    buildTypes {
+        debug {
+            directFields.each { k, v -> buildConfigField 'String', k, "\"${v}\"" }
+        }
+        release {
+            directFields.each { k, v -> buildConfigField 'String', k, '""' }
+        }
+    }
 }
 
 dependencies {

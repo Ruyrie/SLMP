@@ -34,8 +34,12 @@ include ':lib_common'
 include ':lib_media'
 include ':lib_map'
 
-// 业务组件（其余 7 个组件在后续迭代中加入）
+// 业务组件（其余 3 个组件在后续迭代中加入）
 include ':module_account'
 include ':module_farm'
 include ':module_today'
 include ':module_herd'
+include ':module_breed'
+include ':module_feed'
+include ':module_inspect'
+include ':module_health'

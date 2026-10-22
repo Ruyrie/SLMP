@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 单独运行（gradle.properties 中 runAlone.module_inspect=true）时合并到 debug 清单 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:name="com.zhimu.slmp.inspect.alone.InspectAloneApp"
+        android:allowBackup="false"
+        android:enableOnBackInvokedCallback="true"
+        android:icon="@android:mipmap/sym_def_app_icon"
+        android:label="日常巡检与异常上报 AI 诊断（单独运行）"
+        android:networkSecurityConfig="@xml/common_core_network_security_config"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Zmt">
+
+        <activity
+            android:name="com.zhimu.slmp.common.app.AloneLauncherActivity"
+            android:exported="true"
+            tools:replace="android:exported">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
