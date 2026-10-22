@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AI 诊断中的骨架条：白色 60%，圆角 6 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#99FFFFFF" />
+    <corners android:radius="6dp" />
+</shape>

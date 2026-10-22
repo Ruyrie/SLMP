@@ -4,6 +4,8 @@ import com.zhimu.slmp.base.mvvm.ViewModelFactory;
 import com.zhimu.slmp.common.di.CoreComponent;
 import com.zhimu.slmp.common.di.FeatureScope;
 import com.zhimu.slmp.media.data.MediaRepository;
+import com.zhimu.slmp.media.queue.UploadQueue;
+import com.zhimu.slmp.media.upload.MediaQueueController;
 import com.zhimu.slmp.media.upload.UploadManager;
 
 import dagger.Component;
@@ -21,6 +23,12 @@ public interface MediaComponent {
     UploadManager.Factory uploadFactory();
 
     MediaRepository mediaRepository();
+
+    /** 照片和视频上传队列（Room upload_task + WorkManager） */
+    UploadQueue uploadQueue();
+
+    /** 照片和视频网格（模块07 表单）的工厂 */
+    MediaQueueController.Factory queueFactory();
 
     @Component.Factory
     interface Factory {

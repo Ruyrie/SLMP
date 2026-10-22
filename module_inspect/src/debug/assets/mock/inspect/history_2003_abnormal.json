@@ -1,0 +1,53 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "inspection_id": 50121,
+        "inspect_date": "2026-10-19",
+        "is_today": true,
+        "inspect_status": "DONE",
+        "tags": [
+          "ABNORMAL",
+          "ON_SITE"
+        ],
+        "registrant_name": "李明",
+        "registered_at": "2026-10-19 09:12:00",
+        "can_modify": true,
+        "can_change_request": false,
+        "has_revisions": false,
+        "can_backfill": false,
+        "backfill_expired": false,
+        "abnormal_source": "CHECK",
+        "abnormal_summary": "粪便 水样",
+        "modify_target": "REGISTER"
+      },
+      {
+        "inspection_id": 50071,
+        "inspect_date": "2026-10-14",
+        "is_today": false,
+        "inspect_status": "DONE",
+        "tags": [
+          "ABNORMAL",
+          "ON_SITE"
+        ],
+        "registrant_name": "刘芳",
+        "registered_at": "2026-10-14 10:05:00",
+        "can_modify": false,
+        "can_change_request": true,
+        "has_revisions": false,
+        "can_backfill": false,
+        "backfill_expired": false,
+        "abnormal_source": "MANUAL",
+        "manual_reason": "部分猪只咳嗽，舍内氨味较重",
+        "pending_request_id": null
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-inspect-history_2003_abnormal"
+}

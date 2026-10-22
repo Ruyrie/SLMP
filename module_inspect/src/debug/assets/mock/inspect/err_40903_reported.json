@@ -1,0 +1,8 @@
+{
+  "code": 40903,
+  "message": "这条巡检已上报",
+  "data": {
+    "report_id": 6001
+  },
+  "trace_id": "mock-inspect-err_40903_reported"
+}

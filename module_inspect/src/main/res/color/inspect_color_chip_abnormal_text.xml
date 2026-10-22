@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 巡检非正常选项文字与对勾：选中 on-error-container，未选 on-surface-variant -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="?attr/colorOnErrorContainer" android:state_checked="true" />
+    <item android:alpha="0.38" android:color="?attr/colorOnSurface" android:state_enabled="false" />
+    <item android:color="?attr/colorOnSurfaceVariant" />
+</selector>

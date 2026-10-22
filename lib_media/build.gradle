@@ -4,6 +4,10 @@ android {
     namespace 'com.zhimu.slmp.media'
 }
 
+// camera-video 1.6.1 依赖 media3-muxer、media3-container 1.9.0；media3 各模块必须是同一版本（混用会在运行时
+// 出现 NoSuchMethodError），这里把录像、转码、播放用到的 media3 模块统一到 1.9.0（版本目录中仍为 1.8.0）
+def media3Aligned = '1.9.0'
+
 dependencies {
     api project(':lib_common')
     implementation libs.exifinterface
@@ -11,8 +15,12 @@ dependencies {
     implementation libs.camera.camera2
     implementation libs.camera.lifecycle
     implementation libs.camera.view
+    implementation libs.camera.video
+    implementation(libs.media3.exoplayer) { version { require media3Aligned } }
+    implementation(libs.media3.ui) { version { require media3Aligned } }
+    implementation(libs.media3.transformer) { version { require media3Aligned } }
     implementation libs.zxing.core
-    implementation libs.work.runtime
+    api libs.work.runtime
     implementation libs.work.rxjava3
     annotationProcessor libs.dagger.compiler
 

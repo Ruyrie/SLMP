@@ -1,0 +1,32 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "inspection_id": 50081,
+        "inspect_date": "2026-10-16",
+        "is_today": false,
+        "inspect_status": "DONE",
+        "tags": [
+          "BACKFILL",
+          "OFF_SITE"
+        ],
+        "registrant_name": "王建国",
+        "registered_at": "2026-10-17 10:05:00",
+        "can_modify": true,
+        "can_change_request": false,
+        "has_revisions": false,
+        "can_backfill": false,
+        "backfill_expired": false,
+        "modify_target": "BACKFILL",
+        "result_summary": "正常"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-inspect-history_2003_backfill"
+}

@@ -26,7 +26,7 @@ public final class CameraArgs {
     public static final String MODE_PHOTO = "PHOTO";
     /** 扫码（ZXing 识别二维码，返回原文） */
     public static final String MODE_SCAN = "SCAN";
-    /** 录像（预留，模块07 实现；本期按拍照处理） */
+    /** 录像（模块07：进入时为录像模式，可切换到拍照；需要上传队列模式，见 {@link #media}） */
     public static final String MODE_VIDEO = "VIDEO";
 
     @Retention(RetentionPolicy.SOURCE)
@@ -44,9 +44,13 @@ public final class CameraArgs {
     static final String KEY_SCAN_SUB_HINT = "scan_sub_hint";
     static final String KEY_MANUAL_TEXT = "manual_text";
     static final String KEY_MANUAL_HINT = "manual_hint";
+    static final String KEY_ALLOW_VIDEO = "allow_video";
+    static final String KEY_HAS_VIDEO = "has_video";
+    static final String KEY_PAGE_CODE = "page_code";
+    static final String KEY_FARM_ID = "farm_id";
 
     @NonNull
-    private final String mode;
+    private String mode;
     @Nullable
     private String scene;
     private int maxCount = 1;
@@ -62,6 +66,11 @@ public final class CameraArgs {
     private String manualText;
     @Nullable
     private String manualHint;
+    private boolean allowVideo;
+    private boolean hasVideo;
+    @Nullable
+    private String pageCode;
+    private long farmId;
 
     private CameraArgs(@NonNull String mode) {
         this.mode = mode;
@@ -79,6 +88,40 @@ public final class CameraArgs {
         a.scene = scene;
         a.maxCount = Math.max(1, maxCount);
         return a;
+    }
+
+    /**
+     * 拍照与录像（模块07 照片和视频网格）：拍摄结果由相机页直接写入上传队列 upload_task（page_code、farm_id），
+     * 网格观察数据库自动出现；录像 30 秒自动停止，需要麦克风权限。
+     *
+     * @param maxCount 本次最多还能添加几个（照片和视频合计）
+     * @param pageCode 上传队列的页面编号（与网格的 MediaQueueController 一致）
+     */
+    @NonNull
+    public static CameraArgs media(@Nullable String scene, int maxCount, @NonNull String pageCode, long farmId) {
+        CameraArgs a = new CameraArgs(MODE_PHOTO);
+        a.scene = scene;
+        a.maxCount = Math.max(1, maxCount);
+        a.allowVideo = true;
+        a.pageCode = pageCode;
+        a.farmId = farmId;
+        return a;
+    }
+
+    /** 进入时为录像模式（添加面板选“录像”） */
+    @NonNull
+    public CameraArgs startWithVideo(boolean video) {
+        if (allowVideo) {
+            this.mode = video ? MODE_VIDEO : MODE_PHOTO;
+        }
+        return this;
+    }
+
+    /** 网格中已有视频：录像段置灰，点击提示“已有 1 段视频，删除后才能再录” */
+    @NonNull
+    public CameraArgs hasVideo(boolean has) {
+        this.hasVideo = has;
+        return this;
     }
 
     /** 扫码模式：识别到二维码后震动并返回原文 */
@@ -131,6 +174,10 @@ public final class CameraArgs {
         b.putString(KEY_SCAN_SUB_HINT, scanSubHint);
         b.putString(KEY_MANUAL_TEXT, manualText);
         b.putString(KEY_MANUAL_HINT, manualHint);
+        b.putBoolean(KEY_ALLOW_VIDEO, allowVideo);
+        b.putBoolean(KEY_HAS_VIDEO, hasVideo);
+        b.putString(KEY_PAGE_CODE, pageCode);
+        b.putLong(KEY_FARM_ID, farmId);
         return b;
     }
 
@@ -155,6 +202,14 @@ public final class CameraArgs {
         a.scanSubHint = string(src.get(KEY_SCAN_SUB_HINT));
         a.manualText = string(src.get(KEY_MANUAL_TEXT));
         a.manualHint = string(src.get(KEY_MANUAL_HINT));
+        a.allowVideo = Boolean.TRUE.equals(src.get(KEY_ALLOW_VIDEO));
+        a.hasVideo = Boolean.TRUE.equals(src.get(KEY_HAS_VIDEO));
+        a.pageCode = string(src.get(KEY_PAGE_CODE));
+        Object farm = src.get(KEY_FARM_ID);
+        a.farmId = farm instanceof Long ? (Long) farm : 0;
+        if (!a.allowVideo && MODE_VIDEO.equals(a.mode)) {
+            a.mode = MODE_PHOTO;
+        }
         return a;
     }
 
@@ -176,6 +231,35 @@ public final class CameraArgs {
 
     public boolean isScan() {
         return MODE_SCAN.equals(mode);
+    }
+
+    /** 进入时为录像模式 */
+    public boolean isVideo() {
+        return MODE_VIDEO.equals(mode);
+    }
+
+    /** 显示拍照 / 录像切换 */
+    public boolean isAllowVideo() {
+        return allowVideo;
+    }
+
+    /** 网格中已有视频 */
+    public boolean isHasVideo() {
+        return hasVideo;
+    }
+
+    /** 上传队列模式：拍摄结果直接写入 upload_task */
+    public boolean isQueueMode() {
+        return pageCode != null;
+    }
+
+    @Nullable
+    public String getPageCode() {
+        return pageCode;
+    }
+
+    public long getFarmId() {
+        return farmId;
     }
 
     @Nullable

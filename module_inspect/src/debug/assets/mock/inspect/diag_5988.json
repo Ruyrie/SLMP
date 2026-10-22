@@ -1,0 +1,117 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "report_id": 5988,
+    "version": 1,
+    "status": "CLOSED",
+    "status_text": "已结案",
+    "ai_state": "DONE",
+    "ai_state_text": "已完成",
+    "report": {
+      "pen_id": 2001,
+      "pen_name": "1 号保育舍",
+      "batch_id": 3003,
+      "batch_no": "ZM2610-045",
+      "reporter": {
+        "user_id": 10004,
+        "name": "张伟",
+        "role": "STAFF",
+        "role_text": "员工"
+      },
+      "reported_at": "2026-10-08 15:10:00",
+      "source": "DIRECT",
+      "sick_count": 2,
+      "stock_snapshot": 320,
+      "sick_rate": 0.0063,
+      "symptom_names": [
+        "腹泻"
+      ],
+      "description": "2 头仔猪排黄白色稀粪，精神尚可。",
+      "media": [],
+      "media_count": 0
+    },
+    "steps": [
+      {
+        "code": "PENDING",
+        "state": "DONE"
+      },
+      {
+        "code": "DIAGNOSED",
+        "state": "DONE"
+      },
+      {
+        "code": "HANDLED",
+        "state": "DONE"
+      },
+      {
+        "code": "CLOSED",
+        "state": "DONE"
+      }
+    ],
+    "notified_names": [
+      "张伟",
+      "王建国",
+      "刘芳"
+    ],
+    "timeline": [],
+    "permissions": {
+      "can_handle": true,
+      "can_modify_handle": true,
+      "can_rediagnose": false,
+      "can_view_inspection": true,
+      "can_view_revisions": true,
+      "can_convert_medication": true
+    },
+    "diagnosis": {
+      "diagnosis_id": 9790,
+      "generated_at": "2026-10-08 15:12:00",
+      "conclusion": "发病 2 头，低于存栏的 5%，暂未发现重大动物疫病特征。",
+      "disclaimer": "仅供参考，需执业兽医确认",
+      "urgency": "NORMAL",
+      "urgency_text": "一般",
+      "urgency_basis": "AI_JUDGE",
+      "is_major_epidemic": false,
+      "suggest_vet": false,
+      "causes": [
+        {
+          "rank_no": 1,
+          "disease_name": "仔猪白痢",
+          "likelihood": "HIGH",
+          "likelihood_text": "较高",
+          "is_major_epidemic": false
+        },
+        {
+          "rank_no": 2,
+          "disease_name": "饲养管理不当",
+          "likelihood": "MEDIUM",
+          "likelihood_text": "中等",
+          "is_major_epidemic": false
+        }
+      ],
+      "advices": [
+        "保持栏舍干燥保温，及时清理粪便。",
+        "发病仔猪单独护理，保证饮水。",
+        "持续不愈时请执业兽医诊治，可在指导下使用抗菌药类。"
+      ]
+    },
+    "handle": {
+      "handle_id": 7650,
+      "diagnostician": "刘芳",
+      "treatment": "加强保温，补液，饮水中加抗菌药。",
+      "used_drug": true,
+      "medication_converted": false,
+      "cured_count": 2,
+      "culled_count": 0,
+      "total_count": 2,
+      "ai_match": "MATCH",
+      "ai_match_text": "相符",
+      "handled_by_name": "刘芳",
+      "handled_at": "2026-10-09 09:00:00",
+      "has_revisions": false,
+      "closed": true,
+      "version": 1
+    }
+  },
+  "trace_id": "mock-inspect-diag_5988"
+}

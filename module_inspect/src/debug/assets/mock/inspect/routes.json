@@ -1,0 +1,657 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/summary",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "summary_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/summary",
+    "when": {
+      "query": {
+        "date": "2026-10-18"
+      }
+    },
+    "file": "summary_owner_1018.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/summary",
+    "file": "summary_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/recent-issues",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_recent.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/recent-issues",
+    "file": "recent_issues.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspection-settings/current",
+    "file": "setting.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/inspection-settings/current",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_setting.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/inspection-settings/current",
+    "when": {
+      "body": "\"deadline_time\":\"16:00\""
+    },
+    "file": "setting_1600.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/inspection-settings/current",
+    "when": {
+      "body": "\"deadline_time\":\"19:00\""
+    },
+    "file": "setting_1900.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/inspection-settings/current",
+    "file": "setting_1700.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/form-context",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "query": {
+        "mode": "MODIFY",
+        "inspection_id": "50121"
+      }
+    },
+    "file": "form_50121_modify_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/form-context",
+    "when": {
+      "query": {
+        "mode": "MODIFY",
+        "inspection_id": "50121"
+      }
+    },
+    "file": "form_50121_modify_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/form-context",
+    "when": {
+      "query": {
+        "mode": "MODIFY",
+        "inspection_id": "50124"
+      }
+    },
+    "file": "form_50124_modify.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/form-context",
+    "when": {
+      "query": {
+        "mode": "MODIFY"
+      }
+    },
+    "file": "form_50101_modify.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/form-context",
+    "when": {
+      "query": {
+        "mode": "BACKFILL"
+      }
+    },
+    "file": "form_2002_backfill.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/form-context",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "query": {
+        "pen_id": "2003"
+      }
+    },
+    "file": "form_2003_registered.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/form-context",
+    "when": {
+      "query": {
+        "pen_id": "2003"
+      }
+    },
+    "file": "form_2003_registered_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/form-context",
+    "when": {
+      "query": {
+        "pen_id": "2001"
+      }
+    },
+    "file": "form_2001_registered.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/form-context",
+    "when": {
+      "query": {
+        "pen_id": "2002"
+      }
+    },
+    "file": "form_2002_register.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/form-context",
+    "when": {
+      "query": {
+        "pen_id": "2005"
+      }
+    },
+    "file": "err_40903_no_batch.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/form-context",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "form_2004_register_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/form-context",
+    "file": "form_2004_register_owner.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/inspections/backfills",
+    "file": "submit_backfill.json",
+    "delay": 800
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/by-request/{id}",
+    "file": "err_40401_request.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/inspections",
+    "when": {
+      "body": "\"pen_id\":2004"
+    },
+    "file": "submit_register_2004.json",
+    "delay": 800
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/inspections",
+    "when": {
+      "body": "\"pen_id\":2002"
+    },
+    "file": "submit_register_2002.json",
+    "delay": 800
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/inspections",
+    "file": "submit_register.json",
+    "delay": 800
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/inspections/{id}",
+    "file": "submit_modify.json",
+    "delay": 800
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "query": {
+        "date": "2026-10-18"
+      }
+    },
+    "file": "list_staff_yesterday.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "list_staff_today.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections",
+    "when": {
+      "query": {
+        "date": "2026-10-18"
+      }
+    },
+    "file": "list_owner_1018.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections",
+    "when": {
+      "query": {
+        "status": "PENDING"
+      }
+    },
+    "file": "list_owner_pending.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections",
+    "when": {
+      "query": {
+        "status": "ABNORMAL"
+      }
+    },
+    "file": "list_owner_abnormal.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections",
+    "when": {
+      "query": {
+        "status": "DONE"
+      }
+    },
+    "file": "list_owner_done.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections",
+    "when": {
+      "query": {
+        "date": "2026-10-12"
+      }
+    },
+    "file": "list_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections",
+    "file": "list_owner_all.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/{id}",
+    "when": {
+      "path": {
+        "id": "50124"
+      }
+    },
+    "file": "detail_50124.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/{id}",
+    "when": {
+      "path": {
+        "id": "50101"
+      }
+    },
+    "file": "detail_50101.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/{id}",
+    "when": {
+      "path": {
+        "id": "50071"
+      }
+    },
+    "file": "detail_50071.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/inspections/{id}",
+    "file": "detail_50121.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{penId}/inspections",
+    "when": {
+      "path": {
+        "penId": "2002"
+      }
+    },
+    "file": "history_2002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{penId}/inspections",
+    "when": {
+      "query": {
+        "filter": "ABNORMAL"
+      }
+    },
+    "file": "history_2003_abnormal.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{penId}/inspections",
+    "when": {
+      "query": {
+        "filter": "OVERDUE"
+      }
+    },
+    "file": "history_2003_overdue.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{penId}/inspections",
+    "when": {
+      "query": {
+        "filter": "BACKFILL"
+      }
+    },
+    "file": "history_2003_backfill.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{penId}/inspections",
+    "when": {
+      "query": {
+        "filter": "OFF_SITE"
+      }
+    },
+    "file": "history_2003_off_site.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{penId}/inspections",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "history_2003_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{penId}/inspections",
+    "file": "history_2003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{penId}/inspection-overview",
+    "when": {
+      "path": {
+        "penId": "2002"
+      }
+    },
+    "file": "overview_2002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{penId}/inspection-overview",
+    "file": "overview_2003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "INSPECTION"
+      }
+    },
+    "file": "record_logs_inspection.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "DIAGNOSIS_HANDLE"
+      }
+    },
+    "file": "record_logs_handle.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/form-context",
+    "when": {
+      "query": {
+        "inspection_id": "50121"
+      }
+    },
+    "file": "report_form_50121.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/form-context",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "report_form_direct_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/form-context",
+    "file": "report_form_direct.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/symptoms",
+    "file": "symptoms_pig.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/by-request/{id}",
+    "file": "err_40401_request.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/abnormal-reports",
+    "file": "report_created.json",
+    "delay": 900
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/{id}/diagnosis-state",
+    "when": {
+      "path": {
+        "id": "6003"
+      }
+    },
+    "file": "state_6003_unavailable.json",
+    "delay": 2000
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/{id}/diagnosis-state",
+    "file": "state_6001_done.json",
+    "delay": 2500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/abnormal-reports/{id}/rediagnoses",
+    "file": "state_6003_diagnosing.json",
+    "delay": 800
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/abnormal-reports/{id}/handle",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_handle.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/abnormal-reports/{id}/handle",
+    "when": {
+      "body": "\"to_medication\":true"
+    },
+    "file": "handle_medication.json",
+    "delay": 800
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/abnormal-reports/{id}/handle",
+    "when": {
+      "body": "\"confirm_close\":true"
+    },
+    "file": "handle_closed.json",
+    "delay": 800
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/abnormal-reports/{id}/handle",
+    "when": {
+      "body": "\"culled_count\":0"
+    },
+    "file": "handle_saved_no_death.json",
+    "delay": 800
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/abnormal-reports/{id}/handle",
+    "file": "handle_saved.json",
+    "delay": 800
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "path": {
+        "id": "6002"
+      }
+    },
+    "file": "err_40303_diagnosis.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "path": {
+        "id": "6001"
+      }
+    },
+    "file": "diag_6001_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "path": {
+        "id": "6003"
+      }
+    },
+    "file": "diag_6003_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/{id}",
+    "when": {
+      "path": {
+        "id": "6002"
+      }
+    },
+    "file": "diag_6002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/{id}",
+    "when": {
+      "path": {
+        "id": "6003"
+      }
+    },
+    "file": "diag_6003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/{id}",
+    "when": {
+      "path": {
+        "id": "6005"
+      }
+    },
+    "file": "diag_6005.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/{id}",
+    "when": {
+      "path": {
+        "id": "5988"
+      }
+    },
+    "file": "diag_5988.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "diag_6001_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/{id}",
+    "file": "diag_6001.json"
+  }
+]

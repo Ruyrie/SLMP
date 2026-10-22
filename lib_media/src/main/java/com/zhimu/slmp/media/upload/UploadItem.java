@@ -99,6 +99,44 @@ public final class UploadItem implements Parcelable {
         return item;
     }
 
+    /** 上传队列中的任务前缀：id 为 task_&lt;upload_task.id&gt; */
+    public static final String TASK_PREFIX = "task_";
+
+    /**
+     * 上传队列（Room upload_task）中的一项（{@link MediaQueueController} 由数据库行生成，状态以数据库为准）。
+     *
+     * @param progress  压缩、转码或上传进度 0–100
+     * @param localPath 压缩或转码后的文件（没有时为 null）
+     * @param coverPath 视频封面（本地 JPEG，作缩略图）
+     */
+    @NonNull
+    public static UploadItem ofTask(long taskId, @NonNull Status status, int progress, @Nullable String sourceUri,
+                                    @Nullable String localPath, long fileId, @NonNull String mediaType,
+                                    @Nullable Integer durationSec, @Nullable String coverPath, @Nullable String error) {
+        UploadItem item = new UploadItem(TASK_PREFIX + taskId, status);
+        item.progress = Math.max(0, Math.min(100, progress));
+        item.sourceUri = sourceUri;
+        item.localPath = localPath;
+        item.fileId = fileId;
+        item.mediaType = mediaType;
+        item.durationSec = durationSec;
+        item.thumbUrl = coverPath;
+        item.error = error;
+        return item;
+    }
+
+    /** 上传队列任务的 upload_task.id；不是队列项返回 -1 */
+    public long getTaskId() {
+        if (!id.startsWith(TASK_PREFIX)) {
+            return -1;
+        }
+        try {
+            return Long.parseLong(id.substring(TASK_PREFIX.length()));
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
     // ===== 状态流转 =====
 
     /** 允许的状态变化（同状态只允许 UPLOADING 更新进度） */

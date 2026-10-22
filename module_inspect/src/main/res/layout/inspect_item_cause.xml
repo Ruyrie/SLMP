@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 可能病因一行：序号圆、病名（重大动物疫病时下方错误标签）、可能性条 72 × 4 dp 与等级 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="41dp"
+    android:orientation="horizontal"
+    android:paddingTop="@dimen/base_space_2"
+    android:paddingBottom="@dimen/base_space_2">
+
+    <TextView
+        android:id="@+id/inspect_cause_rank"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="@drawable/inspect_bg_rank_circle"
+        android:gravity="center"
+        android:textAppearance="@style/TextAppearance.Zmt.LabelMedium"
+        android:textColor="?attr/colorOnTertiaryContainer"
+        tools:text="1" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_space_3"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/inspect_cause_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="猪流行性腹泻" />
+
+        <com.zhimu.slmp.base.widget.StatusTagView
+            android:id="@+id/inspect_cause_major"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/inspect_cause_bar"
+        android:layout_width="72dp"
+        android:layout_height="wrap_content"
+        android:max="100"
+        app:indicatorColor="?attr/colorTertiary"
+        app:trackColor="?attr/colorSurfaceContainerHighest"
+        app:trackCornerRadius="2dp"
+        app:trackStopIndicatorSize="0dp"
+        app:trackThickness="4dp"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
+
+    <TextView
+        android:id="@+id/inspect_cause_level"
+        android:layout_width="36dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_space_2"
+        android:gravity="end"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        tools:text="较高" />
+</LinearLayout>

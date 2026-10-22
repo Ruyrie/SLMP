@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 巡检非正常选项选中：error-container；未选透明 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="?attr/colorErrorContainer" android:state_checked="true" />
+    <item android:color="@color/zm_transparent" />
+</selector>

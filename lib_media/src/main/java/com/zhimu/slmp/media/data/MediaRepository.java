@@ -57,6 +57,33 @@ public class MediaRepository {
         });
     }
 
+    /**
+     * API-U05 上传照片或视频（上传队列的 MediaUploadWorker 调用）。
+     *
+     * @param cover      视频封面（第 0 秒帧 JPEG），照片为 null
+     * @param durationMs 视频时长，照片为 null
+     * @param shotAt     拍摄时间 yyyy-MM-dd HH:mm:ss，可为 null
+     * @param farmId     任务所属养殖场（X-Farm-Id），0 时由拦截器取当前养殖场
+     */
+    @NonNull
+    public Single<FileVO> uploadMedia(@NonNull File file, @NonNull String mimeType, @NonNull String scene,
+                                      @NonNull String idemKey, @Nullable ProgressRequestBody.Listener listener,
+                                      @Nullable File cover, @Nullable Long durationMs, @Nullable String shotAt,
+                                      long farmId) {
+        return Single.defer(() -> {
+            RequestBody fileBody = RequestBody.create(file, MediaType.parse(mimeType));
+            RequestBody body = listener == null ? fileBody : new ProgressRequestBody(fileBody, listener);
+            MultipartBody.Part part = MultipartBody.Part.createFormData("file", file.getName(), body);
+            MultipartBody.Part coverPart = cover == null || !cover.isFile() ? null
+                    : MultipartBody.Part.createFormData("cover", cover.getName(),
+                    RequestBody.create(cover, MediaType.parse("image/jpeg")));
+            RequestBody duration = durationMs == null ? null : RequestBody.create(String.valueOf(durationMs), TEXT);
+            RequestBody shot = shotAt == null ? null : RequestBody.create(shotAt, TEXT);
+            return uploadApi.uploadMedia(part, RequestBody.create(scene, TEXT), coverPart, duration, shot, idemKey,
+                    farmId > 0 ? String.valueOf(farmId) : null).compose(RxResult.unwrap());
+        });
+    }
+
     /** API-U06 文件信息与新的临时地址 */
     @NonNull
     public Single<FileVO> getFile(long fileId) {

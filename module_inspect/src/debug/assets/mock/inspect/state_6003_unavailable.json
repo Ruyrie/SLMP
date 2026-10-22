@@ -1,0 +1,12 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "report_id": 6003,
+    "status": "PENDING",
+    "ai_state": "UNAVAILABLE",
+    "last_failure_text": "诊断请求超时",
+    "auto_retry_pending": false
+  },
+  "trace_id": "mock-inspect-state_6003_unavailable"
+}

@@ -34,6 +34,9 @@ public class MediaModuleEntry implements IModuleEntry {
     /** Mock 示例图（src/debug/assets/mock/media，release 包中不存在） */
     public static final String MOCK_IMAGE_BASE = "file:///android_asset/mock/media/";
 
+    /** 调试入口写入上传队列时使用的页面编号 */
+    public static final String DEBUG_PAGE_CODE = "DEBUG_I08";
+
     @Override
     public void onCreate(@NonNull Application app, @NonNull CoreComponent core) {
         MediaInjector.init(core);
@@ -51,16 +54,32 @@ public class MediaModuleEntry implements IModuleEntry {
                         .scanHint("将批次二维码放入框内，即可自动识别", "识别后直接打开批次档案")
                         .manualInput("输入批次号", "二维码模糊或破损时，也可以输入批次号")
                         .toBundle()));
+        pages.add(new DebugPage("I08 相机 · 拍照与录像（登记巡检 · 3 号育肥舍，写入上传队列）", RouterPath.I08,
+                CameraArgs.media(MediaScene.INSPECTION, 6, DEBUG_PAGE_CODE, 0)
+                        .title("登记巡检 · 3 号育肥舍").counts(0, 6).toBundle()));
+        pages.add(new DebugPage("I08 相机 · 录像模式（30 秒自动停止，需要麦克风）", RouterPath.I08,
+                CameraArgs.media(MediaScene.ABNORMAL, 4, DEBUG_PAGE_CODE, 0).startWithVideo(true)
+                        .title("异常上报 · 3 号育肥舍").counts(2, 6).toBundle()));
         List<ViewerItem> items = Arrays.asList(
                 new ViewerItem(9001, MOCK_IMAGE_BASE + "qual_license.jpg", null, "IMAGE", null,
                         "养殖场资质图 · 东山猪场", null),
                 new ViewerItem(9003, MOCK_IMAGE_BASE + "farm_env.jpg", null, "IMAGE", null,
                         "巡检 · 3 号育肥舍 · 拍摄人李明", "10月19日 09:10 拍摄"),
                 new ViewerItem(9004, MOCK_IMAGE_BASE + "death_photo.jpg", null, "IMAGE", null,
-                        "死淘登记 · 3 号育肥舍 · 拍摄人李明", "10月19日 09:28 拍摄"),
-                new ViewerItem(9005, MOCK_IMAGE_BASE + "inspection.jpg", MOCK_IMAGE_BASE + "inspection.jpg",
-                        "VIDEO", 18, "异常上报 · 3 号育肥舍 · 拍摄人李明", "10月19日 09:10 拍摄 · 视频 0:18"));
+                        "死淘登记 · 3 号育肥舍 · 拍摄人李明", "10月19日 09:28 拍摄"));
         pages.add(new DebugPage("I09 全屏预览（示例图，第 2 张起）", RouterPath.I09, MediaViewer.extras(items, 1)));
+        List<ViewerItem> media = Arrays.asList(
+                new ViewerItem(9005, MOCK_IMAGE_BASE + "inspection.jpg", null, "IMAGE", null,
+                        "异常上报 · 3 号育肥舍 · 拍摄人李明", "10月19日 09:08 拍摄 · 照片"),
+                new ViewerItem(9003, MOCK_IMAGE_BASE + "farm_env.jpg", null, "IMAGE", null,
+                        "异常上报 · 3 号育肥舍 · 拍摄人李明", "10月19日 09:09 拍摄 · 照片"),
+                new ViewerItem(9006, MOCK_IMAGE_BASE + "inspection_video.mp4",
+                        MOCK_IMAGE_BASE + "inspection_video_cover.jpg", "VIDEO", 18,
+                        "异常上报 · 3 号育肥舍 · 拍摄人李明", "10月19日 09:10 拍摄 · 视频 0:18"),
+                new ViewerItem(9004, MOCK_IMAGE_BASE + "death_photo.jpg", null, "IMAGE", null,
+                        "异常上报 · 3 号育肥舍 · 拍摄人李明", "10月19日 09:12 拍摄 · 照片"));
+        pages.add(new DebugPage("I09 视频预览（异常上报，第 3 个为视频 0:18，进入时不自动播放）", RouterPath.I09,
+                MediaViewer.extras(media, 2)));
         pages.add(new DebugPage("照片网格演示（拍照 / 相册 / 上传 / 重试 / 删除 / 只读）", ACTION_PICKER_DEMO));
         return pages;
     }

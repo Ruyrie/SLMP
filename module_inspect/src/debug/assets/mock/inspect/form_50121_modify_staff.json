@@ -1,0 +1,235 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "mode": "MODIFY",
+    "pen": {
+      "pen_id": 2003,
+      "pen_code": "YF-03",
+      "pen_name": "3 号育肥舍",
+      "responsible_names": [
+        "李明"
+      ]
+    },
+    "batches": [
+      {
+        "batch_id": 3001,
+        "batch_no": "ZM2610-031",
+        "stock_count": 200
+      }
+    ],
+    "stock_count": 200,
+    "category_id": 101,
+    "inspect_date": "2026-10-19",
+    "registrant": {
+      "user_id": 10003,
+      "name": "李明",
+      "role": "STAFF",
+      "role_text": "员工"
+    },
+    "can_choose_executor": false,
+    "can_manual_mark": false,
+    "default_executor_id": 10003,
+    "template": {
+      "template_id": 11,
+      "template_version": 2,
+      "items": [
+        {
+          "item_id": 101,
+          "item_name": "精神状态",
+          "sort_no": 1,
+          "options": [
+            {
+              "option_id": 1011,
+              "option_name": "正常",
+              "is_abnormal": false,
+              "sort_no": 1
+            },
+            {
+              "option_id": 1012,
+              "option_name": "沉郁",
+              "is_abnormal": true,
+              "sort_no": 2
+            },
+            {
+              "option_id": 1013,
+              "option_name": "兴奋不安",
+              "is_abnormal": true,
+              "sort_no": 3
+            }
+          ]
+        },
+        {
+          "item_id": 102,
+          "item_name": "采食",
+          "sort_no": 2,
+          "options": [
+            {
+              "option_id": 1021,
+              "option_name": "正常",
+              "is_abnormal": false,
+              "sort_no": 1
+            },
+            {
+              "option_id": 1022,
+              "option_name": "减少",
+              "is_abnormal": true,
+              "sort_no": 2
+            },
+            {
+              "option_id": 1023,
+              "option_name": "废绝",
+              "is_abnormal": true,
+              "sort_no": 3
+            }
+          ]
+        },
+        {
+          "item_id": 103,
+          "item_name": "粪便",
+          "sort_no": 3,
+          "options": [
+            {
+              "option_id": 1031,
+              "option_name": "正常",
+              "is_abnormal": false,
+              "sort_no": 1
+            },
+            {
+              "option_id": 1032,
+              "option_name": "稀软",
+              "is_abnormal": true,
+              "sort_no": 2
+            },
+            {
+              "option_id": 1033,
+              "option_name": "水样",
+              "is_abnormal": true,
+              "sort_no": 3
+            },
+            {
+              "option_id": 1034,
+              "option_name": "带血",
+              "is_abnormal": true,
+              "sort_no": 4
+            }
+          ]
+        }
+      ]
+    },
+    "deadline_time": "18:00",
+    "deadline_passed": false,
+    "can_report": true,
+    "farm_latitude": 42.3025,
+    "farm_longitude": 118.8516,
+    "abnormal_locked_reason": "CHECK",
+    "record": {
+      "inspection_id": 50121,
+      "pen_id": 2003,
+      "pen_name": "3 号育肥舍",
+      "batch_nos": [
+        "ZM2610-031"
+      ],
+      "inspect_date": "2026-10-19",
+      "inspect_status": "DONE",
+      "inspect_status_text": "已巡",
+      "item_results": [
+        {
+          "item_id": 101,
+          "item_name": "精神状态",
+          "option_id": 1011,
+          "option_name": "正常",
+          "option_abnormal": false,
+          "sort_no": 1
+        },
+        {
+          "item_id": 102,
+          "item_name": "采食",
+          "option_id": 1021,
+          "option_name": "正常",
+          "option_abnormal": false,
+          "sort_no": 2
+        },
+        {
+          "item_id": 103,
+          "item_name": "粪便",
+          "option_id": 1033,
+          "option_name": "水样",
+          "option_abnormal": true,
+          "sort_no": 3
+        }
+      ],
+      "is_abnormal": true,
+      "is_proxy": false,
+      "is_overdue": false,
+      "is_backfill": false,
+      "has_revisions": false,
+      "media": [
+        {
+          "file_id": 9005,
+          "url": "file:///android_asset/mock/media/inspection.jpg",
+          "thumb_url": "file:///android_asset/mock/media/inspection.jpg",
+          "media_type": "IMAGE",
+          "mime_type": "image/jpeg",
+          "status": "READY",
+          "sort_no": 1,
+          "source_text": "巡检 · 3 号育肥舍",
+          "shot_by": "李明",
+          "shot_at": "2026-10-19 09:08:00"
+        },
+        {
+          "file_id": 9003,
+          "url": "file:///android_asset/mock/media/farm_env.jpg",
+          "thumb_url": "file:///android_asset/mock/media/farm_env.jpg",
+          "media_type": "IMAGE",
+          "mime_type": "image/jpeg",
+          "status": "READY",
+          "sort_no": 2,
+          "source_text": "巡检 · 3 号育肥舍",
+          "shot_by": "李明",
+          "shot_at": "2026-10-19 09:09:00"
+        },
+        {
+          "file_id": 9006,
+          "url": "file:///android_asset/mock/media/inspection_video.mp4",
+          "thumb_url": "file:///android_asset/mock/media/inspection_video_cover.jpg",
+          "media_type": "VIDEO",
+          "mime_type": "video/mp4",
+          "status": "READY",
+          "sort_no": 3,
+          "source_text": "巡检 · 3 号育肥舍",
+          "shot_by": "李明",
+          "shot_at": "2026-10-19 09:10:00",
+          "duration_sec": 18
+        }
+      ],
+      "registrant": {
+        "user_id": 10003,
+        "name": "李明",
+        "role": "STAFF",
+        "role_text": "员工"
+      },
+      "executor": {
+        "user_id": 10003,
+        "name": "李明",
+        "role": "STAFF",
+        "role_text": "员工"
+      },
+      "registered_at": "2026-10-19 09:12:00",
+      "location_status": "ON_SITE",
+      "location_status_text": "现场",
+      "distance_m": 120,
+      "template_version": 2,
+      "edit_mode": "DIRECT",
+      "change_state": {
+        "can_edit": true,
+        "edit_deadline": "2026-10-22 24:00"
+      },
+      "version": 1,
+      "abnormal_source": "CHECK",
+      "abnormal_summary": "粪便 水样",
+      "remark": "栏内多处水样粪便，部分猪只后躯沾污，精神尚可。"
+    }
+  },
+  "trace_id": "mock-inspect-form_50121_modify_staff"
+}

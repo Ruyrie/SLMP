@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 拍照 / 录像切换的文字：选中为 media-backdrop，未选为白色，不可用为白色 50% -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/zm_media_backdrop" android:state_selected="true" />
+    <item android:alpha="0.5" android:color="@color/zm_on_media" android:state_enabled="false" />
+    <item android:color="@color/zm_on_media" />
+</selector>

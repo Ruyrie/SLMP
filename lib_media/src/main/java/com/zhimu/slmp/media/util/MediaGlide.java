@@ -36,6 +36,10 @@ public final class MediaGlide {
     /** 网格缩略图：优先本地压缩文件（刚拍摄或选择的照片，无需联网），其次服务端缩略图、原图 */
     @Nullable
     public static Object gridModel(@NonNull UploadItem item) {
+        // 视频优先用封面（本地 JPEG 或服务端缩略图）；没有封面时 Glide 从本地视频取帧
+        if (item.isVideo() && item.getThumbUrl() != null) {
+            return thumbModel(item.getThumbUrl(), item.isRemote() ? item.getFileId() : 0);
+        }
         String local = item.getLocalPath();
         if (local != null && new File(local).isFile()) {
             return new File(local);

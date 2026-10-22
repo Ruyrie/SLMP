@@ -1,0 +1,194 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "report_id": 6001,
+    "version": 1,
+    "status": "DIAGNOSED",
+    "status_text": "已诊断",
+    "ai_state": "DONE",
+    "ai_state_text": "已完成",
+    "report": {
+      "pen_id": 2003,
+      "pen_name": "3 号育肥舍",
+      "batch_id": 3001,
+      "batch_no": "ZM2610-031",
+      "reporter": {
+        "user_id": 10003,
+        "name": "李明",
+        "role": "STAFF",
+        "role_text": "员工"
+      },
+      "reported_at": "2026-10-19 09:20:00",
+      "source": "INSPECTION",
+      "inspection_id": 50121,
+      "inspection_registered_at": "2026-10-19 09:12:00",
+      "sick_count": 12,
+      "stock_snapshot": 200,
+      "sick_rate": 0.06,
+      "symptom_names": [
+        "腹泻",
+        "呕吐",
+        "食欲减退"
+      ],
+      "description": "12 头排水样稀粪，部分呕吐，采食比昨天明显减少。",
+      "media": [
+        {
+          "file_id": 9005,
+          "url": "file:///android_asset/mock/media/inspection.jpg",
+          "thumb_url": "file:///android_asset/mock/media/inspection.jpg",
+          "media_type": "IMAGE",
+          "mime_type": "image/jpeg",
+          "status": "READY",
+          "sort_no": 1,
+          "source_text": "异常上报 · 3 号育肥舍",
+          "shot_by": "李明",
+          "shot_at": "2026-10-19 09:08:00"
+        },
+        {
+          "file_id": 9003,
+          "url": "file:///android_asset/mock/media/farm_env.jpg",
+          "thumb_url": "file:///android_asset/mock/media/farm_env.jpg",
+          "media_type": "IMAGE",
+          "mime_type": "image/jpeg",
+          "status": "READY",
+          "sort_no": 2,
+          "source_text": "异常上报 · 3 号育肥舍",
+          "shot_by": "李明",
+          "shot_at": "2026-10-19 09:09:00"
+        },
+        {
+          "file_id": 9006,
+          "url": "file:///android_asset/mock/media/inspection_video.mp4",
+          "thumb_url": "file:///android_asset/mock/media/inspection_video_cover.jpg",
+          "media_type": "VIDEO",
+          "mime_type": "video/mp4",
+          "status": "READY",
+          "sort_no": 3,
+          "source_text": "异常上报 · 3 号育肥舍",
+          "shot_by": "李明",
+          "shot_at": "2026-10-19 09:10:00",
+          "duration_sec": 18
+        },
+        {
+          "file_id": 9004,
+          "url": "file:///android_asset/mock/media/death_photo.jpg",
+          "thumb_url": "file:///android_asset/mock/media/death_photo.jpg",
+          "media_type": "IMAGE",
+          "mime_type": "image/jpeg",
+          "status": "READY",
+          "sort_no": 4,
+          "source_text": "异常上报 · 3 号育肥舍",
+          "shot_by": "李明",
+          "shot_at": "2026-10-19 09:16:00"
+        },
+        {
+          "file_id": 9007,
+          "url": "file:///android_asset/mock/media/inspection.jpg",
+          "thumb_url": "file:///android_asset/mock/media/inspection.jpg",
+          "media_type": "IMAGE",
+          "mime_type": "image/jpeg",
+          "status": "READY",
+          "sort_no": 5,
+          "source_text": "异常上报 · 3 号育肥舍",
+          "shot_by": "李明",
+          "shot_at": "2026-10-19 09:17:00"
+        },
+        {
+          "file_id": 9008,
+          "url": "file:///android_asset/mock/media/farm_env.jpg",
+          "thumb_url": "file:///android_asset/mock/media/farm_env.jpg",
+          "media_type": "IMAGE",
+          "mime_type": "image/jpeg",
+          "status": "READY",
+          "sort_no": 6,
+          "source_text": "异常上报 · 3 号育肥舍",
+          "shot_by": "李明",
+          "shot_at": "2026-10-19 09:18:00"
+        }
+      ],
+      "media_count": 6
+    },
+    "steps": [
+      {
+        "code": "PENDING",
+        "state": "DONE"
+      },
+      {
+        "code": "DIAGNOSED",
+        "state": "CURRENT"
+      },
+      {
+        "code": "HANDLED",
+        "state": "TODO"
+      },
+      {
+        "code": "CLOSED",
+        "state": "TODO"
+      }
+    ],
+    "notified_names": [
+      "李明",
+      "王建国",
+      "刘芳"
+    ],
+    "timeline": [],
+    "permissions": {
+      "can_handle": true,
+      "can_modify_handle": true,
+      "can_rediagnose": false,
+      "can_view_inspection": true,
+      "can_view_revisions": true,
+      "can_convert_medication": true
+    },
+    "diagnosis": {
+      "diagnosis_id": 9901,
+      "generated_at": "2026-10-19 09:21:00",
+      "conclusion": "发病 12 头，达到存栏的 5% 以上，紧急程度至少为“关注”。",
+      "disclaimer": "仅供参考，需执业兽医确认",
+      "urgency": "ATTENTION",
+      "urgency_text": "关注",
+      "urgency_basis": "SICK_RATE",
+      "is_major_epidemic": false,
+      "suggest_vet": true,
+      "causes": [
+        {
+          "rank_no": 1,
+          "disease_name": "猪流行性腹泻",
+          "likelihood": "HIGH",
+          "likelihood_text": "较高",
+          "is_major_epidemic": false
+        },
+        {
+          "rank_no": 2,
+          "disease_name": "传染性胃肠炎",
+          "likelihood": "MEDIUM",
+          "likelihood_text": "中等",
+          "is_major_epidemic": false
+        },
+        {
+          "rank_no": 3,
+          "disease_name": "饲料霉变",
+          "likelihood": "LOW",
+          "likelihood_text": "较低",
+          "is_major_epidemic": false
+        }
+      ],
+      "advices": [
+        "立即隔离发病猪只，减少转群和人员走动。",
+        "栏舍和通道带猪消毒，可选用含碘类消毒剂。",
+        "保证饮水，可补充口服补液盐类，防止脱水。",
+        "继发细菌感染时，在执业兽医指导下使用抗菌药类。",
+        "检查近期饲料有无霉变，必要时更换。"
+      ]
+    },
+    "medication_prefill": {
+      "pen_id": 2003,
+      "batch_id": 3001,
+      "report_id": 6001,
+      "diagnosis_id": 9901,
+      "reason": "AI 诊断：疑似猪流行性腹泻"
+    }
+  },
+  "trace_id": "mock-inspect-diag_6001"
+}

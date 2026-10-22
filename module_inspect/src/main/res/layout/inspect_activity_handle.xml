@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- I07 登记处理结果：诊断摘要卡、诊断人、处理方式、用药（使用了药品时“转为用药记录”）、转归（治愈 / 死淘与合计进度）、
+     AI 诊断与实际是否相符（连接按钮组）、保存说明；底部“保存” -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.inspect.ui.handle.HandleResultViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/inspect_top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{vm.titleText}" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/inspect_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/inspect_diag_error"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_2"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <!-- 诊断摘要卡 -->
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Zmt.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                        app:cardCornerRadius="20dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="@dimen/base_space_4">
+
+                            <ImageView
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:background="@drawable/inspect_bg_leading_tertiary"
+                                android:importantForAccessibility="no"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_auto_awesome"
+                                app:tint="?attr/colorOnTertiaryContainer" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/base_space_4"
+                                android:layout_marginEnd="@dimen/base_space_2"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{vm.summaryTitle}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                                    android:textColor="?attr/colorOnSurface"
+                                    tools:text="3 号育肥舍 · 发病 12 头" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{vm.summarySubtitle}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    tools:text="ZM2610-031 · AI：猪流行性腹泻" />
+                            </LinearLayout>
+
+                            <com.zhimu.slmp.base.widget.StatusTagView
+                                android:id="@+id/inspect_handle_urgency"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:visibility="gone" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                        style="@style/Widget.Zmt.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:hint="@string/inspect_handle_diagnostician"
+                        app:helperText="@string/inspect_handle_diagnostician_helper"
+                        app:helperTextEnabled="true"
+                        app:inspectError="@{vm.fieldErrors[`diagnostician`]}">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:maxLength="20"
+                            android:text="@={vm.diagnostician}" />
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                        style="@style/Widget.Zmt.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:hint="@string/inspect_handle_treatment"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="200"
+                        app:inspectError="@{vm.fieldErrors[`treatment`]}">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textMultiLine"
+                            android:maxLength="200"
+                            android:minLines="2"
+                            android:text="@={vm.treatment}" />
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:text="@string/inspect_handle_drug"
+                        android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/inspect_drug_chips"
+                        style="@style/Widget.Zmt.ChipGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_2"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/inspect_drug_no"
+                            style="@style/Widget.Zmt.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="@{vm.usedDrug != null &amp;&amp; !safeUnbox(vm.usedDrug)}"
+                            android:onClick="@{() -> vm.setUsedDrug(false)}"
+                            android:text="@string/inspect_handle_no_drug" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/inspect_drug_yes"
+                            style="@style/Widget.Zmt.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="@{safeUnbox(vm.usedDrug)}"
+                            android:onClick="@{() -> vm.setUsedDrug(true)}"
+                            android:text="@string/inspect_handle_used_drug" />
+                    </com.google.android.material.chip.ChipGroup>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/base_space_4"
+                        android:text="@{vm.fieldErrors[`used_drug`]}"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorError"
+                        app:goneIfNull="@{vm.fieldErrors[`used_drug`]}" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:orientation="vertical"
+                        app:visibleIf="@{safeUnbox(vm.usedDrug) &amp;&amp; !safeUnbox(vm.converted)}">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/inspect_to_medication"
+                            style="@style/Widget.Zmt.Button.Tonal"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/inspect_handle_to_medication"
+                            app:icon="@drawable/ic_medication" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_1"
+                            android:text="@string/inspect_handle_to_medication_hint"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_2"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        app:visibleIf="@{safeUnbox(vm.usedDrug) &amp;&amp; safeUnbox(vm.converted)}">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/inspect_handle_converted"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/inspect_view_medication"
+                            style="@style/Widget.Zmt.Button.Text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/inspect_handle_view" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/inspect_handle_outcome"
+                            android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@{vm.outcomeHint}"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            tools:text="合计达到 12 头后自动结案" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                            style="@style/Widget.Zmt.TextInputLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/base_space_3"
+                            android:layout_weight="1"
+                            android:hint="@string/inspect_handle_cured"
+                            app:inspectError="@{vm.fieldErrors[`cured_count`]}"
+                            app:suffixText="@string/inspect_unit_head">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/inspect_cured_input"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:digits="0123456789"
+                                android:inputType="number"
+                                android:maxLength="6"
+                                android:text="@={vm.curedCount}"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                            style="@style/Widget.Zmt.TextInputLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="@string/inspect_handle_culled"
+                            app:inspectError="@{vm.fieldErrors[`culled_count`]}"
+                            app:suffixText="@string/inspect_unit_head">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/inspect_culled_input"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:digits="0123456789"
+                                android:inputType="number"
+                                android:maxLength="6"
+                                android:text="@={vm.culledCount}"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_2"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.progressindicator.LinearProgressIndicator
+                            android:id="@+id/inspect_total_progress"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:max="1000"
+                            app:indicatorColor="?attr/colorPrimary"
+                            app:trackColor="?attr/colorSurfaceContainerHighest"
+                            app:trackCornerRadius="2dp"
+                            app:trackThickness="4dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/base_space_3"
+                            android:text="@{vm.totalText}"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodySmall.Number"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            tools:text="合计 10 / 12 头" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:visibleIf="@{vm.aiMatchVisible}">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            android:text="@string/inspect_handle_ai_match"
+                            android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <com.zhimu.slmp.base.widget.ConnectedButtonGroup
+                            android:id="@+id/inspect_ai_match"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_2"
+                            app:singleSelection="true">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/inspect_match_yes"
+                                style="@style/Widget.Zmt.Button.Connected"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/inspect_handle_match" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/inspect_match_no"
+                                style="@style/Widget.Zmt.Button.Connected"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/inspect_handle_not_match" />
+                        </com.zhimu.slmp.base.widget.ConnectedButtonGroup>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/base_space_4"
+                            android:text="@{vm.fieldErrors[`ai_match`]}"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                            android:textColor="?attr/colorError"
+                            app:goneIfNull="@{vm.fieldErrors[`ai_match`]}" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:text="@string/inspect_handle_note"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/inspect_action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:barPrimaryText="@string/inspect_action_save" />
+    </LinearLayout>
+</layout>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 拍照 / 录像切换的选中段：白色全圆胶囊 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/zm_on_media" />
+    <corners android:radius="100dp" />
+</shape>

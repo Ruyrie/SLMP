@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 录像模式快门（未开始）：白色外环 + error 实心圆；不可用时内圆变暗 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <stroke android:width="4dp" android:color="@color/zm_on_media" />
+        </shape>
+    </item>
+    <item android:bottom="8dp" android:left="8dp" android:right="8dp" android:top="8dp">
+        <selector>
+            <item android:state_enabled="false">
+                <shape android:shape="oval">
+                    <solid android:color="@color/media_color_error_38" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="oval">
+                    <solid android:color="@color/zm_error" />
+                </shape>
+            </item>
+        </selector>
+    </item>
+</layer-list>

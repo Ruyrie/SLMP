@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 相机页上下文胶囊：inverse-surface 全圆底 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/zm_inverse_surface" />
+    <corners android:radius="100dp" />
+</shape>

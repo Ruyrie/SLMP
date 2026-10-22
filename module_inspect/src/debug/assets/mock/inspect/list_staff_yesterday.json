@@ -1,0 +1,67 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "inspection_id": 50101,
+        "pen_id": 2003,
+        "pen_code": "YF-03",
+        "pen_name": "3 号育肥舍",
+        "display_status": "DONE",
+        "display_status_text": "已巡",
+        "batch_nos": [
+          "ZM2610-031"
+        ],
+        "stock_count": 200,
+        "responsible_names": [
+          "李明"
+        ],
+        "is_overdue": true,
+        "is_backfill": false,
+        "deadline_passed": false,
+        "can_register": false,
+        "can_modify": false,
+        "can_report": false,
+        "can_view_diagnosis": false,
+        "version": 1,
+        "registrant_name": "李明",
+        "registered_at": "2026-10-18 18:36:00",
+        "location_status": "ON_SITE",
+        "distance_m": 110
+      },
+      {
+        "inspection_id": 50102,
+        "pen_id": 2004,
+        "pen_code": "YF-04",
+        "pen_name": "4 号育肥舍",
+        "display_status": "DONE",
+        "display_status_text": "已巡",
+        "batch_nos": [
+          "ZM2610-019"
+        ],
+        "stock_count": 150,
+        "responsible_names": [
+          "李明"
+        ],
+        "is_overdue": false,
+        "is_backfill": false,
+        "deadline_passed": false,
+        "can_register": false,
+        "can_modify": false,
+        "can_report": false,
+        "can_view_diagnosis": false,
+        "version": 1,
+        "registrant_name": "李明",
+        "registered_at": "2026-10-18 08:50:00",
+        "location_status": "ON_SITE",
+        "distance_m": 95
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-inspect-list_staff_yesterday"
+}

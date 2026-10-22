@@ -1,0 +1,158 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "mode": "BACKFILL",
+    "pen": {
+      "pen_id": 2002,
+      "pen_code": "BY-02",
+      "pen_name": "2 号保育舍",
+      "responsible_names": []
+    },
+    "batches": [
+      {
+        "batch_id": 3004,
+        "batch_no": "ZM2609-038",
+        "stock_count": 200
+      }
+    ],
+    "stock_count": 200,
+    "category_id": 101,
+    "inspect_date": "2026-10-18",
+    "registrant": {
+      "user_id": 10001,
+      "name": "王建国",
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "can_choose_executor": true,
+    "can_manual_mark": true,
+    "default_executor_id": 10002,
+    "template": {
+      "template_id": 11,
+      "template_version": 2,
+      "items": [
+        {
+          "item_id": 101,
+          "item_name": "精神状态",
+          "sort_no": 1,
+          "options": [
+            {
+              "option_id": 1011,
+              "option_name": "正常",
+              "is_abnormal": false,
+              "sort_no": 1
+            },
+            {
+              "option_id": 1012,
+              "option_name": "沉郁",
+              "is_abnormal": true,
+              "sort_no": 2
+            },
+            {
+              "option_id": 1013,
+              "option_name": "兴奋不安",
+              "is_abnormal": true,
+              "sort_no": 3
+            }
+          ]
+        },
+        {
+          "item_id": 102,
+          "item_name": "采食",
+          "sort_no": 2,
+          "options": [
+            {
+              "option_id": 1021,
+              "option_name": "正常",
+              "is_abnormal": false,
+              "sort_no": 1
+            },
+            {
+              "option_id": 1022,
+              "option_name": "减少",
+              "is_abnormal": true,
+              "sort_no": 2
+            },
+            {
+              "option_id": 1023,
+              "option_name": "废绝",
+              "is_abnormal": true,
+              "sort_no": 3
+            }
+          ]
+        },
+        {
+          "item_id": 103,
+          "item_name": "粪便",
+          "sort_no": 3,
+          "options": [
+            {
+              "option_id": 1031,
+              "option_name": "正常",
+              "is_abnormal": false,
+              "sort_no": 1
+            },
+            {
+              "option_id": 1032,
+              "option_name": "稀软",
+              "is_abnormal": true,
+              "sort_no": 2
+            },
+            {
+              "option_id": 1033,
+              "option_name": "水样",
+              "is_abnormal": true,
+              "sort_no": 3
+            },
+            {
+              "option_id": 1034,
+              "option_name": "带血",
+              "is_abnormal": true,
+              "sort_no": 4
+            }
+          ]
+        }
+      ]
+    },
+    "deadline_time": "18:00",
+    "deadline_passed": true,
+    "can_report": false,
+    "farm_latitude": 42.3025,
+    "farm_longitude": 118.8516,
+    "members": [
+      {
+        "value": "10001",
+        "label": "王建国",
+        "hint": "所有者",
+        "disabled": false
+      },
+      {
+        "value": "10002",
+        "label": "刘芳",
+        "hint": "场长",
+        "disabled": false
+      },
+      {
+        "value": "10003",
+        "label": "李明",
+        "hint": "员工",
+        "disabled": false
+      },
+      {
+        "value": "10004",
+        "label": "张伟",
+        "hint": "员工",
+        "disabled": false
+      }
+    ],
+    "backfill_dates": [
+      "2026-10-18"
+    ],
+    "backfill_range": {
+      "from": "2026-10-16",
+      "to": "2026-10-18"
+    }
+  },
+  "trace_id": "mock-inspect-form_2002_backfill"
+}

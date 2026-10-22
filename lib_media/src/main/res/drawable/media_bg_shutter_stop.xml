@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 录像中快门：白色外环 + 32 dp error 圆角方块（点按停止） -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <stroke android:width="4dp" android:color="@color/zm_on_media" />
+        </shape>
+    </item>
+    <item
+        android:width="32dp"
+        android:height="32dp"
+        android:gravity="center">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/zm_error" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+</layer-list>

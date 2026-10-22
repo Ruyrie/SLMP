@@ -74,6 +74,7 @@ import java.util.Locale;
 public class MediaPickerView extends FrameLayout {
 
     private static final String SOURCE_CAMERA = "camera";
+    private static final String SOURCE_VIDEO = "video";
     private static final String SOURCE_ALBUM = "album";
     private static final String ACTION_UNDO = "media_undo";
     private static final int SPAN = 3;
@@ -105,6 +106,10 @@ public class MediaPickerView extends FrameLayout {
     private ActivityResultLauncher<CameraArgs> cameraLauncher;
     @Nullable
     private ActivityResultLauncher<Integer> pickLauncher;
+    @Nullable
+    private ActivityResultLauncher<PickMediaContract.Input> pickMediaLauncher;
+    @Nullable
+    private ActivityResultLauncher<MediaViewer.Input> viewerLauncher;
     @Nullable
     private FragmentManager fragmentManager;
     @Nullable
@@ -201,8 +206,20 @@ public class MediaPickerView extends FrameLayout {
         // 结果回调只引用 controller（随宿主 ViewModel 存活），不引用本视图
         ActivityResultRegistry registry = activity.getActivityResultRegistry();
         cameraLauncher = registry.register(base + ":camera", owner, new CameraContract(), result -> {
+            // 上传队列模式（TYPE_QUEUED）由相机页直接写入 upload_task，网格观察数据库自动更新
             if (result.getType() == CameraResult.TYPE_PHOTOS) {
                 c.addCapturedFiles(result.getPhotoPaths());
+            }
+        });
+        pickMediaLauncher = registry.register(base + ":pick_media", owner, new PickMediaContract(), uris -> {
+            if (uris != null && !uris.isEmpty()) {
+                c.addUris(new ArrayList<>(uris));
+            }
+        });
+        // 从表单预览：关闭时回传被删除项的 key
+        viewerLauncher = registry.register(base + ":viewer", owner, new MediaViewer.Contract(), keys -> {
+            for (String key : keys) {
+                c.remove(key);
             }
         });
         pickLauncher = registry.register(base + ":pick", owner, new PickImagesContract(), uris -> {
@@ -318,10 +335,19 @@ public class MediaPickerView extends FrameLayout {
             showMessage(UiMessage.of(getContext().getString(R.string.media_picker_full, c.getMaxCount())));
             return;
         }
-        OptionSheetDialogFragment.builder(requestKeyBase + ":source")
-                .title(sheetTitle)
-                .option(SOURCE_CAMERA, getContext().getString(R.string.media_picker_take_photo), null)
-                .option(SOURCE_ALBUM, getContext().getString(R.string.media_picker_from_album), null)
+        OptionSheetDialogFragment.Builder sheet = OptionSheetDialogFragment.builder(requestKeyBase + ":source")
+                .option(SOURCE_CAMERA, getContext().getString(R.string.media_picker_take_photo), null);
+        if (c.getMaxVideoCount() > 0) {
+            boolean has = c.hasVideo();
+            sheet.title(sheetTitle != null && !sheetTitle.equals(getContext().getString(R.string.media_picker_sheet_title))
+                    ? sheetTitle : getContext().getString(R.string.media_picker_sheet_title_media));
+            sheet.option(new OptionSheetDialogFragment.Option(SOURCE_VIDEO,
+                    getContext().getString(R.string.media_picker_record),
+                    has ? getContext().getString(R.string.media_picker_has_video) : null).disabled(has));
+        } else {
+            sheet.title(sheetTitle);
+        }
+        sheet.option(SOURCE_ALBUM, getContext().getString(R.string.media_picker_from_album), null)
                 .build()
                 .showSafely(fm);
     }
@@ -335,12 +361,26 @@ public class MediaPickerView extends FrameLayout {
         if (remaining <= 0) {
             return;
         }
-        if (SOURCE_CAMERA.equals(source) && cameraLauncher != null) {
-            cameraLauncher.launch(CameraArgs.photo(c.getScene(), remaining)
-                    .title(cameraTitle)
-                    .counts(items.size(), c.getMaxCount()));
-        } else if (SOURCE_ALBUM.equals(source) && pickLauncher != null) {
-            pickLauncher.launch(remaining);
+        String page = c.getQueuePageCode();
+        if ((SOURCE_CAMERA.equals(source) || SOURCE_VIDEO.equals(source)) && cameraLauncher != null) {
+            if (page != null) {
+                // 照片和视频网格：相机页可切换拍照 / 录像，拍摄结果直接写入上传队列
+                cameraLauncher.launch(CameraArgs.media(c.getScene(), remaining, page, c.getQueueFarmId())
+                        .startWithVideo(SOURCE_VIDEO.equals(source))
+                        .hasVideo(c.hasVideo() || c.getMaxVideoCount() <= 0)
+                        .title(cameraTitle)
+                        .counts(items.size(), c.getMaxCount()));
+            } else {
+                cameraLauncher.launch(CameraArgs.photo(c.getScene(), remaining)
+                        .title(cameraTitle)
+                        .counts(items.size(), c.getMaxCount()));
+            }
+        } else if (SOURCE_ALBUM.equals(source)) {
+            if (c.getMaxVideoCount() > 0 && pickMediaLauncher != null) {
+                pickMediaLauncher.launch(new PickMediaContract.Input(remaining, !c.hasVideo()));
+            } else if (pickLauncher != null) {
+                pickLauncher.launch(remaining);
+            }
         }
     }
 
@@ -351,7 +391,8 @@ public class MediaPickerView extends FrameLayout {
         }
         c.remove(item.getId());
         View host = snackbarHost();
-        SnackbarHelper.show(host, UiMessage.withAction(deletedText, getContext().getString(R.string.media_undo),
+        String text = item.isVideo() ? getContext().getString(R.string.media_picker_deleted_video) : deletedText;
+        SnackbarHelper.show(host, UiMessage.withAction(text, getContext().getString(R.string.media_undo),
                 ACTION_UNDO), SnackbarHelper.findAnchor(host), actionId -> c.undoRemove());
     }
 
@@ -369,7 +410,11 @@ public class MediaPickerView extends FrameLayout {
                 viewerItems.add(ViewerItem.from(item, sourceText));
             }
         }
-        MediaViewer.open(hostContext(), viewerItems, start);
+        if (!readOnly && viewerLauncher != null && controller != null) {
+            viewerLauncher.launch(new MediaViewer.Input(viewerItems, start, true));
+        } else {
+            MediaViewer.open(hostContext(), viewerItems, start);
+        }
     }
 
     /** 优先用所在 Activity 打开页面（视图的 Context 可能是 ContextThemeWrapper） */

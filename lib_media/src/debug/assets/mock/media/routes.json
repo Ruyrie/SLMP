@@ -10,6 +10,16 @@
     "path": "/api/v1/files/{id}",
     "when": {
       "path": {
+        "id": "9006"
+      }
+    },
+    "file": "file_9006.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/files/{id}",
+    "when": {
+      "path": {
         "id": "9001"
       }
     },

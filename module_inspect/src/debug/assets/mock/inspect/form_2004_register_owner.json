@@ -1,0 +1,153 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "mode": "REGISTER",
+    "pen": {
+      "pen_id": 2004,
+      "pen_code": "YF-04",
+      "pen_name": "4 号育肥舍",
+      "responsible_names": [
+        "李明"
+      ]
+    },
+    "batches": [
+      {
+        "batch_id": 3002,
+        "batch_no": "ZM2610-019",
+        "stock_count": 150
+      }
+    ],
+    "stock_count": 150,
+    "category_id": 101,
+    "inspect_date": "2026-10-19",
+    "registrant": {
+      "user_id": 10001,
+      "name": "王建国",
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "can_choose_executor": true,
+    "can_manual_mark": true,
+    "default_executor_id": 10001,
+    "template": {
+      "template_id": 11,
+      "template_version": 2,
+      "items": [
+        {
+          "item_id": 101,
+          "item_name": "精神状态",
+          "sort_no": 1,
+          "options": [
+            {
+              "option_id": 1011,
+              "option_name": "正常",
+              "is_abnormal": false,
+              "sort_no": 1
+            },
+            {
+              "option_id": 1012,
+              "option_name": "沉郁",
+              "is_abnormal": true,
+              "sort_no": 2
+            },
+            {
+              "option_id": 1013,
+              "option_name": "兴奋不安",
+              "is_abnormal": true,
+              "sort_no": 3
+            }
+          ]
+        },
+        {
+          "item_id": 102,
+          "item_name": "采食",
+          "sort_no": 2,
+          "options": [
+            {
+              "option_id": 1021,
+              "option_name": "正常",
+              "is_abnormal": false,
+              "sort_no": 1
+            },
+            {
+              "option_id": 1022,
+              "option_name": "减少",
+              "is_abnormal": true,
+              "sort_no": 2
+            },
+            {
+              "option_id": 1023,
+              "option_name": "废绝",
+              "is_abnormal": true,
+              "sort_no": 3
+            }
+          ]
+        },
+        {
+          "item_id": 103,
+          "item_name": "粪便",
+          "sort_no": 3,
+          "options": [
+            {
+              "option_id": 1031,
+              "option_name": "正常",
+              "is_abnormal": false,
+              "sort_no": 1
+            },
+            {
+              "option_id": 1032,
+              "option_name": "稀软",
+              "is_abnormal": true,
+              "sort_no": 2
+            },
+            {
+              "option_id": 1033,
+              "option_name": "水样",
+              "is_abnormal": true,
+              "sort_no": 3
+            },
+            {
+              "option_id": 1034,
+              "option_name": "带血",
+              "is_abnormal": true,
+              "sort_no": 4
+            }
+          ]
+        }
+      ]
+    },
+    "deadline_time": "18:00",
+    "deadline_passed": false,
+    "can_report": true,
+    "farm_latitude": 42.3025,
+    "farm_longitude": 118.8516,
+    "members": [
+      {
+        "value": "10001",
+        "label": "王建国",
+        "hint": "所有者",
+        "disabled": false
+      },
+      {
+        "value": "10002",
+        "label": "刘芳",
+        "hint": "场长",
+        "disabled": false
+      },
+      {
+        "value": "10003",
+        "label": "李明",
+        "hint": "员工",
+        "disabled": false
+      },
+      {
+        "value": "10004",
+        "label": "张伟",
+        "hint": "员工",
+        "disabled": false
+      }
+    ]
+  },
+  "trace_id": "mock-inspect-form_2004_register_owner"
+}

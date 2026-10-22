@@ -1,0 +1,15 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "inspection_id": 50121,
+    "version": 2,
+    "pen_name": "3 号育肥舍",
+    "inspect_date": "2026-10-19",
+    "is_abnormal": true,
+    "is_overdue": false,
+    "is_backfill": false,
+    "todo_completed": false
+  },
+  "trace_id": "mock-inspect-submit_modify"
+}

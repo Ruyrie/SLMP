@@ -1,0 +1,49 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "inspection_id": 50121,
+        "pen_id": 2003,
+        "pen_code": "YF-03",
+        "pen_name": "3 号育肥舍",
+        "display_status": "ABNORMAL",
+        "display_status_text": "异常",
+        "batch_nos": [
+          "ZM2610-031"
+        ],
+        "stock_count": 200,
+        "responsible_names": [
+          "李明"
+        ],
+        "is_overdue": false,
+        "is_backfill": false,
+        "deadline_passed": false,
+        "can_register": false,
+        "can_modify": true,
+        "can_report": true,
+        "can_view_diagnosis": false,
+        "version": 1,
+        "batch_id": 3001,
+        "abnormal_source": "CHECK",
+        "abnormal_summary": "粪便 水样",
+        "registrant_name": "李明",
+        "registered_at": "2026-10-19 09:12:00",
+        "location_status": "ON_SITE",
+        "distance_m": 120
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "ALL": 4,
+      "PENDING": 2,
+      "ABNORMAL": 1,
+      "DONE": 1
+    }
+  },
+  "trace_id": "mock-inspect-list_owner_abnormal"
+}

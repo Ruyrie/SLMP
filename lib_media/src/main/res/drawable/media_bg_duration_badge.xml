@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 视频格左下角时长角标：media-backdrop 全圆底 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/zm_media_backdrop" />
+    <corners android:radius="100dp" />
+</shape>

@@ -1,0 +1,47 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "symptom_id": 401,
+      "name": "腹泻",
+      "sort_no": 1
+    },
+    {
+      "symptom_id": 402,
+      "name": "呕吐",
+      "sort_no": 2
+    },
+    {
+      "symptom_id": 403,
+      "name": "食欲减退",
+      "sort_no": 3
+    },
+    {
+      "symptom_id": 404,
+      "name": "精神沉郁",
+      "sort_no": 4
+    },
+    {
+      "symptom_id": 405,
+      "name": "发热",
+      "sort_no": 5
+    },
+    {
+      "symptom_id": 406,
+      "name": "咳嗽",
+      "sort_no": 6
+    },
+    {
+      "symptom_id": 407,
+      "name": "呼吸困难",
+      "sort_no": 7
+    },
+    {
+      "symptom_id": 408,
+      "name": "皮肤发红",
+      "sort_no": 8
+    }
+  ],
+  "trace_id": "mock-inspect-symptoms_pig"
+}
