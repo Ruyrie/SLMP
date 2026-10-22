@@ -4,6 +4,7 @@ import androidx.annotation.Nullable;
 
 import com.zhimu.slmp.common.model.vo.AccountUserVO;
 import com.zhimu.slmp.common.model.vo.FarmBriefVO;
+import com.zhimu.slmp.common.model.vo.ReminderSummaryVO;
 
 /**
  * API-A15 我的页汇总（带 X-Farm-Id）：个人信息、当前养殖场、养殖场统计、修改申请计数（员工不输出）、提醒摘要、账号安全。

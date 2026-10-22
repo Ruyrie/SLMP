@@ -1,85 +1,637 @@
 [
-  {"method": "GET", "path": "/api/v1/farms", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "farms_staff.json"},
-  {"method": "GET", "path": "/api/v1/farms", "file": "farms_owner.json"},
-
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/context", "when": {"path": {"farmId": "1001"}, "header": {"Authorization": "Bearer mock-staff"}}, "file": "farm_context_1001_staff.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/context", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "error_40302.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/context", "when": {"path": {"farmId": "1001"}}, "file": "farm_context_1001_owner.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/context", "when": {"path": {"farmId": "1002"}}, "file": "farm_context_1002_manager.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/context", "when": {"path": {"farmId": "1003"}}, "file": "farm_context_1003_pending.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/context", "file": "error_40302.json"},
-
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/switch", "when": {"path": {"farmId": "1001"}, "header": {"Authorization": "Bearer mock-staff"}}, "file": "farm_context_1001_staff.json"},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/switch", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "error_40302.json"},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/switch", "when": {"path": {"farmId": "1001"}}, "file": "farm_context_1001_owner.json"},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/switch", "when": {"path": {"farmId": "1002"}}, "file": "farm_context_1002_manager.json"},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/switch", "when": {"path": {"farmId": "1003"}}, "file": "farm_context_1003_pending.json"},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/switch", "file": "error_40302.json"},
-
-  {"method": "GET", "path": "/api/v1/farms/name-check", "when": {"query": {"name": "东山猪场"}}, "file": "name_check_dup_dongshan.json", "delay": 200},
-  {"method": "GET", "path": "/api/v1/farms/name-check", "when": {"query": {"name": "西岭鸡场"}}, "file": "name_check_dup_xiling.json", "delay": 200},
-  {"method": "GET", "path": "/api/v1/farms/name-check", "file": "name_check_ok.json", "delay": 200},
-
-  {"method": "POST", "path": "/api/v1/farms", "when": {"body": "\"name\":\"东山猪场\""}, "file": "error_40905_name.json", "delay": 600},
-  {"method": "POST", "path": "/api/v1/farms", "file": "farm_create_ok.json", "delay": 600},
-
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/audit", "when": {"path": {"farmId": "1003"}}, "file": "audit_1003_rejected.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/audit", "file": "audit_approved.json"},
-  {"method": "PUT", "path": "/api/v1/farms/{farmId}/registration", "file": "ok_empty.json", "delay": 600},
-  {"method": "DELETE", "path": "/api/v1/farms/{farmId}", "file": "ok_empty.json", "delay": 500},
-
-  {"method": "GET", "path": "/api/v1/farms/{farmId}", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "error_40303_members.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}", "when": {"path": {"farmId": "1002"}}, "file": "farm_detail_1002_manager.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}", "file": "farm_detail_1001.json"},
-  {"method": "PATCH", "path": "/api/v1/farms/{farmId}/basic", "file": "basic_updated.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/disable", "file": "farm_detail_1001_disabled.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/enable", "file": "farm_detail_1001.json", "delay": 500},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/changes/latest", "file": "ok_empty.json"},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/changes", "file": "change_pending.json", "delay": 600},
-
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/member-summary", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "error_40303_members.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/member-summary", "file": "member_summary_1001.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/members", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "error_40303_members.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/members", "when": {"query": {"role": "MANAGER"}}, "file": "members_1001_manager.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/members", "when": {"query": {"role": "STAFF"}}, "file": "members_1001_staff_role.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/members", "file": "members_1001.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/members/{memberId}", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "error_40303_members.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/members/{memberId}", "when": {"path": {"memberId": "5001"}}, "file": "member_5001.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/members/{memberId}", "when": {"path": {"memberId": "5002"}}, "file": "member_5002.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/members/{memberId}", "when": {"path": {"memberId": "5003"}}, "file": "member_5003.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/members/{memberId}", "when": {"path": {"memberId": "5004"}}, "file": "member_5004.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/members/{memberId}", "file": "error_40401_member.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/pen-options", "when": {"query": {"member_id": "5003"}}, "file": "pen_options_5003.json", "delay": 200},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/pen-options", "when": {"query": {"member_id": "5004"}}, "file": "pen_options_5004.json", "delay": 200},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/pen-options", "file": "pen_options_invite.json", "delay": 200},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/invites", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "error_40303_members.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/invites", "file": "invites_1001.json"},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/invites", "when": {"body": "13700005678"}, "file": "error_40001_member_exists.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/invites", "when": {"body": "13904762051"}, "file": "error_40001_invite_pending.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/invites", "file": "invite_sent.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/farm-invites/{inviteId}/accept", "file": "invite_accept.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/farm-invites/{inviteId}/reject", "file": "ok_empty.json", "delay": 500},
-
-  {"method": "PUT", "path": "/api/v1/farms/{farmId}/members/{memberId}/role", "when": {"path": {"memberId": "5002"}}, "file": "role_change_5002.json", "delay": 500},
-  {"method": "PUT", "path": "/api/v1/farms/{farmId}/members/{memberId}/role", "when": {"path": {"memberId": "5004"}}, "file": "role_change_5004.json", "delay": 500},
-  {"method": "PUT", "path": "/api/v1/farms/{farmId}/members/{memberId}/role", "file": "role_change_5003.json", "delay": 500},
-  {"method": "PUT", "path": "/api/v1/farms/{farmId}/members/{memberId}/pens", "when": {"path": {"memberId": "5003"}}, "file": "pens_change_5003.json", "delay": 500},
-  {"method": "PUT", "path": "/api/v1/farms/{farmId}/members/{memberId}/pens", "when": {"path": {"memberId": "5004"}}, "file": "pens_change_5004.json", "delay": 500},
-  {"method": "PUT", "path": "/api/v1/farms/{farmId}/members/{memberId}/pens", "file": "error_40903_not_staff.json", "delay": 500},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/members/{memberId}/removal-impact", "when": {"path": {"memberId": "5002"}}, "file": "impact_5002.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/members/{memberId}/removal-impact", "when": {"path": {"memberId": "5004"}}, "file": "impact_5004.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/members/{memberId}/removal-impact", "file": "impact_5003.json"},
-  {"method": "DELETE", "path": "/api/v1/farms/{farmId}/members/{memberId}", "when": {"path": {"memberId": "5003"}}, "file": "remove_5003.json", "delay": 500},
-  {"method": "DELETE", "path": "/api/v1/farms/{farmId}/members/{memberId}", "when": {"path": {"memberId": "5004"}}, "file": "remove_5004.json", "delay": 500},
-  {"method": "DELETE", "path": "/api/v1/farms/{farmId}/members/{memberId}", "file": "remove_none.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/quit", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "ok_empty.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/quit", "when": {"path": {"farmId": "1002"}}, "file": "ok_empty.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/quit", "file": "error_40303_owner_quit.json", "delay": 500},
-
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/transfer", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "error_40303_members.json"},
-  {"method": "GET", "path": "/api/v1/farms/{farmId}/transfer", "file": "transfer_page_1001.json"},
-  {"method": "POST", "path": "/api/v1/farms/{farmId}/transfers", "file": "transfer_created.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/farm-transfers/{transferId}/accept", "file": "transfer_accept.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/farm-transfers/{transferId}/reject", "file": "ok_empty.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/farm-transfers/{transferId}/cancel", "file": "transfer_canceled.json", "delay": 500}
+  {
+    "method": "GET",
+    "path": "/api/v1/farms",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "farms_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms",
+    "file": "farms_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/context",
+    "when": {
+      "path": {
+        "farmId": "1001"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "farm_context_1001_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/context",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "error_40302.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/context",
+    "when": {
+      "path": {
+        "farmId": "1001"
+      }
+    },
+    "file": "farm_context_1001_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/context",
+    "when": {
+      "path": {
+        "farmId": "1002"
+      }
+    },
+    "file": "farm_context_1002_manager.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/context",
+    "when": {
+      "path": {
+        "farmId": "1003"
+      }
+    },
+    "file": "farm_context_1003_pending.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/context",
+    "file": "error_40302.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/switch",
+    "when": {
+      "path": {
+        "farmId": "1001"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "farm_context_1001_staff.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/switch",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "error_40302.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/switch",
+    "when": {
+      "path": {
+        "farmId": "1001"
+      }
+    },
+    "file": "farm_context_1001_owner.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/switch",
+    "when": {
+      "path": {
+        "farmId": "1002"
+      }
+    },
+    "file": "farm_context_1002_manager.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/switch",
+    "when": {
+      "path": {
+        "farmId": "1003"
+      }
+    },
+    "file": "farm_context_1003_pending.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/switch",
+    "file": "error_40302.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/name-check",
+    "when": {
+      "query": {
+        "name": "东山猪场"
+      }
+    },
+    "file": "name_check_dup_dongshan.json",
+    "delay": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/name-check",
+    "when": {
+      "query": {
+        "name": "西岭鸡场"
+      }
+    },
+    "file": "name_check_dup_xiling.json",
+    "delay": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/name-check",
+    "file": "name_check_ok.json",
+    "delay": 200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms",
+    "when": {
+      "body": "\"name\":\"东山猪场\""
+    },
+    "file": "error_40905_name.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms",
+    "file": "farm_create_ok.json",
+    "delay": 600
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/audit",
+    "when": {
+      "path": {
+        "farmId": "1003"
+      }
+    },
+    "file": "audit_1003_pending.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/audit",
+    "file": "audit_approved.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/farms/{farmId}/registration",
+    "file": "ok_empty.json",
+    "delay": 600
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/farms/{farmId}",
+    "file": "ok_empty.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "error_40303_members.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}",
+    "when": {
+      "path": {
+        "farmId": "1002"
+      }
+    },
+    "file": "farm_detail_1002_manager.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}",
+    "file": "farm_detail_1001.json"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/farms/{farmId}/basic",
+    "file": "basic_updated.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/disable",
+    "file": "farm_detail_1001_disabled.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/enable",
+    "file": "farm_detail_1001.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/changes/latest",
+    "file": "ok_empty.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/changes",
+    "file": "change_pending.json",
+    "delay": 600
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/member-summary",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "error_40303_members.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/member-summary",
+    "when": {
+      "path": {
+        "farmId": "1002"
+      }
+    },
+    "file": "member_summary_1002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/member-summary",
+    "file": "member_summary_1001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "error_40303_members.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members",
+    "when": {
+      "path": {
+        "farmId": "1002"
+      }
+    },
+    "file": "members_1002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members",
+    "when": {
+      "query": {
+        "role": "MANAGER"
+      }
+    },
+    "file": "members_1001_manager.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members",
+    "when": {
+      "query": {
+        "role": "STAFF"
+      }
+    },
+    "file": "members_1001_staff_role.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members",
+    "file": "members_1001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "error_40303_members.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}",
+    "when": {
+      "path": {
+        "memberId": "5001"
+      }
+    },
+    "file": "member_5001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}",
+    "when": {
+      "path": {
+        "memberId": "5002"
+      }
+    },
+    "file": "member_5002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}",
+    "when": {
+      "path": {
+        "memberId": "5003"
+      }
+    },
+    "file": "member_5003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}",
+    "when": {
+      "path": {
+        "memberId": "5004"
+      }
+    },
+    "file": "member_5004.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}",
+    "file": "error_40401_member.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/pen-options",
+    "when": {
+      "query": {
+        "member_id": "5003"
+      }
+    },
+    "file": "pen_options_5003.json",
+    "delay": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/pen-options",
+    "when": {
+      "query": {
+        "member_id": "5004"
+      }
+    },
+    "file": "pen_options_5004.json",
+    "delay": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/pen-options",
+    "file": "pen_options_invite.json",
+    "delay": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/invites",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "error_40303_members.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/invites",
+    "file": "invites_1001.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/invites",
+    "when": {
+      "body": "13700005678"
+    },
+    "file": "error_40001_member_exists.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/invites",
+    "when": {
+      "body": "13904762051"
+    },
+    "file": "error_40001_invite_pending.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/invites",
+    "file": "invite_sent.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farm-invites/{inviteId}/accept",
+    "file": "invite_accept.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farm-invites/{inviteId}/reject",
+    "file": "ok_empty.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}/role",
+    "when": {
+      "path": {
+        "memberId": "5002"
+      }
+    },
+    "file": "role_change_5002.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}/role",
+    "when": {
+      "path": {
+        "memberId": "5004"
+      }
+    },
+    "file": "role_change_5004.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}/role",
+    "file": "role_change_5003.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}/pens",
+    "when": {
+      "path": {
+        "memberId": "5003"
+      }
+    },
+    "file": "pens_change_5003.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}/pens",
+    "when": {
+      "path": {
+        "memberId": "5004"
+      }
+    },
+    "file": "pens_change_5004.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}/pens",
+    "file": "error_40903_not_staff.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}/removal-impact",
+    "when": {
+      "path": {
+        "memberId": "5002"
+      }
+    },
+    "file": "impact_5002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}/removal-impact",
+    "when": {
+      "path": {
+        "memberId": "5004"
+      }
+    },
+    "file": "impact_5004.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}/removal-impact",
+    "file": "impact_5003.json"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}",
+    "when": {
+      "path": {
+        "memberId": "5003"
+      }
+    },
+    "file": "remove_5003.json",
+    "delay": 500
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}",
+    "when": {
+      "path": {
+        "memberId": "5004"
+      }
+    },
+    "file": "remove_5004.json",
+    "delay": 500
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/farms/{farmId}/members/{memberId}",
+    "file": "remove_none.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/quit",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "ok_empty.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/quit",
+    "when": {
+      "path": {
+        "farmId": "1002"
+      }
+    },
+    "file": "ok_empty.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/quit",
+    "file": "error_40303_owner_quit.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/transfer",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "error_40303_members.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/transfer",
+    "file": "transfer_page_1001.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farms/{farmId}/transfers",
+    "file": "transfer_created.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farm-transfers/{transferId}/accept",
+    "file": "transfer_accept.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farm-transfers/{transferId}/reject",
+    "file": "ok_empty.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farm-transfers/{transferId}/cancel",
+    "file": "transfer_canceled.json",
+    "delay": 500
+  }
 ]

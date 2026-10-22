@@ -20,6 +20,19 @@ public class FarmBriefVO {
     @Nullable
     private String role;
 
+    public FarmBriefVO() {
+    }
+
+    public FarmBriefVO(long farmId, @Nullable String name, @Nullable String speciesText, @Nullable String status,
+                       @Nullable String statusText, @Nullable String role) {
+        this.farmId = farmId;
+        this.name = name;
+        this.speciesText = speciesText;
+        this.status = status;
+        this.statusText = statusText;
+        this.role = role;
+    }
+
     public long getFarmId() {
         return farmId;
     }

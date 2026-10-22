@@ -100,6 +100,10 @@
     <string name="account_mine_profile_suffix">%1$s · 个人信息</string>
     <string name="account_mine_farms">我的养殖场</string>
     <string name="account_mine_change_requests">我的修改申请</string>
+    <string name="account_mine_quit_farm">退出当前养殖场</string>
+    <string name="account_mine_quit_title">退出%1$s？</string>
+    <string name="account_mine_quit_message">退出后，你从下一次操作起就看不到%1$s的数据。你登记过的记录保留。</string>
+    <string name="account_mine_quit_confirm">退出</string>
     <string name="account_mine_change_requests_desc">提交记录和审核结果</string>
     <string name="account_mine_reminder">提醒设置</string>
     <string name="account_mine_security">账号与安全</string>

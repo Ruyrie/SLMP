@@ -17,8 +17,7 @@ import com.zhimu.slmp.base.util.IdemKey;
 import com.zhimu.slmp.common.model.vo.ChangeRequestFormVO;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.common.ui.change.model.request.ChangeRequestSubmitRequest;
-import com.zhimu.slmp.common.ui.change.model.vo.ChangeFormVO;
-import com.zhimu.slmp.common.ui.change.model.vo.ChangeRequestItemVO;
+import com.zhimu.slmp.common.model.vo.ChangeRequestVO;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -59,7 +58,7 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
 
     private final ChangeRepository repository;
 
-    private final MutableLiveData<ChangeFormVO> form = new MutableLiveData<>(null);
+    private final MutableLiveData<ChangeRequestFormVO> form = new MutableLiveData<>(null);
     public final MutableLiveData<String> selectedField = new MutableLiveData<>(null);
     public final MutableLiveData<String> newValue = new MutableLiveData<>("");
     public final MutableLiveData<String> reason = new MutableLiveData<>("");
@@ -68,7 +67,7 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
     private final MutableLiveData<Boolean> submitting = new MutableLiveData<>(false);
     private final MediatorLiveData<Boolean> canSubmit = new MediatorLiveData<>();
 
-    private final SingleLiveEvent<ChangeRequestItemVO> submitted = new SingleLiveEvent<>();
+    private final SingleLiveEvent<ChangeRequestVO> submitted = new SingleLiveEvent<>();
     private final SingleLiveEvent<String> focusField = new SingleLiveEvent<>();
     private final SingleLiveEvent<Boolean> closeForbidden = new SingleLiveEvent<>();
 
@@ -134,8 +133,8 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
                 long id = d.getBizId() != 0 ? d.getBizId() : bizId;
                 return repository.getForm(type == null ? "" : type, id).map(f -> new Object[]{d, f});
             }), pair -> {
-                ChangeRequestItemVO d = (ChangeRequestItemVO) pair[0];
-                ChangeFormVO f = (ChangeFormVO) pair[1];
+                ChangeRequestVO d = (ChangeRequestVO) pair[0];
+                ChangeRequestFormVO f = (ChangeRequestFormVO) pair[1];
                 bizType = f.getBizType() != null ? f.getBizType() : d.getBizType();
                 bizId = f.getBizId() != 0 ? f.getBizId() : d.getBizId();
                 form.setValue(f);
@@ -157,7 +156,7 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
     }
 
     /** 重新提交：带入上次的修改项、新值和原因；上次是作废申请时只带入原因 */
-    private void prefill(@NonNull ChangeRequestItemVO last) {
+    private void prefill(@NonNull ChangeRequestVO last) {
         if (last.isVoid()) {
             selectedField.setValue(VOID_CODE);
         } else {
@@ -183,14 +182,14 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
 
     @Nullable
     public ChangeRequestFormVO.Field currentField() {
-        ChangeFormVO f = form.getValue();
+        ChangeRequestFormVO f = form.getValue();
         return f == null || isVoidSelected() ? null : f.fieldOf(selectedField.getValue());
     }
 
     /** 当前修改项的重新计算范围（作废时为作废的范围） */
     @NonNull
     public List<String> currentRecalcTags() {
-        ChangeFormVO f = form.getValue();
+        ChangeRequestFormVO f = form.getValue();
         if (f == null) {
             return Collections.emptyList();
         }
@@ -202,7 +201,7 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
 
     /** 同一条记录已有待审核申请 */
     public boolean hasPending() {
-        ChangeFormVO f = form.getValue();
+        ChangeRequestFormVO f = form.getValue();
         return f != null && f.getPendingRequestId() != null;
     }
 
@@ -224,7 +223,7 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
 
     // ===== 对外 LiveData =====
 
-    public LiveData<ChangeFormVO> getForm() {
+    public LiveData<ChangeRequestFormVO> getForm() {
         return form;
     }
 
@@ -244,7 +243,7 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
         return canSubmit;
     }
 
-    public SingleLiveEvent<ChangeRequestItemVO> getSubmitted() {
+    public SingleLiveEvent<ChangeRequestVO> getSubmitted() {
         return submitted;
     }
 
@@ -321,7 +320,7 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
     }
 
     public void submit() {
-        ChangeFormVO f = form.getValue();
+        ChangeRequestFormVO f = form.getValue();
         if (f == null || Boolean.TRUE.equals(submitting.getValue())) {
             return;
         }
@@ -349,7 +348,7 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
                 reason.getValue() == null ? "" : reason.getValue().trim(),
                 resubmitOfId);
         submitting.setValue(true);
-        Single<ChangeRequestItemVO> source = repository.submit(req, idemKey);
+        Single<ChangeRequestVO> source = repository.submit(req, idemKey);
         launch(source, vo -> {
             submitting.setValue(false);
             idemKey = null;

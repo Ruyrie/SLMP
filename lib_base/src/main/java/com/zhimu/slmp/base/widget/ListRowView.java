@@ -140,6 +140,7 @@ public class ListRowView extends MaterialCardView {
             setShowChevron(a.getBoolean(R.styleable.ListRowView_rowShowChevron, false));
             setUnread(a.getBoolean(R.styleable.ListRowView_rowUnread, false));
             setTitleStrikeThrough(a.getBoolean(R.styleable.ListRowView_rowTitleStrikeThrough, false));
+            setDanger(a.getBoolean(R.styleable.ListRowView_rowDanger, false));
             a.recycle();
             if (iconRes != 0) {
                 setLeadingIcon(iconRes, leadingTone);
@@ -279,6 +280,12 @@ public class ListRowView extends MaterialCardView {
     }
 
     /** 未读消息：主文字左侧 8 dp primary 圆点 */
+    /** 危险操作项：标题 error 色（02 号规范：停用、移出、退出养殖场等用列表项样式，不用填充色按钮） */
+    public void setDanger(boolean danger) {
+        title.setTextColor(MaterialColors.getColor(this, danger ? androidx.appcompat.R.attr.colorError
+                : com.google.android.material.R.attr.colorOnSurface));
+    }
+
     public void setUnread(boolean unread) {
         unreadDot.setVisibility(unread ? VISIBLE : GONE);
     }

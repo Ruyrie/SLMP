@@ -50,7 +50,16 @@
         "all_pens": false,
         "can_adjust_pens": true,
         "pens": [
-          {"pen_id": 2003, "name": "3 号育肥舍", "pen_type_text": "育肥舍"}
+          {
+            "pen_id": 2003,
+            "name": "3 号育肥舍",
+            "pen_type_text": "育肥舍"
+          },
+          {
+            "pen_id": 2004,
+            "name": "4 号育肥舍",
+            "pen_type_text": "育肥舍"
+          }
         ],
         "version": 3
       },
@@ -69,7 +78,11 @@
         "all_pens": false,
         "can_adjust_pens": true,
         "pens": [
-          {"pen_id": 2001, "name": "1 号保育舍", "pen_type_text": "保育舍"}
+          {
+            "pen_id": 2001,
+            "name": "1 号保育舍",
+            "pen_type_text": "保育舍"
+          }
         ],
         "version": 1
       }

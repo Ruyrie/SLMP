@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- verified_user（Material Icons，24 dp，黑色；使用处用 tint 着色） -->
+<!-- Material Symbols Rounded · verified_user · FILL 0 · wght 400 · @material-symbols/svg-400@0.47.6
+     由 tools/icons/fetch_icons.py 生成，不要手改；颜色在使用处用 tint 设置 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
-    <path
-        android:fillColor="#FF000000"
-        android:pathData="M12,1L3,5v6c0,5.55 3.84,10.74 9,12 5.16,-1.26 9,-6.45 9,-12V5l-9,-4zM10,17l-4,-4 1.41,-1.41L10,14.17l6.59,-6.59L18,9l-8,8z" />
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+    <group android:translateY="960">
+        <path
+            android:fillColor="@android:color/black"
+            android:pathData="m439-433-79-79q-9-9-22-9t-22 9q-9 9-9 21.83 0 12.84 9 22.17l99 100q9 9 21 9t21-9l186-186q9-9.07 9-21.53 0-12.47-8.5-20.47-8.5-8-21.5-7.5t-21 8.5L439-433Zm31.12 348q-4.56-1-9.12-3-139-47-220-168.5t-81-266.61V-719q0-19.26 10.88-34.66Q181.75-769.07 199-776l260-97q11-4 21-4t21 4l260 97q17.25 6.93 28.13 22.34Q800-738.26 800-719v195.89Q800-378 719-256.5T499-88q-4.56 2-9.12 3T480-84q-5.32 0-9.88-1Zm9.88-58q115-38 187.5-143.5T740-523v-196l-260-98-260 98v196q0 131 72.5 236.5T480-143Zm0-337Z" />
+    </group>
 </vector>

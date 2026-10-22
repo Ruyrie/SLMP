@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import com.zhimu.slmp.account.BuildConfig;
 import com.zhimu.slmp.account.databinding.AccountFragmentMineBinding;
 import com.zhimu.slmp.account.di.AccountInjector;
+import com.zhimu.slmp.account.R;
 import com.zhimu.slmp.account.util.NextStepRouter;
 import com.zhimu.slmp.base.ui.BaseFragment;
 import com.zhimu.slmp.base.util.ClickThrottle;
@@ -24,11 +25,17 @@ import com.zhimu.slmp.common.service.IFarmContextService;
 import com.zhimu.slmp.common.service.ServiceHub;
 
 import java.util.List;
+import com.zhimu.slmp.base.dialog.ConfirmDialogFragment;
+import com.zhimu.slmp.base.event.GlobalEvents;
+import com.zhimu.slmp.common.service.MainTabHost;
+import com.zhimu.slmp.common.service.TabRegistry;
 
 /**
  * A07 我的（MainActivity“我的”标签）：首次进入 load，返回时不全量刷新；切换养殖场、从 T05 / F01 返回时 refresh。
  */
 public class MineFragment extends BaseFragment {
+
+    private static final String REQ_QUIT_FARM = "account_mine_quit_farm";
 
     private static final String TAG_EDIT_NAME = "account_edit_name";
 
@@ -78,6 +85,31 @@ public class MineFragment extends BaseFragment {
         ClickThrottle.setOnClickListener(binding.accountMineSecurity, v -> vm.onEntryClick(MineViewModel.ENTRY_SECURITY));
         ClickThrottle.setOnClickListener(binding.accountMineAbout, v -> vm.onEntryClick(MineViewModel.ENTRY_ABOUT));
         ClickThrottle.setOnClickListener(binding.accountMineLogout, v -> vm.logout());
+        ClickThrottle.setOnClickListener(binding.accountMineQuitFarm, v -> vm.onQuitFarmClick());
+        vm.getConfirmQuitFarm().observe(getViewLifecycleOwner(), name -> ConfirmDialogFragment.builder(REQ_QUIT_FARM)
+                .icon(com.zhimu.slmp.base.R.drawable.ic_logout)
+                .title(getString(R.string.account_mine_quit_title, name))
+                .message(getString(R.string.account_mine_quit_message, name))
+                .positive(getString(R.string.account_mine_quit_confirm))
+                .negative(getString(com.zhimu.slmp.base.R.string.base_action_cancel))
+                .danger(true)
+                .keepOpenOnConfirm()
+                .build()
+                .showSafely(getChildFragmentManager()));
+        getChildFragmentManager().setFragmentResultListener(REQ_QUIT_FARM, getViewLifecycleOwner(), (key, result) -> {
+            if (ConfirmDialogFragment.isConfirmed(result)) {
+                vm.quitFarm();
+            }
+        });
+        vm.getSubmitting().observe(getViewLifecycleOwner(), s ->
+                ConfirmDialogFragment.setLoading(getChildFragmentManager(), REQ_QUIT_FARM, Boolean.TRUE.equals(s)));
+        vm.getQuitFarmDone().observe(getViewLifecycleOwner(), message -> {
+            ConfirmDialogFragment.dismiss(getChildFragmentManager(), REQ_QUIT_FARM);
+            if (requireActivity() instanceof MainTabHost) {
+                ((MainTabHost) requireActivity()).selectTab(TabRegistry.TODAY);
+            }
+            GlobalEvents.postMessage(message);
+        });
 
         vm.getFarmTags().observe(getViewLifecycleOwner(), this::renderFarmTags);
         vm.getFarmChanged().observe(getViewLifecycleOwner(), id -> {

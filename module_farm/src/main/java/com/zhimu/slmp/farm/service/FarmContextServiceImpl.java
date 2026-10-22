@@ -22,6 +22,9 @@ import javax.inject.Inject;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
+import java.util.ArrayList;
+import java.util.List;
+import com.zhimu.slmp.common.model.vo.FarmBriefVO;
 
 /**
  * 当前养殖场服务（模块02 技术文档 2.6.1）：
@@ -138,4 +141,29 @@ public class FarmContextServiceImpl implements IFarmContextService {
     }
 
     static final String MSG_NO_FARM = "你还没有养殖场。新建一个养殖场，或在消息中心同意别人的邀请。";
+
+    @NonNull
+    @Override
+    public Completable quitFarm(long farmId) {
+        return repository.quitFarm(farmId).andThen(Completable.defer(() -> {
+            FarmContextVO current = farmContext.current();
+            if (current != null && current.getFarmId() == farmId) {
+                return selectNext(farmId).ignoreElement();
+            }
+            return Completable.complete();
+        }));
+    }
+
+    @NonNull
+    @Override
+    public Single<List<FarmBriefVO>> listMyFarms() {
+        return repository.getFarms(FarmRepository.RELATION_ALL, 1, 100).map(page -> {
+            List<FarmBriefVO> list = new ArrayList<>();
+            for (FarmListItemVO item : page.getList()) {
+                list.add(new FarmBriefVO(item.getFarmId(), item.getName(), item.getSpeciesText(), item.getStatus(),
+                        item.getStatusText(), item.getRole()));
+            }
+            return list;
+        });
+    }
 }

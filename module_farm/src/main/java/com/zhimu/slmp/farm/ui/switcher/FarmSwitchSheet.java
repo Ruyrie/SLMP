@@ -29,6 +29,7 @@ import com.zhimu.slmp.farm.databinding.FarmSheetSwitchBinding;
 import com.zhimu.slmp.farm.di.FarmInjector;
 
 import kotlin.Unit;
+import com.zhimu.slmp.common.service.IFarmContextService;
 
 /**
  * F01 切换养殖场（底部面板，FarmSwitcher 的 App 形态）：标题“切换养殖场”→“全部养殖场”项 → 分隔线 → 养殖场单选列表，
@@ -40,9 +41,9 @@ import kotlin.Unit;
 public class FarmSwitchSheet extends BaseBottomSheetDialogFragment {
 
     /** 宿主（T03、T06、E02、E13）监听的结果键 */
-    public static final String REQUEST_KEY = "farm_switcher_result";
-    public static final String RESULT_ALL_FARMS = "all_farms";
-    public static final String RESULT_FARM_ID = "farm_id";
+    public static final String REQUEST_KEY = IFarmContextService.SWITCHER_REQUEST_KEY;
+    public static final String RESULT_ALL_FARMS = IFarmContextService.SWITCHER_RESULT_ALL_FARMS;
+    public static final String RESULT_FARM_ID = IFarmContextService.SWITCHER_RESULT_FARM_ID;
 
     private static final String ARG_ALLOW_ALL = "allow_all_farms";
     private static final String ARG_IN_ALL = "in_all_farms";

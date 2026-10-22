@@ -10,7 +10,7 @@ import com.zhimu.slmp.account.data.AccountRepository;
 import com.zhimu.slmp.account.model.request.ProfileUpdateRequest;
 import com.zhimu.slmp.account.model.vo.AccountFarmStatsVO;
 import com.zhimu.slmp.account.model.vo.AccountOverviewVO;
-import com.zhimu.slmp.account.model.vo.ReminderSummaryVO;
+import com.zhimu.slmp.common.model.vo.ReminderSummaryVO;
 import com.zhimu.slmp.account.util.AccountForm;
 import com.zhimu.slmp.base.error.ApiException;
 import com.zhimu.slmp.base.error.ErrorCodes;
@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import com.zhimu.slmp.common.service.IFarmContextService;
+import com.zhimu.slmp.common.service.ServiceHub;
 
 /**
  * A07 我的（2.4.7 节）：API-A15 汇总（随 X-Farm-Id 返回当前养殖场与修改申请计数）；修改姓名（API-A16）；退出登录。
@@ -62,12 +64,27 @@ public class MineViewModel extends BaseViewModel {
     private final SingleLiveEvent<Boolean> dismissNameSheet = new SingleLiveEvent<>();
     private final SingleLiveEvent<String> navigate = new SingleLiveEvent<>();
     private final SingleLiveEvent<Boolean> loggedOut = new SingleLiveEvent<>();
+    /** 场长、员工显示“退出当前养殖场”（所有者需先转让所有权，不显示） */
+    private final LiveData<Boolean> showQuitFarm;
+    /** 退出行次文字“东山猪场 · 员工” */
+    private final LiveData<String> quitFarmSubtitle;
+    /** 打开退出确认对话框，值为当前养殖场名 */
+    private final SingleLiveEvent<String> confirmQuitFarm = new SingleLiveEvent<>();
+    /** 退出成功，值为提示文案“你已退出东山猪场” */
+    private final SingleLiveEvent<String> quitFarmDone = new SingleLiveEvent<>();
+    private final FarmContext farmContext;
 
     @Inject
     public MineViewModel(@NonNull AccountRepository repository, @NonNull SessionManager sessionManager,
                          @NonNull FarmContext farmContext) {
         this.repository = repository;
         this.sessionManager = sessionManager;
+        this.farmContext = farmContext;
+        showQuitFarm = Transformations.map(farmContext.getContext(),
+                ctx -> ctx != null && (FarmContextVO.ROLE_STAFF.equals(ctx.getRole())
+                        || FarmContextVO.ROLE_MANAGER.equals(ctx.getRole())));
+        quitFarmSubtitle = Transformations.map(farmContext.getContext(),
+                ctx -> ctx == null ? null : ctx.getName() + " · " + ctx.getRoleText());
         farmSubtitle = Transformations.map(overview, o -> farmSubtitleOf(o == null ? null : o.getFarmStats()));
         farmTags = Transformations.map(overview, o -> farmTagsOf(o == null ? null : o.getFarmStats()));
         showChangeRequest = Transformations.map(farmContext.getContext(),
@@ -285,6 +302,48 @@ public class MineViewModel extends BaseViewModel {
             submitting.setValue(false);
             loggedOut.setValue(true);
         });
+    }
+
+    /** 点“退出当前养殖场”：确认对话框（文案同 F05、F09 场长版） */
+    public void onQuitFarmClick() {
+        FarmContextVO ctx = farmContext.current();
+        if (ctx != null) {
+            confirmQuitFarm.setValue(ctx.getName());
+        }
+    }
+
+    /** 确认退出：API-F27（经 IFarmContextService），成功后当前养殖场切到下一个，回到今日首页并提示 */
+    public void quitFarm() {
+        FarmContextVO ctx = farmContext.current();
+        IFarmContextService service = ServiceHub.get(IFarmContextService.class);
+        if (ctx == null || service == null || Boolean.TRUE.equals(submitting.getValue())) {
+            return;
+        }
+        String name = ctx.getName();
+        submitting.setValue(true);
+        launch(service.quitFarm(ctx.getFarmId()), () -> {
+            submitting.setValue(false);
+            quitFarmDone.setValue("你已退出" + name);
+        }, e -> {
+            submitting.setValue(false);
+            handleError(e);
+        });
+    }
+
+    public LiveData<Boolean> getShowQuitFarm() {
+        return showQuitFarm;
+    }
+
+    public LiveData<String> getQuitFarmSubtitle() {
+        return quitFarmSubtitle;
+    }
+
+    public SingleLiveEvent<String> getConfirmQuitFarm() {
+        return confirmQuitFarm;
+    }
+
+    public SingleLiveEvent<String> getQuitFarmDone() {
+        return quitFarmDone;
     }
 
     public void onEntryClick(@NonNull String entry) {

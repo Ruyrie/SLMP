@@ -1,5 +1,7 @@
 package com.zhimu.slmp.farm;
 
+import com.zhimu.slmp.common.router.RouterPath;
+
 /**
  * 本组件内的页面参数与结果键（RouterPath 中没有的，交付时列出，由主会话决定是否合并进 RouterPath）。
  * 通用键（farm_id、mode、message）直接用 RouterPath。
@@ -10,7 +12,7 @@ public final class FarmExtras {
     }
 
     /** F09 成员 ID（long） */
-    public static final String EXTRA_MEMBER_ID = "member_id";
+    public static final String EXTRA_MEMBER_ID = RouterPath.EXTRA_MEMBER_ID;
     /** F06 比较基准：F05 的 API-F09 data.registration（Gson 字符串） */
     public static final String EXTRA_REGISTRATION_JSON = "registration_json";
     /** F06 进入后滚动到的字段：NAME / ADDRESS / QUALIFICATION */

@@ -11,7 +11,7 @@
         "role": "STAFF",
         "role_text": "员工",
         "join_type": "INVITE",
-        "my_pen_count": 1,
+        "my_pen_count": 2,
         "is_current": true,
         "can_switch": true,
         "can_quit": true,

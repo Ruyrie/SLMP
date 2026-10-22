@@ -30,7 +30,6 @@ import com.zhimu.slmp.common.R;
 import com.zhimu.slmp.common.databinding.CommonChangeActivityFormBinding;
 import com.zhimu.slmp.common.model.vo.ChangeRequestFormVO;
 import com.zhimu.slmp.common.router.RouterPath;
-import com.zhimu.slmp.common.ui.change.model.vo.ChangeFormVO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -127,7 +126,7 @@ public class ChangeRequestFormActivity extends BaseActivity {
         vm.getCloseForbidden().observe(this, c -> finish());
     }
 
-    private void renderForm(@Nullable ChangeFormVO f) {
+    private void renderForm(@Nullable ChangeRequestFormVO f) {
         if (f == null) {
             return;
         }
@@ -193,7 +192,7 @@ public class ChangeRequestFormActivity extends BaseActivity {
     }
 
     private void renderField() {
-        ChangeFormVO f = vm.getForm().getValue();
+        ChangeRequestFormVO f = vm.getForm().getValue();
         if (f == null) {
             return;
         }

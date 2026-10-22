@@ -103,7 +103,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         app:leadingTone="error"
-                        app:rowLeadingIcon="@drawable/ic_person_off"
+                        app:rowLeadingIcon="@drawable/account_ic_no_accounts"
                         app:rowShowChevron="true"
                         app:rowSubtitle="@string/account_security_cancel_desc"
                         app:rowTitle="@string/account_security_cancel" />

@@ -19,32 +19,32 @@ import com.zhimu.slmp.base.widget.GroupPosition;
 import com.zhimu.slmp.base.widget.StatusTagView;
 import com.zhimu.slmp.common.R;
 import com.zhimu.slmp.common.databinding.CommonChangeItemRequestBinding;
-import com.zhimu.slmp.common.ui.change.model.vo.ChangeRequestItemVO;
+import com.zhimu.slmp.common.model.vo.ChangeRequestVO;
 
 import java.util.function.Consumer;
 
 /**
  * U02 申请列表（Paging 3）：首项上方两角 20 dp、末项下方两角 20 dp、其余 4 dp，项间 2 dp（GroupedListDecoration）。
  */
-public class ChangeRequestAdapter extends PagingDataAdapter<ChangeRequestItemVO, ChangeRequestAdapter.Holder> {
+public class ChangeRequestAdapter extends PagingDataAdapter<ChangeRequestVO, ChangeRequestAdapter.Holder> {
 
-    private static final DiffUtil.ItemCallback<ChangeRequestItemVO> DIFF = new DiffUtil.ItemCallback<ChangeRequestItemVO>() {
+    private static final DiffUtil.ItemCallback<ChangeRequestVO> DIFF = new DiffUtil.ItemCallback<ChangeRequestVO>() {
         @Override
-        public boolean areItemsTheSame(@NonNull ChangeRequestItemVO a, @NonNull ChangeRequestItemVO b) {
+        public boolean areItemsTheSame(@NonNull ChangeRequestVO a, @NonNull ChangeRequestVO b) {
             return a.getId() == b.getId();
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull ChangeRequestItemVO a, @NonNull ChangeRequestItemVO b) {
+        public boolean areContentsTheSame(@NonNull ChangeRequestVO a, @NonNull ChangeRequestVO b) {
             return a.getId() == b.getId() && eq(a.getStatus(), b.getStatus()) && eq(a.getReviewedAt(), b.getReviewedAt());
         }
     };
 
-    private final Consumer<ChangeRequestItemVO> onClick;
-    private final Consumer<ChangeRequestItemVO> onResubmit;
+    private final Consumer<ChangeRequestVO> onClick;
+    private final Consumer<ChangeRequestVO> onResubmit;
 
-    public ChangeRequestAdapter(@NonNull Consumer<ChangeRequestItemVO> onClick,
-                                @NonNull Consumer<ChangeRequestItemVO> onResubmit) {
+    public ChangeRequestAdapter(@NonNull Consumer<ChangeRequestVO> onClick,
+                                @NonNull Consumer<ChangeRequestVO> onResubmit) {
         super(DIFF);
         this.onClick = onClick;
         this.onResubmit = onResubmit;
@@ -62,7 +62,7 @@ public class ChangeRequestAdapter extends PagingDataAdapter<ChangeRequestItemVO,
 
     @Override
     public void onBindViewHolder(@NonNull Holder holder, int position) {
-        ChangeRequestItemVO item = getItem(position);
+        ChangeRequestVO item = getItem(position);
         if (item != null) {
             holder.bind(item, GroupPosition.of(position, getItemCount()));
         }
@@ -70,12 +70,12 @@ public class ChangeRequestAdapter extends PagingDataAdapter<ChangeRequestItemVO,
 
     /** 末行：“10月19日 09:28 提交 · 审核期间原记录照常有效”“10月18日 15:20 驳回”“10月17日 通过 · 已重新计算批次收益” */
     @NonNull
-    static String footerOf(@NonNull ChangeRequestItemVO item) {
+    static String footerOf(@NonNull ChangeRequestVO item) {
         String status = item.getStatus();
-        if (ChangeRequestItemVO.STATUS_REJECTED.equals(status)) {
+        if (ChangeRequestVO.STATUS_REJECTED.equals(status)) {
             return DateFormatter.formatDateTime(item.getReviewedAt()) + " 驳回";
         }
-        if (ChangeRequestItemVO.STATUS_APPROVED.equals(status)) {
+        if (ChangeRequestVO.STATUS_APPROVED.equals(status)) {
             String summary = item.getRecalcSummary();
             return DateFormatter.formatDate(item.getReviewedAt(), false) + " 通过"
                     + (summary == null || summary.isEmpty() ? "" : " · " + summary);
@@ -93,10 +93,10 @@ public class ChangeRequestAdapter extends PagingDataAdapter<ChangeRequestItemVO,
             b.commonChangeItemBefore.setPaintFlags(b.commonChangeItemBefore.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
 
-        void bind(@NonNull ChangeRequestItemVO item, int position) {
+        void bind(@NonNull ChangeRequestVO item, int position) {
             GroupPosition.apply(b.getRoot(), position);
             View root = b.getRoot();
-            boolean pending = ChangeRequestItemVO.STATUS_PENDING.equals(item.getStatus());
+            boolean pending = ChangeRequestVO.STATUS_PENDING.equals(item.getStatus());
             int bg = MaterialColors.getColor(root, pending
                     ? com.google.android.material.R.attr.colorSecondaryContainer
                     : com.google.android.material.R.attr.colorSurfaceContainerHighest);
@@ -125,7 +125,7 @@ public class ChangeRequestAdapter extends PagingDataAdapter<ChangeRequestItemVO,
             b.commonChangeItemAfter.setText(item.isVoid() ? root.getContext().getString(R.string.common_change_voided)
                     : item.getAfterDisplay());
 
-            boolean rejected = ChangeRequestItemVO.STATUS_REJECTED.equals(item.getStatus());
+            boolean rejected = ChangeRequestVO.STATUS_REJECTED.equals(item.getStatus());
             String reject = item.getRejectReason();
             b.commonChangeItemReject.setVisibility(rejected && reject != null ? View.VISIBLE : View.GONE);
             b.commonChangeItemReject.setText(reject == null ? null
@@ -138,15 +138,15 @@ public class ChangeRequestAdapter extends PagingDataAdapter<ChangeRequestItemVO,
 
         private void renderStatus(@Nullable String status, @Nullable String text) {
             StatusTagView tag = b.commonChangeItemStatus;
-            if (ChangeRequestItemVO.STATUS_PENDING.equals(status)) {
+            if (ChangeRequestVO.STATUS_PENDING.equals(status)) {
                 tag.setStatus(text == null ? "待审核" : text, StatusTagView.WARNING);
                 tag.setTagIcon(0);
-            } else if (ChangeRequestItemVO.STATUS_REJECTED.equals(status)) {
+            } else if (ChangeRequestVO.STATUS_REJECTED.equals(status)) {
                 tag.setStatus(text == null ? "已驳回" : text, StatusTagView.ERROR);
                 tag.setTagIcon(0);
             } else {
                 tag.setStatus(text == null ? "已通过" : text, StatusTagView.NEUTRAL);
-                tag.setTagIcon(ChangeRequestItemVO.STATUS_APPROVED.equals(status)
+                tag.setTagIcon(ChangeRequestVO.STATUS_APPROVED.equals(status)
                         ? com.zhimu.slmp.base.R.drawable.ic_check : 0);
             }
         }

@@ -34,8 +34,10 @@ public class ProductionViewModel extends BaseViewModel {
     public static final String METRIC_STOCK = "STOCK";
     public static final String METRIC_TODO = "TODO";
     public static final String METRIC_WARNING = "WARNING";
-    /** T03 只显示预警类待办（参数 mode，待模块03 确认） */
-    public static final String T03_MODE_WARNING = "WARNING";
+    /** T03 日视图（RouterPath.EXTRA_MODE，与模块03 CalendarMode.DAY 一致） */
+    public static final String T03_MODE_DAY = "DAY";
+    /** T03 待办类别：预警类（RouterPath.EXTRA_CATEGORY，TODO_CATEGORY） */
+    public static final String T03_CATEGORY_WARNING = "WARNING";
     /** 功能入口“批次档案”：打开 L03 的批次视图 */
     public static final String ENTRY_BATCH_ARCHIVE = "L03_BATCH";
 
@@ -178,11 +180,14 @@ public class ProductionViewModel extends BaseViewModel {
                 navEvent.setValue(NavTarget.of(RouterPath.L03).put(HerdExtras.EXTRA_VIEW_TYPE, HerdExtras.VIEW_PEN));
                 break;
             case METRIC_TODO:
-                navEvent.setValue(NavTarget.of(RouterPath.T03).put(RouterPath.EXTRA_DATE, today));
+                navEvent.setValue(NavTarget.of(RouterPath.T03).put(RouterPath.EXTRA_DATE, today)
+                        .put(RouterPath.EXTRA_MODE, T03_MODE_DAY));
                 break;
             case METRIC_WARNING:
+                // 与 T01 一致进入 T03 日视图；预警卡另带待办类别 WARNING（TODO_CATEGORY）
                 navEvent.setValue(NavTarget.of(RouterPath.T03).put(RouterPath.EXTRA_DATE, today)
-                        .put(RouterPath.EXTRA_MODE, T03_MODE_WARNING));
+                        .put(RouterPath.EXTRA_MODE, T03_MODE_DAY)
+                        .put(RouterPath.EXTRA_CATEGORY, T03_CATEGORY_WARNING));
                 break;
             default:
                 break;

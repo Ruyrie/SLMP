@@ -1,5 +1,7 @@
 package com.zhimu.slmp.herd;
 
+import com.zhimu.slmp.common.router.RouterPath;
+
 /**
  * 本组件新增的页面参数键与结果键（RouterPath 中没有的，交付时由主会话合并进 RouterPath）。
  * 通用参数（batch_id、pen_id、farm_id、biz_type、biz_id 等）直接用 RouterPath。
@@ -10,11 +12,11 @@ public final class HerdExtras {
     }
 
     /** L03 初始视图（String）：PEN / CATEGORY / BATCH */
-    public static final String EXTRA_VIEW_TYPE = "view_type";
+    public static final String EXTRA_VIEW_TYPE = RouterPath.EXTRA_VIEW_TYPE;
     /** L08 修改入栏：入栏记录 ID（long） */
     public static final String EXTRA_ENTRY_EVENT_ID = "entry_event_id";
     /** L10 / L11 修改记录：存栏变动记录 ID（long） */
-    public static final String EXTRA_EVENT_ID = "event_id";
+    public static final String EXTRA_EVENT_ID = RouterPath.EXTRA_EVENT_ID;
     /** L09 入栏结果（String，BatchEntryResultVO 的 JSON） */
     public static final String EXTRA_RESULT_JSON = "result_json";
     /** L06 跨场扫码打开：扫码前所在养殖场 ID（long），用于“切回东山猪场” */

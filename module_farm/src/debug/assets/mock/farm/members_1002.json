@@ -1,0 +1,68 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "member_id": 5101,
+        "user_id": 10011,
+        "name": "孙立军",
+        "name_initial": "孙",
+        "phone_masked": "135****2031",
+        "role": "OWNER",
+        "role_text": "所有者",
+        "join_type": "CREATE",
+        "join_type_text": "创建",
+        "joined_at": "2025-11-08 09:00:00",
+        "is_me": false,
+        "all_pens": true,
+        "can_adjust_pens": false,
+        "version": 1
+      },
+      {
+        "member_id": 5102,
+        "user_id": 10001,
+        "name": "王建国",
+        "name_initial": "王",
+        "phone_masked": "138****6620",
+        "role": "MANAGER",
+        "role_text": "场长",
+        "join_type": "INVITE",
+        "join_type_text": "邀请加入",
+        "joined_at": "2026-04-02 10:00:00",
+        "is_me": true,
+        "all_pens": true,
+        "can_adjust_pens": false,
+        "version": 1
+      },
+      {
+        "member_id": 5103,
+        "user_id": 10012,
+        "name": "赵磊",
+        "name_initial": "赵",
+        "phone_masked": "159****7713",
+        "role": "STAFF",
+        "role_text": "员工",
+        "join_type": "INVITE",
+        "join_type_text": "邀请加入",
+        "joined_at": "2026-06-15 10:00:00",
+        "is_me": false,
+        "all_pens": false,
+        "can_adjust_pens": false,
+        "pens": [
+          {
+            "pen_id": 2101,
+            "name": "1 号鸡舍",
+            "pen_type_text": "肉鸡舍"
+          }
+        ],
+        "version": 1
+      }
+    ],
+    "total": 3,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-f16-1002"
+}

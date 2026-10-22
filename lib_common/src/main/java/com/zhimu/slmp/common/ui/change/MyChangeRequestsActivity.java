@@ -25,7 +25,7 @@ import com.zhimu.slmp.common.databinding.CommonChangeActivityListBinding;
 import com.zhimu.slmp.common.databinding.CommonChangeItemFooterBinding;
 import com.zhimu.slmp.common.router.Router;
 import com.zhimu.slmp.common.router.RouterPath;
-import com.zhimu.slmp.common.ui.change.model.vo.ChangeRequestItemVO;
+import com.zhimu.slmp.common.model.vo.ChangeRequestVO;
 
 import java.util.Map;
 
@@ -84,21 +84,21 @@ public class MyChangeRequestsActivity extends BaseActivity {
     @Nullable
     private static String statusOf(int chipId) {
         if (chipId == R.id.common_change_filter_pending) {
-            return ChangeRequestItemVO.STATUS_PENDING;
+            return ChangeRequestVO.STATUS_PENDING;
         }
         if (chipId == R.id.common_change_filter_approved) {
-            return ChangeRequestItemVO.STATUS_APPROVED;
+            return ChangeRequestVO.STATUS_APPROVED;
         }
         if (chipId == R.id.common_change_filter_rejected) {
-            return ChangeRequestItemVO.STATUS_REJECTED;
+            return ChangeRequestVO.STATUS_REJECTED;
         }
         return null;
     }
 
     private void renderCounts(@Nullable Map<String, Integer> counts) {
-        setChip(binding.commonChangeFilterPending, R.string.common_change_filter_pending, counts, ChangeRequestItemVO.STATUS_PENDING);
-        setChip(binding.commonChangeFilterApproved, R.string.common_change_filter_approved, counts, ChangeRequestItemVO.STATUS_APPROVED);
-        setChip(binding.commonChangeFilterRejected, R.string.common_change_filter_rejected, counts, ChangeRequestItemVO.STATUS_REJECTED);
+        setChip(binding.commonChangeFilterPending, R.string.common_change_filter_pending, counts, ChangeRequestVO.STATUS_PENDING);
+        setChip(binding.commonChangeFilterApproved, R.string.common_change_filter_approved, counts, ChangeRequestVO.STATUS_APPROVED);
+        setChip(binding.commonChangeFilterRejected, R.string.common_change_filter_rejected, counts, ChangeRequestVO.STATUS_REJECTED);
     }
 
     private void setChip(@NonNull Chip chip, int labelRes, @Nullable Map<String, Integer> counts, @NonNull String key) {
@@ -159,9 +159,9 @@ public class MyChangeRequestsActivity extends BaseActivity {
     @NonNull
     private String labelOf(@NonNull String status) {
         switch (status) {
-            case ChangeRequestItemVO.STATUS_PENDING:
+            case ChangeRequestVO.STATUS_PENDING:
                 return getString(R.string.common_change_filter_pending);
-            case ChangeRequestItemVO.STATUS_APPROVED:
+            case ChangeRequestVO.STATUS_APPROVED:
                 return getString(R.string.common_change_filter_approved);
             default:
                 return getString(R.string.common_change_filter_rejected);
@@ -169,7 +169,7 @@ public class MyChangeRequestsActivity extends BaseActivity {
     }
 
     /** 进入原记录：有批次时打开 L06 批次档案（各记录类型的详情页路由待各模块约定） */
-    private void openRecord(@NonNull ChangeRequestItemVO item) {
+    private void openRecord(@NonNull ChangeRequestVO item) {
         Bundle extras = new Bundle();
         if (item.getBatchId() != null) {
             extras.putLong(RouterPath.EXTRA_BATCH_ID, item.getBatchId());

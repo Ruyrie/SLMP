@@ -151,6 +151,17 @@
                                 </com.zhimu.slmp.base.widget.ListRowView>
 
                                 <com.zhimu.slmp.base.widget.ListRowView
+                                    android:id="@+id/account_mine_quit_farm"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    app:leadingTone="error"
+                                    app:rowDanger="true"
+                                    app:rowLeadingIcon="@drawable/ic_logout"
+                                    app:rowSubtitle="@{vm.quitFarmSubtitle}"
+                                    app:rowTitle="@string/account_mine_quit_farm"
+                                    app:visibleIf="@{vm.showQuitFarm}" />
+
+                                <com.zhimu.slmp.base.widget.ListRowView
                                     android:id="@+id/account_mine_change_requests"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"

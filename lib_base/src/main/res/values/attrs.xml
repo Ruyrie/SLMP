@@ -142,6 +142,8 @@
         <attr name="rowShowChevron" format="boolean" />
         <attr name="rowUnread" format="boolean" />
         <attr name="rowTitleStrikeThrough" format="boolean" />
+        <!-- 危险操作项（退出养殖场等）：标题 error 色，配合 leadingTone="error" 使用 -->
+        <attr name="rowDanger" format="boolean" />
     </declare-styleable>
 
     <!-- ===== KeyValueRowView：键值列表行 ===== -->

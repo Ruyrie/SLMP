@@ -1,4 +1,4 @@
-package com.zhimu.slmp.account.model.vo;
+package com.zhimu.slmp.common.model.vo;
 
 import androidx.annotation.Nullable;
 

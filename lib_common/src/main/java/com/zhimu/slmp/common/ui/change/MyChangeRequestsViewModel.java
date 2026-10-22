@@ -13,7 +13,7 @@ import com.zhimu.slmp.common.farm.FarmContext;
 import com.zhimu.slmp.common.model.vo.FarmContextVO;
 import com.zhimu.slmp.common.service.IFarmContextService;
 import com.zhimu.slmp.common.service.ServiceHub;
-import com.zhimu.slmp.common.ui.change.model.vo.ChangeRequestItemVO;
+import com.zhimu.slmp.common.model.vo.ChangeRequestVO;
 
 import java.util.Collections;
 import java.util.Map;
@@ -24,7 +24,7 @@ import javax.inject.Inject;
  * U02 我的修改申请（02 号第十一节）：API-U03 分页（每页 20 条，按提交时间倒序），筛选“全部 / 待审核 / 已通过 / 已驳回”；
  * 点卡片进入原记录（属于其他养殖场时先切换），已驳回的“重新提交”进入 U01。
  */
-public class MyChangeRequestsViewModel extends BaseListViewModel<String, ChangeRequestItemVO> {
+public class MyChangeRequestsViewModel extends BaseListViewModel<String, ChangeRequestVO> {
 
     public static final String ACTION_SWITCH_BACK = "switch_back";
 
@@ -33,7 +33,7 @@ public class MyChangeRequestsViewModel extends BaseListViewModel<String, ChangeR
 
     private final MutableLiveData<Map<String, Integer>> tabCounts = new MutableLiveData<>(Collections.emptyMap());
     private final MutableLiveData<Integer> total = new MutableLiveData<>(0);
-    private final SingleLiveEvent<ChangeRequestItemVO> openRecord = new SingleLiveEvent<>();
+    private final SingleLiveEvent<ChangeRequestVO> openRecord = new SingleLiveEvent<>();
     private final SingleLiveEvent<Long> openResubmit = new SingleLiveEvent<>();
 
     @Nullable
@@ -48,7 +48,7 @@ public class MyChangeRequestsViewModel extends BaseListViewModel<String, ChangeR
 
     @NonNull
     @Override
-    protected PagingSource<Integer, ChangeRequestItemVO> createPagingSource(@Nullable String status) {
+    protected PagingSource<Integer, ChangeRequestVO> createPagingSource(@Nullable String status) {
         return repository.listSource(status, page -> {
             tabCounts.postValue(page.getTabCounts());
             total.postValue(page.getTotal());
@@ -64,7 +64,7 @@ public class MyChangeRequestsViewModel extends BaseListViewModel<String, ChangeR
         return total;
     }
 
-    public SingleLiveEvent<ChangeRequestItemVO> getOpenRecord() {
+    public SingleLiveEvent<ChangeRequestVO> getOpenRecord() {
         return openRecord;
     }
 
@@ -94,7 +94,7 @@ public class MyChangeRequestsViewModel extends BaseListViewModel<String, ChangeR
     }
 
     /** 点申请卡片：原记录属于其他养殖场时先切换（Snackbar“已切换到西岭鸡场”+“切回东山猪场”） */
-    public void onItemClick(@NonNull ChangeRequestItemVO item) {
+    public void onItemClick(@NonNull ChangeRequestVO item) {
         Long current = farmContext.currentFarmId();
         IFarmContextService farm = ServiceHub.get(IFarmContextService.class);
         if (item.getFarmId() == 0 || current == null || current == item.getFarmId() || farm == null) {
@@ -122,7 +122,7 @@ public class MyChangeRequestsViewModel extends BaseListViewModel<String, ChangeR
         launch(farm.switchTo(back), ctx -> showMessage("已切换到" + ctx.getName()));
     }
 
-    public void onResubmitClick(@NonNull ChangeRequestItemVO item) {
+    public void onResubmitClick(@NonNull ChangeRequestVO item) {
         openResubmit.setValue(item.getId());
     }
 }

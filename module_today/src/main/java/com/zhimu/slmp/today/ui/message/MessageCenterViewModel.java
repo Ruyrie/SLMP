@@ -126,6 +126,9 @@ public class MessageCenterViewModel extends BaseViewModel {
         staff = farmContext.isStaff();
         showFarmFilter.setValue(!staff);
         categoryOptions.setValue(staff ? STAFF_CATEGORIES : OWNER_CATEGORIES);
+        if (!staff) {
+            loadMyFarms();
+        }
     }
 
     @Override
@@ -332,6 +335,23 @@ public class MessageCenterViewModel extends BaseViewModel {
         if (farm != null && farm.getFarmId() > 0 && !m.isInvite()) {
             knownFarms.put(farm.getFarmId(), farm);
         }
+    }
+
+    /** 养殖场筛选选项：优先取 IFarmContextService.listMyFarms（API-F01），失败时只用消息中出现过的养殖场 */
+    private void loadMyFarms() {
+        IFarmContextService farms = ServiceHub.get(IFarmContextService.class);
+        if (farms == null) {
+            return;
+        }
+        launch(farms.listMyFarms(), list -> {
+            synchronized (knownFarms) {
+                for (FarmBriefVO f : list) {
+                    knownFarms.put(f.getFarmId(), f);
+                }
+            }
+            publishFarmOptions();
+        }, e -> {
+        });
     }
 
     private void publishFarmOptions() {

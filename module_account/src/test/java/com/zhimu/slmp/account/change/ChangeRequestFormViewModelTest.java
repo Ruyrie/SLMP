@@ -20,8 +20,8 @@ import com.zhimu.slmp.base.error.ApiException;
 import com.zhimu.slmp.common.ui.change.ChangeRepository;
 import com.zhimu.slmp.common.ui.change.ChangeRequestFormViewModel;
 import com.zhimu.slmp.common.ui.change.model.request.ChangeRequestSubmitRequest;
-import com.zhimu.slmp.common.ui.change.model.vo.ChangeFormVO;
-import com.zhimu.slmp.common.ui.change.model.vo.ChangeRequestItemVO;
+import com.zhimu.slmp.common.model.vo.ChangeRequestFormVO;
+import com.zhimu.slmp.common.model.vo.ChangeRequestVO;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,7 +50,7 @@ public class ChangeRequestFormViewModelTest {
     public void setUp() {
         repository = mock(ChangeRepository.class);
         when(repository.getForm("FEED_RECORD", 7001L))
-                .thenReturn(Single.just(TestData.fromJson(TestData.FEED_FORM, ChangeFormVO.class)));
+                .thenReturn(Single.just(TestData.fromJson(TestData.FEED_FORM, ChangeRequestFormVO.class)));
         vm = new ChangeRequestFormViewModel(repository);
         vm.getCanSubmit().observeForever(v -> {
         });
@@ -100,7 +100,7 @@ public class ChangeRequestFormViewModelTest {
     @Test
     public void voidRecord_skipsNewValue_andSubmitsVoid() {
         when(repository.submit(any(), anyString()))
-                .thenReturn(Single.just(TestData.fromJson(TestData.CHANGE_SUBMITTED, ChangeRequestItemVO.class)));
+                .thenReturn(Single.just(TestData.fromJson(TestData.CHANGE_SUBMITTED, ChangeRequestVO.class)));
         vm.selectField(ChangeRequestFormViewModel.VOID_CODE);
         assertTrue(vm.isVoidSelected());
         assertEquals(Arrays.asList("库存（退回饲料）", "成本", "统计"), vm.currentRecalcTags());
@@ -139,7 +139,7 @@ public class ChangeRequestFormViewModelTest {
     @Test
     public void pendingRequest_disablesSubmit() {
         when(repository.getForm("FEED_RECORD", 7002L))
-                .thenReturn(Single.just(TestData.fromJson(TestData.FEED_FORM_PENDING, ChangeFormVO.class)));
+                .thenReturn(Single.just(TestData.fromJson(TestData.FEED_FORM_PENDING, ChangeRequestFormVO.class)));
         ChangeRequestFormViewModel pending = new ChangeRequestFormViewModel(repository);
         pending.getCanSubmit().observeForever(v -> {
         });
