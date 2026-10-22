@@ -4,7 +4,8 @@ plugins {
 apply from: rootProject.file('gradle/android-common.gradle')
 
 def bizModules = ['module_account', 'module_farm', 'module_today', 'module_herd',
-                  'module_breed', 'module_feed', 'module_inspect', 'module_health']
+                  'module_breed', 'module_feed', 'module_inspect', 'module_health',
+                  'module_stock', 'module_finance', 'module_ai']
 def props = rootProject.ext.localProps
 
 android {

@@ -12,6 +12,7 @@
 | 员工退出养殖场 | 2026-10-22 确认：入口放在 A07“我的养殖场”下方单独一行（场长、员工显示），确认对话框同 F09 |
 | L07 扫码 | 2026-10-22 确认：使用 lib_media 公共相机页识别后返回结果（技术文档原写 L07 自持相机） |
 | 测试直连（2026-10-22 用户确认） | 服务端完成前，debug 包允许放 Key 做测试：模块07 AI 诊断直连阿里云百炼 qwen3.8-max（OpenAI 兼容接口，图片 base64），失败时用 deepseek-flash 备用；短信验证码直连阿里云号码认证服务（Dypnsapi SendSmsVerifyCode / CheckSmsVerifyCode，签名“恒创联众”、系统模板 100001–100005）。Key 写在 local.properties（ai.dashscopeKey、ai.deepseekKey、aliyun.accessKeyId、aliyun.accessKeySecret、aliyun.smsSignName），只生成到 lib_common 的 debug BuildConfig；release 包为空，直连关闭、走服务端接口。正式上线前改回服务端调用 |
+| 测试直连扩展（2026-10-22 用户确认） | 模块11 K01 AI 问答（流式、附图）与模块10 E12 AI 出栏建议也直连千问，DeepSeek 备用；K01 语音转文字直连百炼语音识别；课程视频 Mock 用公开测试 HLS 地址 |
 | 麦克风被拒（2026-10-22 用户确认） | 录像时没有麦克风权限：说明“录像需要麦克风”并提供“去设置开启”，不开启就不录像（仍可拍照）；03 号 8.2 节“只录无声视频”作废 |
 | 原型图 | 模块01–04 用 .tech-prep/screens；模块05 起直接看 原型导出/Android端/智牧通App原型/智牧通App原型_完整版.pdf（Read 工具按页码查看） |
 | 组件单独运行 | 做。gradle.properties 中 `runAlone.module_xxx=true` 后该组件按 application 构建，合并 `src/alone` 下的清单与代码 |
@@ -50,11 +51,14 @@
 | module_feed | com.zhimu.slmp.feed | 模块06（阶段三） | G01–G06 |
 | module_inspect | com.zhimu.slmp.inspect | 模块07（阶段三） | I01–I09；另负责 lib_media 的录像、视频压缩、后台上传与视频播放，lib_common 的 common.ai（AI 直连） |
 | module_health | com.zhimu.slmp.health | 模块08（阶段三） | D01–D09 |
+| module_stock | com.zhimu.slmp.stock | 模块09（阶段四） | M01–M11 |
+| module_finance | com.zhimu.slmp.finance | 模块10（阶段四） | E01–E14（E12 AI 出栏建议直连） |
+| module_ai | com.zhimu.slmp.ai | 模块11（阶段四） | K01–K07（问答流式直连、语音识别直连、课程播放）；另负责 lib_common 的 common.ai 扩展（流式、语音识别） |
 
 规则：
 
 - 每个人（代理）只改“负责”列中属于自己的目录；需要改别人目录里的文件时，在交付说明中列出，由主会话统一处理。
-- 资源名必须带组件前缀：base_、common_、media_、map_、account_、farm_、today_、herd_、breed_、feed_、inspect_、health_（lib_base 的图标为 `ic_<名称>` / `ic_<名称>_filled`，主题与样式为 `Theme.Zmt*`、`Widget.Zmt.*`、`TextAppearance.Zmt.*`、`ShapeAppearance.Zmt.*`）。
+- 资源名必须带组件前缀：base_、common_、media_、map_、account_、farm_、today_、herd_、breed_、feed_、inspect_、health_、stock_、finance_、ai_（lib_base 的图标为 `ic_<名称>` / `ic_<名称>_filled`，主题与样式为 `Theme.Zmt*`、`Widget.Zmt.*`、`TextAppearance.Zmt.*`、`ShapeAppearance.Zmt.*`）。
 - `android.nonTransitiveRClass=true`：引用 lib_base 资源时用 `com.zhimu.slmp.base.R`，引用本组件资源用本组件的 R。
 - 业务组件之间不互相依赖；跨组件只用 RouterPath 的 action 打开页面，或通过 ServiceHub 取 lib_common 中定义的服务接口。
 - 新的跨组件参数键如果 RouterPath 中没有，先在本组件内定义字符串常量，交付时列出，由主会话合并进 RouterPath。
