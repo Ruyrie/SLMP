@@ -142,20 +142,21 @@ public class SessionManager implements TokenProvider {
 
     /** 用户主动退出：清除本机登录态（调用方先调 API-A07，失败不阻断） */
     public void logout() {
-        clearInternal();
+        // 主动退出时，调用方已在 API-A07 之前（令牌仍有效）调用 IPushService.unbindCurrent，这里不再重复解绑
+        clearInternal(false);
     }
 
     /** 登录失效：清除本机登录态并发出“需要重新登录”事件，reason 为 40104 的 data.reason */
     public void clear(@Nullable String reason) {
         boolean wasLoggedIn = isLoggedIn();
-        clearInternal();
+        clearInternal(true);
         if (wasLoggedIn) {
             GlobalEvents.postRelogin(reason);
         }
     }
 
-    private void clearInternal() {
-        IPushService push = ServiceHub.get(IPushService.class);
+    private void clearInternal(boolean unbindPush) {
+        IPushService push = unbindPush ? ServiceHub.get(IPushService.class) : null;
         if (push != null) {
             try {
                 push.unbindCurrent();
