@@ -26,6 +26,10 @@ import com.zhimu.slmp.base.util.ClickThrottle;
 
 import java.util.ArrayList;
 import java.util.List;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import com.zhimu.slmp.base.mvvm.UiMessage;
+import com.zhimu.slmp.base.ui.SnackbarHelper;
 
 /**
  * 页面状态容器（02 号《UI设计规范》7.19、8.2、9.6 节与 U03）：包裹内容区，按 {@link UiState} 切换
@@ -250,6 +254,8 @@ public class StateLayout extends FrameLayout {
         } else {
             v.trace.setText(getContext().getString(R.string.base_state_trace_id, traceId));
             v.trace.setVisibility(VISIBLE);
+            // 反馈编号可复制，便于用户反馈问题
+            v.trace.setOnClickListener(view -> copyTraceId(traceId));
         }
         showButton(v, v.filled, getContext().getString(R.string.base_action_retry), R.drawable.ic_refresh, view -> {
             if (retryListener != null) {
@@ -480,5 +486,14 @@ public class StateLayout extends FrameLayout {
             tonal = root.findViewById(R.id.base_state_button_tonal);
             text = root.findViewById(R.id.base_state_button_text);
         }
+    }
+
+    private void copyTraceId(@NonNull String traceId) {
+        ClipboardManager cm = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        if (cm == null) {
+            return;
+        }
+        cm.setPrimaryClip(ClipData.newPlainText(getContext().getString(R.string.base_state_trace_label), traceId));
+        SnackbarHelper.show(this, UiMessage.of(getContext().getString(R.string.base_state_trace_copied)), null, null);
     }
 }

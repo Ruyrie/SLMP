@@ -160,9 +160,9 @@ public class PenDetailViewModel extends BaseViewModel {
         items.add(MenuItemSpec.normal(MENU_EDIT, "编辑栏舍", R.drawable.ic_edit));
         items.add(MenuItemSpec.normal(MENU_LOG, "查看修改记录", R.drawable.ic_history));
         if (p.isDisabled()) {
-            // 启用栏舍：不是危险项，不弹确认对话框
+            // 启用栏舍：分隔线后、primary 色，不是危险项，不弹确认对话框
             items.add(new MenuItemSpec(MENU_ENABLE, "启用栏舍", R.drawable.ic_restart_alt, null, false,
-                    p.isCanEnable(), false));
+                    p.isCanEnable(), false, true));
         } else {
             items.add(MenuItemSpec.danger(MENU_DISABLE, "停用栏舍", R.drawable.ic_block, p.isCanDisable(),
                     p.isCanDisable() ? null : p.getDisableBlockReason()));

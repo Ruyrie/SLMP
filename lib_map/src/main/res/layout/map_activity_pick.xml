@@ -256,7 +256,7 @@
                         android:textColor="?attr/colorOnSurfaceVariant"
                         app:visibleIf="@{!vm.manualMode &amp;&amp; !vm.manualEditing}" />
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                         android:id="@+id/map_address_edit_layout"
                         style="@style/Widget.Zmt.TextInputLayout"
                         android:layout_width="match_parent"
@@ -275,7 +275,7 @@
                             android:inputType="text"
                             android:maxLength="200"
                             android:text="@={vm.manualAddress}" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
                     <TextView
                         android:id="@+id/map_hint_line"

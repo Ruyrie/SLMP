@@ -61,6 +61,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.processors.BehaviorProcessor;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import android.os.Bundle;
 
 /**
  * T01 今日首页（TodayFragment、QuickRegisterSheet），技术文档 2.4.1。
@@ -78,7 +79,7 @@ public class TodayViewModel extends BaseViewModel {
     public static final String CARD_OVERDUE = "overdue";
 
     /** K01 推荐问题参数（RouterPath 中暂无，见交付说明） */
-    public static final String EXTRA_QUESTION = "question";
+    public static final String EXTRA_QUESTION = RouterPath.EXTRA_QUESTION;
 
     static final String MSG_REFRESH_FAILED = "刷新失败，请检查网络";
     static final long HOME_TIMEOUT_SECONDS = 10;
@@ -113,6 +114,9 @@ public class TodayViewModel extends BaseViewModel {
     private final SingleLiveEvent<Long> leavingTodoId = new SingleLiveEvent<>();
     private final SingleLiveEvent<Void> openQuickRegister = new SingleLiveEvent<>();
     private final SingleLiveEvent<String> switchTab = new SingleLiveEvent<>();
+    /** 随 switchTab 一起交给目标标签的参数（可为 null） */
+    @Nullable
+    private Bundle switchTabArgs;
     private final SingleLiveEvent<Void> askNotifyPermission = new SingleLiveEvent<>();
 
     /** 登记回流后在本地移除的待办 */
@@ -224,6 +228,12 @@ public class TodayViewModel extends BaseViewModel {
 
     public SingleLiveEvent<String> getSwitchTab() {
         return switchTab;
+    }
+
+    /** 最近一次 switchTab 的参数 */
+    @Nullable
+    public Bundle getSwitchTabArgs() {
+        return switchTabArgs;
     }
 
     public SingleLiveEvent<Void> getAskNotifyPermission() {
@@ -382,6 +392,7 @@ public class TodayViewModel extends BaseViewModel {
                 navEvent.setValue(NavTarget.of("L03"));
                 break;
             case CARD_PENS:
+                switchTabArgs = null;
                 switchTab.setValue(TabRegistry.MY_PENS);
                 break;
             default:
@@ -411,6 +422,7 @@ public class TodayViewModel extends BaseViewModel {
     }
 
     public void onAvatarClick() {
+        switchTabArgs = null;
         switchTab.setValue(TabRegistry.MINE);
     }
 
@@ -420,6 +432,9 @@ public class TodayViewModel extends BaseViewModel {
             navEvent.setValue(new NavTarget(pen.getLink().getRoute(), pen.getLink().getParams(), null));
             return;
         }
+        Bundle args = new Bundle();
+        args.putLong(RouterPath.EXTRA_PEN_ID, pen.getPenId());
+        switchTabArgs = args;
         switchTab.setValue(TabRegistry.MY_PENS);
     }
 

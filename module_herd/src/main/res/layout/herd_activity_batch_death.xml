@@ -43,7 +43,7 @@
                     android:paddingEnd="@dimen/base_page_margin"
                     android:paddingBottom="@dimen/base_space_6">
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                         style="@style/Widget.Zmt.TextInputLayout.Dropdown"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -58,9 +58,9 @@
                             android:layout_height="wrap_content"
                             android:inputType="none"
                             android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                         style="@style/Widget.Zmt.TextInputLayout.Dropdown"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -76,9 +76,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="none" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                         android:id="@+id/herd_quantity_layout"
                         style="@style/Widget.Zmt.TextInputLayout"
                         android:layout_width="match_parent"
@@ -95,7 +95,7 @@
                             android:maxLength="7"
                             android:text="@={vm.quantityText}"
                             android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
                     <TextView
                         style="@style/Widget.Zmt.TextView.FieldLabel"
@@ -129,7 +129,7 @@
                         android:baselineAligned="false"
                         android:orientation="horizontal">
 
-                        <com.google.android.material.textfield.TextInputLayout
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                             android:id="@+id/herd_date_layout"
                             style="@style/Widget.Zmt.TextInputLayout.Picker"
                             android:layout_width="0dp"
@@ -144,9 +144,9 @@
                                 android:layout_height="wrap_content"
                                 app:dateText="@{vm.eventDate}"
                                 app:dateWithWeek="@{false}" />
-                        </com.google.android.material.textfield.TextInputLayout>
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                        <com.google.android.material.textfield.TextInputLayout
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                             style="@style/Widget.Zmt.TextInputLayout.Dropdown"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -162,10 +162,10 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="none" />
-                        </com.google.android.material.textfield.TextInputLayout>
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
                     </LinearLayout>
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                         style="@style/Widget.Zmt.TextInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -184,7 +184,7 @@
                             android:inputType="textMultiLine"
                             android:maxLength="200"
                             android:text="@={vm.remark}" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
                     <TextView
                         android:layout_width="wrap_content"

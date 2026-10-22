@@ -42,7 +42,7 @@
                     android:paddingEnd="@dimen/base_page_margin"
                     android:paddingBottom="@dimen/base_space_6">
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                         android:id="@+id/til_phone"
                         style="@style/Widget.Zmt.TextInputLayout"
                         android:layout_width="match_parent"
@@ -61,7 +61,7 @@
                             android:maxLength="13"
                             android:singleLine="true"
                             android:text="@={vm.phone}" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
                     <TextView
                         android:layout_width="match_parent"

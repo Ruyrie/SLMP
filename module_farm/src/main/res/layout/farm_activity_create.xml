@@ -49,7 +49,7 @@
                         app:noticeIcon="@drawable/ic_info"
                         app:noticeText="@string/farm_create_notice" />
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                         android:id="@+id/til_name"
                         style="@style/Widget.Zmt.TextInputLayout"
                         android:layout_width="match_parent"
@@ -69,9 +69,9 @@
                             android:maxLength="30"
                             android:singleLine="true"
                             android:text="@={vm.name}" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                         android:id="@+id/til_address"
                         style="@style/Widget.Zmt.TextInputLayout.Picker"
                         android:layout_width="match_parent"
@@ -90,7 +90,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:maxLines="2" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -99,7 +99,7 @@
                         android:baselineAligned="false"
                         android:orientation="horizontal">
 
-                        <com.google.android.material.textfield.TextInputLayout
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                             android:id="@+id/til_scale"
                             style="@style/Widget.Zmt.TextInputLayout"
                             android:layout_width="0dp"
@@ -117,9 +117,9 @@
                                 android:maxLength="7"
                                 android:singleLine="true"
                                 android:text="@={vm.scale}" />
-                        </com.google.android.material.textfield.TextInputLayout>
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                        <com.google.android.material.textfield.TextInputLayout
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                             android:id="@+id/til_category"
                             style="@style/Widget.Zmt.TextInputLayout.Dropdown"
                             android:layout_width="0dp"
@@ -133,7 +133,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="none" />
-                        </com.google.android.material.textfield.TextInputLayout>
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
                     </LinearLayout>
 
                     <LinearLayout
@@ -143,7 +143,7 @@
                         android:baselineAligned="false"
                         android:orientation="horizontal">
 
-                        <com.google.android.material.textfield.TextInputLayout
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                             android:id="@+id/til_contact_name"
                             style="@style/Widget.Zmt.TextInputLayout"
                             android:layout_width="0dp"
@@ -160,9 +160,9 @@
                                 android:maxLength="30"
                                 android:singleLine="true"
                                 android:text="@={vm.contactName}" />
-                        </com.google.android.material.textfield.TextInputLayout>
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                        <com.google.android.material.textfield.TextInputLayout
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                             android:id="@+id/til_contact_phone"
                             style="@style/Widget.Zmt.TextInputLayout"
                             android:layout_width="0dp"
@@ -180,7 +180,7 @@
                                 android:maxLength="13"
                                 android:singleLine="true"
                                 android:text="@={vm.contactPhone}" />
-                        </com.google.android.material.textfield.TextInputLayout>
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
                     </LinearLayout>
 
                     <TextView

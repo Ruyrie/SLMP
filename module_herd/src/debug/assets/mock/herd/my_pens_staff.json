@@ -65,7 +65,7 @@
         "capacity": 220,
         "stock_count": 150,
         "task_done": 0,
-        "task_total": 2,
+        "task_total": 3,
         "is_empty": false,
         "unit_text": "头",
         "batches": [
@@ -81,10 +81,22 @@
         ],
         "tasks": [
           {
+            "todo_id": 7210,
+            "todo_type": "FEEDING",
+            "title": "午餐饲喂",
+            "time_text": "11:30",
+            "status": "PENDING",
+            "status_text": "待处理",
+            "route": "G02",
+            "task_id": 6210,
+            "batch_id": 3002,
+            "pen_id": 2004
+          },
+          {
             "todo_id": 7211,
             "todo_type": "DISINFECTION",
             "title": "消毒",
-            "time_text": "17:00 前",
+            "time_text": "17:00 前 · 聚维酮碘溶液",
             "status": "PENDING",
             "status_text": "待处理",
             "route": "D08",
@@ -96,7 +108,7 @@
             "todo_id": 7212,
             "todo_type": "INSPECTION",
             "title": "巡检",
-            "time_text": "今天",
+            "time_text": "18:00 前",
             "status": "PENDING",
             "status_text": "待处理",
             "route": "I02",

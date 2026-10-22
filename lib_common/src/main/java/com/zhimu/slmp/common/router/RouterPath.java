@@ -313,7 +313,7 @@ public final class RouterPath {
     /** 待办类别（String，TODO_CATEGORY，T01 进入 T03 时预选） */
     public static final String EXTRA_CATEGORY = "category";
     /** 跨养殖场切换后的提示（String，例如“已切换到西岭鸡场”） */
-    public static final String EXTRA_SWITCH_TIP = "switch_tip";
+    public static final String EXTRA_SWITCH_TIP = com.zhimu.slmp.base.ui.BaseActivity.EXTRA_ENTRY_TIP;
     /** 文件编号（long，打开 I09 预览） */
     public static final String EXTRA_FILE_ID = "file_id";
     /** T08 关联记录已失效的标题与说明（String） */
@@ -325,6 +325,12 @@ public final class RouterPath {
     public static final String EXTRA_EVENT_ID = "event_id";
     /** L03 存栏总览视图（String：PEN / CATEGORY / BATCH） */
     public static final String EXTRA_VIEW_TYPE = "view_type";
+
+    /**
+     * EXTRA_MODE 取值：以 Activity Result 打开 A01（推送冷启动未登录时）；登录成功且没有强制步骤时
+     * setResult(RESULT_OK) 并关闭，由调用方继续原来的跳转
+     */
+    public static final String MODE_LOGIN_FOR_RESULT = "push";
 
     /** EXTRA_MODE 取值：E13 经营报表只统计本人创建的养殖场（A09 注销前导出） */
     public static final String MODE_OWNED_FARMS = "OWNED_FARMS";

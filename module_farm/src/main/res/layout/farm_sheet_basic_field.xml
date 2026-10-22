@@ -17,7 +17,7 @@
         android:paddingEnd="@dimen/base_sheet_padding_horizontal"
         android:paddingBottom="@dimen/base_space_2">
 
-        <com.google.android.material.textfield.TextInputLayout
+        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
             android:id="@+id/til_value"
             style="@style/Widget.Zmt.TextInputLayout"
             android:layout_width="match_parent"
@@ -31,6 +31,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@={vm.editValue}" />
-        </com.google.android.material.textfield.TextInputLayout>
+        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
     </FrameLayout>
 </layout>

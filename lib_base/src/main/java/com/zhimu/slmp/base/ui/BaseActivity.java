@@ -31,10 +31,39 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     private boolean insetsApplied;
 
+    /**
+     * 进入页面后显示一次的提示（String），例如跨养殖场打开时的“已切换到西岭鸡场”；
+     * 与 RouterPath.EXTRA_SWITCH_TIP 的值相同。
+     */
+    public static final String EXTRA_ENTRY_TIP = "switch_tip";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
+        if (savedInstanceState == null) {
+            showEntryTip(getIntent());
+        }
+    }
+
+    @Override
+    protected void onNewIntent(@NonNull Intent intent) {
+        super.onNewIntent(intent);
+        showEntryTip(intent);
+    }
+
+    /** 页面布局完成后显示 EXTRA_ENTRY_TIP，并从 Intent 中移除，避免重建后重复显示 */
+    private void showEntryTip(@Nullable Intent intent) {
+        String tip = intent == null ? null : intent.getStringExtra(EXTRA_ENTRY_TIP);
+        if (tip == null || tip.isEmpty()) {
+            return;
+        }
+        intent.removeExtra(EXTRA_ENTRY_TIP);
+        getWindow().getDecorView().post(() -> {
+            if (!isFinishing()) {
+                showMessage(tip);
+            }
+        });
     }
 
     @Override

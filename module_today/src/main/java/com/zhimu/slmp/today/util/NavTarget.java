@@ -116,8 +116,8 @@ public final class NavTarget {
 
     /** T08 启动参数键（OpenResultVO 的字段名） */
     public static final class RecordInvalidKeys {
-        public static final String DELETED_TITLE = "deleted_title";
-        public static final String DELETED_DESC = "deleted_desc";
+        public static final String DELETED_TITLE = RouterPath.EXTRA_DELETED_TITLE;
+        public static final String DELETED_DESC = RouterPath.EXTRA_DELETED_DESC;
 
         private RecordInvalidKeys() {
         }

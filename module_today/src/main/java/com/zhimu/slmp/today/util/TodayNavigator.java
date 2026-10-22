@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
@@ -21,16 +19,14 @@ import java.util.regex.Pattern;
 
 /**
  * 页面一侧打开 {@link NavTarget}：页面编号经 RouterTable 转为 action，参数转为 Bundle（_id 结尾的数字参数按 long 传入，
- * 与 RouterPath 参数键的类型一致）；跨场切换的提示经 GlobalEvents 在目标页显示。目标页面不存在时 Router 提示“该功能正在开发中”。
+ * 与 RouterPath 参数键的类型一致）；跨场切换的提示放在 EXTRA_SWITCH_TIP 中，由目标页的 BaseActivity 显示。目标页面不存在时 Router 提示“该功能正在开发中”。
  */
 public final class TodayNavigator {
 
     /** 跨场切换后的提示（目标页可读取；本组件同时用全局提示显示） */
-    public static final String EXTRA_SWITCH_TIP = "switch_tip";
+    public static final String EXTRA_SWITCH_TIP = RouterPath.EXTRA_SWITCH_TIP;
 
     private static final Pattern LONG = Pattern.compile("-?\\d{1,18}");
-    /** 等上一页暂停后再发全局提示，使提示显示在目标页 */
-    private static final long TIP_DELAY_MS = 350;
 
     private TodayNavigator() {
     }
@@ -62,10 +58,6 @@ public final class TodayNavigator {
         boolean opened = launcher != null
                 ? Router.openForResult(context, launcher, action, extras)
                 : Router.open(context, action, extras);
-        if (opened && target.getSwitchTip() != null) {
-            String tip = target.getSwitchTip();
-            new Handler(Looper.getMainLooper()).postDelayed(() -> GlobalEvents.postMessage(tip), TIP_DELAY_MS);
-        }
         return opened;
     }
 

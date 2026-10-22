@@ -168,7 +168,7 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
         vm.getOpenQuickRegister().observe(owner, v -> QuickRegisterSheet.show(getChildFragmentManager()));
         vm.getSwitchTab().observe(owner, tab -> {
             if (tab != null && requireActivity() instanceof MainTabHost) {
-                ((MainTabHost) requireActivity()).selectTab(tab);
+                ((MainTabHost) requireActivity()).selectTab(tab, vm.getSwitchTabArgs());
             }
         });
         vm.getAskNotifyPermission().observe(owner, v -> showNotifyGuide());

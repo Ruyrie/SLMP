@@ -27,9 +27,16 @@ public final class MenuItemSpec {
     public final boolean enabled;
     /** 右侧“需审核” */
     public final boolean review;
+    /** primary 色、排在分隔线后（“启用栏舍”） */
+    public final boolean primary;
 
     public MenuItemSpec(int id, @NonNull String title, @DrawableRes int icon, @Nullable String description,
                         boolean danger, boolean enabled, boolean review) {
+        this(id, title, icon, description, danger, enabled, review, false);
+    }
+
+    public MenuItemSpec(int id, @NonNull String title, @DrawableRes int icon, @Nullable String description,
+                        boolean danger, boolean enabled, boolean review, boolean primary) {
         this.id = id;
         this.title = title;
         this.icon = icon;
@@ -37,6 +44,7 @@ public final class MenuItemSpec {
         this.danger = danger;
         this.enabled = enabled;
         this.review = review;
+        this.primary = primary;
     }
 
     @NonNull
@@ -62,7 +70,7 @@ public final class MenuItemSpec {
         String needsReview = anchor.getContext().getString(R.string.base_menu_needs_review);
         for (MenuItemSpec s : items) {
             b.add(new MoreMenuHelper.Item(s.id, s.title, s.icon, s.description, s.review ? needsReview : null,
-                    s.danger, s.enabled));
+                    s.danger, s.enabled, s.primary));
         }
         b.setOnItemClickListener(listener).show();
     }

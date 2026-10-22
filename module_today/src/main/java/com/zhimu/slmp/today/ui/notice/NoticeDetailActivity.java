@@ -150,7 +150,7 @@ public class NoticeDetailActivity extends BaseActivity {
         if (file.getUrl() != null) {
             p.put(RouterPath.EXTRA_URL, file.getUrl());
         }
-        p.put("file_id", String.valueOf(file.getFileId()));
+        p.put(RouterPath.EXTRA_FILE_ID, String.valueOf(file.getFileId()));
         TodayNavigator.open(this, new NavTarget("I09", p, null));
     }
 }

@@ -16,7 +16,7 @@
         android:paddingEnd="@dimen/base_sheet_padding_horizontal"
         android:paddingBottom="@dimen/base_space_2">
 
-        <com.google.android.material.textfield.TextInputLayout
+        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
             android:id="@+id/account_regenerate_sms"
             style="@style/account_style_field"
             android:layout_marginTop="@dimen/base_space_4"
@@ -28,6 +28,6 @@
                 android:imeOptions="actionDone"
                 android:inputType="number"
                 android:text="@={vm.smsCode}" />
-        </com.google.android.material.textfield.TextInputLayout>
+        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
     </FrameLayout>
 </layout>

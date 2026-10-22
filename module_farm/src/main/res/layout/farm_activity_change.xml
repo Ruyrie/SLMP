@@ -48,7 +48,7 @@
                         android:layout_height="wrap_content"
                         app:noticeIcon="@drawable/ic_info" />
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                         android:id="@+id/til_name"
                         style="@style/Widget.Zmt.TextInputLayout"
                         android:layout_width="match_parent"
@@ -66,9 +66,9 @@
                             android:maxLength="30"
                             android:singleLine="true"
                             android:text="@={vm.name}" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                         android:id="@+id/til_address"
                         style="@style/Widget.Zmt.TextInputLayout.Picker"
                         android:layout_width="match_parent"
@@ -86,7 +86,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:maxLines="2" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
                     <LinearLayout
                         android:id="@+id/qual_header"
@@ -143,7 +143,7 @@
                         app:mediaSourceText="@string/farm_qual_source"
                         app:visibleIf="@{vm.readOnly}" />
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                         android:id="@+id/til_remark"
                         style="@style/Widget.Zmt.TextInputLayout"
                         android:layout_width="match_parent"
@@ -162,7 +162,7 @@
                             android:inputType="textMultiLine"
                             android:maxLength="120"
                             android:text="@={vm.remark}" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
                 </LinearLayout>
             </androidx.core.widget.NestedScrollView>
         </com.zhimu.slmp.base.widget.StateLayout>

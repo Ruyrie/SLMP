@@ -228,4 +228,12 @@ public class MainActivity extends BaseActivity implements MainTabHost {
             nav.setSelectedItemId(index + 1);
         }
     }
+
+    @Override
+    public void selectTab(@NonNull String tabKey, @Nullable Bundle args) {
+        selectTab(tabKey);
+        if (args != null && indexOf(tabKey) >= 0) {
+            getSupportFragmentManager().setFragmentResult(MainTabHost.argsResultKey(tabKey), args);
+        }
+    }
 }

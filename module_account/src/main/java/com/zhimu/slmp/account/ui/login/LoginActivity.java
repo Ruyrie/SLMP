@@ -89,7 +89,16 @@ public class LoginActivity extends BaseActivity {
         ClickThrottle.setOnClickListener(binding.accountLoginRegister, v -> vm.openPage(RouterPath.A02));
 
         vm.getNavigate().observe(this, this::navigate);
-        vm.getLoginSuccess().observe(this, token -> NextStepRouter.dispatch(this, token.getNextStep()));
+        vm.getLoginSuccess().observe(this, token -> {
+            // 推送冷启动未登录：没有强制步骤时回到推送中转页继续跳转
+            boolean forResult = RouterPath.MODE_LOGIN_FOR_RESULT.equals(getIntent().getStringExtra(RouterPath.EXTRA_MODE));
+            if (forResult && RouterPath.MAIN.equals(NextStepRouter.actionOf(token.getNextStep()))) {
+                setResult(RESULT_OK);
+                finish();
+                return;
+            }
+            NextStepRouter.dispatch(this, token.getNextStep());
+        });
     }
 
     private void navigate(@NonNull String route) {

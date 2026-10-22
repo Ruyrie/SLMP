@@ -60,7 +60,7 @@
                     app:noticeIcon="@drawable/ic_warning"
                     app:noticeLevel="error" />
 
-                <com.google.android.material.textfield.TextInputLayout
+                <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_recovery_old_phone"
                     style="@style/account_style_field"
                     android:layout_marginTop="@dimen/base_space_5"
@@ -72,9 +72,9 @@
                         android:imeOptions="actionNext"
                         android:inputType="phone"
                         android:text="@={vm.oldPhone}" />
-                </com.google.android.material.textfield.TextInputLayout>
+                </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                <com.google.android.material.textfield.TextInputLayout
+                <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_recovery_code"
                     style="@style/account_style_field"
                     android:layout_marginTop="@dimen/base_space_4"
@@ -85,9 +85,9 @@
                         android:imeOptions="actionNext"
                         android:inputType="textCapCharacters|textNoSuggestions|textVisiblePassword"
                         android:text="@={vm.recoveryCode}" />
-                </com.google.android.material.textfield.TextInputLayout>
+                </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                <com.google.android.material.textfield.TextInputLayout
+                <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_recovery_new_phone"
                     style="@style/account_style_field"
                     android:layout_marginTop="@dimen/base_space_4"
@@ -99,9 +99,9 @@
                         android:imeOptions="actionNext"
                         android:inputType="phone"
                         android:text="@={vm.newPhone}" />
-                </com.google.android.material.textfield.TextInputLayout>
+                </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                <com.google.android.material.textfield.TextInputLayout
+                <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_recovery_sms"
                     style="@style/account_style_field"
                     android:layout_marginTop="@dimen/base_space_4"
@@ -113,9 +113,9 @@
                         android:imeOptions="actionNext"
                         android:inputType="number"
                         android:text="@={vm.newPhoneSmsCode}" />
-                </com.google.android.material.textfield.TextInputLayout>
+                </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                <com.google.android.material.textfield.TextInputLayout
+                <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_recovery_description"
                     style="@style/account_style_field"
                     android:layout_marginTop="@dimen/base_space_4"
@@ -132,7 +132,7 @@
                         android:minLines="3"
                         android:scrollbars="vertical"
                         android:text="@={vm.description}" />
-                </com.google.android.material.textfield.TextInputLayout>
+                </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
                 <com.zhimu.slmp.base.widget.ListRowView
                     android:id="@+id/account_recovery_service"

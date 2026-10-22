@@ -8,7 +8,7 @@
     android:paddingTop="@dimen/base_space_4"
     android:paddingEnd="@dimen/base_dialog_padding">
 
-    <com.google.android.material.textfield.TextInputLayout
+    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
         android:id="@+id/base_reason_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,5 +22,5 @@
             android:imeOptions="actionDone|flagNoExtractUi"
             android:inputType="textMultiLine"
             android:maxLines="5" />
-    </com.google.android.material.textfield.TextInputLayout>
+    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 </FrameLayout>

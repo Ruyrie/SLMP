@@ -98,7 +98,7 @@
                         android:text="@string/account_login_mode_sms" />
                 </com.zhimu.slmp.base.widget.ConnectedButtonGroup>
 
-                <com.google.android.material.textfield.TextInputLayout
+                <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_login_phone"
                     style="@style/account_style_field"
                     android:hint="@string/account_field_phone"
@@ -110,9 +110,9 @@
                         android:imeOptions="actionNext"
                         android:inputType="phone"
                         android:text="@={vm.phone}" />
-                </com.google.android.material.textfield.TextInputLayout>
+                </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                <com.google.android.material.textfield.TextInputLayout
+                <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_login_password"
                     style="@style/account_style_field"
                     android:hint="@string/account_field_password"
@@ -125,9 +125,9 @@
                         android:imeOptions="actionDone"
                         android:inputType="textPassword"
                         android:text="@={vm.password}" />
-                </com.google.android.material.textfield.TextInputLayout>
+                </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                <com.google.android.material.textfield.TextInputLayout
+                <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_login_sms"
                     style="@style/account_style_field"
                     android:hint="@string/account_field_sms_code"
@@ -140,7 +140,7 @@
                         android:imeOptions="actionDone"
                         android:inputType="number"
                         android:text="@={vm.smsCode}" />
-                </com.google.android.material.textfield.TextInputLayout>
+                </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/account_login_forgot"

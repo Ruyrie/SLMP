@@ -70,7 +70,7 @@ public class CalendarViewModel extends BaseViewModel {
 
     public static final String SCOPE_CURRENT = "CURRENT";
     public static final String SCOPE_ALL = "ALL";
-    public static final String EXTRA_CATEGORY = "category";
+    public static final String EXTRA_CATEGORY = RouterPath.EXTRA_CATEGORY;
     static final int PER_DAY = 5;
     private static final String STATE_MODE = "today_calendar_mode";
     private static final String STATE_SCOPE = "today_calendar_scope";

@@ -18,7 +18,7 @@
         android:paddingEnd="@dimen/base_sheet_padding_horizontal"
         android:paddingBottom="@dimen/base_space_4">
 
-        <com.google.android.material.textfield.TextInputLayout
+        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
             android:id="@+id/account_edit_name_field"
             style="@style/account_style_field"
             android:layout_marginTop="@dimen/base_space_4"
@@ -30,7 +30,7 @@
                 android:imeOptions="actionDone"
                 android:inputType="textPersonName"
                 android:text="@={vm.editName}" />
-        </com.google.android.material.textfield.TextInputLayout>
+        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"

@@ -23,6 +23,9 @@ import com.zhimu.slmp.herd.ui.common.HerdNav;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import com.zhimu.slmp.common.service.MainTabHost;
+import com.zhimu.slmp.common.service.TabRegistry;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * L02 我的栏舍：员工底部导航“我的栏舍”（TabRegistry.MY_PENS）。登记完成（ITodoService.todoChanges）后自动刷新。
@@ -40,6 +43,9 @@ public class MyPensFragment extends BaseFragment {
         binding = HerdFragmentMyPensBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
+
+    /** 等列表数据到达后要滚动到的栏舍，0 表示没有 */
+    private long pendingPenId;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -76,7 +82,13 @@ public class MyPensFragment extends BaseFragment {
         });
         binding.herdPens.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.herdPens.setAdapter(adapter);
-        vm.getPens().observe(getViewLifecycleOwner(), adapter::submitList);
+        vm.getPens().observe(getViewLifecycleOwner(), list -> adapter.submitList(list, this::scrollToPendingPen));
+        // 今日首页点栏舍切到本标签时定位到该栏舍
+        getParentFragmentManager().setFragmentResultListener(MainTabHost.argsResultKey(TabRegistry.MY_PENS),
+                getViewLifecycleOwner(), (key, result) -> {
+                    pendingPenId = result.getLong(RouterPath.EXTRA_PEN_ID, 0L);
+                    scrollToPendingPen();
+                });
 
         ClickThrottle.setOnClickListener(binding.herdScanBar, v -> vm.onScanClick());
         ClickThrottle.setOnClickListener(binding.herdBreedingEntry, v -> vm.onBreedingEntryClick());
@@ -101,5 +113,37 @@ public class MyPensFragment extends BaseFragment {
         viewDisposables.clear();
         binding = null;
         super.onDestroyView();
+    }
+
+    private void scrollToPendingPen() {
+        if (binding == null || pendingPenId == 0L) {
+            return;
+        }
+        MyPenAdapter adapter = (MyPenAdapter) binding.herdPens.getAdapter();
+        if (adapter == null) {
+            return;
+        }
+        int index = -1;
+        for (int i = 0; i < adapter.getCurrentList().size(); i++) {
+            if (adapter.getCurrentList().get(i).getPenId() == pendingPenId) {
+                index = i;
+                break;
+            }
+        }
+        if (index < 0) {
+            return;
+        }
+        pendingPenId = 0L;
+        final int position = index;
+        binding.herdPens.post(() -> {
+            if (binding == null) {
+                return;
+            }
+            View child = binding.herdPens.getLayoutManager() == null ? null
+                    : binding.herdPens.getLayoutManager().findViewByPosition(position);
+            if (child != null) {
+                binding.herdScroll.smoothScrollTo(0, binding.herdPens.getTop() + child.getTop());
+            }
+        });
     }
 }

@@ -30,7 +30,9 @@
     <string name="base_state_no_permission_title">你没有这项内容的查看权限</string>
     <string name="base_state_no_permission_message">如需查看，请联系所有者或场长。</string>
     <!-- 加载失败页附 trace_id，便于用户反馈（03 号文档错误码 5xxxx） -->
-    <string name="base_state_trace_id">错误编号：%1$s</string>
+    <string name="base_state_trace_id">反馈编号：%1$s（点按复制）</string>
+    <string name="base_state_trace_label">反馈编号</string>
+    <string name="base_state_trace_copied">已复制反馈编号</string>
 
     <!-- 菜单（7.11 节） -->
     <string name="base_menu_needs_review">需审核</string>

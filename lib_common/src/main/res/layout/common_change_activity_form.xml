@@ -140,7 +140,7 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                         android:id="@+id/common_change_field"
                         style="@style/Widget.Zmt.TextInputLayout.Dropdown"
                         android:layout_width="match_parent"
@@ -155,7 +155,7 @@
                             android:inputType="none"
                             android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
                             android:textColor="?attr/colorOnSurface" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
                     <LinearLayout
                         android:id="@+id/common_change_value_row"
@@ -164,7 +164,7 @@
                         android:layout_marginTop="@dimen/base_space_5"
                         android:orientation="horizontal">
 
-                        <com.google.android.material.textfield.TextInputLayout
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                             android:id="@+id/common_change_old_value"
                             style="@style/Widget.Zmt.TextInputLayout.ReadOnly"
                             android:layout_width="0dp"
@@ -179,7 +179,7 @@
                                 android:enabled="false"
                                 android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
                                 android:textColor="?attr/colorOnSurfaceVariant" />
-                        </com.google.android.material.textfield.TextInputLayout>
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
                         <ImageView
                             android:layout_width="40dp"
@@ -190,7 +190,7 @@
                             android:src="@drawable/ic_arrow_forward"
                             app:tint="?attr/colorOnSurfaceVariant" />
 
-                        <com.google.android.material.textfield.TextInputLayout
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                             android:id="@+id/common_change_new_value"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -206,7 +206,7 @@
                                 android:text="@={vm.newValue}"
                                 android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
                                 android:textColor="?attr/colorOnSurface" />
-                        </com.google.android.material.textfield.TextInputLayout>
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
                     </LinearLayout>
 
                     <com.zhimu.slmp.base.widget.NoticeView
@@ -218,7 +218,7 @@
                         app:noticeIcon="@drawable/ic_block"
                         app:noticeLevel="warning" />
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                         android:id="@+id/common_change_reason"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -239,7 +239,7 @@
                             android:text="@={vm.reason}"
                             android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
                             android:textColor="?attr/colorOnSurface" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
                     <TextView
                         android:id="@+id/common_change_recalc_title"

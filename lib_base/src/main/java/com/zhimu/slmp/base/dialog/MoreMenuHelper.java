@@ -70,9 +70,16 @@ public final class MoreMenuHelper {
         final CharSequence note;
         final boolean danger;
         final boolean enabled;
+        /** primary 色、排在分隔线后的项（例如已停用栏舍的“启用栏舍”） */
+        final boolean primary;
 
         public Item(int id, @NonNull CharSequence title, @DrawableRes int icon, @Nullable CharSequence description,
                     @Nullable CharSequence note, boolean danger, boolean enabled) {
+            this(id, title, icon, description, note, danger, enabled, false);
+        }
+
+        public Item(int id, @NonNull CharSequence title, @DrawableRes int icon, @Nullable CharSequence description,
+                    @Nullable CharSequence note, boolean danger, boolean enabled, boolean primary) {
             this.id = id;
             this.title = title;
             this.icon = icon;
@@ -80,6 +87,12 @@ public final class MoreMenuHelper {
             this.note = note;
             this.danger = danger;
             this.enabled = enabled;
+            this.primary = primary;
+        }
+
+        /** 排在分隔线后：危险项与 primary 项 */
+        boolean isTrailing() {
+            return danger || primary;
         }
     }
 
@@ -124,6 +137,13 @@ public final class MoreMenuHelper {
             return this;
         }
 
+        /** primary 色项：图标和文字 primary 色，与危险项一样排在分隔线后，例如已停用栏舍的“启用栏舍” */
+        @NonNull
+        public Builder addPrimary(int id, @NonNull CharSequence title, @DrawableRes int icon) {
+            items.add(new Item(id, title, icon, null, null, false, true, true));
+            return this;
+        }
+
         /** 完整参数的项（带一行说明、附注、不可用状态，如“停用栏舍 / 栏舍里还有 1 个在栏批次……”） */
         @NonNull
         public Builder add(@NonNull Item item) {
@@ -146,13 +166,13 @@ public final class MoreMenuHelper {
             TipPopup.dismiss();
             List<Item> ordered = new ArrayList<>();
             for (Item i : items) {
-                if (!i.danger) {
+                if (!i.isTrailing()) {
                     ordered.add(i);
                 }
             }
             int firstDanger = ordered.size();
             for (Item i : items) {
-                if (i.danger) {
+                if (i.isTrailing()) {
                     ordered.add(i);
                 }
             }
@@ -251,6 +271,7 @@ public final class MoreMenuHelper {
         private final List<Item> items;
         private final int firstDanger;
         private final int errorColor;
+        private final int primaryColor;
         private final int onSurface;
         private final int onSurfaceVariant;
 
@@ -259,6 +280,7 @@ public final class MoreMenuHelper {
             this.items = items;
             this.firstDanger = firstDanger;
             this.errorColor = MaterialColors.getColor(context, androidx.appcompat.R.attr.colorError, 0);
+            this.primaryColor = MaterialColors.getColor(context, androidx.appcompat.R.attr.colorPrimary, 0);
             this.onSurface = MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurface, 0);
             this.onSurfaceVariant = MaterialColors.getColor(context,
                     com.google.android.material.R.attr.colorOnSurfaceVariant, 0);
@@ -307,8 +329,8 @@ public final class MoreMenuHelper {
             } else {
                 icon.setVisibility(View.GONE);
             }
-            int textColor = item.danger ? errorColor : onSurface;
-            int iconColor = item.danger ? errorColor : onSurfaceVariant;
+            int textColor = item.danger ? errorColor : item.primary ? primaryColor : onSurface;
+            int iconColor = item.danger ? errorColor : item.primary ? primaryColor : onSurfaceVariant;
             title.setText(item.title);
             title.setTextColor(item.enabled ? textColor : onSurfaceVariant);
             ImageViewCompat.setImageTintList(icon, ColorStateList.valueOf(iconColor));

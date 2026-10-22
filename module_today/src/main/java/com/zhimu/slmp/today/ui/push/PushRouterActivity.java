@@ -45,7 +45,7 @@ public class PushRouterActivity extends BaseActivity {
                 result -> vm.onLoginResult(result.getResultCode() == Activity.RESULT_OK));
         vm.getRequireLogin().observe(this, v -> {
             Bundle extras = new Bundle();
-            extras.putString(RouterPath.EXTRA_MODE, "push");
+            extras.putString(RouterPath.EXTRA_MODE, RouterPath.MODE_LOGIN_FOR_RESULT);
             if (!Router.openForResult(this, loginLauncher, RouterPath.A01, extras)) {
                 finish();
             }

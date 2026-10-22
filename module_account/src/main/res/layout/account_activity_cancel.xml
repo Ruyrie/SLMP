@@ -154,7 +154,7 @@
                                 android:checked="@={vm.confirmed}"
                                 android:text="@string/account_cancel_confirm_check" />
 
-                            <com.google.android.material.textfield.TextInputLayout
+                            <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                                 android:id="@+id/account_cancel_sms"
                                 style="@style/account_style_field"
                                 android:layout_marginTop="@dimen/base_space_3"
@@ -166,7 +166,7 @@
                                     android:imeOptions="actionDone"
                                     android:inputType="number"
                                     android:text="@={vm.smsCode}" />
-                            </com.google.android.material.textfield.TextInputLayout>
+                            </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
                         </LinearLayout>
 
                         <TextView

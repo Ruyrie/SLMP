@@ -42,7 +42,7 @@
                     android:layout_marginTop="@dimen/base_space_5"
                     android:text="@string/account_register_desc" />
 
-                <com.google.android.material.textfield.TextInputLayout
+                <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_register_phone"
                     style="@style/account_style_field"
                     android:hint="@string/account_field_phone"
@@ -55,9 +55,9 @@
                         android:imeOptions="actionNext"
                         android:inputType="phone"
                         android:text="@={vm.phone}" />
-                </com.google.android.material.textfield.TextInputLayout>
+                </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                <com.google.android.material.textfield.TextInputLayout
+                <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_register_sms"
                     style="@style/account_style_field"
                     android:hint="@string/account_field_sms_code">
@@ -68,9 +68,9 @@
                         android:imeOptions="actionNext"
                         android:inputType="number"
                         android:text="@={vm.smsCode}" />
-                </com.google.android.material.textfield.TextInputLayout>
+                </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
-                <com.google.android.material.textfield.TextInputLayout
+                <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_register_password"
                     style="@style/account_style_field"
                     android:hint="@string/account_register_set_password"
@@ -83,7 +83,7 @@
                         android:imeOptions="actionDone"
                         android:inputType="textPassword"
                         android:text="@={vm.password}" />
-                </com.google.android.material.textfield.TextInputLayout>
+                </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
