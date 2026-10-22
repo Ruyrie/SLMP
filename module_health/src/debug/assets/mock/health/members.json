@@ -1,0 +1,37 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "user_id": 10001,
+        "name": "王建国",
+        "role": "OWNER",
+        "is_me": true
+      },
+      {
+        "user_id": 10002,
+        "name": "刘芳",
+        "role": "MANAGER",
+        "is_me": false
+      },
+      {
+        "user_id": 10003,
+        "name": "李明",
+        "role": "STAFF",
+        "is_me": false
+      },
+      {
+        "user_id": 10004,
+        "name": "张伟",
+        "role": "STAFF",
+        "is_me": false
+      }
+    ],
+    "total": 4,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-health-f16"
+}

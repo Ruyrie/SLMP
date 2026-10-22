@@ -1,0 +1,22 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "selectable": [
+      {
+        "lot_id": 6131,
+        "lot_no": "2025080",
+        "expire_date": "2027-04-30",
+        "lot_status": "NORMAL",
+        "days_to_expire": 193,
+        "stock": 1000,
+        "priority_out": true,
+        "insufficient": false,
+        "can_go_scrap": false
+      }
+    ],
+    "unselectable": [],
+    "default_lot_id": 6131
+  },
+  "trace_id": "mock-health-m27-5205-staff"
+}

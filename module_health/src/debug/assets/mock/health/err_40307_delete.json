@@ -1,0 +1,8 @@
+{
+  "code": 40307,
+  "message": "删除会使可出栏日期提前（10月29日 → 10月19日），需要提交修改申请",
+  "data": {
+    "reason": "ADVANCE"
+  },
+  "trace_id": "mock-health-40307-d26"
+}

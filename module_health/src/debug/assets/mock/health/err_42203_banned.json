@@ -1,0 +1,6 @@
+{
+  "code": 42203,
+  "message": "该药品属于禁用兽药，不能使用",
+  "data": null,
+  "trace_id": "mock-health-42203"
+}

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Symbols event_note 暂缺（未联网生成），先用 lib_base 的 ic_calendar_month 代替；可用 tools/icons/fetch_icons.py 生成后替换 -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_calendar_month"
+    android:inset="0dp" />

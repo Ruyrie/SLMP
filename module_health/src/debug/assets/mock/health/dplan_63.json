@@ -1,0 +1,45 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 63,
+    "version": 3,
+    "pen_ids": [
+      2001,
+      2002
+    ],
+    "pen_names_text": "1 号保育舍、2 号保育舍",
+    "cycle_days": 2,
+    "start_date": "2026-10-10",
+    "end_date": "2026-11-30",
+    "due_time": "17:00",
+    "disinfectant_name": "聚维酮碘溶液",
+    "concentration": "1:500",
+    "method_code": "SPRAY",
+    "method_name": "喷雾",
+    "status": "ACTIVE",
+    "status_text": "启用中",
+    "next_task_date": "2026-10-20",
+    "next_task_text": "10月20日",
+    "pause_text": null,
+    "actions": [
+      "PAUSE",
+      "EDIT"
+    ],
+    "catalog_id": 7301,
+    "drug_id": 5301,
+    "pens": [
+      {
+        "pen_id": 2001,
+        "pen_name": "1 号保育舍",
+        "executor_text": "张伟"
+      },
+      {
+        "pen_id": 2002,
+        "pen_name": "2 号保育舍",
+        "executor_text": "你和刘芳"
+      }
+    ]
+  },
+  "trace_id": "mock-health-d29-63"
+}

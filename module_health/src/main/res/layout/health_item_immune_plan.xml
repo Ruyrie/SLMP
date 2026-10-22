@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- D01 免疫计划列表项：40 dp 图标底（按状态取色）+ 标题、副文字、提醒行、按钮行（登记接种 / 调整日期）+ 右上状态标签、补录、more_vert -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/base_page_margin"
+    android:paddingEnd="@dimen/base_page_margin">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/health_card"
+        style="@style/Widget.Zmt.Card.ListItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/base_list_item_two_line_min_height"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/base_space_4"
+            android:paddingTop="@dimen/base_space_3"
+            android:paddingEnd="@dimen/base_space_4"
+            android:paddingBottom="@dimen/base_space_3">
+
+            <ImageView
+                android:id="@+id/health_icon"
+                android:layout_width="@dimen/base_list_leading_size"
+                android:layout_height="@dimen/base_list_leading_size"
+                android:layout_gravity="center_vertical"
+                android:importantForAccessibility="no"
+                android:scaleType="center"
+                android:src="@drawable/ic_vaccines" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="@dimen/base_space_4"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/health_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <TextView
+                    android:id="@+id/health_subtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/health_remind"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:drawablePadding="@dimen/base_space_1"
+                    android:gravity="center_vertical"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:visibility="gone"
+                    app:drawableStartCompat="@drawable/health_ic_notifications_small"
+                    app:drawableTint="?attr/colorOnSurfaceVariant" />
+
+                <LinearLayout
+                    android:id="@+id/health_buttons"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/base_space_2"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/health_btn_register"
+                        style="@style/Widget.Zmt.Button.Tonal.Small"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/health_register_vaccine" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/health_btn_postpone"
+                        style="@style/Widget.Zmt.Button.Outlined.Small"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/base_space_2"
+                        android:text="@string/health_postpone" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_3"
+                android:gravity="end"
+                android:orientation="vertical">
+
+                <com.zhimu.slmp.base.widget.StatusTagView
+                    android:id="@+id/health_tag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/health_backfill"
+                    style="@style/Widget.Zmt.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="48dp"
+                    android:text="@string/health_backfill"
+                    android:visibility="gone" />
+
+                <ImageButton
+                    android:id="@+id/health_more"
+                    android:layout_width="@dimen/base_touch_target"
+                    android:layout_height="@dimen/base_touch_target"
+                    android:layout_marginTop="@dimen/base_space_1"
+                    android:layout_marginEnd="-12dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/health_cd_more"
+                    android:src="@drawable/ic_more_vert"
+                    android:visibility="gone"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</FrameLayout>

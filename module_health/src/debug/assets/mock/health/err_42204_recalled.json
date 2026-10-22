@@ -1,0 +1,6 @@
+{
+  "code": 42204,
+  "message": "该批号已被平台停用，请换一个批号",
+  "data": null,
+  "trace_id": "mock-health-42204"
+}

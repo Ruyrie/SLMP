@@ -1,0 +1,31 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 62,
+    "version": 4,
+    "pen_ids": [
+      2003,
+      2004
+    ],
+    "pen_names_text": "3 号育肥舍、4 号育肥舍",
+    "cycle_days": 3,
+    "start_date": "2026-10-01",
+    "end_date": "2026-12-31",
+    "due_time": "17:00",
+    "disinfectant_name": "聚维酮碘溶液",
+    "concentration": "1:300",
+    "method_code": "SPRAY",
+    "method_name": "喷雾",
+    "status": "ACTIVE",
+    "status_text": "启用中",
+    "next_task_date": "2026-10-19",
+    "next_task_text": "今天",
+    "pause_text": null,
+    "actions": [
+      "PAUSE",
+      "EDIT"
+    ]
+  },
+  "trace_id": "mock-health-d32"
+}

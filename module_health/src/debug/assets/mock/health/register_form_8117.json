@@ -1,0 +1,48 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "plan": {
+      "plan_id": 8117,
+      "target_type": "BATCH",
+      "batch_id": 3001,
+      "batch_no": "ZM2610-031",
+      "pen_name": "3 号育肥舍",
+      "vaccine_name": "猪瘟活疫苗",
+      "immune_round": "加强免疫",
+      "current_count": 200,
+      "plan_date": "2026-10-19",
+      "plan_date_text": "今天",
+      "status": "PENDING",
+      "status_text": "待接种"
+    },
+    "drug_id": 5001,
+    "vaccine_name": "猪瘟活疫苗",
+    "default_lot": {
+      "lot_id": 6001,
+      "lot_no": "2025081",
+      "expire_date": "2026-12-30",
+      "lot_status": "NORMAL",
+      "days_to_expire": 72,
+      "stock": 400,
+      "avg_price": 2.35,
+      "priority_out": true,
+      "insufficient": false,
+      "can_go_scrap": false
+    },
+    "no_lot_text": null,
+    "template_dose": 1,
+    "dose": 1,
+    "dose_unit": "头份 / 头",
+    "quantity_default": 200,
+    "current_count": 200,
+    "method_code": "IM",
+    "backfill": false,
+    "date_default": "2026-10-19",
+    "date_min": "2026-10-01",
+    "date_max": "2026-10-19",
+    "default_executor_id": 10003,
+    "creator_name": "王建国"
+  },
+  "trace_id": "mock-health-d12-8117"
+}

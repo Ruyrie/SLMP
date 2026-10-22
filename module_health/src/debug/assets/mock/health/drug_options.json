@@ -1,0 +1,74 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "drug_id": 5201,
+        "catalog_id": 7201,
+        "drug_name": "阿莫西林可溶性粉",
+        "spec": "10% · 500 克 / 袋",
+        "stock_unit": "克",
+        "available_qty": 3500,
+        "route_code": "MIX_WATER",
+        "route_name": "混饮",
+        "recommended_dose": 0.3,
+        "dose_unit": "克 / 升水",
+        "recommended_course_days": 5,
+        "withdrawal_days": 14,
+        "applicable": true,
+        "hint_text": "休药 14 天 · 禁用药不可选"
+      },
+      {
+        "drug_id": 5202,
+        "catalog_id": 7202,
+        "drug_name": "氟苯尼考粉",
+        "spec": "10% · 1 千克 / 袋",
+        "stock_unit": "克",
+        "available_qty": 2000,
+        "route_code": "MIX_FEED",
+        "route_name": "混饲",
+        "recommended_dose": 100,
+        "dose_unit": "克 / 吨料",
+        "recommended_course_days": 5,
+        "withdrawal_days": 20,
+        "applicable": true,
+        "hint_text": "休药 20 天 · 禁用药不可选"
+      },
+      {
+        "drug_id": 5204,
+        "catalog_id": 7204,
+        "drug_name": "恩诺沙星注射液",
+        "spec": "10 毫升 / 支",
+        "stock_unit": "毫升",
+        "available_qty": 500,
+        "route_code": "INJECTION",
+        "route_name": "肌肉注射",
+        "recommended_dose": 0.025,
+        "dose_unit": "毫升 / 千克体重",
+        "recommended_course_days": 3,
+        "withdrawal_days": 10,
+        "applicable": true,
+        "hint_text": "休药 10 天 · 禁用药不可选"
+      },
+      {
+        "drug_id": 5205,
+        "catalog_id": 7205,
+        "drug_name": "硫酸新霉素可溶性粉",
+        "spec": "5% · 100 克 / 袋",
+        "stock_unit": "克",
+        "available_qty": 1000,
+        "route_code": "MIX_WATER",
+        "route_name": "混饮",
+        "recommended_dose": 0.5,
+        "dose_unit": "克 / 升水",
+        "recommended_course_days": 3,
+        "withdrawal_days": 7,
+        "applicable": false,
+        "hint_text": "休药 7 天 · 不适用于猪"
+      }
+    ],
+    "banned_hint": null
+  },
+  "trace_id": "mock-health-d20"
+}

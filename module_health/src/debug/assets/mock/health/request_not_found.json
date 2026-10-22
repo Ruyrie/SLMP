@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "status": "NOT_FOUND",
+    "biz_type": null,
+    "group_no": null,
+    "biz_ids": []
+  },
+  "trace_id": "mock-health-d41"
+}

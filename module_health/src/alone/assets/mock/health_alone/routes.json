@@ -1,0 +1,12 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/pens",
+    "when": {
+      "query": {
+        "usage": "OPTIONS"
+      }
+    },
+    "file": "pens_owner.json"
+  }
+]

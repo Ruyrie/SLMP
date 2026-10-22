@@ -1,0 +1,47 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "drug_id": 5001,
+      "catalog_id": 7001,
+      "name": "猪瘟活疫苗",
+      "dose_unit": "头份 / 头",
+      "stock_unit": "头份",
+      "available_qty": 1000,
+      "no_stock": false,
+      "default_method_code": "IM"
+    },
+    {
+      "drug_id": 5002,
+      "catalog_id": 7002,
+      "name": "猪伪狂犬病活疫苗",
+      "dose_unit": "头份 / 头",
+      "stock_unit": "头份",
+      "available_qty": 150,
+      "no_stock": false,
+      "default_method_code": "IM"
+    },
+    {
+      "drug_id": 5003,
+      "catalog_id": 7003,
+      "name": "口蹄疫灭活疫苗",
+      "dose_unit": "毫升 / 头",
+      "stock_unit": "毫升",
+      "available_qty": 0,
+      "no_stock": true,
+      "default_method_code": "IM"
+    },
+    {
+      "drug_id": 5004,
+      "catalog_id": 7004,
+      "name": "猪细小病毒灭活疫苗",
+      "dose_unit": "毫升 / 头",
+      "stock_unit": "毫升",
+      "available_qty": 300,
+      "no_stock": false,
+      "default_method_code": "IM"
+    }
+  ],
+  "trace_id": "mock-health-d13"
+}

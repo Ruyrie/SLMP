@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 调整计划日期对话框内容（图 8-2）：说明、新日期（calendar_month，辅助文字“届时 99 日龄”）、延期原因（必填，最多 50 字）、权限说明 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/base_dialog_padding"
+    android:paddingTop="@dimen/base_space_2"
+    android:paddingEnd="@dimen/base_dialog_padding">
+
+    <TextView
+        android:id="@+id/health_postpone_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+
+    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+        android:id="@+id/health_date_layout"
+        style="@style/Widget.Zmt.TextInputLayout.Picker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_4"
+        android:hint="@string/health_postpone_new_date"
+        app:helperTextEnabled="true">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/health_date_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+        android:id="@+id/health_reason_layout"
+        style="@style/Widget.Zmt.TextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_3"
+        android:hint="@string/health_postpone_reason"
+        app:helperText="@string/health_postpone_reason_helper"
+        app:helperTextEnabled="true">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/health_reason_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:maxLines="1" />
+    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_3"
+        android:drawablePadding="@dimen/base_space_1"
+        android:gravity="center_vertical"
+        android:text="@string/health_postpone_permission"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        app:drawableStartCompat="@drawable/health_ic_lock_small"
+        app:drawableTint="?attr/colorOnSurfaceVariant" />
+</LinearLayout>

@@ -1,0 +1,26 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "drug_id": 5201,
+        "catalog_id": 7201,
+        "drug_name": "阿莫西林可溶性粉",
+        "spec": "10% · 500 克 / 袋",
+        "stock_unit": "克",
+        "available_qty": 3500,
+        "route_code": "MIX_WATER",
+        "route_name": "混饮",
+        "recommended_dose": 0.3,
+        "dose_unit": "克 / 升水",
+        "recommended_course_days": 5,
+        "withdrawal_days": 14,
+        "applicable": true,
+        "hint_text": "休药 14 天 · 禁用药不可选"
+      }
+    ],
+    "banned_hint": null
+  },
+  "trace_id": "mock-health-d20-amo"
+}

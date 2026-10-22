@@ -1,0 +1,39 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 701,
+      "code": "IM",
+      "name": "肌肉注射",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 1
+    },
+    {
+      "id": 702,
+      "code": "SC",
+      "name": "皮下注射",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 2
+    },
+    {
+      "id": 703,
+      "code": "NASAL",
+      "name": "滴鼻",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 3
+    },
+    {
+      "id": 704,
+      "code": "ORAL",
+      "name": "口服",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 4
+    }
+  ],
+  "trace_id": "mock-health-u10-vaccinate"
+}

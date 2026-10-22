@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- D02 添加免疫项目（图 8-3）：无模板横幅、批次概况行、疫苗、计划时间（按日龄 / 按日期）、接种日龄 / 计划日期、剂量、接种方式、提醒说明；
+     底部“保存并继续添加”“添加项目”（修改状态只有“保存修改”） -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.health.ui.immuneitem.ImmuneItemEditViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/health_top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{vm.editMode ? @string/health_d02_title_edit : @string/health_d02_title}" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/health_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/health_d02_error"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/health_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_5"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/health_no_template"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/base_space_4"
+                        android:visibility="gone"
+                        app:noticeText="@string/health_no_template_text"
+                        app:noticeTitle="@string/health_no_template_title" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <com.zhimu.slmp.base.widget.StatusTagView
+                            android:id="@+id/health_farm_tag"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/base_space_2"
+                            app:tagIcon="@drawable/ic_domain"
+                            app:tagType="farm" />
+
+                        <TextView
+                            android:id="@+id/health_batch_summary"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:ellipsize="end"
+                            android:singleLine="true"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                        android:id="@+id/health_vaccine_layout"
+                        style="@style/Widget.Zmt.TextInputLayout.Dropdown"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:enabled="@{!vm.editMode}"
+                        android:hint="@string/health_vaccine"
+                        app:healthError="@{vm.fieldErrors[`drug_id`]}"
+                        app:healthHelper="@{vm.vaccineHelper}">
+
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/health_vaccine_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/health_plan_time"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        <com.zhimu.slmp.base.widget.ConnectedButtonGroup
+                            android:id="@+id/health_mode_group"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:checkedButton="@id/health_mode_age"
+                            app:selectionRequired="true"
+                            app:singleSelection="true">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/health_mode_age"
+                                style="@style/Widget.Zmt.Button.Connected"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/health_mode_age" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/health_mode_date"
+                                style="@style/Widget.Zmt.Button.Connected"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/health_mode_date" />
+                        </com.zhimu.slmp.base.widget.ConnectedButtonGroup>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <FrameLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1">
+
+                            <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                                android:id="@+id/health_age_layout"
+                                style="@style/Widget.Zmt.TextInputLayout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:enabled="@{!vm.editMode}"
+                                android:hint="@string/health_plan_age"
+                                app:healthError="@{vm.fieldErrors[`plan_age_day`]}"
+                                app:suffixText="@string/health_unit_day_age"
+                                app:visibleIf="@{vm.byDayAge}">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/health_age_input"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="number"
+                                    android:maxLength="4"
+                                    android:text="@={vm.planAgeDay}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+                            </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                            <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                                android:id="@+id/health_date_layout"
+                                style="@style/Widget.Zmt.TextInputLayout.Picker"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:enabled="@{!vm.editMode}"
+                                android:hint="@string/health_plan_date"
+                                android:visibility="gone"
+                                app:healthError="@{vm.fieldErrors[`plan_date`]}"
+                                app:visibleIf="@{!vm.byDayAge}">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/health_date_input"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    app:dateText="@{vm.planDate}"
+                                    app:dateWithWeek="@{true}" />
+                            </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+                        </FrameLayout>
+
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                            style="@style/Widget.Zmt.TextInputLayout.ReadOnly"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/base_space_3"
+                            android:layout_weight="1"
+                            android:hint="@{vm.byDayAge ? @string/health_plan_date : @string/health_age_at_plan}"
+                            app:helperText="@{vm.byDayAge ? @string/health_by_age_auto : @string/health_by_date_auto}"
+                            app:helperTextEnabled="true">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@{vm.planPreviewText}" />
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+                    </LinearLayout>
+
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                        android:id="@+id/health_dose_layout"
+                        style="@style/Widget.Zmt.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:hint="@string/health_dose"
+                        app:healthError="@{vm.fieldErrors[`dose`]}"
+                        app:healthSuffix="@{vm.doseUnit}"
+                        app:helperText="@string/health_dose_helper"
+                        app:helperTextEnabled="true">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="numberDecimal"
+                            android:maxLength="9"
+                            android:text="@={vm.dose}"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                    <TextView
+                        android:id="@+id/health_method_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:text="@string/health_vaccinate_method"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/health_method_chips"
+                        style="@style/Widget.Zmt.ChipGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_1"
+                        app:chipSpacingVertical="@dimen/base_space_2"
+                        app:singleSelection="true" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/base_space_4"
+                        android:text="@{vm.fieldErrors[`method_code`]}"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorError"
+                        app:goneIfNull="@{vm.fieldErrors[`method_code`]}" />
+
+                    <TextView
+                        android:id="@+id/health_remind"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:drawablePadding="@dimen/base_space_2"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        app:drawableStartCompat="@drawable/ic_notifications"
+                        app:drawableTint="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/health_action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+</layout>

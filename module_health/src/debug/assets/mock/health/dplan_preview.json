@@ -1,0 +1,15 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "ready": true,
+    "times": 11,
+    "task_count": 22,
+    "generate_now_count": 22,
+    "ready_text": null,
+    "pen_text": "已选 2 个栏舍，系统为每个栏舍各生成一条任务。这两个栏舍没有负责员工，任务由你和刘芳执行。",
+    "remind_text": "10月20日至 12月31日共 11 次，每次每个栏舍 1 条。任务日期前 1 天和当天提醒你和刘芳。",
+    "regenerate_from": null
+  },
+  "trace_id": "mock-health-d30"
+}

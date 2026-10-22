@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- D05 用药记录一项：medication 图标底 + “氟苯尼考粉 · 混饲”（右侧待审核 / 已锁定标签）、起止 · 疗程 · 登记人、原因；右上 more_vert -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/base_page_margin"
+    android:paddingEnd="@dimen/base_page_margin">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/health_card"
+        style="@style/Widget.Zmt.Card.ListItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="92dp"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/base_space_4"
+            android:paddingTop="@dimen/base_space_3"
+            android:paddingEnd="@dimen/base_space_1"
+            android:paddingBottom="@dimen/base_space_3">
+
+            <ImageView
+                android:id="@+id/health_icon"
+                android:layout_width="@dimen/base_list_leading_size"
+                android:layout_height="@dimen/base_list_leading_size"
+                android:importantForAccessibility="no"
+                android:scaleType="center"
+                android:src="@drawable/ic_medication" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_4"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/health_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <com.zhimu.slmp.base.widget.StatusTagView
+                        android:id="@+id/health_tag"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/base_space_2"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/health_subtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/health_reason"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/health_more"
+                android:layout_width="@dimen/base_touch_target"
+                android:layout_height="@dimen/base_touch_target"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/health_cd_more"
+                android:src="@drawable/ic_more_vert"
+                android:visibility="gone"
+                app:tint="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</FrameLayout>

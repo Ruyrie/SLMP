@@ -1,0 +1,8 @@
+{
+  "code": 40307,
+  "message": "接种记录只能在登记当天修改",
+  "data": {
+    "reason": "EXPIRED"
+  },
+  "trace_id": "mock-health-40307-d16-staff"
+}

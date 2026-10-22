@@ -1,0 +1,52 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 5102,
+    "group_no": "MG26105102",
+    "version": 2,
+    "target_type": "BATCH",
+    "batch_id": 3001,
+    "batch_no": "ZM2610-031",
+    "pen_id": 2003,
+    "pen_name": "3 号育肥舍",
+    "drug_id": 5201,
+    "drug_name": "阿莫西林可溶性粉",
+    "route_code": "MIX_WATER",
+    "route_name": "混饮",
+    "lot_no": "2025091",
+    "lot_expire_date": "2027-08-31",
+    "dose": 0.3,
+    "dose_unit": "克 / 升水",
+    "recommended_dose": 0.3,
+    "over_dose": false,
+    "course_days": 5,
+    "first_date": "2026-10-01",
+    "last_date": "2026-10-05",
+    "withdrawal_days": 14,
+    "withdrawal_end_date": "2026-10-19",
+    "estimated_qty": null,
+    "used_qty": 600,
+    "used_unit": "克",
+    "reason": "腹泻",
+    "creator_name": "刘芳",
+    "executor_name": "刘芳",
+    "is_mine": false,
+    "locked": false,
+    "change_state": {
+      "can_edit": false,
+      "edit_deadline": null,
+      "pending_request_id": null
+    },
+    "actions": [
+      "EDIT",
+      "VIEW_LOG",
+      "DELETE"
+    ],
+    "unit_price": 0.08,
+    "cost_amount": 48.0,
+    "drug_lot_id": 6101,
+    "executor_id": 10002
+  },
+  "trace_id": "mock-health-d23-5102"
+}

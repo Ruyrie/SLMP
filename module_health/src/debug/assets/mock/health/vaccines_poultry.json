@@ -1,0 +1,27 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "drug_id": 5011,
+      "catalog_id": 7011,
+      "name": "新城疫-传染性支气管炎二联活疫苗",
+      "dose_unit": "羽份 / 只",
+      "stock_unit": "羽份",
+      "available_qty": 6000,
+      "no_stock": false,
+      "default_method_code": "EYE_NASAL"
+    },
+    {
+      "drug_id": 5012,
+      "catalog_id": 7012,
+      "name": "法氏囊病活疫苗",
+      "dose_unit": "羽份 / 只",
+      "stock_unit": "羽份",
+      "available_qty": 0,
+      "no_stock": true,
+      "default_method_code": "WATER"
+    }
+  ],
+  "trace_id": "mock-health-d13-201"
+}

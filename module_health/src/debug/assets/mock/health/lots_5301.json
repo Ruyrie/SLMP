@@ -1,0 +1,35 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "selectable": [
+      {
+        "lot_id": 6301,
+        "lot_no": "2025033",
+        "expire_date": "2026-11-08",
+        "lot_status": "NEAR_EXPIRY",
+        "days_to_expire": 20,
+        "stock": 2.0,
+        "avg_price": 36.0,
+        "priority_out": true,
+        "insufficient": false,
+        "can_go_scrap": false
+      },
+      {
+        "lot_id": 6302,
+        "lot_no": "2025140",
+        "expire_date": "2027-06-30",
+        "lot_status": "NORMAL",
+        "days_to_expire": 254,
+        "stock": 10,
+        "avg_price": 34.0,
+        "priority_out": false,
+        "insufficient": false,
+        "can_go_scrap": false
+      }
+    ],
+    "unselectable": [],
+    "default_lot_id": 6301
+  },
+  "trace_id": "mock-health-m27-5301"
+}

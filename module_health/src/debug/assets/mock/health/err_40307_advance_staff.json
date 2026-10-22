@@ -1,0 +1,10 @@
+{
+  "code": 40307,
+  "message": "这项修改会使可出栏日期提前，需要由所有者或场长提交修改申请。你可以通知场长刘芳处理。",
+  "data": {
+    "reason": "ADVANCE",
+    "release_date_before": "2026-10-29",
+    "release_date_after": "2026-10-27"
+  },
+  "trace_id": "mock-health-40307-d24-staff"
+}

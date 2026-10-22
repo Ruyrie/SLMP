@@ -1,0 +1,168 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 70112,
+        "plan_id": 63,
+        "pen_id": 2002,
+        "pen_name": "2 号保育舍",
+        "task_date": "2026-10-18",
+        "date_text": "10月18日",
+        "due_time": "17:00",
+        "disinfectant_name": "聚维酮碘溶液",
+        "concentration": "1:500",
+        "method_name": "喷雾",
+        "cycle_days": 2,
+        "executor_text": "你和刘芳",
+        "no_staff": true,
+        "status": "OVERDUE",
+        "status_text": "已逾期",
+        "actions": [
+          "BACKFILL"
+        ]
+      },
+      {
+        "id": 70113,
+        "plan_id": 62,
+        "pen_id": 2003,
+        "pen_name": "3 号育肥舍",
+        "task_date": "2026-10-19",
+        "date_text": "今天",
+        "due_time": "17:00",
+        "disinfectant_name": "聚维酮碘溶液",
+        "concentration": "1:300",
+        "method_name": "喷雾",
+        "cycle_days": 3,
+        "executor_text": "李明",
+        "no_staff": false,
+        "status": "PENDING",
+        "status_text": "待执行",
+        "actions": [
+          "REGISTER"
+        ]
+      },
+      {
+        "id": 70114,
+        "plan_id": 62,
+        "pen_id": 2004,
+        "pen_name": "4 号育肥舍",
+        "task_date": "2026-10-19",
+        "date_text": "今天",
+        "due_time": "17:00",
+        "disinfectant_name": "聚维酮碘溶液",
+        "concentration": "1:300",
+        "method_name": "喷雾",
+        "cycle_days": 3,
+        "executor_text": "李明",
+        "no_staff": false,
+        "status": "PENDING",
+        "status_text": "待执行",
+        "actions": [
+          "REGISTER"
+        ]
+      },
+      {
+        "id": 70502,
+        "plan_id": 63,
+        "pen_id": 2001,
+        "pen_name": "1 号保育舍",
+        "task_date": "2026-10-20",
+        "date_text": "10月20日",
+        "due_time": "17:00",
+        "disinfectant_name": "聚维酮碘溶液",
+        "concentration": "1:500",
+        "method_name": "喷雾",
+        "cycle_days": 2,
+        "executor_text": "张伟",
+        "no_staff": false,
+        "status": "PENDING",
+        "status_text": "待执行",
+        "actions": [
+          "REGISTER"
+        ]
+      },
+      {
+        "id": 70503,
+        "plan_id": 63,
+        "pen_id": 2002,
+        "pen_name": "2 号保育舍",
+        "task_date": "2026-10-20",
+        "date_text": "10月20日",
+        "due_time": "17:00",
+        "disinfectant_name": "聚维酮碘溶液",
+        "concentration": "1:500",
+        "method_name": "喷雾",
+        "cycle_days": 2,
+        "executor_text": "你和刘芳",
+        "no_staff": true,
+        "status": "PENDING",
+        "status_text": "待执行",
+        "actions": [
+          "REGISTER"
+        ]
+      },
+      {
+        "id": 70411,
+        "plan_id": 63,
+        "pen_id": 2001,
+        "pen_name": "1 号保育舍",
+        "task_date": "2026-10-18",
+        "date_text": "10月18日",
+        "due_time": "17:00",
+        "disinfectant_name": "聚维酮碘溶液",
+        "concentration": "1:500",
+        "method_name": "喷雾",
+        "cycle_days": 2,
+        "executor_text": "张伟",
+        "no_staff": false,
+        "status": "DONE",
+        "status_text": "已执行",
+        "actions": [
+          "VIEW_LOG"
+        ],
+        "actual_time": "2026-10-18 16:20:00",
+        "actual_executor_name": "张伟",
+        "record_id": 7101
+      },
+      {
+        "id": 70301,
+        "plan_id": 62,
+        "pen_id": 2003,
+        "pen_name": "3 号育肥舍",
+        "task_date": "2026-10-16",
+        "date_text": "10月16日",
+        "due_time": "17:00",
+        "disinfectant_name": "聚维酮碘溶液",
+        "concentration": "1:300",
+        "method_name": "喷雾",
+        "cycle_days": 3,
+        "executor_text": "李明",
+        "no_staff": false,
+        "status": "DONE",
+        "status_text": "已执行",
+        "actions": [
+          "VIEW_LOG"
+        ],
+        "actual_time": "2026-10-16 08:45:00",
+        "actual_executor_name": "李明",
+        "record_id": 7091
+      }
+    ],
+    "total": 7,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "pending": 4,
+      "done": 2,
+      "overdue": 1
+    },
+    "overdue_banner": {
+      "show": true,
+      "text": "任务逾期后，系统会再提醒所有者和场长一次。已提醒你和刘芳。"
+    }
+  },
+  "trace_id": "mock-health-d36-ALL"
+}

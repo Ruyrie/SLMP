@@ -1,0 +1,14 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "ready": true,
+    "last_date": "2026-10-21",
+    "release_date": "2026-10-28",
+    "release_text": "10月28日 周三",
+    "estimated_qty": null,
+    "used_unit": "克",
+    "per_batch": []
+  },
+  "trace_id": "mock-health-d21-5205"
+}

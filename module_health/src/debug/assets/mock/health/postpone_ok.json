@@ -1,0 +1,33 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 8117,
+    "version": 3,
+    "vaccine_name": "猪瘟活疫苗",
+    "immune_round": "加强免疫",
+    "plan_mode": "BY_DAY_AGE",
+    "plan_date": "2026-10-22",
+    "is_today": false,
+    "due_time": "18:00",
+    "overdue": false,
+    "age_at_plan": 99,
+    "responsible_text": "李明负责",
+    "status": "POSTPONED",
+    "status_text": "已延期",
+    "dose": 1,
+    "dose_unit": "头份 / 头",
+    "method_code": "IM",
+    "method_name": "肌肉注射",
+    "actions": [
+      "POSTPONE",
+      "EDIT",
+      "DELETE"
+    ],
+    "remind_text": "前 1 天和当天各提醒一次",
+    "postponed": true,
+    "postpone_from_date": "2026-10-19",
+    "postponed_by_name": "你"
+  },
+  "trace_id": "mock-health-d06"
+}

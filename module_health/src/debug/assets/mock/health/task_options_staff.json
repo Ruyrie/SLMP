@@ -1,0 +1,33 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "task_id": 70113,
+      "pen_id": 2003,
+      "pen_name": "3 号育肥舍",
+      "task_date": "2026-10-19",
+      "date_text": "10月19日 今天",
+      "overdue": false,
+      "plan_text": "计划：聚维酮碘溶液 1:300 · 喷雾 · 每 3 天",
+      "plan_concentration": "1:300",
+      "method_code": "SPRAY",
+      "drug_id": 5301,
+      "default_lot_id": 6301
+    },
+    {
+      "task_id": 70114,
+      "pen_id": 2004,
+      "pen_name": "4 号育肥舍",
+      "task_date": "2026-10-19",
+      "date_text": "10月19日 今天",
+      "overdue": false,
+      "plan_text": "计划：聚维酮碘溶液 1:300 · 喷雾 · 每 3 天",
+      "plan_concentration": "1:300",
+      "method_code": "SPRAY",
+      "drug_id": 5301,
+      "default_lot_id": 6301
+    }
+  ],
+  "trace_id": "mock-health-d37-staff"
+}

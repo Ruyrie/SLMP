@@ -1,0 +1,27 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "pen_id": 2003,
+      "pen_code": "YF-03",
+      "pen_name": "3 号育肥舍",
+      "pen_type": "FATTENING",
+      "stock_count": 200,
+      "capacity": 220,
+      "disabled": false,
+      "unit_text": "头"
+    },
+    {
+      "pen_id": 2004,
+      "pen_code": "YF-04",
+      "pen_name": "4 号育肥舍",
+      "pen_type": "FATTENING",
+      "stock_count": 150,
+      "capacity": 220,
+      "disabled": false,
+      "unit_text": "头"
+    }
+  ],
+  "trace_id": "mock-health-l07-staff"
+}

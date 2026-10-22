@@ -1,0 +1,39 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 721,
+      "code": "SPRAY",
+      "name": "喷雾",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 1
+    },
+    {
+      "id": 722,
+      "code": "FUMIGATE",
+      "name": "熏蒸",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 2
+    },
+    {
+      "id": 723,
+      "code": "WIPE",
+      "name": "擦拭",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 3
+    },
+    {
+      "id": 724,
+      "code": "SOAK",
+      "name": "浸泡",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 4
+    }
+  ],
+  "trace_id": "mock-health-u10-disinfect"
+}

@@ -1,0 +1,6 @@
+{
+  "code": 42205,
+  "message": "不能超过存栏 200 头",
+  "data": null,
+  "trace_id": "mock-health-42205"
+}

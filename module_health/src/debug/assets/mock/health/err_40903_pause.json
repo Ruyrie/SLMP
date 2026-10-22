@@ -1,0 +1,6 @@
+{
+  "code": 40903,
+  "message": "计划当前不能暂停",
+  "data": null,
+  "trace_id": "mock-health-40903-pause"
+}

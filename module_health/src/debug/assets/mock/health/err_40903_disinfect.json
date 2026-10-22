@@ -1,0 +1,6 @@
+{
+  "code": 40903,
+  "message": "这条消毒任务已由李明登记，无需重复登记",
+  "data": null,
+  "trace_id": "mock-health-40903-d38"
+}

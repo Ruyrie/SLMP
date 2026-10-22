@@ -1,0 +1,33 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 61,
+    "version": 1,
+    "pen_ids": [
+      2006,
+      2007
+    ],
+    "pen_names_text": "母猪舍、产房",
+    "cycle_days": 7,
+    "start_date": "2026-10-20",
+    "end_date": "2026-12-31",
+    "due_time": "17:00",
+    "disinfectant_name": "聚维酮碘溶液",
+    "concentration": "1:500",
+    "method_code": "SPRAY",
+    "method_name": "喷雾",
+    "status": "ACTIVE",
+    "status_text": "启用中",
+    "next_task_date": "2026-10-20",
+    "next_task_text": "明天",
+    "pause_text": null,
+    "actions": [
+      "PAUSE",
+      "EDIT"
+    ],
+    "task_count": 22,
+    "toast": "已保存并启用，生成 22 条消毒任务"
+  },
+  "trace_id": "mock-health-d31"
+}

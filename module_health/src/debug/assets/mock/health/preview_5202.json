@@ -1,0 +1,21 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "ready": true,
+    "last_date": "2026-10-23",
+    "release_date": "2026-11-12",
+    "release_text": "11月12日 周四",
+    "estimated_qty": null,
+    "used_unit": "克",
+    "per_batch": [
+      {
+        "batch_id": 3003,
+        "batch_no": "ZM2610-045",
+        "release_date": "2026-11-12",
+        "estimated_qty": null
+      }
+    ]
+  },
+  "trace_id": "mock-health-d21-5202"
+}

@@ -1,0 +1,2040 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "status": "ALL"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "plans_3001_all_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "status": "ALL"
+      }
+    },
+    "file": "plans_3001_all.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "status": "PENDING"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "plans_3001_pending_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "status": "PENDING"
+      }
+    },
+    "file": "plans_3001_pending.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "status": "MISSED"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "plans_3001_missed_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "status": "MISSED"
+      }
+    },
+    "file": "plans_3001_missed.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "status": "POSTPONED"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "plans_3001_postponed_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "status": "POSTPONED"
+      }
+    },
+    "file": "plans_3001_postponed.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "status": "DONE"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "plans_3001_done_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "status": "DONE"
+      }
+    },
+    "file": "plans_3001_done.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "status": "CANCELLED"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "plans_3001_cancelled_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "status": "CANCELLED"
+      }
+    },
+    "file": "plans_3001_cancelled.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3002"
+      },
+      "query": {
+        "status": "ALL"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "plans_3002_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3002"
+      },
+      "query": {
+        "status": "ALL"
+      }
+    },
+    "file": "plans_3002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "when": {
+      "path": {
+        "batch_id": "3002"
+      },
+      "query": {
+        "status": "PENDING"
+      }
+    },
+    "file": "plans_3002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "file": "plans_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans/overview",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "overview_3001_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans/overview",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      }
+    },
+    "file": "overview_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans/overview",
+    "when": {
+      "path": {
+        "batch_id": "3002"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "overview_3002_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans/overview",
+    "when": {
+      "path": {
+        "batch_id": "3002"
+      }
+    },
+    "file": "overview_3002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans/overview",
+    "when": {
+      "path": {
+        "batch_id": "3003"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40304.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans/overview",
+    "when": {
+      "path": {
+        "batch_id": "3003"
+      }
+    },
+    "file": "overview_3003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans/overview",
+    "when": {
+      "path": {
+        "batch_id": "3004"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40304.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans/overview",
+    "when": {
+      "path": {
+        "batch_id": "3004"
+      }
+    },
+    "file": "overview_3004.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans/overview",
+    "when": {
+      "path": {
+        "batch_id": "3205"
+      }
+    },
+    "file": "overview_3205.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/immune-plans/overview",
+    "file": "overview_3001.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-plans/{id}/pre-entry-confirm",
+    "when": {
+      "path": {
+        "id": "8101"
+      }
+    },
+    "file": "pre_confirm_8101.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-plans/{id}/pre-entry-confirm",
+    "when": {
+      "path": {
+        "id": "8102"
+      }
+    },
+    "file": "pre_confirm_8102.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-plans/{id}/pre-entry-confirm",
+    "when": {
+      "path": {
+        "id": "8103"
+      }
+    },
+    "file": "pre_confirm_8103.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-plans/{id}/pre-entry-confirm",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_pre_entry.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-plans/{id}/pre-entry-undo",
+    "file": "pre_undo.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-plans/{id}/pre-entry-join",
+    "file": "pre_join.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-plans/{id}/postpone",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_postpone.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-plans/{id}/postpone",
+    "when": {
+      "path": {
+        "id": "8123"
+      }
+    },
+    "file": "err_40903_postpone.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-plans/{id}/postpone",
+    "file": "postpone_ok.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/batches/{batch_id}/immune-plans",
+    "file": "plan_created.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/immune-plans/{id}",
+    "file": "plan_updated.json"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/immune-plans/{id}",
+    "when": {
+      "path": {
+        "id": "8110"
+      }
+    },
+    "file": "err_40903_delete_plan.json"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/immune-plans/{id}",
+    "file": "ok_null.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-plans/options",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "plan_options_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-plans/options",
+    "file": "plan_options.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5001",
+        "purpose": "VACCINATION"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "lots_5001_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5001",
+        "purpose": "VACCINATION"
+      }
+    },
+    "file": "lots_5001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5002",
+        "purpose": "VACCINATION"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "lots_5002_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5002",
+        "purpose": "VACCINATION"
+      }
+    },
+    "file": "lots_5002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5003",
+        "purpose": "VACCINATION"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "lots_5003_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5003",
+        "purpose": "VACCINATION"
+      }
+    },
+    "file": "lots_5003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5004",
+        "purpose": "VACCINATION"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "lots_5004_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5004",
+        "purpose": "VACCINATION"
+      }
+    },
+    "file": "lots_5004.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5011",
+        "purpose": "VACCINATION"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "lots_5011_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5011",
+        "purpose": "VACCINATION"
+      }
+    },
+    "file": "lots_5011.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5012",
+        "purpose": "VACCINATION"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "lots_5012_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5012",
+        "purpose": "VACCINATION"
+      }
+    },
+    "file": "lots_5012.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5201",
+        "purpose": "MEDICATION"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "lots_5201_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5201",
+        "purpose": "MEDICATION"
+      }
+    },
+    "file": "lots_5201.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5202",
+        "purpose": "MEDICATION"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "lots_5202_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5202",
+        "purpose": "MEDICATION"
+      }
+    },
+    "file": "lots_5202.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5204",
+        "purpose": "MEDICATION"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "lots_5204_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5204",
+        "purpose": "MEDICATION"
+      }
+    },
+    "file": "lots_5204.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5205",
+        "purpose": "MEDICATION"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "lots_5205_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5205",
+        "purpose": "MEDICATION"
+      }
+    },
+    "file": "lots_5205.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5301",
+        "purpose": "DISINFECT"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "lots_5301_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5301",
+        "purpose": "DISINFECT"
+      }
+    },
+    "file": "lots_5301.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5302",
+        "purpose": "DISINFECT"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "lots_5302_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5302",
+        "purpose": "DISINFECT"
+      }
+    },
+    "file": "lots_5302.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-plans/{id}/register-form",
+    "when": {
+      "path": {
+        "id": "8121"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_backfill.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-plans/{id}/register-form",
+    "when": {
+      "path": {
+        "id": "8132"
+      }
+    },
+    "file": "err_40903_registered.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-plans/{id}/register-form",
+    "when": {
+      "path": {
+        "id": "8121"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "register_form_8121_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-plans/{id}/register-form",
+    "when": {
+      "path": {
+        "id": "8121"
+      }
+    },
+    "file": "register_form_8121.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-plans/{id}/register-form",
+    "when": {
+      "path": {
+        "id": "8131"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "register_form_8131_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-plans/{id}/register-form",
+    "when": {
+      "path": {
+        "id": "8131"
+      }
+    },
+    "file": "register_form_8131.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-plans/{id}/register-form",
+    "when": {
+      "path": {
+        "id": "8117"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "register_form_8117_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-plans/{id}/register-form",
+    "when": {
+      "path": {
+        "id": "8117"
+      }
+    },
+    "file": "register_form_8117.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-plans/{id}/register-form",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "register_form_8117_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-plans/{id}/register-form",
+    "file": "register_form_8117.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/vaccines/options",
+    "when": {
+      "query": {
+        "category_id": "201"
+      }
+    },
+    "file": "vaccines_poultry.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/vaccines/options",
+    "file": "vaccines.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-records",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "body": "\"plan_id\":8121"
+    },
+    "file": "err_40303_backfill_submit.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-records",
+    "when": {
+      "body": "\"plan_id\":8132"
+    },
+    "file": "err_40903_registered.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-records",
+    "when": {
+      "body": "\"drug_lot_id\":6002"
+    },
+    "file": "err_42201_concurrent.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-records",
+    "when": {
+      "body": "\"drug_lot_id\":6004"
+    },
+    "file": "err_42204_recalled.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-records",
+    "when": {
+      "body": "\"drug_id\":5004"
+    },
+    "file": "err_42203_banned.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-records",
+    "when": {
+      "body": "\"quantity\":2000"
+    },
+    "file": "err_42205_quantity.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-records",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "immune_record_created_staff.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/immune-records",
+    "file": "immune_record_created.json",
+    "delay": 600
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-records/{id}",
+    "when": {
+      "path": {
+        "id": "8790"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "immune_record_8790_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-records/{id}",
+    "when": {
+      "path": {
+        "id": "8790"
+      }
+    },
+    "file": "immune_record_8790.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-records/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "immune_record_8801_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/immune-records/{id}",
+    "file": "immune_record_8801.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/immune-records/{id}",
+    "when": {
+      "path": {
+        "id": "8790"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40307_immune_staff.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/immune-records/{id}",
+    "when": {
+      "path": {
+        "id": "8790"
+      }
+    },
+    "file": "err_40307_immune.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/immune-records/{id}",
+    "file": "immune_record_updated.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/health-records/by-request/{client_request_id}",
+    "file": "request_not_found.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/withdrawal",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "withdrawal_3001_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/withdrawal",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      }
+    },
+    "file": "withdrawal_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/withdrawal",
+    "when": {
+      "path": {
+        "batch_id": "3002"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "withdrawal_3002_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/withdrawal",
+    "when": {
+      "path": {
+        "batch_id": "3002"
+      }
+    },
+    "file": "withdrawal_3002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/withdrawal",
+    "when": {
+      "path": {
+        "batch_id": "3003"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40304.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/withdrawal",
+    "when": {
+      "path": {
+        "batch_id": "3003"
+      }
+    },
+    "file": "withdrawal_3003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/withdrawal",
+    "when": {
+      "path": {
+        "batch_id": "3004"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40304.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/withdrawal",
+    "when": {
+      "path": {
+        "batch_id": "3004"
+      }
+    },
+    "file": "withdrawal_3004.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/withdrawal",
+    "file": "withdrawal_3003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/medication-records",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "med_records_3001_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/medication-records",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      }
+    },
+    "file": "med_records_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/medication-records",
+    "when": {
+      "path": {
+        "batch_id": "3002"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "med_records_3002_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/medication-records",
+    "when": {
+      "path": {
+        "batch_id": "3002"
+      }
+    },
+    "file": "med_records_3002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/medication-records",
+    "when": {
+      "path": {
+        "batch_id": "3004"
+      }
+    },
+    "file": "med_records_3004.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/medication-records",
+    "file": "plans_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication/targets",
+    "when": {
+      "query": {
+        "target_type": "BATCH"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "targets_batch_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication/targets",
+    "when": {
+      "query": {
+        "target_type": "PEN"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "targets_pen_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication/targets",
+    "when": {
+      "query": {
+        "target_type": "BATCH"
+      }
+    },
+    "file": "targets_batch.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication/targets",
+    "when": {
+      "query": {
+        "target_type": "PEN"
+      }
+    },
+    "file": "targets_pen.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication/drug-options",
+    "when": {
+      "query": {
+        "keyword": "克仑特罗"
+      }
+    },
+    "file": "drug_options_banned.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication/drug-options",
+    "when": {
+      "query": {
+        "keyword": "阿莫"
+      }
+    },
+    "file": "drug_options_amoxicillin.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication/drug-options",
+    "file": "drug_options.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/medication-records/preview",
+    "when": {
+      "body": "\"drug_id\":5202"
+    },
+    "file": "preview_5202.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/medication-records/preview",
+    "when": {
+      "body": "\"drug_id\":5204"
+    },
+    "file": "preview_5204.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/medication-records/preview",
+    "when": {
+      "body": "\"drug_id\":5205"
+    },
+    "file": "preview_5205.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/medication-records/preview",
+    "file": "preview.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/medication-records",
+    "when": {
+      "body": "\"drug_id\":5204"
+    },
+    "file": "err_42203_banned.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/medication-records",
+    "when": {
+      "body": "\"drug_lot_id\":6104"
+    },
+    "file": "err_42204_expired.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/medication-records",
+    "when": {
+      "body": "\"used_qty\":2800",
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_42201_drug_staff.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/medication-records",
+    "when": {
+      "body": "\"used_qty\":2800"
+    },
+    "file": "err_42201_drug.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/medication-records",
+    "file": "med_created.json",
+    "delay": 600
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication-records/{id}",
+    "when": {
+      "path": {
+        "id": "5101"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "med_detail_5101_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication-records/{id}",
+    "when": {
+      "path": {
+        "id": "5101"
+      }
+    },
+    "file": "med_detail_5101.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication-records/{id}",
+    "when": {
+      "path": {
+        "id": "5102"
+      }
+    },
+    "file": "med_detail_5102.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication-records/{id}",
+    "when": {
+      "path": {
+        "id": "5110"
+      }
+    },
+    "file": "med_detail_5110.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication-records/{id}",
+    "when": {
+      "path": {
+        "id": "5111"
+      }
+    },
+    "file": "med_detail_5111.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication-records/{id}",
+    "when": {
+      "path": {
+        "id": "5120"
+      }
+    },
+    "file": "med_detail_5120.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication-records/{id}",
+    "when": {
+      "path": {
+        "id": "5121"
+      }
+    },
+    "file": "med_detail_5121.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication-records/{id}",
+    "file": "med_detail_5101.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/medication-records/{id}",
+    "when": {
+      "body": "\"course_days\":3",
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40307_advance_staff.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/medication-records/{id}",
+    "when": {
+      "body": "\"course_days\":3"
+    },
+    "file": "err_40307_advance.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/medication-records/{id}",
+    "file": "med_updated.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication-records/{id}/delete-impact",
+    "when": {
+      "path": {
+        "id": "5101"
+      }
+    },
+    "file": "delete_impact_5101.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication-records/{id}/delete-impact",
+    "when": {
+      "path": {
+        "id": "5102"
+      }
+    },
+    "file": "delete_impact_5102.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication-records/{id}/delete-impact",
+    "when": {
+      "path": {
+        "id": "5110"
+      }
+    },
+    "file": "delete_impact_5110.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication-records/{id}/delete-impact",
+    "when": {
+      "path": {
+        "id": "5111"
+      }
+    },
+    "file": "delete_impact_5111.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication-records/{id}/delete-impact",
+    "when": {
+      "path": {
+        "id": "5120"
+      }
+    },
+    "file": "delete_impact_5120.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/medication-records/{id}/delete-impact",
+    "file": "delete_impact_5102.json"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/medication-records/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_delete_staff.json"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/medication-records/{id}",
+    "when": {
+      "path": {
+        "id": "5111"
+      }
+    },
+    "file": "med_deleted.json"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/medication-records/{id}",
+    "file": "err_40307_delete.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/medication-records/{id}/notify-manager",
+    "when": {
+      "body": "\"action\":\"UPDATE\"",
+      "path": {
+        "id": "5102"
+      }
+    },
+    "file": "err_42901_notify.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/medication-records/{id}/notify-manager",
+    "file": "notify_ok.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/linkable",
+    "when": {
+      "query": {
+        "batch_id": "3003"
+      }
+    },
+    "file": "reports_2001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/linkable",
+    "when": {
+      "query": {
+        "pen_id": "2001"
+      }
+    },
+    "file": "reports_2001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/abnormal-reports/linkable",
+    "when": {
+      "query": {
+        "batch_id": "3001"
+      }
+    },
+    "file": "reports_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-plans",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_plans.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-plans",
+    "when": {
+      "query": {
+        "status": "ACTIVE"
+      }
+    },
+    "file": "dplans_active.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-plans",
+    "when": {
+      "query": {
+        "status": "PAUSED"
+      }
+    },
+    "file": "dplans_paused.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-plans",
+    "file": "dplans_all.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-plans/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_plans.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-plans/{id}",
+    "when": {
+      "path": {
+        "id": "63"
+      }
+    },
+    "file": "dplan_63.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-plans/{id}",
+    "when": {
+      "path": {
+        "id": "64"
+      }
+    },
+    "file": "dplan_64.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-plans/{id}",
+    "file": "dplan_62.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-plans/preview",
+    "when": {
+      "body": "\"plan_id\":"
+    },
+    "file": "dplan_preview_edit.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-plans/preview",
+    "file": "dplan_preview.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-plans",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_plans.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-plans",
+    "file": "dplan_created.json",
+    "delay": 600
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/disinfect-plans/{id}",
+    "file": "dplan_updated.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-plans/{id}/pause",
+    "when": {
+      "path": {
+        "id": "62"
+      }
+    },
+    "file": "dplan_paused_62.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-plans/{id}/pause",
+    "when": {
+      "path": {
+        "id": "63"
+      }
+    },
+    "file": "dplan_paused_63.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-plans/{id}/pause",
+    "file": "err_40903_pause.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-plans/{id}/resume",
+    "when": {
+      "path": {
+        "id": "64"
+      }
+    },
+    "file": "dplan_resumed.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-plans/{id}/resume",
+    "file": "err_40903_resume.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfectants/options",
+    "file": "disinfectants.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-tasks",
+    "when": {
+      "query": {
+        "status": "ALL"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "tasks_all_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-tasks",
+    "when": {
+      "query": {
+        "status": "ALL"
+      }
+    },
+    "file": "tasks_all.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-tasks",
+    "when": {
+      "query": {
+        "status": "OVERDUE"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "tasks_overdue_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-tasks",
+    "when": {
+      "query": {
+        "status": "OVERDUE"
+      }
+    },
+    "file": "tasks_overdue.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-tasks",
+    "when": {
+      "query": {
+        "status": "PENDING"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "tasks_pending_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-tasks",
+    "when": {
+      "query": {
+        "status": "PENDING"
+      }
+    },
+    "file": "tasks_pending.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-tasks",
+    "when": {
+      "query": {
+        "status": "DONE"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "tasks_done_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-tasks",
+    "when": {
+      "query": {
+        "status": "DONE"
+      }
+    },
+    "file": "tasks_done.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-tasks/options",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "task_options_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-tasks/options",
+    "file": "task_options.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-records",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "body": "\"task_id\":70112"
+    },
+    "file": "err_40303_overdue.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-records",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "body": "\"task_id\":70114"
+    },
+    "file": "disinfect_created_staff.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-records",
+    "when": {
+      "body": "\"task_id\":70114"
+    },
+    "file": "err_40903_disinfect.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-records",
+    "when": {
+      "body": "\"drug_lot_id\":6302"
+    },
+    "file": "err_42204_recalled.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-records",
+    "when": {
+      "body": "\"usage_qty\":1.9"
+    },
+    "file": "err_42201_usage.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-records",
+    "when": {
+      "body": "\"record_type\":\"EMPTY_PEN\""
+    },
+    "file": "disinfect_created_empty.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-records",
+    "when": {
+      "body": "\"record_type\":\"EMERGENCY\""
+    },
+    "file": "disinfect_created_emergency.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/disinfect-records",
+    "file": "disinfect_created.json",
+    "delay": 600
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-records/{id}",
+    "when": {
+      "path": {
+        "id": "7101"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40304.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-records/{id}",
+    "when": {
+      "path": {
+        "id": "7091"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "disinfect_record_7091_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-records/{id}",
+    "when": {
+      "path": {
+        "id": "7091"
+      }
+    },
+    "file": "disinfect_record_7091.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/disinfect-records/{id}",
+    "file": "disinfect_record_7101.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/disinfect-records/{id}",
+    "when": {
+      "path": {
+        "id": "7091"
+      }
+    },
+    "file": "err_40307_disinfect.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/disinfect-records/{id}",
+    "file": "disinfect_updated.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/base/dicts/{dict_type}",
+    "when": {
+      "path": {
+        "dict_type": "VACCINATE_METHOD"
+      },
+      "query": {
+        "category_id": "201"
+      }
+    },
+    "file": "dict_vaccinate_poultry.json",
+    "delay": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/base/dicts/{dict_type}",
+    "when": {
+      "path": {
+        "dict_type": "VACCINATE_METHOD"
+      }
+    },
+    "file": "dict_vaccinate_method.json",
+    "delay": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/base/dicts/{dict_type}",
+    "when": {
+      "path": {
+        "dict_type": "DISINFECT_METHOD"
+      }
+    },
+    "file": "dict_disinfect_method.json",
+    "delay": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "IMMUNE_PLAN"
+      }
+    },
+    "file": "logs_immune_plan.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "MEDICATION_RECORD"
+      }
+    },
+    "file": "logs_medication.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "IMMUNE_RECORD"
+      }
+    },
+    "file": "logs_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "DISINFECT_RECORD"
+      }
+    },
+    "file": "logs_disinfect.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/members",
+    "when": {
+      "query": {
+        "role": "ALL",
+        "size": "50"
+      }
+    },
+    "file": "members.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "MEDICATION_RECORD"
+      }
+    },
+    "file": "change_form_medication.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/change-requests",
+    "when": {
+      "body": "MEDICATION_RECORD"
+    },
+    "file": "change_submit_medication.json",
+    "delay": 600
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens",
+    "when": {
+      "query": {
+        "usage": "OPTIONS"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "pens_staff.json"
+  }
+]

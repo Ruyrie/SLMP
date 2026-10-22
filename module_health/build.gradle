@@ -2,6 +2,16 @@ apply from: rootProject.file('gradle/biz-component.gradle')
 
 android {
     namespace 'com.zhimu.slmp.health'
+
+    // 单独运行时另打包 src/alone/assets（mock/health_alone：本场栏舍下拉 API-L07 的所有者视图）。
+    // 完整 App 中这条接口由 module_herd 的 Mock 提供，health 目录排在 herd 之前，不能在 src/debug 中写无条件规则。
+    if (rootProject.ext.isRunAlone(project.name)) {
+        sourceSets {
+            debug {
+                assets.srcDirs += 'src/alone/assets'
+            }
+        }
+    }
 }
 
 dependencies {
