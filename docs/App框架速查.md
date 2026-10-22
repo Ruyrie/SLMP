@@ -50,6 +50,7 @@
 | router.RouterPath / RouterTable / Router | 页面常量（`RouterPath.L07`）与参数键（`EXTRA_FARM_ID` 等）；`Router.open(ctx, action[, extras])`、`openPage(ctx, "I06", extras)`、`openClearTask`、`registerForResult` + `openForResult`；未实现页面自动提示“该功能正在开发中” |
 | model.vo | 公共 VO：FileVO、MediaItemVO、OptionVO、UserBriefVO、FarmBriefVO、PenBriefVO、BatchBriefVO、ChangeRequest*VO、RecordLogVO、MessageBriefVO、FieldErrorVO、AuthTokenVO、AccountUserVO、SessionVO、RecoveryInfoVO、RecoveryCodeVO、FarmContextVO、FarmPermissionVO、DictItemVO、CategoryVO、CategoryBreedVO |
 | data.BaseDataRepository | `getCategories()`（U09）、`getDicts(DictTypes.PEN_TYPE, categoryId)`（U10，缓存 1 小时）、`getRecordLogs(bizType, bizId)`（U14） |
+| sms.*（测试直连，只在 debug 包） | `AliyunSmsConfig.fromBuildConfig().isDirectEnabled()`；`new AliyunSmsClient(config)`：`sendVerifyCode(phone, AliyunSmsTemplates.xxx)` 返回 `Single<SmsSendResult>`，`checkVerifyCode(phone, code)` 返回 Completable（不通过为 40103，频率限制为 42901）；签名 `AcsV3Signer`（ACS3-HMAC-SHA256）；模块01 经 `DirectSmsGateway` 接入 |
 | app.BaseApplication / PrivacyManager | 组件入口加载、全局事件处理；`PrivacyManager.ensureAgreed(activity, runnable)` |
 
 ## 四、新建一个页面
