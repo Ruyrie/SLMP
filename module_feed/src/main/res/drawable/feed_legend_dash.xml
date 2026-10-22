@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 图例“标准 / 计划”：16 dp 长的 2 dp outline 虚线 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="line">
+    <size
+        android:width="16dp"
+        android:height="4dp" />
+    <stroke
+        android:width="2dp"
+        android:color="@color/zm_outline"
+        android:dashWidth="4dp"
+        android:dashGap="2dp" />
+</shape>

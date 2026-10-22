@@ -1,0 +1,6 @@
+{
+  "code": 40303,
+  "message": "只能修改你本人登记的称重记录",
+  "data": null,
+  "trace_id": "mock-feed-err_40303_weigh"
+}

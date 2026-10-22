@@ -1,0 +1,128 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "batch": {
+      "batch_id": 3001,
+      "batch_no": "ZM2610-031",
+      "pen_names": "3 号育肥舍",
+      "breed_name": "杜长大育肥猪",
+      "current_count": 200,
+      "entry_date": "2026-10-01",
+      "entry_age_days": 78,
+      "entry_avg_weight": 45.0,
+      "status": "ACTIVE",
+      "day_age": 96
+    },
+    "growth_status": "SLOW",
+    "growth_status_text": "生长偏慢",
+    "metrics": {
+      "avg_weight": 60.0,
+      "day_age": 96,
+      "weigh_date": "2026-10-19",
+      "deviation_ratio": -0.1254,
+      "std_weight": 68.6,
+      "allowed_deviation": 0.1,
+      "daily_gain": 0.81,
+      "prev_daily_gain": 0.9,
+      "prev_gain_base_type": "INTAKE",
+      "cumulative_gain": 15.0
+    },
+    "actual_points": [
+      {
+        "date": "2026-10-01",
+        "day_age": 78,
+        "avg_weight": 45.0,
+        "std_weight": 49.0,
+        "is_entry": true
+      },
+      {
+        "date": "2026-10-05",
+        "day_age": 82,
+        "avg_weight": 48.6,
+        "std_weight": 53.2,
+        "is_entry": false
+      },
+      {
+        "date": "2026-10-19",
+        "day_age": 96,
+        "avg_weight": 60.0,
+        "std_weight": 68.6,
+        "is_entry": false
+      }
+    ],
+    "std_available": true,
+    "std_points": [
+      {
+        "day_age": 70,
+        "std_weight": 41.0,
+        "lower": 36.9,
+        "upper": 45.1
+      },
+      {
+        "day_age": 80,
+        "std_weight": 51.0,
+        "lower": 45.9,
+        "upper": 56.1
+      },
+      {
+        "day_age": 90,
+        "std_weight": 62.0,
+        "lower": 55.8,
+        "upper": 68.2
+      },
+      {
+        "day_age": 100,
+        "std_weight": 73.0,
+        "lower": 65.7,
+        "upper": 80.3
+      },
+      {
+        "day_age": 110,
+        "std_weight": 84.0,
+        "lower": 75.6,
+        "upper": 92.4
+      },
+      {
+        "day_age": 120,
+        "std_weight": 95.0,
+        "lower": 85.5,
+        "upper": 104.5
+      },
+      {
+        "day_age": 130,
+        "std_weight": 105.0,
+        "lower": 94.5,
+        "upper": 115.5
+      },
+      {
+        "day_age": 140,
+        "std_weight": 115.0,
+        "lower": 103.5,
+        "upper": 126.5
+      }
+    ],
+    "x_min": 78,
+    "x_max": 111,
+    "current_day_age": 96,
+    "compare_series": [
+      {
+        "batch_id": 3002,
+        "batch_no": "ZM2610-019",
+        "status": "ACTIVE",
+        "points": [
+          {
+            "day_age": 68,
+            "avg_weight": 38.2
+          },
+          {
+            "day_age": 75,
+            "avg_weight": 44.9
+          }
+        ]
+      }
+    ],
+    "std_updated_notice": false
+  },
+  "trace_id": "mock-feed-curve_3001_cmp_3002"
+}

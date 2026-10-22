@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    G03 饲喂方案：批次标题区 → （无方案 Notice）→ 品种标准卡 +“套用品种标准”→“按生长阶段”阶段卡（当前阶段展开）→
+    投喂异常判定；底部“保存方案”。顶部栏 history 打开修改记录。
+-->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.feed.ui.plan.FeedPlanViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/feed_top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{@string/feed_plan_title}" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/feed_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/feed_plan_error_title"
+            app:stateNoPermissionTitle="@string/feed_plan_no_permission_title"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/feed_plan_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{vm.batchHeader}"
+                        android:textAppearance="@style/TextAppearance.Zmt.TitleLarge.Number"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_1"
+                        android:text="@{vm.batchSummary}"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        app:noticeLevel="normal"
+                        app:noticeText="@string/feed_plan_no_plan_notice"
+                        app:visibleIf="@{vm.noPlanNotice}" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Zmt.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        app:shapeAppearance="@style/ShapeAppearance.Zmt.Corner.LargePlus">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:minHeight="76dp"
+                            android:orientation="horizontal"
+                            android:paddingStart="@dimen/base_space_4"
+                            android:paddingTop="@dimen/base_space_3"
+                            android:paddingEnd="@dimen/base_space_4"
+                            android:paddingBottom="@dimen/base_space_3">
+
+                            <ImageView
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:background="@drawable/feed_bg_leading"
+                                android:backgroundTint="?attr/colorSecondaryContainer"
+                                android:importantForAccessibility="no"
+                                android:scaleType="center"
+                                android:src="@drawable/ic_rule"
+                                app:tint="?attr/colorOnSecondaryContainer" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/base_space_4"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{vm.stdTitle}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{vm.stdCardText}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/feed_plan_apply"
+                                style="@style/Widget.Zmt.Button.Tonal.Small"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/base_space_2"
+                                android:text="@string/feed_plan_apply_std"
+                                app:visibleIf="@{vm.showApplyStd}" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:accessibilityHeading="true"
+                        android:text="@string/feed_plan_section_stages"
+                        android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+                        android:textColor="?attr/colorPrimary" />
+
+                    <LinearLayout
+                        android:id="@+id/feed_plan_stages"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_1"
+                        android:orientation="vertical" />
+
+                    <com.zhimu.slmp.base.widget.ListRowView
+                        android:id="@+id/feed_plan_threshold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        app:leadingTone="secondary"
+                        app:rowLeadingIcon="@drawable/feed_ic_percent"
+                        app:rowShowChevron="true"
+                        app:rowTitle="@string/feed_plan_threshold_title" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/feed_action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:barPrimaryText="@string/feed_plan_action_save" />
+    </LinearLayout>
+</layout>

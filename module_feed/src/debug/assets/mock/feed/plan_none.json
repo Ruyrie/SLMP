@@ -1,0 +1,63 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "plan_id": null,
+    "has_plan": false,
+    "batch": {
+      "batch_id": 3004,
+      "batch_no": "ZM2609-038",
+      "pen_names": "2 号保育舍",
+      "breed_name": "杜长大保育猪",
+      "day_age": 63,
+      "current_count": 200,
+      "entry_date": "2026-09-20",
+      "entry_age_days": 34
+    },
+    "std_card": {
+      "std_available": true,
+      "std_name": "杜长大保育猪标准",
+      "applied_at": null,
+      "applied_by_name": null,
+      "adjusted_count": 0,
+      "std_updated": false
+    },
+    "abnormal_threshold": 0.1,
+    "stages": [],
+    "feed_options": [
+      {
+        "feed_id": 4001,
+        "feed_name": "育肥全价料",
+        "unit": "KG",
+        "stock_qty": 500.0,
+        "remaining_days": 1,
+        "low_stock": true,
+        "selectable": true,
+        "disabled_reason": null
+      },
+      {
+        "feed_id": 4002,
+        "feed_name": "保育料",
+        "unit": "KG",
+        "stock_qty": 1200.0,
+        "remaining_days": 5,
+        "low_stock": false,
+        "selectable": true,
+        "disabled_reason": null
+      },
+      {
+        "feed_id": 4003,
+        "feed_name": "乳猪教槽料",
+        "unit": "KG",
+        "stock_qty": 0.0,
+        "remaining_days": null,
+        "low_stock": false,
+        "selectable": false,
+        "disabled_reason": "结存 0 千克，不能出库"
+      }
+    ],
+    "today_generated_meals": null,
+    "version": null
+  },
+  "trace_id": "mock-feed-plan_none"
+}

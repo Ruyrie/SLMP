@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- G06 图例一项：16 dp 线段 / 色块 + 12 sp 文字（on-surface-variant） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/feed_legend_mark"
+        android:layout_width="16dp"
+        android:layout_height="10dp"
+        android:importantForAccessibility="no"
+        android:layerType="software"
+        android:scaleType="center" />
+
+    <TextView
+        android:id="@+id/feed_legend_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_space_1"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall.Number"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+</LinearLayout>

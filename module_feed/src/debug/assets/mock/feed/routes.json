@@ -1,0 +1,1128 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/today/summary",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "summary_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/today/summary",
+    "file": "summary_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/today",
+    "when": {
+      "query": {
+        "status": "DONE"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "tasks_staff_done.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/today",
+    "when": {
+      "query": {
+        "status": "PENDING"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "tasks_staff_pending.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/today",
+    "when": {
+      "query": {
+        "status": "OVERDUE"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "page_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/today",
+    "when": {
+      "query": {
+        "pen_id": "2001"
+      }
+    },
+    "file": "tasks_pen_2001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/today",
+    "when": {
+      "query": {
+        "pen_id": "2003"
+      }
+    },
+    "file": "tasks_pen_2003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/today",
+    "when": {
+      "query": {
+        "pen_id": "2004"
+      }
+    },
+    "file": "tasks_pen_2004.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/today",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "tasks_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/today",
+    "when": {
+      "query": {
+        "status": "PENDING"
+      }
+    },
+    "file": "tasks_owner_pending.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/today",
+    "when": {
+      "query": {
+        "status": "DONE"
+      }
+    },
+    "file": "tasks_owner_done.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/today",
+    "when": {
+      "query": {
+        "status": "OVERDUE"
+      }
+    },
+    "file": "tasks_owner_overdue.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/today",
+    "file": "tasks_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70101"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40304_pen.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70101"
+      }
+    },
+    "file": "task_form_70101.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70107"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "task_form_70107_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70107"
+      }
+    },
+    "file": "task_form_70107.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70119"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "task_form_70119_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70119"
+      }
+    },
+    "file": "task_form_70119.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70108"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "task_form_70108_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70108"
+      }
+    },
+    "file": "task_form_70108.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70109"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "task_form_70109_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70109"
+      }
+    },
+    "file": "task_form_70109.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70110"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40304_pen.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70110"
+      }
+    },
+    "file": "task_form_70110.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70111"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "task_form_70111_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70111"
+      }
+    },
+    "file": "task_form_70111.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70115"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "task_form_70115_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70115"
+      }
+    },
+    "file": "task_form_70115.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70120"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40304_pen.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "path": {
+        "id": "70120"
+      }
+    },
+    "file": "task_form_70120.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "task_form_70108_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-tasks/{id}",
+    "file": "task_form_70108.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-records/{id}",
+    "when": {
+      "path": {
+        "id": "7106"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "record_7106_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-records/{id}",
+    "when": {
+      "path": {
+        "id": "7106"
+      }
+    },
+    "file": "record_7106.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-records/{id}",
+    "when": {
+      "path": {
+        "id": "7119"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "record_7119_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-records/{id}",
+    "when": {
+      "path": {
+        "id": "7119"
+      }
+    },
+    "file": "record_7119.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-records/{id}",
+    "when": {
+      "path": {
+        "id": "7001"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "record_7001_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-records/{id}",
+    "when": {
+      "path": {
+        "id": "7001"
+      }
+    },
+    "file": "record_7001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-records/{id}",
+    "when": {
+      "path": {
+        "id": "7002"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "record_7002_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-records/{id}",
+    "when": {
+      "path": {
+        "id": "7002"
+      }
+    },
+    "file": "record_7002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-records/lookup",
+    "file": "lookup_not_saved.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-records/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "record_7106_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-records/{id}",
+    "file": "record_7106.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/feed-records",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "record_created_staff.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/feed-records",
+    "when": {
+      "body": "\"executor_id\":10003"
+    },
+    "file": "record_created_proxy_li.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/feed-records",
+    "when": {
+      "body": "\"executor_id\":10004"
+    },
+    "file": "record_created_proxy_zhang.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/feed-records",
+    "file": "record_created_self.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/feed-records/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_record.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/feed-records/{id}",
+    "file": "record_updated.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/feed-records/{id}/void",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_record.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/feed-records/{id}/void",
+    "file": "record_voided.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-plans/batch-options",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_plan.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-plans/batch-options",
+    "file": "plan_batches.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/feed-plan",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_plan.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/feed-plan",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      }
+    },
+    "file": "plan_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/feed-plan",
+    "when": {
+      "path": {
+        "batch_id": "3002"
+      }
+    },
+    "file": "plan_3002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/feed-plan",
+    "when": {
+      "path": {
+        "batch_id": "3003"
+      }
+    },
+    "file": "plan_3003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/feed-plan",
+    "when": {
+      "path": {
+        "batch_id": "3004"
+      }
+    },
+    "file": "plan_none.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/feed-plan",
+    "file": "plan_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/feed-plan/standard",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_plan.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/feed-plan/standard",
+    "when": {
+      "path": {
+        "batch_id": "3003"
+      }
+    },
+    "file": "std_unavailable.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/feed-plan/standard",
+    "when": {
+      "path": {
+        "batch_id": "3004"
+      }
+    },
+    "file": "std_nursery.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/feed-plan/standard",
+    "file": "std_fatten.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/batches/{batch_id}/feed-plan",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_plan.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/batches/{batch_id}/feed-plan",
+    "file": "plan_saved.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "FEED_PLAN"
+      }
+    },
+    "file": "record_logs_plan.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/summary",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_exec.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/summary",
+    "when": {
+      "query": {
+        "all_batches": "true"
+      }
+    },
+    "file": "exec_all_7.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/summary",
+    "when": {
+      "query": {
+        "batch_id": "3002"
+      }
+    },
+    "file": "exec_3002_7.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/summary",
+    "when": {
+      "query": {
+        "range": "LAST_30"
+      }
+    },
+    "file": "exec_3001_batch.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/summary",
+    "when": {
+      "query": {
+        "range": "BATCH"
+      }
+    },
+    "file": "exec_3001_batch.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/summary",
+    "file": "exec_3001_7.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/attention",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_exec.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/attention",
+    "when": {
+      "query": {
+        "batch_id": "3002"
+      }
+    },
+    "file": "page_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/attention",
+    "when": {
+      "query": {
+        "all_batches": "true"
+      }
+    },
+    "file": "attention_all.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/attention",
+    "file": "attention_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/daily",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_exec.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/daily",
+    "when": {
+      "query": {
+        "date": "2026-10-16"
+      }
+    },
+    "file": "day_1016.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/daily",
+    "when": {
+      "query": {
+        "date": "2026-10-17"
+      }
+    },
+    "file": "day_1017.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/daily",
+    "when": {
+      "query": {
+        "date": "2026-10-18"
+      }
+    },
+    "file": "day_1018.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-executions/daily",
+    "file": "day_generic.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/weigh-records/batch-options",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "weigh_options_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/weigh-records/batch-options",
+    "when": {
+      "query": {
+        "include_ended": "true"
+      }
+    },
+    "file": "weigh_options_all.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/weigh-records/batch-options",
+    "file": "weigh_options_active.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/weigh-form",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "date": "2026-10-05"
+      }
+    },
+    "file": "weigh_form_3001_1005.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/weigh-form",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "weigh_form_3001_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/weigh-form",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      }
+    },
+    "file": "weigh_form_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/weigh-form",
+    "when": {
+      "path": {
+        "batch_id": "3002"
+      }
+    },
+    "file": "weigh_form_3002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/weigh-form",
+    "when": {
+      "path": {
+        "batch_id": "3003"
+      }
+    },
+    "file": "weigh_form_3003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/weigh-form",
+    "when": {
+      "path": {
+        "batch_id": "3009"
+      }
+    },
+    "file": "weigh_form_3009.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/weigh-form",
+    "file": "weigh_form_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/weigh-records/{id}",
+    "when": {
+      "path": {
+        "id": "3301"
+      }
+    },
+    "file": "weigh_record_3301.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/weigh-records/{id}",
+    "when": {
+      "path": {
+        "id": "3300"
+      }
+    },
+    "file": "weigh_record_3300.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/weigh-records/{id}",
+    "when": {
+      "path": {
+        "id": "3310"
+      }
+    },
+    "file": "weigh_record_3310.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/weigh-records/{id}",
+    "file": "weigh_record_3301.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/batches/{batch_id}/weigh-records",
+    "file": "weigh_created.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/weigh-records/{id}",
+    "when": {
+      "path": {
+        "id": "3300"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_weigh.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/weigh-records/{id}",
+    "file": "weigh_updated.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/batches/{batch_id}/weigh-cycle",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_cycle.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/batches/{batch_id}/weigh-cycle",
+    "when": {
+      "body": "\"reset\":true"
+    },
+    "file": "cycle_reset.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/batches/{batch_id}/weigh-cycle",
+    "file": "cycle_updated.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/growth-curve",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "compare_batch_ids": "3009"
+      }
+    },
+    "file": "curve_3001_cmp_3009.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/growth-curve",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "compare_batch_ids": "3002"
+      }
+    },
+    "file": "curve_3001_cmp_3002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/growth-curve",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "compare_batch_ids": "3009,3002"
+      }
+    },
+    "file": "curve_3001_cmp_both.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/growth-curve",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "query": {
+        "compare_batch_ids": "3002,3009"
+      }
+    },
+    "file": "curve_3001_cmp_both.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/growth-curve",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      }
+    },
+    "file": "curve_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/growth-curve",
+    "when": {
+      "path": {
+        "batch_id": "3002"
+      }
+    },
+    "file": "curve_3002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/growth-curve",
+    "when": {
+      "path": {
+        "batch_id": "3003"
+      }
+    },
+    "file": "curve_3003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/growth-curve",
+    "when": {
+      "path": {
+        "batch_id": "3009"
+      }
+    },
+    "file": "curve_3009.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/growth-curve",
+    "file": "curve_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/weigh-records",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "weigh_records_3001_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/weigh-records",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      }
+    },
+    "file": "weigh_records_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/weigh-records",
+    "when": {
+      "path": {
+        "batch_id": "3002"
+      }
+    },
+    "file": "weigh_records_3002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/weigh-records",
+    "when": {
+      "path": {
+        "batch_id": "3009"
+      }
+    },
+    "file": "weigh_records_3009.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/weigh-records",
+    "file": "page_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/growth-compare-options",
+    "when": {
+      "path": {
+        "batch_id": "3001"
+      }
+    },
+    "file": "compare_options_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{batch_id}/growth-compare-options",
+    "file": "compare_options_empty.json"
+  }
+]

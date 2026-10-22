@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- G03 投喂时间 Chip：1 dp outline 描边、圆角 8，schedule 18 dp + “07:00” -->
+<com.google.android.material.chip.Chip xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Zmt.Chip.Filter"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:checkable="false"
+    android:textAppearance="@style/TextAppearance.Zmt.LabelLarge"
+    app:chipIcon="@drawable/ic_schedule"
+    app:chipIconTint="?attr/colorOnSurfaceVariant"
+    app:chipIconVisible="true" />

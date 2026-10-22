@@ -1,0 +1,23 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "batch_id": 3002,
+      "batch_no": "ZM2610-019",
+      "pen_names": "4 号育肥舍",
+      "status": "ACTIVE",
+      "latest_avg_weight": 44.9,
+      "latest_day_age": 75
+    },
+    {
+      "batch_id": 3009,
+      "batch_no": "ZM2609-012",
+      "pen_names": "5 号育肥舍",
+      "status": "ENDED",
+      "latest_avg_weight": 98.5,
+      "latest_day_age": 122
+    }
+  ],
+  "trace_id": "mock-feed-compare_options_3001"
+}

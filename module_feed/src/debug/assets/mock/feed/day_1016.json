@@ -1,0 +1,50 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "date": "2026-10-16",
+    "actual_qty": 312.0,
+    "plan_qty": 480.0,
+    "done_meals": 2,
+    "planned_meals": 3,
+    "items": [
+      {
+        "task_id": 69896,
+        "batch_no": "ZM2610-031",
+        "pen_name": "3 号育肥舍",
+        "meal_name": "早餐",
+        "plan_qty": 160.0,
+        "actual_qty": 160.0,
+        "status": "DONE",
+        "status_text": "已投喂",
+        "executor_name": "李明",
+        "abnormal_type": "NONE"
+      },
+      {
+        "task_id": 69897,
+        "batch_no": "ZM2610-031",
+        "pen_name": "3 号育肥舍",
+        "meal_name": "午餐",
+        "plan_qty": 160.0,
+        "actual_qty": 152.0,
+        "status": "DONE",
+        "status_text": "已投喂",
+        "executor_name": "李明",
+        "abnormal_type": "NONE"
+      },
+      {
+        "task_id": 69898,
+        "batch_no": "ZM2610-031",
+        "pen_name": "3 号育肥舍",
+        "meal_name": "晚餐",
+        "plan_qty": 160.0,
+        "actual_qty": null,
+        "status": "MISSED",
+        "status_text": "已逾期",
+        "executor_name": null,
+        "abnormal_type": null
+      }
+    ]
+  },
+  "trace_id": "mock-feed-day_1016"
+}

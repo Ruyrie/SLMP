@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    G04 列表头部：批次 Chip（末尾“全部批次”，横向滚动）→ 时间范围连接按钮组 → 范围说明 → 指标卡 2 × 2 →
+    每日投喂量图表卡（标题 + 图例 + 柱状图）→ 分组标题“需要关注”（点柱后为当天明细）→ 列表为空的提示
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingEnd="@dimen/base_page_margin"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/feed_exec_batch_chips"
+            style="@style/Widget.Zmt.ChipGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleLine="true"
+            app:singleSelection="true" />
+    </HorizontalScrollView>
+
+    <com.zhimu.slmp.base.widget.ConnectedButtonGroup
+        android:id="@+id/feed_exec_range_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_page_margin"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:layout_marginEnd="@dimen/base_page_margin"
+        app:checkedButton="@id/feed_exec_range_7">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/feed_exec_range_7"
+            style="@style/Widget.Zmt.Button.Connected"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/feed_exec_range_7" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/feed_exec_range_30"
+            style="@style/Widget.Zmt.Button.Connected"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/feed_exec_range_30" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/feed_exec_range_batch"
+            style="@style/Widget.Zmt.Button.Connected"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/feed_exec_range_batch" />
+    </com.zhimu.slmp.base.widget.ConnectedButtonGroup>
+
+    <TextView
+        android:id="@+id/feed_exec_range_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_page_margin"
+        android:layout_marginTop="@dimen/base_space_1"
+        android:layout_marginEnd="@dimen/base_page_margin"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall.Number"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+
+    <LinearLayout
+        android:id="@+id/feed_exec_stats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_4"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingEnd="@dimen/base_page_margin">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <com.zhimu.slmp.feed.widget.FeedStatView
+                android:id="@+id/feed_exec_stat_rate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="104dp" />
+
+            <com.zhimu.slmp.feed.widget.FeedStatView
+                android:id="@+id/feed_exec_stat_dev"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:layout_weight="1"
+                android:minHeight="104dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_2"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <com.zhimu.slmp.feed.widget.FeedStatView
+                android:id="@+id/feed_exec_stat_qty"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="104dp" />
+
+            <com.zhimu.slmp.feed.widget.FeedStatView
+                android:id="@+id/feed_exec_stat_abnormal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:layout_weight="1"
+                android:minHeight="104dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.Zmt.Card.Summary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_page_margin"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:layout_marginEnd="@dimen/base_page_margin">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/feed_exec_chart_title"
+                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <ImageView
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/feed_bg_legend_square" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/base_space_1"
+                    android:text="@string/feed_exec_legend_actual"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="4dp"
+                    android:layout_marginStart="@dimen/base_space_3"
+                    android:importantForAccessibility="no"
+                    android:layerType="software"
+                    android:src="@drawable/feed_legend_dash" />
+
+                <TextView
+                    android:id="@+id/feed_exec_legend_plan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/base_space_1"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodySmall.Number"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_2">
+
+                <com.zhimu.slmp.feed.widget.FeedDailyBarView
+                    android:id="@+id/feed_exec_chart"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/feed_exec_chart_title" />
+
+                <TextView
+                    android:id="@+id/feed_exec_chart_empty"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="@string/feed_exec_no_task"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:visibility="gone" />
+            </FrameLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/feed_exec_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_page_margin"
+        android:layout_marginTop="@dimen/base_space_5"
+        android:layout_marginEnd="@dimen/base_page_margin"
+        android:layout_marginBottom="@dimen/base_space_3"
+        android:accessibilityHeading="true"
+        android:text="@string/feed_exec_section_attention"
+        android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+        android:textColor="?attr/colorPrimary" />
+
+    <TextView
+        android:id="@+id/feed_exec_list_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="@dimen/base_space_8"
+        android:paddingBottom="@dimen/base_space_8"
+        android:text="@string/feed_exec_attention_empty"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone" />
+</LinearLayout>

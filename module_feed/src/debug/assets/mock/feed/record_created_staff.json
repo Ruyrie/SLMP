@@ -1,0 +1,80 @@
+{
+  "code": 0,
+  "message": "已登记投喂，待办已自动完成",
+  "data": {
+    "record_id": {{seq}},
+    "task_id": 70108,
+    "status": "NORMAL",
+    "status_text": "正常",
+    "pen_name": "3 号育肥舍",
+    "meal_name": "午餐",
+    "feed_time": "11:30",
+    "feed_date": "2026-10-19",
+    "batch_id": 3001,
+    "batch_no": "ZM2610-031",
+    "breed_name": "杜长大育肥猪",
+    "day_age": 96,
+    "batch_stock": 200,
+    "feed": {
+      "feed_id": 4001,
+      "feed_name": "育肥全价料",
+      "unit": "KG",
+      "stock_qty": 500.0,
+      "remaining_days": 1,
+      "low_stock": true,
+      "selectable": true,
+      "disabled_reason": null
+    },
+    "plan_qty": 160.0,
+    "plan_formula": {
+      "head_count": 200,
+      "daily_qty_per_head": 2.4,
+      "meals_per_day": 3
+    },
+    "actual_qty": 140.0,
+    "deviation_ratio": -0.125,
+    "abnormal_type": "UNDER",
+    "abnormal_type_text": "少投",
+    "abnormal_threshold": 0.1,
+    "executor": {
+      "user_id": 10003,
+      "name": "李明",
+      "avatar_url": null,
+      "role": "STAFF",
+      "role_text": "员工"
+    },
+    "recorder": {
+      "user_id": 10003,
+      "name": "李明",
+      "avatar_url": null,
+      "role": "STAFF",
+      "role_text": "员工"
+    },
+    "is_proxy": false,
+    "is_backfill": false,
+    "registered_at": "2026-10-19 11:32:00",
+    "remark": null,
+    "view_mode": "READONLY",
+    "readonly_reason": "STAFF_CONFIRMED",
+    "change_state": {
+      "can_edit": false,
+      "edit_deadline": "2026-10-19 23:59:59",
+      "pending_request_id": null
+    },
+    "can_void": false,
+    "can_request_change": false,
+    "change_fields": [
+      "feed_id",
+      "actual_qty"
+    ],
+    "recalc_tags": [
+      "头均采食量",
+      "料肉比",
+      "饲料成本",
+      "经营报表"
+    ],
+    "version": 0,
+    "todo_completed": true
+  },
+  "trace_id": "mock-feed-record_created_staff"
+}

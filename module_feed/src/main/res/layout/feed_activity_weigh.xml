@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    G05 称重登记：批次信息卡（未带批次时为“选择批次”）→ 录入方式（抽样汇总 / 逐头录入）→ 称重日期 → 抽样数与总重（或逐头列表）
+    → 抽样偏少横幅 → 计算结果卡（平均体重、标准体重、偏离、日增重、生长预判）→ 称重周期；底部“提交称重”。
+    批次已结束时顶部错误 Notice，输入区与操作栏隐藏。
+-->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.feed.ui.weigh.WeighRegisterViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/feed_top_bar"
+            layout="@layout/base_include_top_app_bar" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/feed_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/feed_weigh_error_title"
+            app:stateNoPermissionTitle="@string/feed_no_pen_permission_title"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/feed_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:animateLayoutChanges="true"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_5"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/feed_weigh_block"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/base_space_4"
+                        android:text="@{vm.blockNotice}"
+                        app:goneIfNull="@{vm.blockNotice}"
+                        app:noticeLevel="error" />
+
+                    <com.zhimu.slmp.base.widget.ListRowView
+                        android:id="@+id/feed_weigh_batch_card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="98dp"
+                        app:leadingTone="secondary"
+                        app:rowLeadingIcon="@drawable/ic_scale" />
+
+                    <LinearLayout
+                        android:id="@+id/feed_weigh_form"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:animateLayoutChanges="true"
+                        android:orientation="vertical">
+
+                        <com.zhimu.slmp.base.widget.ConnectedButtonGroup
+                            android:id="@+id/feed_weigh_mode_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            app:checkedButton="@id/feed_weigh_mode_sample">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/feed_weigh_mode_sample"
+                                style="@style/Widget.Zmt.Button.Connected"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/feed_weigh_mode_sample" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/feed_weigh_mode_individual"
+                                style="@style/Widget.Zmt.Button.Connected"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/feed_weigh_mode_individual" />
+                        </com.zhimu.slmp.base.widget.ConnectedButtonGroup>
+
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                            android:id="@+id/feed_weigh_date_layout"
+                            style="@style/Widget.Zmt.TextInputLayout.Picker"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            android:hint="@string/feed_weigh_field_date"
+                            app:feedError="@{vm.fieldErrors[`weigh_date`]}">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/feed_weigh_date_input"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:dateText="@{vm.weighDate}"
+                                app:dateWithWeek="@{true}" />
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                        <!-- 抽样汇总 -->
+                        <LinearLayout
+                            android:id="@+id/feed_weigh_sample_box"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            android:baselineAligned="false"
+                            android:orientation="horizontal">
+
+                            <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                                style="@style/Widget.Zmt.TextInputLayout"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:hint="@string/feed_weigh_field_sample"
+                                app:errorIconDrawable="@null"
+                                app:feedError="@{vm.fieldErrors[`sample_count`]}"
+                                app:helperText="@{vm.sampleHelper}"
+                                app:helperTextEnabled="true"
+                                app:suffixText="@string/feed_unit_head">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/feed_weigh_sample_input"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:imeOptions="actionNext"
+                                    android:inputType="number"
+                                    android:maxLength="6"
+                                    android:text="@={vm.sampleCount}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+                            </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                            <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                                style="@style/Widget.Zmt.TextInputLayout"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/base_space_3"
+                                android:layout_weight="1"
+                                android:hint="@string/feed_weigh_field_total"
+                                app:errorIconDrawable="@null"
+                                app:feedError="@{vm.fieldErrors[`total_weight`]}"
+                                app:suffixText="@string/feed_unit_kg">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/feed_weigh_total_input"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:digits="0123456789.,"
+                                    android:inputType="numberDecimal"
+                                    android:maxLength="10"
+                                    android:text="@={vm.totalWeight}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+                            </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+                        </LinearLayout>
+
+                        <!-- 逐头录入 -->
+                        <LinearLayout
+                            android:id="@+id/feed_weigh_individual_box"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@{vm.individualSummary}"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <LinearLayout
+                                android:id="@+id/feed_weigh_items"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_1"
+                                android:text="@{vm.individualError}"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                android:textColor="?attr/colorError"
+                                app:goneIfNull="@{vm.individualError}" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/feed_weigh_add_item"
+                                style="@style/Widget.Zmt.Button.Text"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/feed_weigh_add_item"
+                                app:icon="@drawable/ic_add"
+                                app:visibleIf="@{vm.canAddItem}" />
+                        </LinearLayout>
+
+                        <com.zhimu.slmp.base.widget.NoticeView
+                            android:id="@+id/feed_weigh_low"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            app:noticeIcon="@drawable/ic_info"
+                            app:noticeLevel="warning"
+                            app:noticeText="@{vm.sampleLowText}"
+                            app:noticeTitle="@{@string/feed_weigh_low_title}"
+                            app:visibleIf="@{vm.sampleLow}" />
+
+                        <!-- 计算结果卡 -->
+                        <com.google.android.material.card.MaterialCardView
+                            style="@style/Widget.Zmt.Card.Summary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="@string/feed_weigh_result_avg"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                    <com.zhimu.slmp.base.widget.StatusTagView
+                                        android:id="@+id/feed_weigh_growth_tag"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:visibility="gone"
+                                        app:tagType="warning" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="@dimen/base_space_1"
+                                    android:baselineAligned="true"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@{vm.avgText}"
+                                        android:textAppearance="@style/TextAppearance.Zmt.DisplaySmall.Number"
+                                        android:textColor="?attr/colorOnSurface" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="@dimen/base_space_1"
+                                        android:text="@string/feed_unit_kg"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{vm.formulaText}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodySmall.Number"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    app:goneIfNull="@{vm.formulaText}" />
+
+                                <com.google.android.material.divider.MaterialDivider
+                                    style="@style/Widget.Zmt.Divider"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="@dimen/base_space_4"
+                                    android:layout_marginBottom="@dimen/base_space_2" />
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:minHeight="28dp"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="@{vm.stdLabel}"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@{vm.stdText}"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                                        android:textColor="?attr/colorOnSurface" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:minHeight="28dp"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="@string/feed_weigh_result_dev"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                    <TextView
+                                        android:id="@+id/feed_weigh_dev_value"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@{vm.deviationText}"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:minHeight="28dp"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="@{vm.dailyGainLabel}"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@{vm.dailyGainText}"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                                        android:textColor="?attr/colorOnSurface" />
+                                </LinearLayout>
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{vm.dailyGainNote}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    app:goneIfNull="@{vm.dailyGainNote}" />
+
+                                <TextView
+                                    android:id="@+id/feed_weigh_note"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="@dimen/base_space_2"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:visibility="gone" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
+                            android:id="@+id/feed_weigh_cycle_row"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_3"
+                            android:background="?attr/selectableItemBackground"
+                            android:gravity="center_vertical"
+                            android:minHeight="48dp"
+                            android:orientation="horizontal"
+                            android:paddingStart="@dimen/base_space_1"
+                            android:paddingEnd="@dimen/base_space_1">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/feed_weigh_cycle"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/feed_weigh_cycle_suggested"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:visibility="invisible"
+                                app:invisibleIf="@{!safeUnbox(vm.cycleSuggested)}" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@{vm.cycleText}"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_marginStart="@dimen/base_space_1"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_chevron_right"
+                                app:tint="?attr/colorOnSurfaceVariant"
+                                app:visibleIf="@{vm.cycleEditable}" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/feed_action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:barPrimaryText="@string/feed_weigh_action_submit" />
+    </LinearLayout>
+</layout>

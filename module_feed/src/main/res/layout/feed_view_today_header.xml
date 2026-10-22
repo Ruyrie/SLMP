@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- G01 列表头部：三张指标卡（今日计划 / 已投喂 / 已逾期）→ 库存不足横幅 → 状态与栏舍筛选 Chip（单行横向滚动）→ 筛选后为空的提示 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingEnd="@dimen/base_page_margin">
+
+        <com.zhimu.slmp.feed.widget.FeedStatView
+            android:id="@+id/feed_stat_plan"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="143"
+            android:minHeight="84dp"
+            app:feedStatEmphasis="true" />
+
+        <com.zhimu.slmp.feed.widget.FeedStatView
+            android:id="@+id/feed_stat_done"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_2"
+            android:layout_weight="111"
+            android:minHeight="84dp" />
+
+        <com.zhimu.slmp.feed.widget.FeedStatView
+            android:id="@+id/feed_stat_overdue"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_2"
+            android:layout_weight="110"
+            android:minHeight="84dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/feed_today_banners"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingEnd="@dimen/base_page_margin" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingEnd="@dimen/base_page_margin"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/feed_status_chips"
+                style="@style/Widget.Zmt.ChipGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:checkedChip="@id/feed_chip_all"
+                app:selectionRequired="true"
+                app:singleLine="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/feed_chip_all"
+                    style="@style/Widget.Zmt.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/feed_today_chip_all" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/feed_chip_pending"
+                    style="@style/Widget.Zmt.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/feed_today_chip_pending" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/feed_chip_done"
+                    style="@style/Widget.Zmt.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/feed_today_chip_done" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/feed_chip_overdue"
+                    style="@style/Widget.Zmt.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/feed_today_chip_overdue" />
+            </com.google.android.material.chip.ChipGroup>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/feed_chip_pen"
+                style="@style/Widget.Zmt.Chip.Dropdown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:text="@string/feed_today_chip_pen" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <TextView
+        android:id="@+id/feed_today_filter_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="@dimen/base_space_12"
+        android:paddingBottom="@dimen/base_space_12"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone" />
+</LinearLayout>

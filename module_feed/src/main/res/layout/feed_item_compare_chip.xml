@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- G06 已添加的对比批次输入 Chip：secondary-container 底，check + 批次号 + close（点 close 移除） -->
+<com.google.android.material.chip.Chip xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Zmt.Chip.Filter"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:checkable="false"
+    android:textAppearance="@style/TextAppearance.Zmt.LabelLarge"
+    app:chipBackgroundColor="@color/zm_secondary_container"
+    app:chipIcon="@drawable/ic_check"
+    app:chipIconTint="@color/zm_on_secondary_container"
+    app:chipIconVisible="true"
+    app:chipStrokeWidth="0dp"
+    app:closeIcon="@drawable/ic_close"
+    app:closeIconTint="@color/zm_on_secondary_container"
+    app:closeIconVisible="true" />

@@ -1,0 +1,30 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "batch": {
+      "batch_id": 3003,
+      "batch_no": "ZM2610-045",
+      "pen_names": "1 号保育舍",
+      "breed_name": "杜长大保育猪",
+      "current_count": 320,
+      "entry_date": "2026-10-12",
+      "entry_age_days": 28,
+      "entry_avg_weight": null,
+      "status": "ACTIVE",
+      "day_age": 35
+    },
+    "growth_status": "NONE",
+    "growth_status_text": "未称重",
+    "metrics": null,
+    "actual_points": [],
+    "std_available": false,
+    "std_points": [],
+    "x_min": 28,
+    "x_max": 50,
+    "current_day_age": 35,
+    "compare_series": [],
+    "std_updated_notice": false
+  },
+  "trace_id": "mock-feed-curve_3003"
+}

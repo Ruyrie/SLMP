@@ -1,0 +1,70 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "type": "ABNORMAL",
+        "date": "2026-10-18",
+        "meal_name": "晚餐",
+        "batch_id": 3001,
+        "batch_no": "ZM2610-031",
+        "pen_name": "3 号育肥舍",
+        "plan_qty": 160.0,
+        "actual_qty": 140.0,
+        "executor_name": "李明",
+        "abnormal_type": "UNDER",
+        "deviation_ratio": -0.125,
+        "task_status": "DONE",
+        "task_status_text": "已投喂",
+        "task_id": 69918,
+        "record_id": 7001,
+        "can_backfill": false,
+        "is_today": false
+      },
+      {
+        "type": "ABNORMAL",
+        "date": "2026-10-17",
+        "meal_name": "午餐",
+        "batch_id": 3001,
+        "batch_no": "ZM2610-031",
+        "pen_name": "3 号育肥舍",
+        "plan_qty": 160.0,
+        "actual_qty": 140.0,
+        "executor_name": "李明",
+        "abnormal_type": "UNDER",
+        "deviation_ratio": -0.125,
+        "task_status": "DONE",
+        "task_status_text": "已投喂",
+        "task_id": 69908,
+        "record_id": 7002,
+        "can_backfill": false,
+        "is_today": false
+      },
+      {
+        "type": "OVERDUE",
+        "date": "2026-10-16",
+        "meal_name": "晚餐",
+        "batch_id": 3001,
+        "batch_no": "ZM2610-031",
+        "pen_name": "3 号育肥舍",
+        "plan_qty": 160.0,
+        "actual_qty": null,
+        "executor_name": null,
+        "abnormal_type": null,
+        "deviation_ratio": null,
+        "task_status": "MISSED",
+        "task_status_text": "已逾期",
+        "task_id": 69898,
+        "record_id": null,
+        "can_backfill": false,
+        "is_today": false
+      }
+    ],
+    "total": 3,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-feed-attention_3001"
+}

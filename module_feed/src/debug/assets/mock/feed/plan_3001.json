@@ -1,0 +1,228 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "plan_id": 501,
+    "has_plan": true,
+    "batch": {
+      "batch_id": 3001,
+      "batch_no": "ZM2610-031",
+      "pen_names": "3 号育肥舍",
+      "breed_name": "杜长大育肥猪",
+      "day_age": 96,
+      "current_count": 200,
+      "entry_date": "2026-10-01",
+      "entry_age_days": 78
+    },
+    "std_card": {
+      "std_available": true,
+      "std_name": "杜长大育肥猪标准",
+      "applied_at": "2026-10-01 15:20:00",
+      "applied_by_name": "王建国",
+      "adjusted_count": 1,
+      "std_updated": false
+    },
+    "abnormal_threshold": 0.1,
+    "stages": [
+      {
+        "stage_id": 811,
+        "sort_no": 1,
+        "stage_name": "保育期",
+        "day_age_start": 28,
+        "day_age_end": 60,
+        "state": "ENDED",
+        "editable": false,
+        "exec_start_date": null,
+        "exec_end_date": null,
+        "enter_date": null,
+        "feed_id": 4002,
+        "feed_name": "保育料",
+        "low_stock": false,
+        "daily_qty_per_head": 1.2,
+        "std_daily_qty": 1.2,
+        "meals_per_day": 3,
+        "meal_times": [
+          {
+            "meal_no": 1,
+            "meal_code": "BREAKFAST",
+            "meal_name": "早餐",
+            "feed_time": "07:00"
+          },
+          {
+            "meal_no": 2,
+            "meal_code": "LUNCH",
+            "meal_name": "午餐",
+            "feed_time": "11:30"
+          },
+          {
+            "meal_no": 3,
+            "meal_code": "DINNER",
+            "meal_name": "晚餐",
+            "feed_time": "17:00"
+          }
+        ],
+        "adjusted_fields": [],
+        "today_plan_qty": null,
+        "per_meal_qty": null,
+        "estimate_daily_qty": null
+      },
+      {
+        "stage_id": 812,
+        "sort_no": 2,
+        "stage_name": "育肥前期",
+        "day_age_start": 61,
+        "day_age_end": 100,
+        "state": "CURRENT",
+        "editable": true,
+        "exec_start_date": "2026-10-01",
+        "exec_end_date": "2026-10-24",
+        "enter_date": null,
+        "feed_id": 4001,
+        "feed_name": "育肥全价料",
+        "low_stock": true,
+        "daily_qty_per_head": 2.4,
+        "std_daily_qty": 2.5,
+        "meals_per_day": 3,
+        "meal_times": [
+          {
+            "meal_no": 1,
+            "meal_code": "BREAKFAST",
+            "meal_name": "早餐",
+            "feed_time": "07:00"
+          },
+          {
+            "meal_no": 2,
+            "meal_code": "LUNCH",
+            "meal_name": "午餐",
+            "feed_time": "11:30"
+          },
+          {
+            "meal_no": 3,
+            "meal_code": "DINNER",
+            "meal_name": "晚餐",
+            "feed_time": "17:00"
+          }
+        ],
+        "adjusted_fields": [
+          "daily_qty"
+        ],
+        "today_plan_qty": 480.0,
+        "per_meal_qty": 160.0,
+        "estimate_daily_qty": null
+      },
+      {
+        "stage_id": 813,
+        "sort_no": 3,
+        "stage_name": "育肥中期",
+        "day_age_start": 101,
+        "day_age_end": 140,
+        "state": "UPCOMING",
+        "editable": true,
+        "exec_start_date": null,
+        "exec_end_date": null,
+        "enter_date": "2026-10-24",
+        "feed_id": 4001,
+        "feed_name": "育肥全价料",
+        "low_stock": true,
+        "daily_qty_per_head": 2.8,
+        "std_daily_qty": 2.8,
+        "meals_per_day": 3,
+        "meal_times": [
+          {
+            "meal_no": 1,
+            "meal_code": "BREAKFAST",
+            "meal_name": "早餐",
+            "feed_time": "07:00"
+          },
+          {
+            "meal_no": 2,
+            "meal_code": "LUNCH",
+            "meal_name": "午餐",
+            "feed_time": "11:30"
+          },
+          {
+            "meal_no": 3,
+            "meal_code": "DINNER",
+            "meal_name": "晚餐",
+            "feed_time": "17:00"
+          }
+        ],
+        "adjusted_fields": [],
+        "today_plan_qty": null,
+        "per_meal_qty": null,
+        "estimate_daily_qty": 560.0
+      },
+      {
+        "stage_id": 814,
+        "sort_no": 4,
+        "stage_name": "育肥后期",
+        "day_age_start": 141,
+        "day_age_end": null,
+        "state": "UPCOMING",
+        "editable": true,
+        "exec_start_date": null,
+        "exec_end_date": null,
+        "enter_date": "2026-12-03",
+        "feed_id": 4001,
+        "feed_name": "育肥全价料",
+        "low_stock": true,
+        "daily_qty_per_head": 3.1,
+        "std_daily_qty": 3.1,
+        "meals_per_day": 2,
+        "meal_times": [
+          {
+            "meal_no": 1,
+            "meal_code": "BREAKFAST",
+            "meal_name": "早餐",
+            "feed_time": "07:00"
+          },
+          {
+            "meal_no": 2,
+            "meal_code": "DINNER",
+            "meal_name": "晚餐",
+            "feed_time": "17:00"
+          }
+        ],
+        "adjusted_fields": [],
+        "today_plan_qty": null,
+        "per_meal_qty": null,
+        "estimate_daily_qty": 620.0
+      }
+    ],
+    "feed_options": [
+      {
+        "feed_id": 4001,
+        "feed_name": "育肥全价料",
+        "unit": "KG",
+        "stock_qty": 500.0,
+        "remaining_days": 1,
+        "low_stock": true,
+        "selectable": true,
+        "disabled_reason": null
+      },
+      {
+        "feed_id": 4002,
+        "feed_name": "保育料",
+        "unit": "KG",
+        "stock_qty": 1200.0,
+        "remaining_days": 5,
+        "low_stock": false,
+        "selectable": true,
+        "disabled_reason": null
+      },
+      {
+        "feed_id": 4003,
+        "feed_name": "乳猪教槽料",
+        "unit": "KG",
+        "stock_qty": 0.0,
+        "remaining_days": null,
+        "low_stock": false,
+        "selectable": false,
+        "disabled_reason": "结存 0 千克，不能出库"
+      }
+    ],
+    "today_generated_meals": null,
+    "version": 3
+  },
+  "trace_id": "mock-feed-plan_3001"
+}

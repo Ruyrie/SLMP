@@ -1,0 +1,91 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "start_date": "2026-10-12",
+    "end_date": "2026-10-18",
+    "range": "LAST_7",
+    "batch_count": 1,
+    "planned_meals": 21,
+    "done_meals": 20,
+    "exec_rate": 0.9524,
+    "deviation_ratio": -0.0297,
+    "deviation_direction": "LESS",
+    "actual_qty": 3105.0,
+    "plan_qty": 3360.0,
+    "abnormal_count": 2,
+    "under_count": 2,
+    "over_count": 0,
+    "abnormal_same_ratio": 0.125,
+    "plan_line_type": "FLAT",
+    "plan_daily_qty": 480.0,
+    "daily": [
+      {
+        "date": "2026-10-12",
+        "actual_qty": 472,
+        "plan_qty": 480,
+        "planned_meals": 3,
+        "done_meals": 3,
+        "deviation_ratio": -0.0167,
+        "over_threshold": false
+      },
+      {
+        "date": "2026-10-13",
+        "actual_qty": 468,
+        "plan_qty": 480,
+        "planned_meals": 3,
+        "done_meals": 3,
+        "deviation_ratio": -0.025,
+        "over_threshold": false
+      },
+      {
+        "date": "2026-10-14",
+        "actual_qty": 480,
+        "plan_qty": 480,
+        "planned_meals": 3,
+        "done_meals": 3,
+        "deviation_ratio": 0.0,
+        "over_threshold": false
+      },
+      {
+        "date": "2026-10-15",
+        "actual_qty": 464,
+        "plan_qty": 480,
+        "planned_meals": 3,
+        "done_meals": 3,
+        "deviation_ratio": -0.0333,
+        "over_threshold": false
+      },
+      {
+        "date": "2026-10-16",
+        "actual_qty": 312,
+        "plan_qty": 480,
+        "planned_meals": 3,
+        "done_meals": 2,
+        "deviation_ratio": -0.35,
+        "over_threshold": true
+      },
+      {
+        "date": "2026-10-17",
+        "actual_qty": 452,
+        "plan_qty": 480,
+        "planned_meals": 3,
+        "done_meals": 3,
+        "deviation_ratio": -0.0583,
+        "over_threshold": false
+      },
+      {
+        "date": "2026-10-18",
+        "actual_qty": 457,
+        "plan_qty": 480,
+        "planned_meals": 3,
+        "done_meals": 3,
+        "deviation_ratio": -0.0479,
+        "over_threshold": false
+      }
+    ],
+    "has_data": true,
+    "empty_reason": null
+  },
+  "trace_id": "mock-feed-exec_3001_7"
+}

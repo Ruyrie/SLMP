@@ -1,0 +1,69 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 3299,
+        "weigh_date": "2026-10-10",
+        "day_age": 122,
+        "avg_weight": 98.5,
+        "sample_count": 30,
+        "mode": "SAMPLE",
+        "recorder_name": "张伟",
+        "std_weight": 98.6,
+        "deviation_ratio": -0.001,
+        "out_of_range": false,
+        "daily_gain": 1.34,
+        "action": "REQUEST_CHANGE"
+      },
+      {
+        "id": 3298,
+        "weigh_date": "2026-09-26",
+        "day_age": 108,
+        "avg_weight": 79.8,
+        "sample_count": 30,
+        "mode": "SAMPLE",
+        "recorder_name": "张伟",
+        "std_weight": 81.8,
+        "deviation_ratio": -0.0244,
+        "out_of_range": false,
+        "daily_gain": 1.16,
+        "action": "REQUEST_CHANGE"
+      },
+      {
+        "id": 3297,
+        "weigh_date": "2026-09-12",
+        "day_age": 94,
+        "avg_weight": 63.5,
+        "sample_count": 30,
+        "mode": "SAMPLE",
+        "recorder_name": "张伟",
+        "std_weight": 66.4,
+        "deviation_ratio": -0.0437,
+        "out_of_range": false,
+        "daily_gain": 1.02,
+        "action": "REQUEST_CHANGE"
+      },
+      {
+        "id": 3296,
+        "weigh_date": "2026-08-29",
+        "day_age": 80,
+        "avg_weight": 49.2,
+        "sample_count": 30,
+        "mode": "SAMPLE",
+        "recorder_name": "张伟",
+        "std_weight": 51.0,
+        "deviation_ratio": -0.0353,
+        "out_of_range": false,
+        "daily_gain": 0.94,
+        "action": "REQUEST_CHANGE"
+      }
+    ],
+    "total": 4,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-feed-weigh_records_3009"
+}

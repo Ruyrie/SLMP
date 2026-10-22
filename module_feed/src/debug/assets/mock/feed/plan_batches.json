@@ -1,0 +1,39 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "batch_id": 3001,
+      "batch_no": "ZM2610-031",
+      "pen_names": "3 号育肥舍",
+      "breed_name": "杜长大育肥猪",
+      "day_age": 96,
+      "has_plan": true
+    },
+    {
+      "batch_id": 3003,
+      "batch_no": "ZM2610-045",
+      "pen_names": "1 号保育舍",
+      "breed_name": "杜长大保育猪",
+      "day_age": 35,
+      "has_plan": true
+    },
+    {
+      "batch_id": 3002,
+      "batch_no": "ZM2610-019",
+      "pen_names": "4 号育肥舍",
+      "breed_name": "杜长大育肥猪",
+      "day_age": 82,
+      "has_plan": true
+    },
+    {
+      "batch_id": 3004,
+      "batch_no": "ZM2609-038",
+      "pen_names": "2 号保育舍",
+      "breed_name": "杜长大保育猪",
+      "day_age": 63,
+      "has_plan": false
+    }
+  ],
+  "trace_id": "mock-feed-plan_batches"
+}
