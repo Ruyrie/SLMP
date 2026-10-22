@@ -45,7 +45,7 @@ public abstract class BaseFragment extends Fragment {
         if (message == null || getView() == null) {
             return;
         }
-        SnackbarHelper.show(requireView(), message, getSnackbarAnchor(), this::dispatchMessageAction);
+        SnackbarHelper.show(requireView(), message, getSnackbarAnchor(), id -> dispatchMessageAction(message, id));
     }
 
     public void showMessage(@NonNull String text) {
@@ -55,9 +55,9 @@ public abstract class BaseFragment extends Fragment {
     protected void onMessageAction(@NonNull String actionId) {
     }
 
-    private void dispatchMessageAction(@NonNull String actionId) {
+    private void dispatchMessageAction(@NonNull UiMessage message, @NonNull String actionId) {
         if (UiMessage.isPageAction(actionId) && getActivity() != null) {
-            BaseActivity.openPageAction(requireActivity(), actionId);
+            BaseActivity.openPageAction(requireActivity(), actionId, message.getActionExtras());
         } else {
             onMessageAction(actionId);
         }

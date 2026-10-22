@@ -1,6 +1,16 @@
 [
   {
     "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "INSPECTION"
+      }
+    },
+    "file": "change_form_inspection.json"
+  },
+  {
+    "method": "GET",
     "path": "/api/v1/inspections/summary",
     "when": {
       "header": {

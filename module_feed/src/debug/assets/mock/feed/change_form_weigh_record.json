@@ -1,0 +1,51 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "biz_type": "WEIGH_RECORD",
+    "biz_id": 8101,
+    "biz_type_text": "称重记录",
+    "record_locator": "ZM2610-031 · 10月5日称重",
+    "record_title": "称重记录 · 3 号育肥舍",
+    "record_subtitle": "ZM2610-031 · 10月5日 · 李明登记",
+    "record_version": "2",
+    "record_card": [
+      {
+        "label": "抽样头数",
+        "value": "20 头"
+      },
+      {
+        "label": "平均体重",
+        "value": "48.6 千克"
+      }
+    ],
+    "fields": [
+      {
+        "field_code": "avg_weight",
+        "field_name": "平均体重",
+        "value": "48.6",
+        "value_unit": "千克",
+        "input_type": "NUMBER",
+        "options": [],
+        "min": 0,
+        "max": 500
+      }
+    ],
+    "linked_rules": [
+      "修改平均体重会重新计算日增重与生长曲线偏离"
+    ],
+    "review_tip": "这条记录会影响生长曲线和出栏预估，需要管理员审核。审核期间原记录照常有效，审核通过后才会修改并重新计算。",
+    "pending_request_id": null,
+    "void_allowed": false,
+    "recalc_tags": {
+      "avg_weight": [
+        "日增重",
+        "生长曲线"
+      ]
+    },
+    "field_hints": {
+      "avg_weight": "标准 52.3 千克"
+    }
+  },
+  "trace_id": "mock-u01-weigh_record"
+}

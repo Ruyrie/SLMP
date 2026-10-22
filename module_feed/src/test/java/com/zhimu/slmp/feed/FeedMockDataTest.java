@@ -46,7 +46,8 @@ public class FeedMockDataTest {
             String path = r.get("path").getAsString();
             boolean own = path.startsWith("/api/v1/feed-") || path.startsWith("/api/v1/weigh-records")
                     || path.matches("^/api/v1/batches/\\{batch_id}/(feed-plan.*|weigh-.*|growth-.*)$")
-                    || (path.equals("/api/v1/record-logs") && r.has("when"));
+                    || ((path.equals("/api/v1/record-logs") || path.equals("/api/v1/change-requests/form"))
+                    && r.has("when"));
             assertTrue(path, own);
             JsonObject resp = TestRules.mockResponse(r.get("file").getAsString());
             assertTrue(r.get("file").getAsString(), resp.has("code") && resp.has("message") && resp.has("trace_id"));

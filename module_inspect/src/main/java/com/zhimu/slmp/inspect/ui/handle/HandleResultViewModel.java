@@ -28,6 +28,11 @@ import java.util.Map;
 import java.util.Objects;
 
 import javax.inject.Inject;
+import com.zhimu.slmp.base.util.DateFormatter;
+import com.zhimu.slmp.inspect.ai.DirectDiagnosisRepository;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * I07 登记 / 修改处理结果（所有者、场长，模块07 文档 2.4.8）：诊断人、处理方式、是否用药（“转为用药记录”先保存再进入 D04）、
@@ -43,6 +48,7 @@ public class HandleResultViewModel extends BaseViewModel {
     public static final String F_CULLED = "culled_count";
     public static final String F_AI_MATCH = "ai_match";
 
+    private final DirectDiagnosisRepository direct;
     private final AbnormalReportRepository repository;
 
     private final MutableLiveData<DiagnosisDetailVO> detail = new MutableLiveData<>();
@@ -73,20 +79,39 @@ public class HandleResultViewModel extends BaseViewModel {
     private boolean finished;
 
     @Inject
-    public HandleResultViewModel(@NonNull AbnormalReportRepository repository) {
+    public HandleResultViewModel(@NonNull AbnormalReportRepository repository,
+                                 @NonNull DirectDiagnosisRepository direct) {
         this.repository = repository;
+        this.direct = direct;
     }
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         Long id = Args.getLong(handle, InspectExtras.EXTRA_REPORT_ID);
         reportId = id == null ? 0 : id;
-        load(repository.getDiagnosis(reportId), this::apply);
+        load(repository.getDiagnosis(reportId), this::applyWithDirect);
     }
 
     @Override
     public void retry() {
-        load(repository.getDiagnosis(reportId), this::apply);
+        load(repository.getDiagnosis(reportId), this::applyWithDirect);
+    }
+
+    /** 测试直连：本次上报有直连诊断结果时，AI 结论与 I06 一致用直连结果（Mock 的结论是固定的） */
+    private void applyWithDirect(@NonNull DiagnosisDetailVO d) {
+        apply(d);
+        if (!direct.has(reportId)) {
+            return;
+        }
+        disposables.add(direct.observe(reportId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(r -> {
+                    String now = LocalDateTime.now(DateFormatter.ZONE)
+                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                    d.applyDirectDiagnosis(r.diagnosis, now);
+                    apply(d);
+                }, e -> {
+                }));
     }
 
     private void apply(@NonNull DiagnosisDetailVO d) {

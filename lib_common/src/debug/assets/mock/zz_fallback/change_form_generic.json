@@ -1,0 +1,27 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "biz_type": "GENERIC",
+    "biz_id": 1,
+    "biz_type_text": "记录",
+    "record_locator": "原记录",
+    "record_title": "记录",
+    "record_subtitle": "Mock 未配置这种记录类型的修改申请表单",
+    "record_version": "2",
+    "record_card": [
+      {
+        "label": "说明",
+        "value": "该记录类型的示例数据尚未配置"
+      }
+    ],
+    "fields": [],
+    "linked_rules": [],
+    "review_tip": "审核期间原记录照常有效。",
+    "pending_request_id": null,
+    "void_allowed": false,
+    "recalc_tags": {},
+    "field_hints": {}
+  },
+  "trace_id": "mock-u01-generic"
+}

@@ -1,6 +1,36 @@
 [
   {
     "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "BATCH_TRANSFER"
+      }
+    },
+    "file": "change_form_batch_transfer.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "BATCH_DEATH"
+      }
+    },
+    "file": "change_form_batch_death.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "BATCH_ENTRY"
+      }
+    },
+    "file": "change_form_batch_entry.json"
+  },
+  {
+    "method": "GET",
     "path": "/api/v1/production/overview",
     "when": {
       "header": {

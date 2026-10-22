@@ -73,7 +73,13 @@ public final class BreedNav {
         activity.setResult(Activity.RESULT_OK, data);
         activity.finish();
         if (!forResult && text != null) {
-            GlobalEvents.postMessage(UiMessage.of(text));
+            if (batchId != null) {
+                Bundle extras = new Bundle();
+                extras.putLong(RouterPath.EXTRA_BATCH_ID, batchId);
+                GlobalEvents.postMessage(UiMessage.withPage(text, "查看批次", RouterPath.L06, extras));
+            } else {
+                GlobalEvents.postMessage(UiMessage.of(text));
+            }
         }
     }
 

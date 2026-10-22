@@ -1,6 +1,26 @@
 [
   {
     "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "DISINFECT_RECORD"
+      }
+    },
+    "file": "change_form_disinfect_record.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "IMMUNE_RECORD"
+      }
+    },
+    "file": "change_form_immune_record.json"
+  },
+  {
+    "method": "GET",
     "path": "/api/v1/batches/{batch_id}/immune-plans",
     "when": {
       "path": {

@@ -7,7 +7,7 @@
     "animal_label": "母猪",
     "count_unit": "HEAD",
     "count_unit_text": "头",
-    "farrow_due_count": 2,
+    "farrow_due_count": 0,
     "hatch_due_count": 0,
     "has_incubation": false,
     "switch_farms": []

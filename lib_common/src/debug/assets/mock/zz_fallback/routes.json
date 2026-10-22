@@ -1,0 +1,12 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "file": "change_form_generic.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "file": "record_logs_empty.json"
+  }
+]

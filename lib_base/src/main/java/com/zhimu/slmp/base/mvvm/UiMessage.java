@@ -2,6 +2,7 @@ package com.zhimu.slmp.base.mvvm;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import android.os.Bundle;
 
 /**
  * 一次性提示（第 1 级弹窗 Snackbar）：文案、最多一个操作。
@@ -22,12 +23,21 @@ public final class UiMessage {
     @Nullable
     private final String actionId;
     private final int durationMs;
+    /** 页面操作的参数（withPage 带参数时使用） */
+    @Nullable
+    private final Bundle actionExtras;
 
     private UiMessage(@NonNull String text, @Nullable String actionText, @Nullable String actionId, int durationMs) {
+        this(text, actionText, actionId, durationMs, null);
+    }
+
+    private UiMessage(@NonNull String text, @Nullable String actionText, @Nullable String actionId, int durationMs,
+                      @Nullable Bundle actionExtras) {
         this.text = text;
         this.actionText = actionText;
         this.actionId = actionId;
         this.durationMs = durationMs;
+        this.actionExtras = actionExtras;
     }
 
     public static UiMessage of(@NonNull String text) {
@@ -46,6 +56,17 @@ public final class UiMessage {
      */
     public static UiMessage withPage(@NonNull String text, @NonNull String actionText, @NonNull String pageAction) {
         return new UiMessage(text, actionText, pageAction, DURATION_DEFAULT);
+    }
+
+    /** 带参数的页面操作，例如“查看批次”打开 L06 并带 batch_id */
+    public static UiMessage withPage(@NonNull String text, @NonNull String actionText, @NonNull String pageAction,
+                                     @Nullable Bundle extras) {
+        return new UiMessage(text, actionText, pageAction, DURATION_DEFAULT, extras == null ? null : new Bundle(extras));
+    }
+
+    @Nullable
+    public Bundle getActionExtras() {
+        return actionExtras;
     }
 
     /** actionId 是否为页面 action */

@@ -106,7 +106,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
         View content = findViewById(android.R.id.content);
         if (content != null) {
-            SnackbarHelper.show(content, message, getSnackbarAnchor(), this::dispatchMessageAction);
+            SnackbarHelper.show(content, message, getSnackbarAnchor(), id -> dispatchMessageAction(message, id));
         }
     }
 
@@ -118,17 +118,20 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onMessageAction(@NonNull String actionId) {
     }
 
-    private void dispatchMessageAction(@NonNull String actionId) {
+    private void dispatchMessageAction(@NonNull UiMessage message, @NonNull String actionId) {
         if (UiMessage.isPageAction(actionId)) {
-            openPageAction(this, actionId);
+            openPageAction(this, actionId, message.getActionExtras());
         } else {
             onMessageAction(actionId);
         }
     }
 
     /** 打开页面 action（隐式 Intent 限定本应用包名）；页面不存在时提示“该功能正在开发中” */
-    static void openPageAction(@NonNull Activity activity, @NonNull String action) {
+    static void openPageAction(@NonNull Activity activity, @NonNull String action, @Nullable Bundle extras) {
         Intent intent = new Intent(action).setPackage(activity.getPackageName());
+        if (extras != null) {
+            intent.putExtras(extras);
+        }
         if (intent.resolveActivity(activity.getPackageManager()) == null) {
             SnackbarHelper.show(activity, activity.getString(R.string.base_page_unavailable));
             return;

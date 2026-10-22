@@ -1,0 +1,53 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "biz_type": "BATCH_ENTRY",
+    "biz_id": 3001,
+    "biz_type_text": "入栏记录",
+    "record_locator": "ZM2610-031 · 10月1日入栏",
+    "record_title": "入栏记录 · 3 号育肥舍",
+    "record_subtitle": "杜长大 · 10月1日 · 王建国登记",
+    "record_version": "2",
+    "record_card": [
+      {
+        "label": "入栏数量",
+        "value": "205 头"
+      },
+      {
+        "label": "入栏日龄",
+        "value": "78 天"
+      },
+      {
+        "label": "平均体重",
+        "value": "45.0 千克"
+      }
+    ],
+    "fields": [
+      {
+        "field_code": "head_count",
+        "field_name": "入栏数量",
+        "value": "205",
+        "value_unit": "头",
+        "input_type": "NUMBER",
+        "options": [],
+        "min": 1,
+        "max": 10000
+      }
+    ],
+    "linked_rules": [
+      "修改入栏数量会重新计算存栏、死亡率与成本分摊"
+    ],
+    "review_tip": "这条记录会影响存栏和成本，需要管理员审核。审核期间原记录照常有效，审核通过后才会修改并重新计算。",
+    "pending_request_id": null,
+    "void_allowed": false,
+    "recalc_tags": {
+      "head_count": [
+        "存栏",
+        "成本"
+      ]
+    },
+    "field_hints": {}
+  },
+  "trace_id": "mock-u01-batch_entry"
+}
