@@ -13,7 +13,8 @@
     "role": "STAFF",
     "role_text": "员工",
     "my_pen_ids": [
-      2003
+      2003,
+      2004
     ],
     "permissions": {
       "can_view_farm_info": false,

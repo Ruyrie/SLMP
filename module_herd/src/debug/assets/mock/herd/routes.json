@@ -1,111 +1,895 @@
 [
-  {"method": "GET", "path": "/api/v1/production/overview", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "err_40303_owner_only.json"},
-  {"method": "GET", "path": "/api/v1/production/overview", "when": {"header": {"X-Farm-Id": "1003"}}, "file": "overview_pending.json"},
-  {"method": "GET", "path": "/api/v1/production/overview", "file": "overview_owner.json"},
-
-  {"method": "GET", "path": "/api/v1/my-pens", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "my_pens_staff.json"},
-  {"method": "GET", "path": "/api/v1/my-pens", "file": "err_40303_staff_only.json"},
-
-  {"method": "GET", "path": "/api/v1/stock/summary", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "err_40303_owner_only.json"},
-  {"method": "GET", "path": "/api/v1/stock/summary", "file": "stock_summary.json"},
-  {"method": "GET", "path": "/api/v1/stock/pens", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "err_40303_owner_only.json"},
-  {"method": "GET", "path": "/api/v1/stock/pens", "when": {"query": {"keyword": "ZM2610-031"}}, "file": "stock_pens_search.json"},
-  {"method": "GET", "path": "/api/v1/stock/pens", "when": {"query": {"keyword": "3"}}, "file": "stock_pens_search.json"},
-  {"method": "GET", "path": "/api/v1/stock/pens", "when": {"query": {"keyword": "6"}}, "file": "page_empty.json"},
-  {"method": "GET", "path": "/api/v1/stock/pens", "when": {"query": {"sort": "OCCUPANCY"}}, "file": "stock_pens_occupancy.json"},
-  {"method": "GET", "path": "/api/v1/stock/pens", "file": "stock_pens.json"},
-  {"method": "GET", "path": "/api/v1/stock/categories", "when": {"query": {"keyword": "6"}}, "file": "list_empty.json"},
-  {"method": "GET", "path": "/api/v1/stock/categories", "file": "stock_categories.json"},
-
-  {"method": "GET", "path": "/api/v1/batches/lookup", "when": {"header": {"Authorization": "Bearer mock-staff"}, "query": {"batch_no": "ZM2610-019"}}, "file": "lookup_no_permission.json"},
-  {"method": "GET", "path": "/api/v1/batches/lookup", "when": {"header": {"Authorization": "Bearer mock-staff"}, "query": {"qr_content": "https://web.zhimutong.example.com/s/b/Hd5tB2mQ8v"}}, "file": "lookup_no_permission.json"},
-  {"method": "GET", "path": "/api/v1/batches/lookup", "when": {"query": {"qr_content": "https://web.zhimutong.example.com/s/b/k7Rm2xQ9pT"}}, "file": "lookup_ok_3001.json"},
-  {"method": "GET", "path": "/api/v1/batches/lookup", "when": {"query": {"qr_content": "https://web.zhimutong.example.com/s/b/Hd5tB2mQ8v"}}, "file": "lookup_ok_3002.json"},
-  {"method": "GET", "path": "/api/v1/batches/lookup", "when": {"query": {"qr_content": "https://web.zhimutong.example.com/s/b/Xl8cQ2fN4w"}}, "file": "lookup_switch_3201.json"},
-  {"method": "GET", "path": "/api/v1/batches/lookup", "when": {"query": {"qr_content": "https://web.zhimutong.example.com/s/b/Pq3nV8sK1z"}}, "file": "lookup_no_permission.json"},
-  {"method": "GET", "path": "/api/v1/batches/lookup", "when": {"query": {"batch_no": "ZM2610-031"}}, "file": "lookup_ok_3001.json"},
-  {"method": "GET", "path": "/api/v1/batches/lookup", "when": {"query": {"batch_no": "ZM2610-019"}}, "file": "lookup_ok_3002.json"},
-  {"method": "GET", "path": "/api/v1/batches/lookup", "when": {"query": {"batch_no": "ZM2610-045"}}, "file": "lookup_ok_3003.json"},
-  {"method": "GET", "path": "/api/v1/batches/lookup", "when": {"query": {"batch_no": "ZM2609-038"}}, "file": "lookup_ok_3004.json"},
-  {"method": "GET", "path": "/api/v1/batches/lookup", "when": {"query": {"batch_no": "ZM2610-058"}}, "file": "lookup_ok_3058.json"},
-  {"method": "GET", "path": "/api/v1/batches/lookup", "when": {"query": {"batch_no": "ZM2610-026"}}, "file": "lookup_switch_3201.json"},
-  {"method": "GET", "path": "/api/v1/batches/lookup", "when": {"query": {"batch_no": "ZM2601-001"}}, "file": "lookup_no_permission.json"},
-  {"method": "GET", "path": "/api/v1/batches/lookup", "when": {"query": {"batch_no": "ZM2610-099"}}, "file": "lookup_not_found.json"},
-  {"method": "GET", "path": "/api/v1/batches/lookup", "file": "lookup_not_batch_qr.json"},
-
-  {"method": "GET", "path": "/api/v1/batches", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "batches_staff.json"},
-  {"method": "GET", "path": "/api/v1/batches", "when": {"query": {"keyword": "6"}}, "file": "page_empty.json"},
-  {"method": "GET", "path": "/api/v1/batches", "when": {"query": {"sort": "DAY_AGE"}}, "file": "batches_day_age.json"},
-  {"method": "GET", "path": "/api/v1/batches", "file": "batches_active.json"},
-
-  {"method": "GET", "path": "/api/v1/batches/{id}/timeline", "when": {"path": {"id": "3001"}, "header": {"Authorization": "Bearer mock-staff"}}, "file": "timeline_3001_staff.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/timeline", "when": {"path": {"id": "3001"}, "query": {"type": "FEED"}}, "file": "timeline_3001_feed.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/timeline", "when": {"path": {"id": "3001"}, "query": {"type": "WEIGH"}}, "file": "timeline_3001_weigh.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/timeline", "when": {"path": {"id": "3001"}, "query": {"type": "IMMUNE"}}, "file": "timeline_3001_immune.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/timeline", "when": {"path": {"id": "3001"}, "query": {"type": "DRUG"}}, "file": "timeline_3001_drug.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/timeline", "when": {"path": {"id": "3001"}, "query": {"type": "INSPECT"}}, "file": "timeline_3001_inspect.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/timeline", "when": {"path": {"id": "3001"}}, "file": "timeline_3001.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/timeline", "when": {"path": {"id": "3201"}}, "file": "timeline_3201.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/timeline", "when": {"query": {"type": "FEED"}}, "file": "page_empty.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/timeline", "when": {"query": {"type": "WEIGH"}}, "file": "page_empty.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/timeline", "when": {"query": {"type": "IMMUNE"}}, "file": "page_empty.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/timeline", "when": {"query": {"type": "DRUG"}}, "file": "page_empty.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/timeline", "when": {"query": {"type": "INSPECT"}}, "file": "page_empty.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/timeline", "file": "timeline_new.json"},
-
-  {"method": "GET", "path": "/api/v1/batches/{id}/pen-stocks", "when": {"path": {"id": "3001"}}, "file": "pen_stocks_3001.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/pen-stocks", "when": {"path": {"id": "3002"}}, "file": "pen_stocks_3002.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/pen-stocks", "when": {"path": {"id": "3003"}}, "file": "pen_stocks_3003.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/pen-stocks", "when": {"path": {"id": "3004"}}, "file": "pen_stocks_3004.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/pen-stocks", "when": {"path": {"id": "3201"}}, "file": "pen_stocks_3201.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}/pen-stocks", "file": "pen_stocks_new.json"},
-
-  {"method": "GET", "path": "/api/v1/batches/{id}", "when": {"path": {"id": "3001"}, "header": {"Authorization": "Bearer mock-staff"}}, "file": "batch_3001_staff.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "err_40304_batch.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}", "when": {"path": {"id": "3001"}}, "file": "batch_3001.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}", "when": {"path": {"id": "3002"}}, "file": "batch_3002.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}", "when": {"path": {"id": "3003"}}, "file": "batch_3003.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}", "when": {"path": {"id": "3004"}}, "file": "batch_3004.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}", "when": {"path": {"id": "3201"}}, "file": "batch_3201.json"},
-  {"method": "GET", "path": "/api/v1/batches/{id}", "file": "batch_new.json"},
-
-  {"method": "POST", "path": "/api/v1/batches", "when": {"body": "\"capacity_confirmed\":true"}, "file": "entry_result.json", "delay": 600},
-  {"method": "POST", "path": "/api/v1/batches", "when": {"body": "\"pen_id\":2004"}, "file": "err_42206_entry.json", "delay": 600},
-  {"method": "POST", "path": "/api/v1/batches", "file": "entry_result_ok.json", "delay": 600},
-  {"method": "PUT", "path": "/api/v1/batches/{id}/entry", "file": "batch_new.json", "delay": 500},
-  {"method": "DELETE", "path": "/api/v1/batches/{id}", "when": {"path": {"id": "3001"}}, "file": "err_40307_delete.json"},
-  {"method": "DELETE", "path": "/api/v1/batches/{id}", "file": "ok_null.json", "delay": 500},
-
-  {"method": "GET", "path": "/api/v1/batch-events/by-request/{request_key}", "file": "request_check_none.json"},
-  {"method": "GET", "path": "/api/v1/batch-events/{id}", "when": {"path": {"id": "905"}}, "file": "event_death_905.json"},
-  {"method": "GET", "path": "/api/v1/batch-events/{id}", "when": {"path": {"id": "907"}}, "file": "event_transfer_907.json"},
-  {"method": "GET", "path": "/api/v1/batch-events/{id}", "file": "event_entry_958.json"},
-
-  {"method": "POST", "path": "/api/v1/batch-transfers", "when": {"body": "\"quantity\":200,"}, "file": "err_42205_transfer.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/batch-transfers", "file": "transfer_result.json", "delay": 500},
-  {"method": "PUT", "path": "/api/v1/batch-transfers/{id}", "file": "transfer_result_edit.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/batch-deaths", "when": {"body": "\"quantity\":200,"}, "file": "err_42205_death.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/batch-deaths", "file": "death_result.json", "delay": 500},
-  {"method": "PUT", "path": "/api/v1/batch-deaths/{id}", "file": "death_result_edit.json", "delay": 500},
-
-  {"method": "GET", "path": "/api/v1/pens/form-options", "file": "pen_form_options.json"},
-  {"method": "GET", "path": "/api/v1/pens", "when": {"query": {"exclude_pen_id": "2003"}}, "file": "pen_options_exclude_2003.json"},
-  {"method": "GET", "path": "/api/v1/pens", "when": {"query": {"category_id": "101"}}, "file": "pen_options_101.json"},
-  {"method": "GET", "path": "/api/v1/pens", "file": "pen_options.json"},
-  {"method": "GET", "path": "/api/v1/pens/{id}/executors", "when": {"path": {"id": "2001"}}, "file": "executors_2001.json"},
-  {"method": "GET", "path": "/api/v1/pens/{id}/executors", "file": "executors_2003.json"},
-  {"method": "GET", "path": "/api/v1/pens/{id}", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "err_40303_owner_only.json"},
-  {"method": "GET", "path": "/api/v1/pens/{id}", "when": {"path": {"id": "2001"}}, "file": "pen_2001.json"},
-  {"method": "GET", "path": "/api/v1/pens/{id}", "when": {"path": {"id": "2002"}}, "file": "pen_2002.json"},
-  {"method": "GET", "path": "/api/v1/pens/{id}", "when": {"path": {"id": "2003"}}, "file": "pen_2003.json"},
-  {"method": "GET", "path": "/api/v1/pens/{id}", "when": {"path": {"id": "2004"}}, "file": "pen_2004.json"},
-  {"method": "GET", "path": "/api/v1/pens/{id}", "when": {"path": {"id": "2005"}}, "file": "pen_2005.json"},
-  {"method": "GET", "path": "/api/v1/pens/{id}", "file": "err_40401.json"},
-  {"method": "POST", "path": "/api/v1/pens", "when": {"body": "\"pen_code\":\"YF-03\""}, "file": "err_40001_pen_code.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/pens", "file": "pen_created.json", "delay": 500},
-  {"method": "PUT", "path": "/api/v1/pens/{id}", "when": {"path": {"id": "2005"}}, "file": "pen_2005.json", "delay": 500},
-  {"method": "PUT", "path": "/api/v1/pens/{id}", "file": "pen_2003.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/pens/{id}/disable", "when": {"path": {"id": "2005"}}, "file": "pen_2005_disabled.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/pens/{id}/disable", "file": "err_42210.json", "delay": 500},
-  {"method": "POST", "path": "/api/v1/pens/{id}/enable", "file": "pen_2005.json", "delay": 500}
+  {
+    "method": "GET",
+    "path": "/api/v1/production/overview",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_owner_only.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production/overview",
+    "when": {
+      "header": {
+        "X-Farm-Id": "1003"
+      }
+    },
+    "file": "overview_pending.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/production/overview",
+    "file": "overview_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/my-pens",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "my_pens_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/my-pens",
+    "file": "err_40303_staff_only.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock/summary",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_owner_only.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock/summary",
+    "file": "stock_summary.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock/pens",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_owner_only.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock/pens",
+    "when": {
+      "query": {
+        "keyword": "ZM2610-031"
+      }
+    },
+    "file": "stock_pens_search.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock/pens",
+    "when": {
+      "query": {
+        "keyword": "3"
+      }
+    },
+    "file": "stock_pens_search.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock/pens",
+    "when": {
+      "query": {
+        "keyword": "6"
+      }
+    },
+    "file": "page_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock/pens",
+    "when": {
+      "query": {
+        "sort": "OCCUPANCY"
+      }
+    },
+    "file": "stock_pens_occupancy.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock/pens",
+    "file": "stock_pens.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock/categories",
+    "when": {
+      "query": {
+        "keyword": "6"
+      }
+    },
+    "file": "list_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock/categories",
+    "file": "stock_categories.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "query": {
+        "batch_no": "ZM2610-019"
+      }
+    },
+    "file": "lookup_no_permission.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "query": {
+        "qr_content": "https://web.zhimutong.example.com/s/b/Hd5tB2mQ8v"
+      }
+    },
+    "file": "lookup_no_permission.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "when": {
+      "query": {
+        "qr_content": "https://web.zhimutong.example.com/s/b/k7Rm2xQ9pT"
+      }
+    },
+    "file": "lookup_ok_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "when": {
+      "query": {
+        "qr_content": "https://web.zhimutong.example.com/s/b/Hd5tB2mQ8v"
+      }
+    },
+    "file": "lookup_ok_3002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "when": {
+      "query": {
+        "qr_content": "https://web.zhimutong.example.com/s/b/Xl8cQ2fN4w"
+      }
+    },
+    "file": "lookup_switch_3201.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "when": {
+      "query": {
+        "qr_content": "https://web.zhimutong.example.com/s/b/Pq3nV8sK1z"
+      }
+    },
+    "file": "lookup_no_permission.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "when": {
+      "query": {
+        "batch_no": "ZM2610-031"
+      }
+    },
+    "file": "lookup_ok_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "when": {
+      "query": {
+        "batch_no": "ZM2610-019"
+      }
+    },
+    "file": "lookup_ok_3002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "when": {
+      "query": {
+        "batch_no": "ZM2610-045"
+      }
+    },
+    "file": "lookup_ok_3003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "when": {
+      "query": {
+        "batch_no": "ZM2609-038"
+      }
+    },
+    "file": "lookup_ok_3004.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "when": {
+      "query": {
+        "batch_no": "ZM2610-058"
+      }
+    },
+    "file": "lookup_ok_3058.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "when": {
+      "query": {
+        "batch_no": "ZM2610-026"
+      }
+    },
+    "file": "lookup_switch_3201.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "when": {
+      "query": {
+        "batch_no": "ZM2601-001"
+      }
+    },
+    "file": "lookup_no_permission.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "when": {
+      "query": {
+        "batch_no": "ZM2610-099"
+      }
+    },
+    "file": "lookup_not_found.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/lookup",
+    "file": "lookup_not_batch_qr.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "batches_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches",
+    "when": {
+      "query": {
+        "keyword": "6"
+      }
+    },
+    "file": "page_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches",
+    "when": {
+      "query": {
+        "sort": "DAY_AGE"
+      }
+    },
+    "file": "batches_day_age.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches",
+    "file": "batches_active.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/timeline",
+    "when": {
+      "path": {
+        "id": "3001"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "timeline_3001_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/timeline",
+    "when": {
+      "path": {
+        "id": "3001"
+      },
+      "query": {
+        "type": "FEED"
+      }
+    },
+    "file": "timeline_3001_feed.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/timeline",
+    "when": {
+      "path": {
+        "id": "3001"
+      },
+      "query": {
+        "type": "WEIGH"
+      }
+    },
+    "file": "timeline_3001_weigh.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/timeline",
+    "when": {
+      "path": {
+        "id": "3001"
+      },
+      "query": {
+        "type": "IMMUNE"
+      }
+    },
+    "file": "timeline_3001_immune.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/timeline",
+    "when": {
+      "path": {
+        "id": "3001"
+      },
+      "query": {
+        "type": "DRUG"
+      }
+    },
+    "file": "timeline_3001_drug.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/timeline",
+    "when": {
+      "path": {
+        "id": "3001"
+      },
+      "query": {
+        "type": "INSPECT"
+      }
+    },
+    "file": "timeline_3001_inspect.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/timeline",
+    "when": {
+      "path": {
+        "id": "3001"
+      }
+    },
+    "file": "timeline_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/timeline",
+    "when": {
+      "path": {
+        "id": "3201"
+      }
+    },
+    "file": "timeline_3201.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/timeline",
+    "when": {
+      "query": {
+        "type": "FEED"
+      }
+    },
+    "file": "page_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/timeline",
+    "when": {
+      "query": {
+        "type": "WEIGH"
+      }
+    },
+    "file": "page_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/timeline",
+    "when": {
+      "query": {
+        "type": "IMMUNE"
+      }
+    },
+    "file": "page_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/timeline",
+    "when": {
+      "query": {
+        "type": "DRUG"
+      }
+    },
+    "file": "page_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/timeline",
+    "when": {
+      "query": {
+        "type": "INSPECT"
+      }
+    },
+    "file": "page_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/timeline",
+    "file": "timeline_new.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/pen-stocks",
+    "when": {
+      "path": {
+        "id": "3001"
+      }
+    },
+    "file": "pen_stocks_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/pen-stocks",
+    "when": {
+      "path": {
+        "id": "3002"
+      }
+    },
+    "file": "pen_stocks_3002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/pen-stocks",
+    "when": {
+      "path": {
+        "id": "3003"
+      }
+    },
+    "file": "pen_stocks_3003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/pen-stocks",
+    "when": {
+      "path": {
+        "id": "3004"
+      }
+    },
+    "file": "pen_stocks_3004.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/pen-stocks",
+    "when": {
+      "path": {
+        "id": "3201"
+      }
+    },
+    "file": "pen_stocks_3201.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}/pen-stocks",
+    "file": "pen_stocks_new.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}",
+    "when": {
+      "path": {
+        "id": "3001"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "batch_3001_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}",
+    "when": {
+      "path": {
+        "id": "3002"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "batch_3002_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40304_batch.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}",
+    "when": {
+      "path": {
+        "id": "3001"
+      }
+    },
+    "file": "batch_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}",
+    "when": {
+      "path": {
+        "id": "3002"
+      }
+    },
+    "file": "batch_3002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}",
+    "when": {
+      "path": {
+        "id": "3003"
+      }
+    },
+    "file": "batch_3003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}",
+    "when": {
+      "path": {
+        "id": "3004"
+      }
+    },
+    "file": "batch_3004.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}",
+    "when": {
+      "path": {
+        "id": "3201"
+      }
+    },
+    "file": "batch_3201.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches/{id}",
+    "file": "batch_new.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/batches",
+    "when": {
+      "body": "\"capacity_confirmed\":true"
+    },
+    "file": "entry_result.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/batches",
+    "when": {
+      "body": "\"pen_id\":2004"
+    },
+    "file": "err_42206_entry.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/batches",
+    "file": "entry_result_ok.json",
+    "delay": 600
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/batches/{id}/entry",
+    "file": "batch_new.json",
+    "delay": 500
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/batches/{id}",
+    "when": {
+      "path": {
+        "id": "3001"
+      }
+    },
+    "file": "err_40307_delete.json"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/batches/{id}",
+    "file": "ok_null.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batch-events/by-request/{request_key}",
+    "file": "request_check_none.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batch-events/{id}",
+    "when": {
+      "path": {
+        "id": "905"
+      }
+    },
+    "file": "event_death_905.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batch-events/{id}",
+    "when": {
+      "path": {
+        "id": "907"
+      }
+    },
+    "file": "event_transfer_907.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batch-events/{id}",
+    "file": "event_entry_958.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/batch-transfers",
+    "when": {
+      "body": "\"quantity\":200,"
+    },
+    "file": "err_42205_transfer.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/batch-transfers",
+    "file": "transfer_result.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/batch-transfers/{id}",
+    "file": "transfer_result_edit.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/batch-deaths",
+    "when": {
+      "body": "\"quantity\":200,"
+    },
+    "file": "err_42205_death.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/batch-deaths",
+    "file": "death_result.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/batch-deaths/{id}",
+    "file": "death_result_edit.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/form-options",
+    "file": "pen_form_options.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens",
+    "when": {
+      "query": {
+        "exclude_pen_id": "2003"
+      }
+    },
+    "file": "pen_options_exclude_2003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens",
+    "when": {
+      "query": {
+        "category_id": "101"
+      }
+    },
+    "file": "pen_options_101.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens",
+    "file": "pen_options.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{id}/executors",
+    "when": {
+      "path": {
+        "id": "2001"
+      }
+    },
+    "file": "executors_2001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{id}/executors",
+    "file": "executors_2003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_owner_only.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{id}",
+    "when": {
+      "path": {
+        "id": "2001"
+      }
+    },
+    "file": "pen_2001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{id}",
+    "when": {
+      "path": {
+        "id": "2002"
+      }
+    },
+    "file": "pen_2002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{id}",
+    "when": {
+      "path": {
+        "id": "2003"
+      }
+    },
+    "file": "pen_2003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{id}",
+    "when": {
+      "path": {
+        "id": "2004"
+      }
+    },
+    "file": "pen_2004.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{id}",
+    "when": {
+      "path": {
+        "id": "2005"
+      }
+    },
+    "file": "pen_2005.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens/{id}",
+    "file": "err_40401.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/pens",
+    "when": {
+      "body": "\"pen_code\":\"YF-03\""
+    },
+    "file": "err_40001_pen_code.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/pens",
+    "file": "pen_created.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/pens/{id}",
+    "when": {
+      "path": {
+        "id": "2005"
+      }
+    },
+    "file": "pen_2005.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/pens/{id}",
+    "file": "pen_2003.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/pens/{id}/disable",
+    "when": {
+      "path": {
+        "id": "2005"
+      }
+    },
+    "file": "pen_2005_disabled.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/pens/{id}/disable",
+    "file": "err_42210.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/pens/{id}/enable",
+    "file": "pen_2005.json",
+    "delay": 500
+  }
 ]

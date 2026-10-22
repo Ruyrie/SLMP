@@ -7,6 +7,8 @@
     <item name="base_tag_loading_icon_padding" type="id" />
     <item name="base_tag_loading_min_width" type="id" />
     <item name="base_tag_loading_clickable" type="id" />
+    <item name="base_tag_loading_progress" type="id" />
+    <item name="base_tag_loading_listener" type="id" />
     <item name="base_tag_menu_anchor_bg" type="id" />
     <item name="base_tag_group_position" type="id" />
 </resources>

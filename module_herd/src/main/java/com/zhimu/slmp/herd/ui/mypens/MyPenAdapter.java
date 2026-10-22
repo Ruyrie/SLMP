@@ -184,24 +184,26 @@ public class MyPenAdapter extends ListAdapter<MyPenItemVO, MyPenAdapter.Holder> 
         }
     }
 
+    /** 待办类型（05 号文档 6.2 节 TODO_TYPE）对应的图标 */
     @DrawableRes
     static int iconOf(String todoType) {
-        if ("FEED".equals(todoType)) {
-            return R.drawable.ic_rice_bowl;
+        if (todoType == null) {
+            return R.drawable.ic_task_alt;
         }
-        if ("IMMUNE".equals(todoType)) {
-            return R.drawable.ic_vaccines;
+        switch (todoType) {
+            case "FEEDING":
+                return R.drawable.ic_rice_bowl;
+            case "IMMUNIZATION":
+                return R.drawable.ic_vaccines;
+            case "DISINFECTION":
+                return R.drawable.ic_sanitizer;
+            case "WEIGHING":
+                return R.drawable.ic_scale;
+            case "INSPECTION":
+                return R.drawable.ic_fact_check;
+            default:
+                return R.drawable.ic_task_alt;
         }
-        if ("DISINFECT".equals(todoType)) {
-            return R.drawable.ic_sanitizer;
-        }
-        if ("WEIGH".equals(todoType)) {
-            return R.drawable.ic_scale;
-        }
-        if ("INSPECT".equals(todoType)) {
-            return R.drawable.ic_fact_check;
-        }
-        return R.drawable.ic_task_alt;
     }
 
     static final class Holder extends RecyclerView.ViewHolder {

@@ -1,6 +1,7 @@
 package com.zhimu.slmp.base.widget;
 
 import android.graphics.drawable.Drawable;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 
@@ -50,6 +51,8 @@ public final class ButtonLoading {
             spec.indicatorTrackGapSize = 0;
             spec.indicatorColors = new int[]{button.getCurrentTextColor()};
             Drawable progress = IndeterminateDrawable.createCircularDrawable(button.getContext(), spec);
+            button.setTag(R.id.base_tag_loading_progress, progress);
+            ensureDetachListener(button);
             button.setText("");
             button.setIconPadding(0);
             button.setIcon(progress);
@@ -61,6 +64,7 @@ public final class ButtonLoading {
             Object padding = button.getTag(R.id.base_tag_loading_icon_padding);
             Object minWidth = button.getTag(R.id.base_tag_loading_min_width);
             Object clickable = button.getTag(R.id.base_tag_loading_clickable);
+            stopProgress(button);
             button.setIcon(icon instanceof Drawable ? (Drawable) icon : null);
             button.setIconPadding(padding instanceof Integer ? (Integer) padding : 0);
             button.setText(text instanceof CharSequence ? (CharSequence) text : "");
@@ -70,6 +74,38 @@ public final class ButtonLoading {
             button.setTag(R.id.base_tag_loading, null);
             button.setTag(R.id.base_tag_loading_text, null);
             button.setTag(R.id.base_tag_loading_icon, null);
+            button.setTag(R.id.base_tag_loading_progress, null);
         }
+    }
+
+    /** 停止环形进度动画：动画由全局 AnimationHandler 持有，不停止会让已关闭的页面无法回收 */
+    private static void stopProgress(@NonNull MaterialButton button) {
+        Object progress = button.getTag(R.id.base_tag_loading_progress);
+        if (progress instanceof Drawable) {
+            ((Drawable) progress).setVisible(false, false);
+        }
+    }
+
+    /** 按钮离开窗口（页面关闭）时停止动画，重新进入窗口且仍在加载时恢复 */
+    private static void ensureDetachListener(@NonNull MaterialButton button) {
+        if (button.getTag(R.id.base_tag_loading_listener) != null) {
+            return;
+        }
+        View.OnAttachStateChangeListener listener = new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(@NonNull View v) {
+                Object progress = v.getTag(R.id.base_tag_loading_progress);
+                if (progress instanceof Drawable && isLoading((MaterialButton) v)) {
+                    ((Drawable) progress).setVisible(true, false);
+                }
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(@NonNull View v) {
+                stopProgress((MaterialButton) v);
+            }
+        };
+        button.addOnAttachStateChangeListener(listener);
+        button.setTag(R.id.base_tag_loading_listener, listener);
     }
 }

@@ -3,7 +3,7 @@
   "message": "ok",
   "data": {
     "farm_name": "东山猪场",
-    "pen_count": 1,
+    "pen_count": 2,
     "pens": [
       {
         "pen_id": 2003,
@@ -32,7 +32,7 @@
         "tasks": [
           {
             "todo_id": 7201,
-            "todo_type": "FEED",
+            "todo_type": "FEEDING",
             "title": "晚餐饲喂",
             "time_text": "17:00",
             "status": "PENDING",
@@ -44,7 +44,7 @@
           },
           {
             "todo_id": 7202,
-            "todo_type": "IMMUNE",
+            "todo_type": "IMMUNIZATION",
             "title": "猪瘟免疫",
             "time_text": "18:00 前",
             "status": "PENDING",
@@ -53,6 +53,56 @@
             "task_id": 6202,
             "batch_id": 3001,
             "pen_id": 2003
+          }
+        ]
+      },
+      {
+        "pen_id": 2004,
+        "pen_code": "YF-04",
+        "pen_name": "4 号育肥舍",
+        "pen_type": "FATTENING",
+        "pen_type_text": "育肥舍",
+        "capacity": 220,
+        "stock_count": 150,
+        "task_done": 0,
+        "task_total": 2,
+        "is_empty": false,
+        "unit_text": "头",
+        "batches": [
+          {
+            "batch_id": 3002,
+            "batch_no": "ZM2610-019",
+            "breed_title": "杜长大育肥猪",
+            "qty_in_pen": 150,
+            "day_age": 82,
+            "in_withdrawal": false,
+            "stage_name": "育肥期"
+          }
+        ],
+        "tasks": [
+          {
+            "todo_id": 7211,
+            "todo_type": "DISINFECTION",
+            "title": "消毒",
+            "time_text": "17:00 前",
+            "status": "PENDING",
+            "status_text": "待处理",
+            "route": "D08",
+            "task_id": 6211,
+            "batch_id": 3002,
+            "pen_id": 2004
+          },
+          {
+            "todo_id": 7212,
+            "todo_type": "INSPECTION",
+            "title": "巡检",
+            "time_text": "今天",
+            "status": "PENDING",
+            "status_text": "待处理",
+            "route": "I02",
+            "task_id": 6212,
+            "batch_id": 3002,
+            "pen_id": 2004
           }
         ]
       }

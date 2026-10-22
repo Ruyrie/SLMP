@@ -319,6 +319,15 @@ public final class RouterPath {
     /** T08 关联记录已失效的标题与说明（String） */
     public static final String EXTRA_DELETED_TITLE = "deleted_title";
     public static final String EXTRA_DELETED_DESC = "deleted_desc";
+    /** 成员编号（long，消息、待办打开 F09 成员详情） */
+    public static final String EXTRA_MEMBER_ID = "member_id";
+    /** 批次事件编号（long，入栏、转栏、死淘记录） */
+    public static final String EXTRA_EVENT_ID = "event_id";
+    /** L03 存栏总览视图（String：PEN / CATEGORY / BATCH） */
+    public static final String EXTRA_VIEW_TYPE = "view_type";
+
+    /** EXTRA_MODE 取值：E13 经营报表只统计本人创建的养殖场（A09 注销前导出） */
+    public static final String MODE_OWNED_FARMS = "OWNED_FARMS";
 
     /** 全部页面编号（RouterTable 使用） */
     static final String[] PAGE_CODES = {
