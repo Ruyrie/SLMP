@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Icons · flash_on（lib_base 图标集中没有，组件内补充）；颜色在使用处用 tint 设置 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@android:color/black"
+        android:pathData="M7,2v11h3v9l7,-12h-4l4,-8z" />
+</vector>

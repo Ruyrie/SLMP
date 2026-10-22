@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- I09 缩略图条：每格 48 × 48 dp，当前项外加 2 dp 白色描边（外框 52 × 52 dp），间距 6 dp -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="52dp"
+    android:layout_height="52dp"
+    android:layout_marginEnd="@dimen/media_viewer_thumb_gap"
+    android:background="@drawable/media_bg_viewer_thumb"
+    android:padding="2dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/media_thumb"
+        android:layout_width="@dimen/media_viewer_thumb"
+        android:layout_height="@dimen/media_viewer_thumb"
+        android:background="@drawable/media_bg_cell_placeholder"
+        android:scaleType="centerCrop"
+        app:shapeAppearance="@style/ShapeAppearance.Zmt.Corner.Small" />
+
+    <ImageView
+        android:id="@+id/media_thumb_video"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="4dp"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_videocam"
+        android:visibility="gone"
+        app:tint="?attr/colorOnMedia" />
+</FrameLayout>

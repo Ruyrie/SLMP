@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 快门：白色外环 + 白色内圆；按下或不可用时内圆变暗 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <stroke android:width="4dp" android:color="@color/zm_on_media" />
+        </shape>
+    </item>
+    <item android:bottom="8dp" android:left="8dp" android:right="8dp" android:top="8dp">
+        <selector>
+            <item android:state_enabled="false">
+                <shape android:shape="oval">
+                    <solid android:color="@color/media_color_on_media_16" />
+                </shape>
+            </item>
+            <item android:state_pressed="true">
+                <shape android:shape="oval">
+                    <solid android:color="@color/media_color_on_media_variant" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="oval">
+                    <solid android:color="@color/zm_on_media" />
+                </shape>
+            </item>
+        </selector>
+    </item>
+</layer-list>

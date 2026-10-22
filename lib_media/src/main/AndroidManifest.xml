@@ -1,4 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- 相机（拍照、扫码）；没有相机的设备仍可从相册选择 -->
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- 扫码成功震动 -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application>
+
+        <!-- I08 拍照 / 扫码（录像预留） -->
+        <activity
+            android:name=".ui.camera.CameraActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Zmt.Media">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.I08" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- I09 照片和视频全屏预览 -->
+        <activity
+            android:name=".ui.viewer.MediaViewerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Zmt.Media">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.I09" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
 </manifest>

@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.BindingAdapter;
 
@@ -35,7 +36,9 @@ public final class CommonBindingAdapters {
     // ===== 图片 =====
 
     /**
-     * Glide 加载网络图片；cacheKey 为 file_id 时按 file_id 缓存（临时地址变化不重复下载）。
+     * Glide 加载图片；cacheKey 为 file_id 且地址为 http(s) 时按 file_id 缓存（临时地址变化不重复下载），
+     * 本地文件与 file:///android_asset/ 下的 Mock 示例图直接按地址加载。
+     * 缩略图与原图不要共用同一个 cacheKey：缩略图请用 {@link #loadThumb} 或 imageThumb 属性。
      */
     @BindingAdapter(value = {"imageUrl", "imageCacheKey", "imagePlaceholder", "imageCircle"}, requireAll = false)
     public static void loadImage(ImageView view, @Nullable String url, @Nullable Long cacheKey,
@@ -45,7 +48,25 @@ public final class CommonBindingAdapters {
             view.setImageDrawable(placeholder);
             return;
         }
-        Object model = cacheKey != null ? new FileGlideUrl(url, "file_" + cacheKey) : url;
+        load(view, url, cacheKey == null ? null : "file_" + cacheKey, placeholder, circle);
+    }
+
+    /** 列表缩略图（thumb_url）：缓存键为 file_{id}_thumb，与原图区分 */
+    @BindingAdapter(value = {"thumbUrl", "thumbCacheKey", "imagePlaceholder"}, requireAll = false)
+    public static void loadThumb(ImageView view, @Nullable String url, @Nullable Long cacheKey,
+                                 @Nullable Drawable placeholder) {
+        if (url == null || url.isEmpty()) {
+            Glide.with(view).clear(view);
+            view.setImageDrawable(placeholder);
+            return;
+        }
+        load(view, url, cacheKey == null ? null : "file_" + cacheKey + "_thumb", placeholder, false);
+    }
+
+    private static void load(ImageView view, @NonNull String url, @Nullable String key,
+                             @Nullable Drawable placeholder, @Nullable Boolean circle) {
+        boolean remote = url.startsWith("http://") || url.startsWith("https://");
+        Object model = key != null && remote ? new FileGlideUrl(url, key) : url;
         RequestBuilder<Drawable> req = Glide.with(view).load(model);
         if (placeholder != null) {
             req = req.placeholder(placeholder).error(placeholder);

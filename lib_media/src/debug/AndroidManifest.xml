@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 只在 debug 包中：照片网格演示页（MediaModuleEntry.debugPages 的“照片网格演示”） -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <activity
+            android:name=".debug.MediaDemoActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.media.debug.PICKER_DEMO" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

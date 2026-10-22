@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- I08 扫码模式（L07 原型 4-9）：顶栏返回 + 标题；取景框与扫描线；说明两行；手电筒；底部“手动输入”入口 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.media.ui.camera.CameraViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorMediaBackdrop">
+
+        <LinearLayout
+            android:id="@+id/media_top_bar"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/base_top_bar_height"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/base_space_1"
+            android:paddingEnd="@dimen/base_page_margin"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageButton
+                android:id="@+id/media_back"
+                android:layout_width="@dimen/base_touch_target"
+                android:layout_height="@dimen/base_touch_target"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/media_back"
+                android:onClick="@{() -> vm.onClose()}"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="?attr/colorOnMedia" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="@{vm.scanTitle}"
+                android:textAppearance="@style/TextAppearance.Zmt.TitleLarge"
+                android:textColor="?attr/colorOnMedia"
+                tools:text="扫码查看档案" />
+        </LinearLayout>
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/media_preview"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/media_top_bar" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/media_frame_top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.2" />
+
+        <com.zhimu.slmp.media.widget.ScanFrameView
+            android:id="@+id/media_scan_frame"
+            android:layout_width="@dimen/media_scan_frame"
+            android:layout_height="@dimen/media_scan_frame"
+            app:invisibleIf="@{safeUnbox(vm.permissionDenied)}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/media_frame_top" />
+
+        <TextView
+            android:id="@+id/media_scan_hint"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_page_margin"
+            android:layout_marginTop="@dimen/base_space_6"
+            android:layout_marginEnd="@dimen/base_page_margin"
+            android:gravity="center"
+            android:text="@{vm.scanHint}"
+            android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+            android:textColor="?attr/colorOnMedia"
+            app:invisibleIf="@{safeUnbox(vm.permissionDenied)}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/media_scan_frame"
+            tools:text="将批次二维码放入框内，即可自动识别" />
+
+        <TextView
+            android:id="@+id/media_scan_sub_hint"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_page_margin"
+            android:layout_marginTop="@dimen/base_space_2"
+            android:layout_marginEnd="@dimen/base_page_margin"
+            android:gravity="center"
+            android:text="@{vm.scanSubHint}"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="@color/media_color_on_media_variant"
+            app:goneIfNull="@{vm.scanSubHint}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/media_scan_hint"
+            tools:text="识别后直接打开批次档案" />
+
+        <!-- 手电筒（有闪光灯时显示） -->
+        <LinearLayout
+            android:id="@+id/media_torch_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_8"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/media_scan_sub_hint"
+            app:visibleIf="@{safeUnbox(vm.hasFlash) &amp;&amp; !safeUnbox(vm.permissionDenied)}">
+
+            <ImageButton
+                android:id="@+id/media_torch"
+                android:layout_width="@dimen/media_torch_size"
+                android:layout_height="@dimen/media_torch_size"
+                android:background="@drawable/media_bg_torch"
+                android:contentDescription="@{safeUnbox(vm.torchOn) ? @string/media_torch_turn_off : @string/media_torch_turn_on}"
+                android:onClick="@{() -> vm.toggleTorch()}"
+                android:selected="@{safeUnbox(vm.torchOn)}"
+                android:src="@drawable/ic_flashlight_on"
+                app:tint="@color/media_color_torch_icon" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_2"
+                android:text="@{safeUnbox(vm.torchOn) ? @string/media_torch_turn_off : @string/media_torch_turn_on}"
+                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                android:textColor="?attr/colorOnMedia"
+                tools:text="轻触打开手电筒" />
+        </LinearLayout>
+
+        <!-- 相机权限被拒绝 -->
+        <LinearLayout
+            android:id="@+id/media_permission"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="@dimen/base_space_6"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/media_frame_top"
+            app:visibleIf="@{vm.permissionDenied}">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_qr_code_scanner"
+                app:tint="?attr/colorOnMedia" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_4"
+                android:text="@string/media_camera_permission_title"
+                android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                android:textColor="?attr/colorOnMedia" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_2"
+                android:gravity="center"
+                android:text="@string/media_camera_permission_scan"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="@color/media_color_on_media_variant" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/media_open_settings"
+                style="@style/Widget.Zmt.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_5"
+                android:text="@string/media_camera_open_settings" />
+        </LinearLayout>
+
+        <!-- 手动输入入口（调用方传入文字时显示） -->
+        <TextView
+            android:id="@+id/media_manual_hint"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_page_margin"
+            android:layout_marginEnd="@dimen/base_page_margin"
+            android:layout_marginBottom="@dimen/base_space_4"
+            android:gravity="center"
+            android:text="@{vm.manualHint}"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="@color/media_color_on_media_variant"
+            app:goneIfNull="@{vm.manualText == null ? null : vm.manualHint}"
+            app:layout_constraintBottom_toTopOf="@id/media_manual"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="二维码模糊或破损时，也可以输入批次号" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/media_manual"
+            style="@style/Widget.Zmt.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/base_space_8"
+            android:text="@{vm.manualText}"
+            android:textColor="?attr/colorOnMedia"
+            app:goneIfNull="@{vm.manualText}"
+            app:icon="@drawable/ic_keyboard"
+            app:iconTint="?attr/colorOnMedia"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:onSafeClick="@{() -> vm.onManualInput()}"
+            app:strokeColor="?attr/colorOnMedia"
+            tools:text="输入批次号" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- I08 拍照（模块07 原型 7-12，本期不显示录像）：顶栏 关闭 / 闪光灯；3:4 取景；说明胶囊；最近一张 / 快门 / 切换摄像头 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.media.ui.camera.CameraViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorMediaBackdrop">
+
+        <ImageButton
+            android:id="@+id/media_close"
+            android:layout_width="@dimen/base_touch_target"
+            android:layout_height="@dimen/base_touch_target"
+            android:layout_marginStart="@dimen/base_space_1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/media_camera_close"
+            android:onClick="@{() -> vm.onClose()}"
+            android:src="@drawable/ic_close"
+            app:layout_constraintBottom_toBottomOf="@id/media_top_space"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?attr/colorOnMedia" />
+
+        <ImageButton
+            android:id="@+id/media_flash"
+            android:layout_width="@dimen/base_touch_target"
+            android:layout_height="@dimen/base_touch_target"
+            android:layout_marginEnd="@dimen/base_space_1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/media_camera_flash_off"
+            android:onClick="@{() -> vm.cycleFlash()}"
+            android:src="@drawable/ic_flash_off"
+            app:layout_constraintBottom_toBottomOf="@id/media_top_space"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?attr/colorOnMedia"
+            app:visibleIf="@{vm.hasFlash}" />
+
+        <Space
+            android:id="@+id/media_top_space"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/base_top_bar_height"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- 底部控制区高度固定，取景框在顶栏与控制区之间按 3:4 适配 -->
+        <Space
+            android:id="@+id/media_controls"
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/media_preview"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/media_controls"
+            app:layout_constraintDimensionRatio="3:4"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/media_top_space"
+            app:layout_constraintVertical_bias="0" />
+
+        <View
+            android:id="@+id/media_flash_white"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:alpha="0"
+            android:background="@drawable/media_bg_flash_white"
+            app:layout_constraintBottom_toBottomOf="@id/media_preview"
+            app:layout_constraintEnd_toEndOf="@id/media_preview"
+            app:layout_constraintStart_toStartOf="@id/media_preview"
+            app:layout_constraintTop_toTopOf="@id/media_preview" />
+
+        <TextView
+            android:id="@+id/media_context"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_page_margin"
+            android:layout_marginEnd="@dimen/base_page_margin"
+            android:layout_marginBottom="@dimen/base_space_3"
+            android:background="@drawable/media_bg_chip"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingStart="@dimen/base_space_4"
+            android:paddingTop="6dp"
+            android:paddingEnd="@dimen/base_space_4"
+            android:paddingBottom="6dp"
+            android:text="@{vm.contextText}"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnMedia"
+            app:goneIfNull="@{vm.contextText}"
+            app:layout_constraintBottom_toBottomOf="@id/media_preview"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="死淘登记 · 已添加 2 / 6" />
+
+        <!-- 相机权限被拒绝 -->
+        <LinearLayout
+            android:id="@+id/media_permission"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="@dimen/base_space_6"
+            app:layout_constraintBottom_toBottomOf="@id/media_preview"
+            app:layout_constraintEnd_toEndOf="@id/media_preview"
+            app:layout_constraintStart_toStartOf="@id/media_preview"
+            app:layout_constraintTop_toTopOf="@id/media_preview"
+            app:visibleIf="@{vm.permissionDenied}">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_photo_camera"
+                app:tint="?attr/colorOnMedia" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_4"
+                android:text="@string/media_camera_permission_title"
+                android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                android:textColor="?attr/colorOnMedia" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_2"
+                android:gravity="center"
+                android:text="@string/media_camera_permission_photo"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="@color/media_color_on_media_variant" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/media_open_settings"
+                style="@style/Widget.Zmt.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_5"
+                android:text="@string/media_camera_open_settings" />
+        </LinearLayout>
+
+        <!-- 底部控制区 -->
+        <TextView
+            android:id="@+id/media_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_5"
+            android:background="@drawable/media_bg_chip"
+            android:backgroundTint="?attr/colorOnMedia"
+            android:paddingStart="@dimen/base_space_5"
+            android:paddingTop="6dp"
+            android:paddingEnd="@dimen/base_space_5"
+            android:paddingBottom="6dp"
+            android:text="@string/media_camera_mode_photo"
+            android:textAppearance="@style/TextAppearance.Zmt.LabelLarge"
+            android:textColor="?attr/colorMediaBackdrop"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/media_controls" />
+
+        <ImageButton
+            android:id="@+id/media_shutter"
+            android:layout_width="@dimen/media_shutter_size"
+            android:layout_height="@dimen/media_shutter_size"
+            android:background="@drawable/media_bg_shutter"
+            android:contentDescription="@string/media_camera_shutter"
+            android:enabled="@{safeUnbox(vm.shutterEnabled)}"
+            app:layout_constraintBottom_toTopOf="@id/media_remaining"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/media_mode"
+            app:onSafeClick="@{() -> vm.onShutter()}" />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/media_last_thumb"
+            android:layout_width="@dimen/media_camera_last_thumb"
+            android:layout_height="@dimen/media_camera_last_thumb"
+            android:layout_marginStart="@dimen/base_space_8"
+            android:contentDescription="@string/media_camera_last_thumb"
+            android:onClick="@{() -> vm.onThumbClick()}"
+            android:scaleType="centerCrop"
+            app:imageUrl="@{vm.lastThumb}"
+            app:invisibleIf="@{vm.lastThumb == null}"
+            app:layout_constraintBottom_toBottomOf="@id/media_shutter"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/media_shutter"
+            app:shapeAppearance="@style/ShapeAppearance.Zmt.Corner.Medium"
+            app:strokeColor="?attr/colorOnMedia"
+            app:strokeWidth="2dp" />
+
+        <ImageButton
+            android:id="@+id/media_switch"
+            android:layout_width="@dimen/media_camera_side_button"
+            android:layout_height="@dimen/media_camera_side_button"
+            android:layout_marginEnd="@dimen/base_space_8"
+            android:background="@drawable/media_bg_circle_button"
+            android:contentDescription="@string/media_camera_switch"
+            android:onClick="@{() -> vm.switchLens()}"
+            android:src="@drawable/ic_cameraswitch"
+            app:invisibleIf="@{!safeUnbox(vm.canSwitchLens)}"
+            app:layout_constraintBottom_toBottomOf="@id/media_shutter"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/media_shutter"
+            app:tint="?attr/colorOnMedia" />
+
+        <TextView
+            android:id="@+id/media_remaining"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/base_space_4"
+            android:text="@{vm.remainingText}"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+            android:textColor="@color/media_color_on_media_variant"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="还可以拍 4 张" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

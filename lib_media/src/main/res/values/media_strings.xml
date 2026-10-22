@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- I08 相机页 -->
+    <string name="media_camera_close">关闭</string>
+    <string name="media_camera_flash_off">闪光灯：关闭</string>
+    <string name="media_camera_flash_auto">闪光灯：自动</string>
+    <string name="media_camera_flash_on">闪光灯：开启</string>
+    <string name="media_camera_switch">切换前后摄像头</string>
+    <string name="media_camera_shutter">拍照</string>
+    <string name="media_camera_last_thumb">查看已拍照片</string>
+    <string name="media_camera_mode_photo">拍照</string>
+    <string name="media_camera_remaining">还可以拍 %1$d 张</string>
+    <string name="media_camera_added">已添加 %1$d / %2$d</string>
+    <string name="media_camera_taken">已拍 %1$d 张</string>
+    <string name="media_camera_capture_failed">拍照失败，请重试</string>
+    <string name="media_camera_open_failed">相机打开失败，请稍后重试</string>
+    <string name="media_camera_permission_title">未获得相机权限</string>
+    <string name="media_camera_permission_photo">请在系统设置中允许智牧通使用相机；你也可以返回后从相册选择照片</string>
+    <string name="media_camera_permission_scan">扫码需要使用相机，请在系统设置中允许智牧通使用相机</string>
+    <string name="media_camera_open_settings">去设置开启</string>
+
+    <!-- I08 扫码模式 -->
+    <string name="media_scan_title">扫码</string>
+    <string name="media_scan_hint">将二维码放入框内，即可自动识别</string>
+    <string name="media_torch_turn_on">轻触打开手电筒</string>
+    <string name="media_torch_turn_off">轻触关闭手电筒</string>
+    <string name="media_back">返回</string>
+
+    <!-- 照片网格 MediaPickerView -->
+    <string name="media_picker_add">添加</string>
+    <string name="media_picker_add_count">%1$d/%2$d</string>
+    <string name="media_picker_sheet_title">添加照片</string>
+    <string name="media_picker_take_photo">拍照</string>
+    <string name="media_picker_from_album">从相册选择</string>
+    <string name="media_picker_failed">上传失败，点按重试</string>
+    <string name="media_picker_delete">删除</string>
+    <string name="media_picker_deleted">已删除 1 张照片</string>
+    <string name="media_picker_full">最多添加 %1$d 张</string>
+    <string name="media_undo">撤销</string>
+    <string name="media_picker_thumb">照片 %1$d</string>
+    <string name="media_picker_percent">%1$d%%</string>
+
+    <!-- I09 全屏预览 -->
+    <string name="media_viewer_close">关闭</string>
+    <string name="media_viewer_save">保存到相册</string>
+    <string name="media_viewer_index">%1$d / %2$d</string>
+    <string name="media_viewer_video_unsupported">视频播放将在后续版本支持</string>
+    <string name="media_viewer_saved">已保存到相册</string>
+    <string name="media_viewer_save_failed">保存失败，请检查存储空间</string>
+    <string name="media_viewer_load_failed">图片加载失败</string>
+    <string name="media_viewer_shot">%1$s 拍摄</string>
+    <string name="media_viewer_shot_by">拍摄人%1$s</string>
+    <string name="media_viewer_video_duration">视频 %1$s</string>
+</resources>

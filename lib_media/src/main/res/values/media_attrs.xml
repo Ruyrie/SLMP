@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 照片网格 MediaPickerView（02 号规范 7.15 节） -->
+    <declare-styleable name="MediaPickerView">
+        <!-- 最多张数：只读模式与未绑定时使用；绑定 UploadController 后以 controller 的 maxCount 为准 -->
+        <attr name="mediaMaxCount" format="integer" />
+        <!-- 只读（详情页展示，无“添加”格与删除按钮） -->
+        <attr name="mediaReadOnly" format="boolean" />
+        <!-- “添加”格是否显示计数“2/9”（F02、F06 原型） -->
+        <attr name="mediaShowCount" format="boolean" />
+        <!-- “添加”格图标，默认 ic_add_a_photo -->
+        <attr name="mediaAddIcon" format="reference" />
+        <!-- 添加来源面板标题，默认“添加照片” -->
+        <attr name="mediaSheetTitle" format="string" />
+        <!-- 相机页说明胶囊的前缀，如“死淘登记” -->
+        <attr name="mediaCameraTitle" format="string" />
+        <!-- 全屏预览的来源说明（本地新拍、新选的照片），如“死淘登记 · 3 号育肥舍” -->
+        <attr name="mediaSourceText" format="string" />
+        <!-- 删除后的提示，默认“已删除 1 张照片” -->
+        <attr name="mediaDeletedText" format="string" />
+    </declare-styleable>
+</resources>

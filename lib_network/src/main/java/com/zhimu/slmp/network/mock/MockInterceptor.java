@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
@@ -35,6 +36,10 @@ public class MockInterceptor implements Interceptor {
     private static final String TAG = "ZmtMock";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final long MAX_BODY = 1024 * 1024;
+
+    /** 响应文件中的 {{seq}} 每次替换为递增的数字（例如上传返回不同的 file_id） */
+    private static final String SEQ_PLACEHOLDER = "{{seq}}";
+    private static final AtomicLong SEQ = new AtomicLong(9100);
 
     private final MockRouter router;
 
@@ -77,6 +82,9 @@ public class MockInterceptor implements Interceptor {
                 Log.w(TAG, "Mock 响应文件不存在：mock/" + match.rule.dir + "/" + match.rule.file);
                 json = notConfigured(request.method(), path);
             } else {
+                if (json.contains(SEQ_PLACEHOLDER)) {
+                    json = json.replace(SEQ_PLACEHOLDER, String.valueOf(SEQ.incrementAndGet()));
+                }
                 Log.d(TAG, request.method() + " " + path + " -> mock/" + match.rule.dir + "/" + match.rule.file);
             }
         }

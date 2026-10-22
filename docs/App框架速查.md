@@ -134,3 +134,16 @@ public interface HerdApi {
 | lib_common 页面与控件 | U03 `common.ui.status.StatusActivity`（参数 RouterPath.EXTRA_STATUS_TYPE、EXTRA_TITLE、EXTRA_MESSAGE、EXTRA_TRACE_ID、EXTRA_PAGE_TITLE、EXTRA_ACTION_TEXT、EXTRA_ERROR_CODE）；一级页顶部栏 `common.widget.FirstLevelTopBar`（`bind(host, owner)`、`setScanVisible`、`setAllFarmsMode`、`bindLiftOnScroll`） |
 
 各类的具体用法以类注释为准。
+
+## 十、lib_media 速查（照片与扫码，`media.*`）
+
+| 用途 | 做法 |
+|---|---|
+| 照片网格（F02、F06 资质图，L11 死淘照片） | ViewModel 构造注入 `UploadManager.Factory uploads`（依赖都来自 CoreComponent，业务组件不用加 Module）；在 `onSavedStateAttached(h)` 中 `photos = uploads.create(h, "photos", MediaScene.DEATH, 6)`，`onCleared` 中 `photos.release()`；编辑模式 `setInitialFiles(list)`（只生效一次），F06 新增标签 `setNewItemTag("新增", StatusTagView.PRIMARY)` |
+| 布局 | `<com.zhimu.slmp.media.picker.MediaPickerView android:id=...>`（必须有 id），可选 `app:mediaCameraTitle`、`mediaShowCount`、`mediaAddIcon`、`mediaDeletedText`；在 Activity.onCreate / Fragment.onViewCreated 中 `binding.photos.bind(this, vm.getPhotos())`（页面 STARTED 之前）；详情页只读用 `setReadOnlyFiles(list, 来源说明)` |
+| 提交 | `hasUploading()` 为真时等待；`getSubmitBlockMessage()` 非空时提示并不提交；请求体用 `getFileIds()`（按网格顺序） |
+| 扫码（L07） | `registerForActivityResult(new CameraContract(), ...)`，参数 `CameraArgs.scan().title("扫码查看档案").scanHint(...).manualInput("输入批次号", "...")`；结果 `TYPE_SCAN` 用 `getScanText()` 取原文，`TYPE_MANUAL_INPUT` 由调用方打开输入面板；需要在自己页面内连续扫码时可直接用 `scan.QrCodeAnalyzer` |
+| 全屏预览 | `MediaViewer.openFiles(ctx, files, index, 来源说明)` |
+| Mock 示例图 | `file:///android_asset/mock/media/` 下 qual_license.jpg（9001）、qual_epidemic.jpg（9002）、farm_env.jpg（9003）、death_photo.jpg（9004）、inspection.jpg（9005）、upload_sample.jpg（U05 上传返回）；其他模块 Mock 中的 FileVO 直接引用这些地址与 file_id |
+| 图片绑定 | 原图 `app:imageUrl` + `app:imageCacheKey`，缩略图 `app:thumbUrl` + `app:thumbCacheKey`（缓存键分别为 file_{id}、file_{id}_thumb）；只有 http(s) 地址按 file_id 缓存，本地与 asset 地址直接加载 |
+| Mock 递增编号 | 响应文件中的 `{{seq}}` 每次请求替换为递增数字（U05 的 file_id 已使用），新增类接口返回新 ID 时也可以用 |

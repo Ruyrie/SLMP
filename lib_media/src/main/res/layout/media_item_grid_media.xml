@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 照片网格缩略图格（02 号规范 7.15 节）：1:1、圆角 12 dp；上传中遮罩 + 环形进度；失败 error-container；右上角删除 -->
+<com.zhimu.slmp.media.widget.SquareFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/media_thumb"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/media_bg_cell_placeholder"
+        android:scaleType="centerCrop"
+        app:shapeAppearance="@style/ShapeAppearance.Zmt.Corner.Medium" />
+
+    <FrameLayout
+        android:id="@+id/media_mask"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/media_bg_cell_mask"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/media_progress"
+            style="@style/Widget.Zmt.CircularProgressIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            app:indicatorColor="@color/zm_on_media"
+            app:indicatorSize="@dimen/media_progress_size"
+            app:trackColor="@color/media_color_on_media_16" />
+
+        <TextView
+            android:id="@+id/media_percent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textAppearance="@style/TextAppearance.Zmt.LabelSmall.Number"
+            android:textColor="@color/zm_on_media"
+            tools:text="62%" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/media_failed"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/media_bg_cell_failed"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/base_space_2"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="@dimen/base_icon_size"
+            android:layout_height="@dimen/base_icon_size"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_error"
+            app:tint="?attr/colorOnErrorContainer" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_1"
+            android:gravity="center"
+            android:text="@string/media_picker_failed"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+            android:textColor="?attr/colorOnErrorContainer" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/media_play"
+        android:layout_width="@dimen/media_play_size"
+        android:layout_height="@dimen/media_play_size"
+        android:layout_gravity="center"
+        android:background="@drawable/media_bg_scrim_circle"
+        android:importantForAccessibility="no"
+        android:padding="8dp"
+        android:src="@drawable/ic_play_arrow_filled"
+        android:visibility="gone"
+        app:tint="@color/zm_on_media" />
+
+    <com.zhimu.slmp.base.widget.StatusTagView
+        android:id="@+id/media_tag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="@dimen/media_tag_margin"
+        android:visibility="gone"
+        tools:text="新增"
+        tools:visibility="visible" />
+
+    <!-- 触控区域 40 dp，可见圆 24 dp，距右上角 4 dp -->
+    <FrameLayout
+        android:id="@+id/media_delete"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="top|end"
+        android:contentDescription="@string/media_picker_delete">
+
+        <ImageView
+            android:layout_width="@dimen/media_delete_size"
+            android:layout_height="@dimen/media_delete_size"
+            android:layout_gravity="top|end"
+            android:layout_margin="@dimen/media_delete_margin"
+            android:background="@drawable/media_bg_delete"
+            android:importantForAccessibility="no"
+            android:padding="4dp"
+            android:src="@drawable/ic_close"
+            app:tint="?attr/colorOnSurfaceInverse" />
+    </FrameLayout>
+</com.zhimu.slmp.media.widget.SquareFrameLayout>

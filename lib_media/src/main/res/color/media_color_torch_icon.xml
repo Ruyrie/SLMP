@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 手电筒按钮图标：打开时深色图标（白底），关闭时白色 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/zm_media_backdrop" android:state_selected="true" />
+    <item android:color="@color/zm_on_media" />
+</selector>

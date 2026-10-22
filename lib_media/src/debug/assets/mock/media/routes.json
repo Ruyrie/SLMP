@@ -1,0 +1,78 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/v1/files",
+    "file": "upload.json",
+    "delay": 1200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/files/{id}",
+    "when": {
+      "path": {
+        "id": "9001"
+      }
+    },
+    "file": "file_9001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/files/{id}",
+    "when": {
+      "path": {
+        "id": "9002"
+      }
+    },
+    "file": "file_9002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/files/{id}",
+    "when": {
+      "path": {
+        "id": "9003"
+      }
+    },
+    "file": "file_9003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/files/{id}",
+    "when": {
+      "path": {
+        "id": "9004"
+      }
+    },
+    "file": "file_9004.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/files/{id}",
+    "when": {
+      "path": {
+        "id": "9005"
+      }
+    },
+    "file": "file_9005.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/files/{id}",
+    "when": {
+      "path": {
+        "id": "9100"
+      }
+    },
+    "file": "file_9100.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/files/{id}",
+    "file": "file_9100.json"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/files/{id}",
+    "file": "delete.json"
+  }
+]

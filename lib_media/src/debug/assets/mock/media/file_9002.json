@@ -1,0 +1,17 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "file_id": 9002,
+    "url": "file:///android_asset/mock/media/qual_epidemic.jpg",
+    "thumb_url": "file:///android_asset/mock/media/qual_epidemic.jpg",
+    "media_type": "IMAGE",
+    "mime_type": "image/jpeg",
+    "size": 24044,
+    "width": 640,
+    "height": 480,
+    "duration_sec": null,
+    "status": "READY"
+  },
+  "trace_id": "mock-u06-9002"
+}

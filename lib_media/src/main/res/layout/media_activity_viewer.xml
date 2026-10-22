@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- I09 照片和视频全屏预览（02 号规范 7.16 节）：media-backdrop 底；顶栏 关闭 / 序号 / 保存；底部来源说明与缩略图条 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.media.ui.viewer.MediaViewerViewModel" />
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorMediaBackdrop">
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/media_pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <FrameLayout
+            android:id="@+id/media_top_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/base_top_bar_height"
+                android:paddingStart="@dimen/base_space_1"
+                android:paddingEnd="@dimen/base_space_1">
+
+                <ImageButton
+                    android:id="@+id/media_close"
+                    android:layout_width="@dimen/base_touch_target"
+                    android:layout_height="@dimen/base_touch_target"
+                    android:layout_gravity="center_vertical|start"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/media_viewer_close"
+                    android:onClick="@{() -> vm.onClose()}"
+                    android:src="@drawable/ic_close"
+                    app:tint="?attr/colorOnMedia" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="@{vm.indexText}"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number"
+                    android:textColor="?attr/colorOnMedia"
+                    tools:text="3 / 6" />
+
+                <ImageButton
+                    android:id="@+id/media_save"
+                    android:layout_width="@dimen/base_touch_target"
+                    android:layout_height="@dimen/base_touch_target"
+                    android:layout_gravity="center_vertical|end"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/media_viewer_save"
+                    android:enabled="@{!safeUnbox(vm.saving)}"
+                    android:src="@drawable/ic_download"
+                    app:onSafeClick="@{() -> vm.save()}"
+                    app:tint="?attr/colorOnMedia" />
+            </FrameLayout>
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/media_bottom_panel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/base_space_3"
+            android:paddingBottom="@dimen/base_space_3">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="@dimen/base_page_margin"
+                android:paddingEnd="@dimen/base_page_margin"
+                android:text="@{vm.currentItem.sourceLine}"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="?attr/colorOnMedia"
+                app:goneIfNull="@{vm.currentItem.sourceLine}"
+                tools:text="异常上报 · 3 号育肥舍 · 拍摄人李明" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:paddingStart="@dimen/base_page_margin"
+                android:paddingEnd="@dimen/base_page_margin"
+                android:text="@{vm.currentItem.detailLine}"
+                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                android:textColor="@color/media_color_on_media_variant"
+                app:goneIfNull="@{vm.currentItem.detailLine}"
+                tools:text="10月19日 09:10 拍摄 · 视频 0:18" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/media_thumbs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_3"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:overScrollMode="never"
+                android:paddingStart="@dimen/base_page_margin"
+                android:paddingEnd="@dimen/base_page_margin" />
+        </LinearLayout>
+    </FrameLayout>
+</layout>

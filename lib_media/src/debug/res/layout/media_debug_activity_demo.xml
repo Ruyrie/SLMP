@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 照片网格演示页（只在 debug 包中） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/base_top_bar_height"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_space_1">
+
+        <ImageButton
+            android:id="@+id/media_demo_back"
+            android:layout_width="@dimen/base_touch_target"
+            android:layout_height="@dimen/base_touch_target"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/media_back"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="?attr/colorOnSurface" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_2"
+            android:text="照片网格演示"
+            android:textAppearance="@style/TextAppearance.Zmt.TitleLarge"
+            android:textColor="?attr/colorOnSurface" />
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/base_page_margin">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="资质图"
+                android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                android:textColor="?attr/colorOnSurface" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_1"
+                android:layout_marginBottom="@dimen/base_space_3"
+                android:text="至少 1 张，最多 9 张；JPG 或 PNG，单张不超过 5MB"
+                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <com.zhimu.slmp.media.picker.MediaPickerView
+                android:id="@+id/media_demo_editable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:mediaAddIcon="@drawable/ic_add_photo_alternate"
+                app:mediaCameraTitle="新建养殖场 · 资质图"
+                app:mediaDeletedText="已删除 1 张资质图"
+                app:mediaShowCount="true"
+                app:mediaSourceText="养殖场资质图" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/media_demo_submit"
+                style="@style/Widget.Zmt.Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_4"
+                android:text="检查提交（file_ids）" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_8"
+                android:text="死淘照片（只读）"
+                android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                android:textColor="?attr/colorOnSurface" />
+
+            <com.zhimu.slmp.media.picker.MediaPickerView
+                android:id="@+id/media_demo_readonly"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_3"
+                app:mediaReadOnly="true" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>

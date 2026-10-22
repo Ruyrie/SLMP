@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 缩略图删除按钮：24 dp 圆形 inverse-surface -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="?attr/colorSurfaceInverse" />
+</shape>
