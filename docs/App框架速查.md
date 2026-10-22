@@ -46,7 +46,7 @@
 | session.AppSettings / InstallIdProvider | zmt_settings（隐私、last_phone、video_wifi_only、notify_guide_shown）/ device_id |
 | farm.FarmContext | `getContext()`、`current()`、`currentFarmId()`、`farmIdOrZero()`、`role()`、`isOwner()`、`isManager()`、`isStaff()`、`isOwnerOrManager()`、`hasFarm()`、`permissions()`、`update(vo)`、`clear()` |
 | service.ServiceHub | `register(Class, impl)`、`get(Class)`（可为 null）、`require(Class)` |
-| service 接口 | IModuleEntry（`onCreate`、`onPrivacyAgreed`、`debugPages`）、IAccountService、IFarmContextService、IFarmInviteService、ITodoService + TodoChange、IPushService、TabRegistry（TODAY、PRODUCTION、MY_PENS、ASSISTANT、BUSINESS、MINE）、MainTabHost |
+| service 接口 | IModuleEntry（`onCreate`、`onPrivacyAgreed`、`debugPages`）、IAccountService、IFarmContextService（含 `quitFarm`、`listMyFarms`、F01 结果键 `SWITCHER_*`）、IFarmInviteService、ITodoService + TodoChange、IPushService、TabRegistry（TODAY、PRODUCTION、MY_PENS、ASSISTANT、BUSINESS、MINE）、MainTabHost |
 | router.RouterPath / RouterTable / Router | 页面常量（`RouterPath.L07`）与参数键（`EXTRA_FARM_ID` 等）；`Router.open(ctx, action[, extras])`、`openPage(ctx, "I06", extras)`、`openClearTask`、`registerForResult` + `openForResult`；未实现页面自动提示“该功能正在开发中” |
 | model.vo | 公共 VO：FileVO、MediaItemVO、OptionVO、UserBriefVO、FarmBriefVO、PenBriefVO、BatchBriefVO、ChangeRequest*VO、RecordLogVO、MessageBriefVO、FieldErrorVO、AuthTokenVO、AccountUserVO、SessionVO、RecoveryInfoVO、RecoveryCodeVO、FarmContextVO、FarmPermissionVO、DictItemVO、CategoryVO、CategoryBreedVO |
 | data.BaseDataRepository | `getCategories()`（U09）、`getDicts(DictTypes.PEN_TYPE, categoryId)`（U10，缓存 1 小时）、`getRecordLogs(bizType, bizId)`（U14） |
@@ -121,6 +121,13 @@ public interface HerdApi {
 | RecyclerView 头部 | 以 RecyclerView 为 parent 调用 `XxxBinding.inflate(inflater, list, false)` 前必须先 `setLayoutManager`，否则运行时崩溃“RecyclerView has no LayoutManager”（编译期发现不了） |
 | Paging 分组标题 | insertSeparators 的顶部标题在首屏数据之后插入，列表会停在第一项而不是标题；注册 AdapterDataObserver，顶部插入且原本在顶部时 scrollToPosition(0)（见 MessageCenterActivity） |
 | 顶部栏标题 | base_include_top_app_bar 的 title 绑定为空时不覆盖，代码中用 TopAppBarHelper.setupBack 设置标题即可 |
+| 页面跳转提示 | `UiMessage.withPage(text, "查看", RouterPath.U02)`：操作点击后由基类直接打开页面，全局提示（GlobalEvents.postMessage）也可用 |
+| 进入页面提示 | 打开页面时带 `RouterPath.EXTRA_SWITCH_TIP`（= BaseActivity.EXTRA_ENTRY_TIP），目标页布局后显示一次 Snackbar |
+| 确认后保持打开 | `ConfirmDialogFragment / ReasonDialogFragment.builder(key).keepOpenOnConfirm()`；宿主在 submitting 变化时 `ConfirmDialogFragment.setLoading(fm, key, loading)`，成功后 `dismiss(fm, key)` |
+| 标签切换带参数 | `MainTabHost.selectTab(tabKey, args)`；目标 Fragment 监听 `MainTabHost.argsResultKey(tabKey)` |
+| 输入框 | 布局中用 `com.zhimu.slmp.base.widget.ZmtTextInputLayout`（出错时描边 2 dp），用法与 TextInputLayout 相同 |
+| 危险操作行 | ListRowView `app:rowDanger="true"` + `app:leadingTone="error"`；更多菜单 primary 项 `MoreMenuHelper.addPrimary` |
+| 标签页 ViewModel 范围 | 切换或退出养殖场后 MainActivity 会按新角色移除并重建标签页；需要跨重建保留事件的一级页用 `obtainActivityViewModel` |
 | 菜单图标颜色 | 图标默认黑色，顶部栏菜单在 menu xml 写 `app:iconTint="?attr/colorOnSurfaceVariant"`，或调用 `TopAppBarHelper.tintMenu` |
 
 ## 九、UI 套件速查（lib_base 的 res、base.widget、base.dialog）

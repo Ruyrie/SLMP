@@ -7,7 +7,11 @@
 | 事项 | 结论 |
 |---|---|
 | 数据来源 | 服务端未完成前，debug 版由 lib_network 的 MockInterceptor 按“方法 + 路径 + 条件”返回示例 JSON；local.properties 中 `zmt.useMock=false` 后直接请求 `zmt.baseUrl` |
-| 高德、极光 | 按文档接入 SDK 与隐私合规初始化；Key 从 local.properties（amap.key、jpush.appKey）读取，为空时：地图选点页显示占位并允许手动填写地址，推送不初始化 |
+| 高德、极光 | 按文档接入 SDK 与隐私合规初始化；Key 从 local.properties（amap.key、jpush.appKey）读取。高德 Android Key 已配置在负责人电脑上；没有 Key 时地图选点页只显示不可用提示，推送不初始化 |
+| 养殖场地址 | 2026-10-22 确认：必须带经纬度与 adcode，不接受手动填写的地址；没有高德 Key 时 F02、F06 不能提交位置 |
+| 员工退出养殖场 | 2026-10-22 确认：入口放在 A07“我的养殖场”下方单独一行（场长、员工显示），确认对话框同 F09 |
+| L07 扫码 | 2026-10-22 确认：使用 lib_media 公共相机页识别后返回结果（技术文档原写 L07 自持相机） |
+| 服务端凭据 | 模型 API Key、阿里云短信 AccessKey、高德 Web 服务 Key 只在服务端以环境变量配置，App 中不出现；不写入仓库 |
 | 组件单独运行 | 做。gradle.properties 中 `runAlone.module_xxx=true` 后该组件按 application 构建，合并 `src/alone` 下的清单与代码 |
 | 代码管理 | 分支 feature/app-m01-m04；公共框架和每个模块编译通过后各提交一次；不推送 |
 | 本期范围 | 只做 App；模块01–04（A01–A09、F01–F10、T01–T08、L01–L11）与通用页 U01–U03；Web 与服务端不动 |
@@ -23,6 +27,7 @@
 | ApiException 在 lib_network | 放在 lib_base 的 `com.zhimu.slmp.base.error`，lib_network 负责生成 | BaseViewModel 在 lib_base，需要识别错误码 |
 | BaseActivity 处理 40104 跳登录页 | SessionManager 发出全局事件，BaseApplication 注册的 ActivityLifecycleCallbacks 在前台页面上打开 A01 并清空返回栈 | lib_base 不依赖 lib_common 的路由与会话 |
 | 示例数据放 Apifox | 放在各组件 `src/debug/assets/mock/<组件名>/`，release 包不包含 | 无服务端也能完整演示 |
+| ABI 未限定 | 只打包 arm64-v8a、armeabi-v7a（高德只有 ARM 原生库，x86_64 安装时地图黑屏；x86_64 模拟器经 ARM 转译运行） | 地图可用 |
 | 视频压缩、上传队列用 Room + WorkManager | 本期只有照片（F02、F06 资质图，L11 死淘照片）：选中后由 UploadManager 压缩并直接上传 API-U05，进度用 LiveData；Room 上传队列与 WorkManager 视频任务在模块07 时加入 | 本期无视频 |
 
 ## 三、工程结构与分工
