@@ -158,6 +158,13 @@ public class ReasonDialogFragment extends BaseAlertDialogFragment {
             return this;
         }
 
+        /** 确认后不关闭（用法同 {@link ConfirmDialogFragment.Builder#keepOpenOnConfirm()}） */
+        @NonNull
+        public Builder keepOpenOnConfirm() {
+            args.putBoolean(ARG_KEEP_OPEN, true);
+            return this;
+        }
+
         @NonNull
         public ReasonDialogFragment build() {
             ReasonDialogFragment f = new ReasonDialogFragment();
@@ -192,11 +199,8 @@ public class ReasonDialogFragment extends BaseAlertDialogFragment {
         builder.setView(view);
 
         CharSequence positive = args.getCharSequence(ARG_POSITIVE);
-        builder.setPositiveButton(positive != null ? positive : getString(R.string.base_action_got_it), (d, which) -> {
-            Bundle result = new Bundle();
-            result.putString(RESULT_REASON, currentReason());
-            sendResult(true, result);
-        });
+        builder.setPositiveButton(positive != null ? positive : getString(R.string.base_action_got_it),
+                (d, which) -> sendResult(true, positiveResult()));
         CharSequence negative = args.getCharSequence(ARG_NEGATIVE);
         builder.setNegativeButton(negative != null ? negative : getString(R.string.base_action_cancel),
                 (d, which) -> sendResult(false));
@@ -231,6 +235,14 @@ public class ReasonDialogFragment extends BaseAlertDialogFragment {
         if (input != null) {
             input.requestFocus();
         }
+    }
+
+    @NonNull
+    @Override
+    protected Bundle positiveResult() {
+        Bundle result = new Bundle();
+        result.putString(RESULT_REASON, currentReason());
+        return result;
     }
 
     @NonNull

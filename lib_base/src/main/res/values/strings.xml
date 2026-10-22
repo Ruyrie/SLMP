@@ -54,4 +54,5 @@
 
     <!-- 未读角标超过 99 -->
     <string name="base_badge_overflow">99+</string>
+    <string name="base_page_unavailable">该功能正在开发中</string>
 </resources>

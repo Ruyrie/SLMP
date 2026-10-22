@@ -45,7 +45,7 @@ public abstract class BaseFragment extends Fragment {
         if (message == null || getView() == null) {
             return;
         }
-        SnackbarHelper.show(requireView(), message, getSnackbarAnchor(), this::onMessageAction);
+        SnackbarHelper.show(requireView(), message, getSnackbarAnchor(), this::dispatchMessageAction);
     }
 
     public void showMessage(@NonNull String text) {
@@ -53,6 +53,14 @@ public abstract class BaseFragment extends Fragment {
     }
 
     protected void onMessageAction(@NonNull String actionId) {
+    }
+
+    private void dispatchMessageAction(@NonNull String actionId) {
+        if (UiMessage.isPageAction(actionId) && getActivity() != null) {
+            BaseActivity.openPageAction(requireActivity(), actionId);
+        } else {
+            onMessageAction(actionId);
+        }
     }
 
     /** 锚点：本 Fragment 布局中带 ANCHOR_TAG 的视图，否则取宿主 BaseActivity 的锚点（例如底部导航） */

@@ -47,7 +47,6 @@ import java.util.Map;
 public class CancelAccountActivity extends BaseActivity {
 
     /** E13 的 EXTRA_MODE 取值：统计范围为本人创建的养殖场（待与模块10 约定） */
-    public static final String E13_MODE_OWNED_FARMS = "OWNED_FARMS";
     private static final String REQ_CONFIRM = "account_cancel_confirm";
 
     private CancelAccountViewModel vm;
@@ -107,7 +106,7 @@ public class CancelAccountActivity extends BaseActivity {
         });
         vm.getOpenExport().observe(this, b -> {
             Bundle extras = new Bundle();
-            extras.putString(RouterPath.EXTRA_MODE, E13_MODE_OWNED_FARMS);
+            extras.putString(RouterPath.EXTRA_MODE, RouterPath.MODE_OWNED_FARMS);
             Router.open(this, RouterPath.E13, extras);
         });
         vm.getShowConfirmDialog().observe(this, message -> ConfirmDialogFragment.builder(REQ_CONFIRM)
@@ -116,12 +115,17 @@ public class CancelAccountActivity extends BaseActivity {
                 .positive(getString(R.string.account_cancel_dialog_positive))
                 .negative(getString(R.string.account_cancel))
                 .danger(true)
+                .keepOpenOnConfirm()
                 .build()
                 .showSafely(getSupportFragmentManager()));
         getSupportFragmentManager().setFragmentResultListener(REQ_CONFIRM, this, (key, result) -> {
             if (ConfirmDialogFragment.isConfirmed(result)) {
                 vm.confirmCancel();
             }
+        });
+        // 确认后对话框保持打开，“注销”按钮显示提交中；失败时恢复，可重试或取消（成功后直接回到 A01）
+        vm.getSubmitting().observe(this, s -> {
+            ConfirmDialogFragment.setLoading(getSupportFragmentManager(), REQ_CONFIRM, Boolean.TRUE.equals(s));
         });
         vm.getCancelled().observe(this, d -> NextStepRouter.openLogin(this, null, CancelAccountViewModel.MSG_CANCELLED));
     }

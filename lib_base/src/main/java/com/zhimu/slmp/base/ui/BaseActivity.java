@@ -1,6 +1,8 @@
 package com.zhimu.slmp.base.ui;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -16,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.zhimu.slmp.base.R;
 import com.zhimu.slmp.base.mvvm.BaseViewModel;
 import com.zhimu.slmp.base.mvvm.UiMessage;
 
@@ -74,7 +77,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
         View content = findViewById(android.R.id.content);
         if (content != null) {
-            SnackbarHelper.show(content, message, getSnackbarAnchor(), this::onMessageAction);
+            SnackbarHelper.show(content, message, getSnackbarAnchor(), this::dispatchMessageAction);
         }
     }
 
@@ -82,8 +85,26 @@ public abstract class BaseActivity extends AppCompatActivity {
         showMessage(UiMessage.of(text));
     }
 
-    /** Snackbar 操作被点击（UiMessage.withAction 的 actionId） */
+    /** Snackbar 操作被点击（UiMessage.withAction 的 actionId；UiMessage.withPage 的页面操作由基类处理，不会回调） */
     protected void onMessageAction(@NonNull String actionId) {
+    }
+
+    private void dispatchMessageAction(@NonNull String actionId) {
+        if (UiMessage.isPageAction(actionId)) {
+            openPageAction(this, actionId);
+        } else {
+            onMessageAction(actionId);
+        }
+    }
+
+    /** 打开页面 action（隐式 Intent 限定本应用包名）；页面不存在时提示“该功能正在开发中” */
+    static void openPageAction(@NonNull Activity activity, @NonNull String action) {
+        Intent intent = new Intent(action).setPackage(activity.getPackageName());
+        if (intent.resolveActivity(activity.getPackageManager()) == null) {
+            SnackbarHelper.show(activity, activity.getString(R.string.base_page_unavailable));
+            return;
+        }
+        activity.startActivity(intent);
     }
 
     /** Snackbar 锚点：默认取布局中带 SnackbarHelper.ANCHOR_TAG 标签的可见视图 */

@@ -34,7 +34,7 @@ import io.reactivex.rxjava3.subjects.PublishSubject;
 /**
  * F04 养殖场位置选点（模块02 技术文档 2.4.4、2.7.1）：大头针固定在中心，地图停止 300 ms 后逆地理编码（switchMap 丢弃旧结果），
  * 地点输入提示 300 ms 防抖，单次定位，确认回传 LocationResult。
- * 未配置高德 Key（或地图创建失败）时为手动模式：填写省、市、区县与详细地址，经纬度与 adcode 为空（source = MANUAL）。
+ * 养殖场地址必须带经纬度与 adcode：未配置高德 Key 或地图创建失败时（manualMode 为真）只显示不可用提示，不能确认。
  */
 public class MapPickViewModel extends BaseViewModel {
 
@@ -77,9 +77,6 @@ public class MapPickViewModel extends BaseViewModel {
 
     /** 手动模式（未配置高德 Key） */
     private final MutableLiveData<Boolean> manualMode = new MutableLiveData<>(false);
-    private final MutableLiveData<String> manualProvince = new MutableLiveData<>("");
-    private final MutableLiveData<String> manualCity = new MutableLiveData<>("");
-    private final MutableLiveData<String> manualDistrict = new MutableLiveData<>("");
 
     private final MediatorLiveData<Boolean> canConfirm = new MediatorLiveData<>(false);
 
@@ -104,8 +101,6 @@ public class MapPickViewModel extends BaseViewModel {
         canConfirm.addSource(result, v -> updateCanConfirm());
         canConfirm.addSource(addressState, v -> updateCanConfirm());
         canConfirm.addSource(manualMode, v -> updateCanConfirm());
-        canConfirm.addSource(manualProvince, v -> updateCanConfirm());
-        canConfirm.addSource(manualDistrict, v -> updateCanConfirm());
         canConfirm.addSource(manualAddress, v -> updateCanConfirm());
 
         disposables.add(cameraIdle
@@ -160,12 +155,6 @@ public class MapPickViewModel extends BaseViewModel {
         updateHint();
         LocationResult initial = input.getInitial();
         if (!available) {
-            if (initial != null) {
-                manualProvince.setValue(nonNull(initial.getProvince()));
-                manualCity.setValue(nonNull(initial.getCity()));
-                manualDistrict.setValue(nonNull(initial.getDistrict()));
-                manualAddress.setValue(nonNull(initial.getAddress()));
-            }
             addressState.setValue(STATE_IDLE);
             return;
         }
@@ -346,11 +335,6 @@ public class MapPickViewModel extends BaseViewModel {
             return;
         }
         if (!mapAvailable) {
-            String province = cut(manualProvince.getValue(), REGION_MAX);
-            String city = cut(manualCity.getValue(), REGION_MAX);
-            finishWithResult.setValue(new LocationResult(null, null, province, city,
-                    cut(manualDistrict.getValue(), REGION_MAX), null, null, cut(manualAddress.getValue(), ADDRESS_MAX),
-                    LocationResult.SOURCE_MANUAL, null));
             return;
         }
         LocationResult r = result.getValue();
@@ -369,8 +353,7 @@ public class MapPickViewModel extends BaseViewModel {
     private void updateCanConfirm() {
         boolean ok;
         if (Boolean.TRUE.equals(manualMode.getValue())) {
-            ok = !isBlank(manualProvince.getValue()) && !isBlank(manualDistrict.getValue())
-                    && !isBlank(manualAddress.getValue());
+            ok = false;
         } else {
             LocationResult r = result.getValue();
             ok = r != null && r.hasAdcode() && !STATE_LOADING.equals(addressState.getValue());
@@ -471,18 +454,6 @@ public class MapPickViewModel extends BaseViewModel {
 
     public LiveData<Boolean> getManualMode() {
         return manualMode;
-    }
-
-    public MutableLiveData<String> getManualProvince() {
-        return manualProvince;
-    }
-
-    public MutableLiveData<String> getManualCity() {
-        return manualCity;
-    }
-
-    public MutableLiveData<String> getManualDistrict() {
-        return manualDistrict;
     }
 
     public LiveData<Boolean> getCanConfirm() {

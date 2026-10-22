@@ -81,8 +81,8 @@ public final class FarmRules {
     }
 
     /**
-     * 地址可提交：地址 ≤200 字、省 / 区县必填且各 ≤30 字；地图选点时还要求 6 位 adcode 与国内经纬度范围。
-     * 手动填写（source = MANUAL，未配置高德 Key）时经纬度与 adcode 可为空（待服务端确认按地址补齐）。
+     * 地址可提交：地址 ≤200 字、省 / 区县必填且各 ≤30 字，并且必须有 6 位 adcode 与国内范围内的经纬度
+     * （2026-10-22 确认：不接受没有经纬度的手动地址）。
      */
     public static boolean isLocationValid(@Nullable LocationResult loc) {
         if (loc == null) {
@@ -95,9 +95,6 @@ public final class FarmRules {
         if (!region(loc.getProvince(), true) || !region(loc.getCity(), true) || !region(loc.getDistrict(), true)
                 || !region(loc.getTownship(), false)) {
             return false;
-        }
-        if (LocationResult.SOURCE_MANUAL.equals(loc.getSource()) && !loc.hasCoordinate()) {
-            return loc.getAdcode() == null || ADCODE.matcher(loc.getAdcode()).matches();
         }
         return loc.getAdcode() != null && ADCODE.matcher(loc.getAdcode()).matches()
                 && inRange(loc.getLongitude(), LNG_MIN, LNG_MAX) && inRange(loc.getLatitude(), LAT_MIN, LAT_MAX);

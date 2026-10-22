@@ -15,7 +15,6 @@ import java.util.Objects;
  * F04 地图选点结果（GCJ-02），由 F02 / F06 原样写入 CreateFarmRequest、SubmitFarmChangeRequest 的地址字段：
  * 经纬度为相机中心 HALF_UP 保留 7 位；行政区取逆地理编码，city 为空（直辖市）用 province；
  * address 为格式化地址加手动补充；loc_accuracy 只在 source 为 LOCATION 时填写。
- * 未配置高德 Key 时为手动填写（source 为 MANUAL，经纬度与 adcode 为空）。
  */
 public class LocationResult implements Parcelable {
 
@@ -25,8 +24,6 @@ public class LocationResult implements Parcelable {
     public static final String SOURCE_DRAG = "DRAG";
     /** 选择搜索提示 */
     public static final String SOURCE_SEARCH = "SEARCH";
-    /** 手动填写（未配置高德 Key 或地图不可用，技术准备补充） */
-    public static final String SOURCE_MANUAL = "MANUAL";
 
     /** 经纬度保留的小数位 */
     public static final int COORD_SCALE = 7;

@@ -297,98 +297,14 @@
                         app:noticeText="@string/map_permission_notice"
                         app:visibleIf="@{!vm.manualMode &amp;&amp; vm.showPermissionNotice}" />
 
-                    <!-- 手动填写（未配置高德 Key） -->
-                    <LinearLayout
+                    <!-- 地图不可用（未配置高德 Key 或地图创建失败）：地址必须带经纬度，不能手动填写 -->
+                    <com.zhimu.slmp.base.widget.NoticeView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        app:visibleIf="@{vm.manualMode}">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/base_space_1"
-                            android:text="@string/map_manual_helper"
-                            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/base_space_3"
-                            android:orientation="horizontal">
-
-                            <com.google.android.material.textfield.TextInputLayout
-                                style="@style/Widget.Zmt.TextInputLayout"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:hint="@string/map_manual_province"
-                                app:boxBackgroundColor="?attr/colorSurfaceContainerLow">
-
-                                <com.google.android.material.textfield.TextInputEditText
-                                    android:id="@+id/map_manual_province"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:inputType="text"
-                                    android:maxLength="30"
-                                    android:singleLine="true"
-                                    android:text="@={vm.manualProvince}" />
-                            </com.google.android.material.textfield.TextInputLayout>
-
-                            <com.google.android.material.textfield.TextInputLayout
-                                style="@style/Widget.Zmt.TextInputLayout"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="@dimen/base_space_2"
-                                android:layout_weight="1"
-                                android:hint="@string/map_manual_city"
-                                app:boxBackgroundColor="?attr/colorSurfaceContainerLow">
-
-                                <com.google.android.material.textfield.TextInputEditText
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:inputType="text"
-                                    android:maxLength="30"
-                                    android:singleLine="true"
-                                    android:text="@={vm.manualCity}" />
-                            </com.google.android.material.textfield.TextInputLayout>
-
-                            <com.google.android.material.textfield.TextInputLayout
-                                style="@style/Widget.Zmt.TextInputLayout"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="@dimen/base_space_2"
-                                android:layout_weight="1"
-                                android:hint="@string/map_manual_district"
-                                app:boxBackgroundColor="?attr/colorSurfaceContainerLow">
-
-                                <com.google.android.material.textfield.TextInputEditText
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:inputType="text"
-                                    android:maxLength="30"
-                                    android:singleLine="true"
-                                    android:text="@={vm.manualDistrict}" />
-                            </com.google.android.material.textfield.TextInputLayout>
-                        </LinearLayout>
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            style="@style/Widget.Zmt.TextInputLayout"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/base_space_3"
-                            android:hint="@string/map_manual_address"
-                            app:boxBackgroundColor="?attr/colorSurfaceContainerLow">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="text"
-                                android:maxLength="200"
-                                android:text="@={vm.manualAddress}" />
-                        </com.google.android.material.textfield.TextInputLayout>
-                    </LinearLayout>
+                        android:layout_marginTop="@dimen/base_space_3"
+                        app:noticeLevel="warning"
+                        app:noticeText="@string/map_unavailable"
+                        app:visibleIf="@{vm.manualMode}" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/map_confirm"

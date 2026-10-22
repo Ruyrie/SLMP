@@ -12,6 +12,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zhimu.slmp.base.R;
+import androidx.fragment.app.FragmentManager;
 
 /**
  * 第 5 级弹窗：确认对话框（02 号《UI设计规范》7.11、8.1 节），只用于确认不可撤销的操作，或不能执行时的告知。
@@ -110,6 +111,16 @@ public class ConfirmDialogFragment extends BaseAlertDialogFragment {
         @NonNull
         public Builder extras(@Nullable Bundle extras) {
             args.putBundle(ARG_EXTRAS, extras);
+            return this;
+        }
+
+        /**
+         * 确认后不关闭：点确认只回传结果，宿主用 {@link BaseAlertDialogFragment#setLoading(FragmentManager, String, boolean)}
+         * 显示提交中，成功后 {@link BaseAlertDialogFragment#dismiss(FragmentManager, String)}，失败时恢复以便重试
+         */
+        @NonNull
+        public Builder keepOpenOnConfirm() {
+            args.putBoolean(ARG_KEEP_OPEN, true);
             return this;
         }
 

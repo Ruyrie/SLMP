@@ -22,12 +22,14 @@ import androidx.databinding.DataBindingUtil;
 import com.google.android.material.textfield.TextInputLayout;
 import com.zhimu.slmp.base.dialog.ConfirmDialogFragment;
 import com.zhimu.slmp.base.event.GlobalEvents;
+import com.zhimu.slmp.base.mvvm.UiMessage;
 import com.zhimu.slmp.base.ui.BaseActivity;
 import com.zhimu.slmp.base.widget.StatusTagView;
 import com.zhimu.slmp.base.widget.TopAppBarHelper;
 import com.zhimu.slmp.common.R;
 import com.zhimu.slmp.common.databinding.CommonChangeActivityFormBinding;
 import com.zhimu.slmp.common.model.vo.ChangeRequestFormVO;
+import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.common.ui.change.model.vo.ChangeFormVO;
 
 import java.util.ArrayList;
@@ -119,7 +121,8 @@ public class ChangeRequestFormActivity extends BaseActivity {
         vm.getSubmitted().observe(this, vo -> {
             setResult(Activity.RESULT_OK);
             finish();
-            GlobalEvents.postMessage(ChangeRequestFormViewModel.MSG_SUBMITTED);
+            GlobalEvents.postMessage(UiMessage.withPage(ChangeRequestFormViewModel.MSG_SUBMITTED,
+                    getString(R.string.common_change_view), RouterPath.U02));
         });
         vm.getCloseForbidden().observe(this, c -> finish());
     }

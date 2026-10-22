@@ -12,6 +12,9 @@ public final class UiMessage {
     /** 默认 4 秒 */
     public static final int DURATION_DEFAULT = 4000;
 
+    /** 页面 action 前缀（与 RouterPath 一致）：actionId 为页面 action 时，点击操作由基类直接打开该页面 */
+    public static final String PAGE_ACTION_PREFIX = "com.zhimu.slmp.page.";
+
     @NonNull
     private final String text;
     @Nullable
@@ -33,6 +36,21 @@ public final class UiMessage {
 
     public static UiMessage withAction(@NonNull String text, @NonNull String actionText, @NonNull String actionId) {
         return new UiMessage(text, actionText, actionId, DURATION_DEFAULT);
+    }
+
+    /**
+     * 操作为“打开某个页面”的提示，例如“已提交修改申请，等待管理员审核”+“查看”打开 U02。
+     * 可用于全局提示（GlobalEvents.postMessage），提示显示在哪个页面都能正确跳转。
+     *
+     * @param pageAction 页面 action，即 RouterPath 中的常量
+     */
+    public static UiMessage withPage(@NonNull String text, @NonNull String actionText, @NonNull String pageAction) {
+        return new UiMessage(text, actionText, pageAction, DURATION_DEFAULT);
+    }
+
+    /** actionId 是否为页面 action */
+    public static boolean isPageAction(@Nullable String actionId) {
+        return actionId != null && actionId.startsWith(PAGE_ACTION_PREFIX);
     }
 
     @NonNull

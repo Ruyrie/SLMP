@@ -16,9 +16,5 @@
     <string name="map_manual_edit_hint">详细地址</string>
     <!-- 未配置高德 Key 时的手动填写（技术准备补充） -->
     <string name="map_no_key">未配置高德地图 Key，可以手动填写地址</string>
-    <string name="map_manual_province">省</string>
-    <string name="map_manual_city">市</string>
-    <string name="map_manual_district">区县</string>
-    <string name="map_manual_address">详细地址</string>
-    <string name="map_manual_helper">填写所在省、市、区县和村镇门牌；直辖市的“市”可不填</string>
+    <string name="map_unavailable">地图暂时不可用，不能选择养殖场位置。未配置高德地图 Key 时，请在 local.properties 中填写 amap.key 后重新构建。</string>
 </resources>

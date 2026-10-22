@@ -13,6 +13,11 @@ android {
         minSdk = 31
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
+        // 高德 SDK 只提供 ARM 原生库；只打包 ARM 两种 ABI，x86_64 模拟器通过 ARM 转译运行
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a'
+        }
+
         // 服务端地址与 Mock 开关（local.properties：zmt.baseUrl、zmt.useMock）
         buildConfigField "String", "BASE_URL", "\"${props.getProperty('zmt.baseUrl', 'https://api.zhimutong.example.com/')}\""
         buildConfigField "boolean", "USE_MOCK", "${props.getProperty('zmt.useMock', 'true')}"
