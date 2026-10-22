@@ -91,6 +91,8 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
         });
         TopAppBarHelper.bindLiftOnScroll(binding.topBar.baseAppBar, binding.list);
 
+        // 头部以 RecyclerView 为父布局生成 LayoutParams，必须先设置 LayoutManager
+        binding.list.setLayoutManager(new LinearLayoutManager(this));
         header = TodayItemCalendarHeaderBinding.inflate(getLayoutInflater(), binding.list, false);
         header.setLifecycleOwner(this);
         header.setVm(vm);
@@ -103,7 +105,6 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
         overdueAdapter = new TodoListAdapter(this, false);
         listStateAdapter.setOnActionClickListener(v -> vm.retry());
         concat = new ConcatAdapter(headerAdapter);
-        binding.list.setLayoutManager(new LinearLayoutManager(this));
         binding.list.setItemAnimator(null);
         binding.list.setAdapter(concat);
 

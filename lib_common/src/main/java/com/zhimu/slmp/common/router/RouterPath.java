@@ -308,6 +308,17 @@ public final class RouterPath {
     public static final String EXTRA_ACTION_TEXT = "action_text";
     /** 错误码（int，U03 加载失败按错误码选择默认说明，-1 为网络不可用） */
     public static final String EXTRA_ERROR_CODE = "error_code";
+    /** 推荐问题（String，T01 AI 入口打开 K01） */
+    public static final String EXTRA_QUESTION = "question";
+    /** 待办类别（String，TODO_CATEGORY，T01 进入 T03 时预选） */
+    public static final String EXTRA_CATEGORY = "category";
+    /** 跨养殖场切换后的提示（String，例如“已切换到西岭鸡场”） */
+    public static final String EXTRA_SWITCH_TIP = "switch_tip";
+    /** 文件编号（long，打开 I09 预览） */
+    public static final String EXTRA_FILE_ID = "file_id";
+    /** T08 关联记录已失效的标题与说明（String） */
+    public static final String EXTRA_DELETED_TITLE = "deleted_title";
+    public static final String EXTRA_DELETED_DESC = "deleted_desc";
 
     /** 全部页面编号（RouterTable 使用） */
     static final String[] PAGE_CODES = {

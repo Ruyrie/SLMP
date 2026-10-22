@@ -123,6 +123,8 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
         b.topBar.bind(requireActivity(), owner);
         b.topBar.bindLiftOnScroll(b.list);
 
+        // 头部以 RecyclerView 为父布局生成 LayoutParams，必须先设置 LayoutManager
+        b.list.setLayoutManager(new LinearLayoutManager(requireContext()));
         header = TodayItemHomeHeaderBinding.inflate(getLayoutInflater(), b.list, false);
         header.setLifecycleOwner(owner);
         header.setVm(vm);
@@ -132,7 +134,6 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
         footer = new ListStateAdapter();
         footer.setOnActionClickListener(v -> onFooterAction());
         ConcatAdapter concat = new ConcatAdapter(new SingleViewAdapter(header.getRoot()), todoAdapter, footer);
-        b.list.setLayoutManager(new LinearLayoutManager(requireContext()));
         b.list.setItemAnimator(null);
         b.list.setAdapter(concat);
         b.list.addOnScrollListener(new RecyclerView.OnScrollListener() {
