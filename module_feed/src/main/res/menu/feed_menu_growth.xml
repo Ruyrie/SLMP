@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- G06 顶部栏：scale 本批次称重登记（已结束批次不显示） -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/feed_menu_weigh"
+        android:icon="@drawable/ic_scale"
+        android:title="@string/feed_growth_menu_weigh"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+</menu>

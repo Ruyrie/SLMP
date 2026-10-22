@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- G01 任务行：rice_bowl 图标底（按状态着色）+ 栏舍名 + 次文字两行（第一行可带“库存不足”标签）+ 尾部状态标签 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/base_page_margin"
+    android:paddingEnd="@dimen/base_page_margin">
+
+    <com.zhimu.slmp.base.widget.ListRowView
+        android:id="@+id/feed_task_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/feed_task_line1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <com.zhimu.slmp.base.widget.StatusTagView
+                android:id="@+id/feed_task_low_stock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/feed_task_line2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone" />
+    </com.zhimu.slmp.base.widget.ListRowView>
+</FrameLayout>

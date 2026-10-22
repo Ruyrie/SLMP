@@ -1,0 +1,51 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "batch_id": 3001,
+      "batch_no": "ZM2610-031",
+      "pen_names": "3 号育肥舍",
+      "breed_name": "杜长大育肥猪",
+      "day_age": 96,
+      "status": "ACTIVE",
+      "last_avg_weight": 60.0,
+      "growth_status": "SLOW",
+      "growth_status_text": "生长偏慢"
+    },
+    {
+      "batch_id": 3002,
+      "batch_no": "ZM2610-019",
+      "pen_names": "4 号育肥舍",
+      "breed_name": "杜长大育肥猪",
+      "day_age": 82,
+      "status": "ACTIVE",
+      "last_avg_weight": 44.9,
+      "growth_status": "NORMAL",
+      "growth_status_text": "正常"
+    },
+    {
+      "batch_id": 3003,
+      "batch_no": "ZM2610-045",
+      "pen_names": "1 号保育舍",
+      "breed_name": "杜长大保育猪",
+      "day_age": 35,
+      "status": "ACTIVE",
+      "last_avg_weight": null,
+      "growth_status": "NONE",
+      "growth_status_text": "未称重"
+    },
+    {
+      "batch_id": 3009,
+      "batch_no": "ZM2609-012",
+      "pen_names": "5 号育肥舍",
+      "breed_name": "杜长大育肥猪",
+      "day_age": 136,
+      "status": "ENDED",
+      "last_avg_weight": 98.5,
+      "growth_status": "NORMAL",
+      "growth_status_text": "正常"
+    }
+  ],
+  "trace_id": "mock-feed-weigh_options_all"
+}

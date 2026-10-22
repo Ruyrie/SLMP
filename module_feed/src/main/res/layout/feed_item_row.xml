@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 分组列表项（G04 需要关注 / 当天明细、G06 称重记录）：左右 16 dp，ListRowView 由代码设置图标底、文字与标签 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/base_page_margin"
+    android:paddingEnd="@dimen/base_page_margin">
+
+    <com.zhimu.slmp.base.widget.ListRowView
+        android:id="@+id/feed_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="90dp"
+        app:rowSubtitleMaxLines="2" />
+</FrameLayout>

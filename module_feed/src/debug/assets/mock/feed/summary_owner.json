@@ -1,0 +1,57 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "date": "2026-10-19",
+    "weekday_text": "周一",
+    "pen_count": 3,
+    "task_total": 9,
+    "plan_total_qty": 1050.0,
+    "done_count": 2,
+    "actual_total_qty": 268.0,
+    "overdue_count": 1,
+    "first_overdue": {
+      "pen_name": "1 号保育舍",
+      "meal_name": "早餐",
+      "feed_time": "07:00",
+      "overdue_minutes": 150
+    },
+    "status_counts": {
+      "pending": 6,
+      "done": 2,
+      "overdue": 1
+    },
+    "pen_options": [
+      {
+        "pen_id": 2001,
+        "pen_name": "1 号保育舍",
+        "meal_count": 3
+      },
+      {
+        "pen_id": 2003,
+        "pen_name": "3 号育肥舍",
+        "meal_count": 3
+      },
+      {
+        "pen_id": 2004,
+        "pen_name": "4 号育肥舍",
+        "meal_count": 3
+      }
+    ],
+    "plan_shortage": [
+      {
+        "feed_id": 4001,
+        "feed_name": "育肥全价料",
+        "stock_qty": 500.0,
+        "today_need_qty": 540.0,
+        "short_qty": 40.0,
+        "restock_before_meal_name": "晚餐"
+      }
+    ],
+    "plan_shortage_more_count": 0,
+    "can_stock_in": true,
+    "can_manage": true,
+    "empty_reason": null
+  },
+  "trace_id": "mock-feed-summary_owner"
+}

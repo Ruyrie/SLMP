@@ -1,0 +1,117 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "task_id": 70119,
+    "task_date": "2026-10-19",
+    "status": "DONE",
+    "status_text": "已投喂",
+    "pen_id": 2004,
+    "pen_name": "4 号育肥舍",
+    "meal_name": "早餐",
+    "feed_time": "07:00",
+    "batch_id": 3002,
+    "batch_no": "ZM2610-019",
+    "breed_name": "杜长大育肥猪",
+    "day_age": 82,
+    "batch_stock": 150,
+    "head_count": 150,
+    "daily_qty_per_head": 2.2,
+    "meals_per_day": 3,
+    "plan_qty": 110.0,
+    "abnormal_threshold": 0.1,
+    "default_feed": {
+      "feed_id": 4001,
+      "feed_name": "育肥全价料",
+      "unit": "KG",
+      "stock_qty": 500.0,
+      "remaining_days": 1,
+      "low_stock": true,
+      "selectable": true,
+      "disabled_reason": null
+    },
+    "feed_options": [
+      {
+        "feed_id": 4001,
+        "feed_name": "育肥全价料",
+        "unit": "KG",
+        "stock_qty": 500.0,
+        "remaining_days": 1,
+        "low_stock": true,
+        "selectable": true,
+        "disabled_reason": null
+      },
+      {
+        "feed_id": 4002,
+        "feed_name": "保育料",
+        "unit": "KG",
+        "stock_qty": 1200.0,
+        "remaining_days": 5,
+        "low_stock": false,
+        "selectable": true,
+        "disabled_reason": null
+      },
+      {
+        "feed_id": 4003,
+        "feed_name": "乳猪教槽料",
+        "unit": "KG",
+        "stock_qty": 0.0,
+        "remaining_days": null,
+        "low_stock": false,
+        "selectable": false,
+        "disabled_reason": "结存 0 千克，不能出库"
+      }
+    ],
+    "default_executor": {
+      "user_id": 10003,
+      "name": "李明",
+      "avatar_url": null,
+      "role": "STAFF",
+      "role_text": "员工"
+    },
+    "current_user": {
+      "user_id": 10001,
+      "name": "王建国",
+      "avatar_url": null,
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "can_register": false,
+    "block_reason": "DONE",
+    "is_overdue": false,
+    "backfill_end_at": "2026-10-21 00:00:00",
+    "record_id": 7119,
+    "can_stock_in": true,
+    "executor_options": [
+      {
+        "user_id": 10001,
+        "name": "王建国",
+        "avatar_url": null,
+        "role": "OWNER",
+        "role_text": "所有者"
+      },
+      {
+        "user_id": 10002,
+        "name": "刘芳",
+        "avatar_url": null,
+        "role": "MANAGER",
+        "role_text": "场长"
+      },
+      {
+        "user_id": 10003,
+        "name": "李明",
+        "avatar_url": null,
+        "role": "STAFF",
+        "role_text": "员工"
+      },
+      {
+        "user_id": 10004,
+        "name": "张伟",
+        "avatar_url": null,
+        "role": "STAFF",
+        "role_text": "员工"
+      }
+    ]
+  },
+  "trace_id": "mock-feed-task_form_70119"
+}

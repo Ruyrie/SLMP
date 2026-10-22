@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- G01 今日饲喂任务：顶部栏（tune、bar_chart 只对所有者、场长显示）+ 下拉刷新列表（头部为指标卡、库存横幅、筛选 Chip） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/feed_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/feed_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/base_top_bar_height"
+            app:navigationContentDescription="@string/base_cd_back"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:title="@string/feed_today_title" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <com.zhimu.slmp.base.widget.StateLayout
+        android:id="@+id/feed_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:stateEmptyIcon="@drawable/ic_rice_bowl"
+        app:stateEmptyTitle="@string/feed_today_empty_title"
+        app:stateErrorTitle="@string/feed_today_error_title">
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/feed_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/feed_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="@dimen/base_space_12" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </com.zhimu.slmp.base.widget.StateLayout>
+</LinearLayout>

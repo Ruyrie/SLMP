@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 底部面板列表内容（G03 修改记录、G06 选择对比批次）：最高占屏幕 2/3，超出时面板内滚动；加载中进度、为空时居中文字 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.zhimu.slmp.feed.widget.MaxHeightScrollView
+        android:id="@+id/feed_sheet_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/feed_sheet_items"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/base_space_2" />
+    </com.zhimu.slmp.feed.widget.MaxHeightScrollView>
+
+    <TextView
+        android:id="@+id/feed_sheet_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="@dimen/base_space_8"
+        android:paddingBottom="@dimen/base_space_8"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone" />
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/feed_sheet_progress"
+        style="@style/Widget.Zmt.CircularProgressIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/base_space_8"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:indicatorSize="24dp" />
+</FrameLayout>

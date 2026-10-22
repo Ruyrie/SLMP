@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ===== 通用 ===== -->
+    <string name="feed_unit_kg">千克</string>
+    <string name="feed_unit_head">头</string>
+    <string name="feed_unit_per_month">次 / 月</string>
+    <string name="feed_unit_percent">%</string>
+    <string name="feed_tag_low_stock">库存不足</string>
+    <string name="feed_tag_abnormal">投喂异常</string>
+    <string name="feed_tag_ended">已结束</string>
+    <string name="feed_plan_not_set">未设置</string>
+    <string name="feed_action_stock_in">去入库</string>
+    <string name="feed_action_cancel">取消</string>
+    <string name="feed_action_save">保存</string>
+    <string name="feed_action_confirm">确定</string>
+    <string name="feed_action_keep_editing">继续填写</string>
+    <string name="feed_action_discard">放弃</string>
+    <string name="feed_action_request_change">提交修改申请</string>
+    <string name="feed_action_need_review">需审核</string>
+    <string name="feed_discard_title">放弃这次填写？</string>
+    <string name="feed_discard_message">已填写的内容不会保存。</string>
+    <string name="feed_list_load_failed">加载失败，点按重试</string>
+    <string name="feed_batch_sheet_title">选择批次</string>
+    <string name="feed_no_pen_permission_title">你没有这个栏舍的登记权限</string>
+    <string name="feed_field_feed">饲料</string>
+    <string name="feed_field_plan_qty">计划量</string>
+    <string name="feed_field_actual_qty">实际投喂量</string>
+    <string name="feed_field_executor">实际执行人</string>
+    <string name="feed_field_remark">备注（选填）</string>
+
+    <!-- ===== G01 今日饲喂任务 ===== -->
+    <string name="feed_today_title">今日饲喂任务</string>
+    <string name="feed_today_menu_plan">饲喂方案</string>
+    <string name="feed_today_menu_exec">饲喂执行情况</string>
+    <string name="feed_today_chip_all">全部</string>
+    <string name="feed_today_chip_pending">待投喂</string>
+    <string name="feed_today_chip_done">已投喂</string>
+    <string name="feed_today_chip_overdue">已逾期</string>
+    <string name="feed_today_chip_pen">栏舍</string>
+    <string name="feed_today_pen_sheet_title">按栏舍查看</string>
+    <string name="feed_today_pen_all">全部栏舍</string>
+    <string name="feed_today_error_title">饲喂任务加载失败</string>
+    <string name="feed_today_empty_title">今天没有饲喂任务</string>
+    <string name="feed_today_empty_owner_message">还没有设置饲喂方案的批次不会生成任务。先为在养批次设置饲喂方案。</string>
+    <string name="feed_today_empty_staff_message">你负责的栏舍今天没有饲喂任务。</string>
+    <string name="feed_today_empty_action">设置饲喂方案</string>
+    <string name="feed_today_empty_no_pen_title">你还没有负责的栏舍</string>
+    <string name="feed_today_empty_no_pen_message">请联系所有者或场长分配栏舍。</string>
+
+    <!-- ===== G02 登记投喂 ===== -->
+    <string name="feed_register_title">登记投喂</string>
+    <string name="feed_register_title_edit">修改投喂</string>
+    <string name="feed_register_title_readonly">投喂记录</string>
+    <string name="feed_register_menu_more">更多</string>
+    <string name="feed_register_menu_void">作废这条记录</string>
+    <string name="feed_register_error_title">投喂任务加载失败</string>
+    <string name="feed_register_abnormal_title">投喂异常：</string>
+    <string name="feed_register_stock_error_title">库存不足，不能确认投喂。</string>
+    <string name="feed_register_action_confirm">确认投喂</string>
+    <string name="feed_register_action_save">保存修改</string>
+    <string name="feed_register_void_title">作废这条投喂记录？</string>
+    <string name="feed_register_void_confirm">作废</string>
+
+    <!-- ===== G03 饲喂方案 ===== -->
+    <string name="feed_plan_title">饲喂方案</string>
+    <string name="feed_plan_menu_history">修改记录</string>
+    <string name="feed_plan_error_title">饲喂方案加载失败</string>
+    <string name="feed_plan_no_permission_title">你没有查看饲喂方案的权限</string>
+    <string name="feed_plan_no_permission_message">饲喂方案和执行统计只有所有者和场长可以查看。</string>
+    <string name="feed_plan_apply_std">套用品种标准</string>
+    <string name="feed_plan_section_stages">按生长阶段</string>
+    <string name="feed_plan_no_plan_notice">这个批次还没有饲喂方案。套用品种标准后再按需调整，保存后系统按方案生成每天的饲喂任务。</string>
+    <string name="feed_plan_stage_current">当前阶段</string>
+    <string name="feed_plan_field_daily_qty">每头日投喂量</string>
+    <string name="feed_plan_field_meals">餐次</string>
+    <string name="feed_plan_meal_times">投喂时间</string>
+    <string name="feed_plan_today_qty">今天计划量</string>
+    <string name="feed_plan_threshold_title">投喂异常判定</string>
+    <string name="feed_plan_threshold_field">偏差比例</string>
+    <string name="feed_plan_threshold_helper">实际投喂量偏离计划量超过这个比例时，标为投喂异常</string>
+    <string name="feed_plan_action_save">保存方案</string>
+    <string name="feed_plan_history_title">修改记录</string>
+    <string name="feed_plan_history_empty">还没有修改记录</string>
+    <string name="feed_plan_undo">撤销</string>
+
+    <!-- ===== G04 饲喂执行情况 ===== -->
+    <string name="feed_exec_title">饲喂执行情况</string>
+    <string name="feed_exec_menu_range">自定义日期范围</string>
+    <string name="feed_exec_error_title">饲喂执行情况加载失败</string>
+    <string name="feed_exec_no_permission_title">你没有查看饲喂执行情况的权限</string>
+    <string name="feed_exec_no_permission_message">饲喂方案和执行统计只有所有者和场长可以查看。</string>
+    <string name="feed_exec_all_batches">全部批次</string>
+    <string name="feed_exec_range_7">近 7 天</string>
+    <string name="feed_exec_range_30">近 30 天</string>
+    <string name="feed_exec_range_batch">本批次</string>
+    <string name="feed_exec_chart_title">每日投喂量</string>
+    <string name="feed_exec_legend_actual">实际</string>
+    <string name="feed_exec_no_task">这段时间没有饲喂任务</string>
+    <string name="feed_exec_section_attention">需要关注</string>
+    <string name="feed_exec_attention_empty">这段时间没有投喂异常和逾期未投的餐次</string>
+    <string name="feed_exec_empty_title">还没有在养批次</string>
+    <string name="feed_exec_empty_message">批次入栏并设置饲喂方案后，这里会显示执行情况。</string>
+
+    <!-- ===== G05 称重登记 ===== -->
+    <string name="feed_weigh_title">称重登记</string>
+    <string name="feed_weigh_title_edit">修改称重</string>
+    <string name="feed_weigh_menu_growth">生长曲线</string>
+    <string name="feed_weigh_error_title">称重信息加载失败</string>
+    <string name="feed_weigh_pick_batch">选择批次</string>
+    <string name="feed_weigh_mode_sample">抽样汇总</string>
+    <string name="feed_weigh_mode_individual">逐头录入</string>
+    <string name="feed_weigh_field_date">称重日期</string>
+    <string name="feed_weigh_field_sample">抽样数</string>
+    <string name="feed_weigh_field_total">总重</string>
+    <string name="feed_weigh_add_item">添加一头</string>
+    <string name="feed_weigh_low_title">抽样数偏少。</string>
+    <string name="feed_weigh_result_avg">平均体重</string>
+    <string name="feed_weigh_result_dev">偏离标准</string>
+    <string name="feed_weigh_cycle">称重周期</string>
+    <string name="feed_weigh_cycle_suggested">（品种建议值）</string>
+    <string name="feed_weigh_cycle_helper">下次称重日期从上次称重日期往后推算，提前 1 天提醒</string>
+    <string name="feed_weigh_cycle_reset">恢复品种建议值</string>
+    <string name="feed_weigh_action_submit">提交称重</string>
+    <string name="feed_weigh_action_save">保存修改</string>
+    <string name="feed_weigh_item_delete">删除这一头</string>
+    <string name="feed_weigh_draft_restore">恢复</string>
+
+    <!-- ===== G06 生长曲线 ===== -->
+    <string name="feed_growth_title">生长曲线</string>
+    <string name="feed_growth_menu_weigh">称重登记</string>
+    <string name="feed_growth_error_title">生长曲线加载失败</string>
+    <string name="feed_growth_chart_title">平均体重（千克）· 按日龄</string>
+    <string name="feed_growth_legend_actual">实际</string>
+    <string name="feed_growth_legend_std">标准</string>
+    <string name="feed_growth_compare">同品种对比</string>
+    <string name="feed_growth_add_compare">添加批次</string>
+    <string name="feed_growth_section_records">称重记录</string>
+    <string name="feed_growth_std_updated">品种标准体重已更新，偏离情况已按新标准重新计算。</string>
+    <string name="feed_growth_empty_title">还没有称重记录</string>
+    <string name="feed_growth_empty_message">登记第一次称重后，这里会画出实际体重和标准体重的对照曲线。</string>
+    <string name="feed_growth_empty_action">登记称重</string>
+    <string name="feed_growth_compare_title">选择对比批次</string>
+    <string name="feed_growth_compare_empty">当前养殖场还没有其他同品种批次</string>
+    <string name="feed_growth_record_menu">提交修改申请</string>
+    <string name="feed_growth_chart_cd">生长曲线图，点按数据点查看数值</string>
+</resources>

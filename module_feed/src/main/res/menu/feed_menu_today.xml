@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- G01 顶部栏：tune 饲喂方案、bar_chart 饲喂执行情况（只有所有者、场长可见） -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/feed_menu_plan"
+        android:icon="@drawable/ic_tune"
+        android:title="@string/feed_today_menu_plan"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/feed_menu_exec"
+        android:icon="@drawable/ic_bar_chart"
+        android:title="@string/feed_today_menu_exec"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+</menu>

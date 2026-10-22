@@ -1,0 +1,12 @@
+{
+  "code": 0,
+  "message": "已修改称重周期，下次称重日期已重新推算",
+  "data": {
+    "per_month": 2,
+    "interval_days": 14,
+    "customized": false,
+    "suggested_per_month": 2,
+    "next_weigh_date": "2026-11-02"
+  },
+  "trace_id": "mock-feed-cycle_reset"
+}

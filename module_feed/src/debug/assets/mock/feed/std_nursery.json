@@ -1,0 +1,65 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "std_available": true,
+    "std_version_id": 22,
+    "std_name": "杜长大保育猪标准",
+    "default_abnormal_threshold": 0.1,
+    "stages": [
+      {
+        "std_stage_id": 2201,
+        "stage_name": "保育前期",
+        "day_age_start": 28,
+        "day_age_end": 50,
+        "std_feed_name": "乳猪教槽料",
+        "std_feed_type_code": "COMPLETE",
+        "matched_feed_id": 4003,
+        "matched_feed_name": "乳猪教槽料",
+        "daily_qty": 0.5,
+        "meals_per_day": 4,
+        "meal_times": [
+          "07:00",
+          "11:00",
+          "15:00",
+          "19:00"
+        ]
+      },
+      {
+        "std_stage_id": 2202,
+        "stage_name": "保育后期",
+        "day_age_start": 51,
+        "day_age_end": 70,
+        "std_feed_name": "保育料",
+        "std_feed_type_code": "COMPLETE",
+        "matched_feed_id": 4002,
+        "matched_feed_name": "保育料",
+        "daily_qty": 0.9,
+        "meals_per_day": 3,
+        "meal_times": [
+          "07:00",
+          "11:30",
+          "17:00"
+        ]
+      },
+      {
+        "std_stage_id": 2203,
+        "stage_name": "生长期",
+        "day_age_start": 71,
+        "day_age_end": null,
+        "std_feed_name": "育肥全价料",
+        "std_feed_type_code": "COMPLETE",
+        "matched_feed_id": 4001,
+        "matched_feed_name": "育肥全价料",
+        "daily_qty": 1.6,
+        "meals_per_day": 3,
+        "meal_times": [
+          "07:00",
+          "11:30",
+          "17:00"
+        ]
+      }
+    ]
+  },
+  "trace_id": "mock-feed-std_nursery"
+}

@@ -1,0 +1,80 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "std_available": true,
+    "std_version_id": 21,
+    "std_name": "杜长大育肥猪标准",
+    "default_abnormal_threshold": 0.1,
+    "stages": [
+      {
+        "std_stage_id": 2101,
+        "stage_name": "保育期",
+        "day_age_start": 28,
+        "day_age_end": 60,
+        "std_feed_name": "保育料",
+        "std_feed_type_code": "COMPLETE",
+        "matched_feed_id": 4002,
+        "matched_feed_name": "保育料",
+        "daily_qty": 1.2,
+        "meals_per_day": 3,
+        "meal_times": [
+          "07:00",
+          "11:30",
+          "17:00"
+        ]
+      },
+      {
+        "std_stage_id": 2102,
+        "stage_name": "育肥前期",
+        "day_age_start": 61,
+        "day_age_end": 100,
+        "std_feed_name": "育肥全价料",
+        "std_feed_type_code": "COMPLETE",
+        "matched_feed_id": 4001,
+        "matched_feed_name": "育肥全价料",
+        "daily_qty": 2.5,
+        "meals_per_day": 3,
+        "meal_times": [
+          "07:00",
+          "11:30",
+          "17:00"
+        ]
+      },
+      {
+        "std_stage_id": 2103,
+        "stage_name": "育肥中期",
+        "day_age_start": 101,
+        "day_age_end": 140,
+        "std_feed_name": "育肥全价料",
+        "std_feed_type_code": "COMPLETE",
+        "matched_feed_id": 4001,
+        "matched_feed_name": "育肥全价料",
+        "daily_qty": 2.8,
+        "meals_per_day": 3,
+        "meal_times": [
+          "07:00",
+          "11:30",
+          "17:00"
+        ]
+      },
+      {
+        "std_stage_id": 2104,
+        "stage_name": "育肥后期",
+        "day_age_start": 141,
+        "day_age_end": null,
+        "std_feed_name": "育肥全价料",
+        "std_feed_type_code": "COMPLETE",
+        "matched_feed_id": 4001,
+        "matched_feed_name": "育肥全价料",
+        "daily_qty": 3.1,
+        "meals_per_day": 2,
+        "meal_times": [
+          "07:00",
+          "17:00"
+        ]
+      }
+    ]
+  },
+  "trace_id": "mock-feed-std_fatten"
+}

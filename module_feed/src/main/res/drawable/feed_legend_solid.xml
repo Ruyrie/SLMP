@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- G06 图例“实际”：16 dp 长的 2.5 dp primary 实线 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <size
+        android:width="16dp"
+        android:height="2.5dp" />
+    <corners android:radius="1.25dp" />
+    <solid android:color="@color/zm_primary" />
+</shape>

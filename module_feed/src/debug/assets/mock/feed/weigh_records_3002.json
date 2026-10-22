@@ -1,0 +1,27 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 3310,
+        "weigh_date": "2026-10-12",
+        "day_age": 75,
+        "avg_weight": 44.9,
+        "sample_count": 25,
+        "mode": "SAMPLE",
+        "recorder_name": "李明",
+        "std_weight": 46.0,
+        "deviation_ratio": -0.0239,
+        "out_of_range": false,
+        "daily_gain": 0.96,
+        "action": "EDIT"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-feed-weigh_records_3002"
+}

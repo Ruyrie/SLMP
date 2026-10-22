@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 单选筛选 Chip（G04 批次）：选中 secondary-container + 对勾，未选 1 dp outline 描边 -->
+<com.google.android.material.chip.Chip xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Widget.Zmt.Chip.Filter"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />

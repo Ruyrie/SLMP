@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- FeedStatView：小卡（G06：标签 12 sp、数字 24 sp）、重点卡（G01 今日计划：primary-container 底） -->
+    <declare-styleable name="FeedStatView">
+        <attr name="feedStatSmall" format="boolean" />
+        <attr name="feedStatEmphasis" format="boolean" />
+    </declare-styleable>
+</resources>

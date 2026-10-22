@@ -1,0 +1,81 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "batch": {
+      "batch_id": 3009,
+      "batch_no": "ZM2609-012",
+      "pen_names": "5 号育肥舍",
+      "breed_name": "杜长大育肥猪",
+      "current_count": 0,
+      "entry_date": "2026-08-15",
+      "entry_age_days": 66,
+      "entry_avg_weight": 36.0,
+      "status": "ENDED"
+    },
+    "weigh_date": "2026-10-13",
+    "day_age": 125,
+    "stock_count": 0,
+    "first_weigh": false,
+    "last_weigh": {
+      "date": "2026-10-10",
+      "avg_weight": 98.5
+    },
+    "existing_record_id": null,
+    "can_register": false,
+    "block_message": "批次 ZM2609-012 已结束，不能再登记称重。",
+    "std_available": true,
+    "std_points": [
+      {
+        "day_age": 60,
+        "std_weight": 32.0
+      },
+      {
+        "day_age": 70,
+        "std_weight": 41.0
+      },
+      {
+        "day_age": 80,
+        "std_weight": 51.0
+      },
+      {
+        "day_age": 90,
+        "std_weight": 62.0
+      },
+      {
+        "day_age": 100,
+        "std_weight": 73.0
+      },
+      {
+        "day_age": 110,
+        "std_weight": 84.0
+      },
+      {
+        "day_age": 120,
+        "std_weight": 95.0
+      },
+      {
+        "day_age": 130,
+        "std_weight": 105.0
+      },
+      {
+        "day_age": 140,
+        "std_weight": 115.0
+      }
+    ],
+    "std_weight_at_date": null,
+    "allowed_deviation": 0.1,
+    "current_growth_status": "NORMAL",
+    "sample_ratio": 0.15,
+    "suggested_sample": 0,
+    "weigh_cycle": {
+      "per_month": 2,
+      "interval_days": 14,
+      "customized": false,
+      "suggested_per_month": 2,
+      "next_weigh_date": "2026-11-02"
+    },
+    "can_edit_cycle": true
+  },
+  "trace_id": "mock-feed-weigh_form_3009"
+}

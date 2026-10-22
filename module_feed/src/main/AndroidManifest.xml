@@ -1,4 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <application>
+
+        <!-- G01 今日饲喂任务 -->
+        <activity
+            android:name=".ui.today.FeedTodayActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.G01" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- G02 登记投喂（新增、修改、只读） -->
+        <activity
+            android:name=".ui.register.FeedRegisterActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.G02" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- G03 饲喂方案 -->
+        <activity
+            android:name=".ui.plan.FeedPlanActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.G03" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- G04 饲喂执行情况 -->
+        <activity
+            android:name=".ui.exec.FeedExecActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.G04" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- G05 称重登记（新增、修改） -->
+        <activity
+            android:name=".ui.weigh.WeighRegisterActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.G05" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- G06 生长曲线 -->
+        <activity
+            android:name=".ui.growth.GrowthCurveActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.G06" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
 </manifest>

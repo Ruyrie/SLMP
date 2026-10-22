@@ -1,0 +1,12 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "std_available": false,
+    "std_version_id": null,
+    "std_name": null,
+    "default_abnormal_threshold": null,
+    "stages": []
+  },
+  "trace_id": "mock-feed-std_unavailable"
+}

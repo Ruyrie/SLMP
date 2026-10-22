@@ -1,0 +1,54 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 3300,
+    "batch_id": 3001,
+    "batch_no": "ZM2610-031",
+    "weigh_date": "2026-10-05",
+    "day_age": 82,
+    "stock_count": 200,
+    "mode": "SAMPLE",
+    "sample_count": 20,
+    "total_weight": 972.0,
+    "items": null,
+    "avg_weight": 48.6,
+    "suggested_sample": 30,
+    "sample_low": true,
+    "std_weight": 53.2,
+    "allowed_deviation": 0.1,
+    "deviation_ratio": -0.0865,
+    "out_of_range": false,
+    "growth_result": "NORMAL",
+    "growth_result_text": "正常",
+    "gain_base_type": "INTAKE",
+    "gain_base_date": "2026-10-01",
+    "gain_base_weight": 45.0,
+    "daily_gain": 0.9,
+    "recorder": {
+      "user_id": 10003,
+      "name": "李明",
+      "avatar_url": null,
+      "role": "STAFF",
+      "role_text": "员工"
+    },
+    "created_at": "2026-10-05 09:20:00",
+    "change_state": {
+      "can_edit": true,
+      "edit_deadline": null,
+      "pending_request_id": null
+    },
+    "can_request_change": false,
+    "change_fields": [
+      "sample_count",
+      "total_weight"
+    ],
+    "recalc_tags": [
+      "生长曲线",
+      "日增重",
+      "出栏建议"
+    ],
+    "version": 0
+  },
+  "trace_id": "mock-feed-weigh_record_3300"
+}

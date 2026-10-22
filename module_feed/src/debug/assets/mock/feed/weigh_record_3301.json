@@ -1,0 +1,54 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 3301,
+    "batch_id": 3001,
+    "batch_no": "ZM2610-031",
+    "weigh_date": "2026-10-19",
+    "day_age": 96,
+    "stock_count": 200,
+    "mode": "SAMPLE",
+    "sample_count": 20,
+    "total_weight": 1200.0,
+    "items": null,
+    "avg_weight": 60.0,
+    "suggested_sample": 30,
+    "sample_low": true,
+    "std_weight": 68.6,
+    "allowed_deviation": 0.1,
+    "deviation_ratio": -0.1254,
+    "out_of_range": true,
+    "growth_result": "SLOW",
+    "growth_result_text": "生长偏慢",
+    "gain_base_type": "PREV_WEIGH",
+    "gain_base_date": "2026-10-05",
+    "gain_base_weight": 48.6,
+    "daily_gain": 0.81,
+    "recorder": {
+      "user_id": 10003,
+      "name": "李明",
+      "avatar_url": null,
+      "role": "STAFF",
+      "role_text": "员工"
+    },
+    "created_at": "2026-10-19 09:10:00",
+    "change_state": {
+      "can_edit": true,
+      "edit_deadline": null,
+      "pending_request_id": null
+    },
+    "can_request_change": false,
+    "change_fields": [
+      "sample_count",
+      "total_weight"
+    ],
+    "recalc_tags": [
+      "生长曲线",
+      "日增重",
+      "出栏建议"
+    ],
+    "version": 0
+  },
+  "trace_id": "mock-feed-weigh_record_3301"
+}

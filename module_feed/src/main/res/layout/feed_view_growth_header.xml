@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    G06 列表头部：批次号 + 生长标记（或“已结束”）→ 批次摘要 →（标准已更新 Notice）→ 三张小指标卡 →
+    生长曲线图表卡（标题、图例、GrowthCurveView）→ 同品种对比（输入 Chip +“添加批次”）→ 分组标题“称重记录”
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingEnd="@dimen/base_page_margin">
+
+        <TextView
+            android:id="@+id/feed_growth_batch_no"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Zmt.TitleLarge.Number"
+            android:textColor="?attr/colorOnSurface" />
+
+        <com.zhimu.slmp.base.widget.StatusTagView
+            android:id="@+id/feed_growth_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_2"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/feed_growth_summary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_page_margin"
+        android:layout_marginTop="@dimen/base_space_1"
+        android:layout_marginEnd="@dimen/base_page_margin"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+
+    <com.zhimu.slmp.base.widget.NoticeView
+        android:id="@+id/feed_growth_std_notice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_page_margin"
+        android:layout_marginTop="@dimen/base_space_3"
+        android:layout_marginEnd="@dimen/base_page_margin"
+        android:visibility="gone"
+        app:noticeLevel="normal"
+        app:noticeText="@string/feed_growth_std_updated" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_4"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingEnd="@dimen/base_page_margin">
+
+        <com.zhimu.slmp.feed.widget.FeedStatView
+            android:id="@+id/feed_growth_stat_avg"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="121"
+            android:minHeight="96dp"
+            app:feedStatSmall="true" />
+
+        <com.zhimu.slmp.feed.widget.FeedStatView
+            android:id="@+id/feed_growth_stat_dev"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_2"
+            android:layout_weight="122"
+            android:minHeight="96dp"
+            app:feedStatSmall="true" />
+
+        <com.zhimu.slmp.feed.widget.FeedStatView
+            android:id="@+id/feed_growth_stat_gain"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_2"
+            android:layout_weight="121"
+            android:minHeight="96dp"
+            app:feedStatSmall="true" />
+    </LinearLayout>
+
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.Zmt.Card.Summary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_page_margin"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:layout_marginEnd="@dimen/base_page_margin">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/feed_growth_chart_title"
+                android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                android:textColor="?attr/colorOnSurface" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/feed_growth_legend"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_2"
+                app:chipSpacingHorizontal="@dimen/base_space_3"
+                app:chipSpacingVertical="@dimen/base_space_1" />
+
+            <FrameLayout
+                android:id="@+id/feed_growth_chart_box"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_2">
+
+                <com.zhimu.slmp.feed.widget.GrowthCurveView
+                    android:id="@+id/feed_growth_chart"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/feed_growth_chart_cd" />
+
+                <View
+                    android:id="@+id/feed_growth_tip_anchor"
+                    android:layout_width="1dp"
+                    android:layout_height="1dp"
+                    android:visibility="invisible" />
+            </FrameLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_3"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingEnd="@dimen/base_page_margin"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/base_space_2"
+                android:text="@string/feed_growth_compare"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/feed_growth_compare_chips"
+                style="@style/Widget.Zmt.ChipGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleLine="true" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/feed_growth_add_compare"
+                style="@style/Widget.Zmt.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:checkable="false"
+                android:text="@string/feed_growth_add_compare"
+                app:chipIcon="@drawable/ic_add"
+                app:chipIconTint="?attr/colorPrimary"
+                app:chipIconVisible="true" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_page_margin"
+        android:layout_marginTop="@dimen/base_space_5"
+        android:layout_marginEnd="@dimen/base_page_margin"
+        android:layout_marginBottom="@dimen/base_space_3"
+        android:accessibilityHeading="true"
+        android:text="@string/feed_growth_section_records"
+        android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+        android:textColor="?attr/colorPrimary" />
+</LinearLayout>

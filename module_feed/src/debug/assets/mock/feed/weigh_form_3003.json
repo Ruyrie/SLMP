@@ -1,0 +1,41 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "batch": {
+      "batch_id": 3003,
+      "batch_no": "ZM2610-045",
+      "pen_names": "1 号保育舍",
+      "breed_name": "杜长大保育猪",
+      "current_count": 320,
+      "entry_date": "2026-10-12",
+      "entry_age_days": 28,
+      "entry_avg_weight": null,
+      "status": "ACTIVE"
+    },
+    "weigh_date": "2026-10-19",
+    "day_age": 35,
+    "stock_count": 320,
+    "first_weigh": true,
+    "last_weigh": null,
+    "existing_record_id": null,
+    "can_register": true,
+    "block_message": null,
+    "std_available": false,
+    "std_points": [],
+    "std_weight_at_date": null,
+    "allowed_deviation": null,
+    "current_growth_status": "NORMAL",
+    "sample_ratio": 0.15,
+    "suggested_sample": 48,
+    "weigh_cycle": {
+      "per_month": 2,
+      "interval_days": 14,
+      "customized": false,
+      "suggested_per_month": 2,
+      "next_weigh_date": "2026-11-02"
+    },
+    "can_edit_cycle": true
+  },
+  "trace_id": "mock-feed-weigh_form_3003"
+}

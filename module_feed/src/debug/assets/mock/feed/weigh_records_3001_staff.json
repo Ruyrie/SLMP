@@ -1,0 +1,41 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 3301,
+        "weigh_date": "2026-10-19",
+        "day_age": 96,
+        "avg_weight": 60.0,
+        "sample_count": 20,
+        "mode": "SAMPLE",
+        "recorder_name": "李明",
+        "std_weight": 68.6,
+        "deviation_ratio": -0.1254,
+        "out_of_range": true,
+        "daily_gain": 0.81,
+        "action": "EDIT"
+      },
+      {
+        "id": 3300,
+        "weigh_date": "2026-10-05",
+        "day_age": 82,
+        "avg_weight": 48.6,
+        "sample_count": 20,
+        "mode": "SAMPLE",
+        "recorder_name": "李明",
+        "std_weight": 53.2,
+        "deviation_ratio": -0.0865,
+        "out_of_range": false,
+        "daily_gain": 0.9,
+        "action": "NONE"
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-feed-weigh_records_3001_staff"
+}
