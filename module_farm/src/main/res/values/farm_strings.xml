@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 通用 -->
+    <string name="farm_action_reload">重新加载</string>
+    <string name="farm_action_cancel">取消</string>
+    <string name="farm_action_save">保存</string>
+    <string name="farm_no_permission_title">你没有%1$s成员管理的查看权限</string>
+    <string name="farm_this_farm">本场</string>
+
+    <!-- F01 切换养殖场 -->
+    <string name="farm_switch_title">切换养殖场</string>
+    <string name="farm_switch_all">全部养殖场</string>
+    <string name="farm_switch_all_desc">只在日历、消息、报表、收支汇总中提供</string>
+    <string name="farm_switch_create">新建养殖场</string>
+    <string name="farm_switch_empty">你还没有养殖场。新建一个养殖场，或在消息中心同意别人的邀请。</string>
+    <string name="farm_switch_load_failed">没有加载出来</string>
+
+    <!-- F02 新建养殖场 / 修改注册信息 -->
+    <string name="farm_create_title">新建养殖场</string>
+    <string name="farm_create_title_edit">修改注册信息</string>
+    <string name="farm_create_notice">提交后由平台审核，结果发到消息中心。审核通过前只能修改注册信息。</string>
+    <string name="farm_field_name">养殖场名称</string>
+    <string name="farm_field_name_helper">同一账号下的养殖场名称不能重复</string>
+    <string name="farm_field_address">地址</string>
+    <string name="farm_field_address_placeholder">在地图上选择位置</string>
+    <string name="farm_field_address_picked">已在地图上选点，点按可重新选择</string>
+    <string name="farm_field_scale">规模</string>
+    <string name="farm_field_category">主要品类</string>
+    <string name="farm_field_contact_name">联系人</string>
+    <string name="farm_field_contact_phone">联系电话</string>
+    <string name="farm_qual_title">资质图</string>
+    <string name="farm_qual_rule">至少 1 张，最多 9 张；JPG 或 PNG，单张不超过 5MB</string>
+    <string name="farm_create_submit">提交审核</string>
+    <string name="farm_create_submit_edit">重新提交审核</string>
+    <string name="farm_create_discard_title">放弃新建养殖场？</string>
+    <string name="farm_create_discard_message">已填写的内容和上传的资质图不会保存。</string>
+    <string name="farm_create_submitted">已提交审核，结果会发到消息中心</string>
+    <string name="farm_create_resubmitted">已重新提交审核</string>
+    <string name="farm_qual_camera_title">养殖场资质图</string>
+
+    <!-- F03 审核结果 -->
+    <string name="farm_audit_title">审核结果</string>
+    <string name="farm_audit_reject_reason">驳回原因</string>
+    <string name="farm_audit_registration">注册信息</string>
+    <string name="farm_audit_records">审核记录</string>
+    <string name="farm_audit_edit_resubmit">修改并重新提交</string>
+    <string name="farm_audit_edit">修改注册信息</string>
+    <string name="farm_audit_menu_delete">删除养殖场</string>
+    <string name="farm_audit_delete_title">删除%1$s？</string>
+    <string name="farm_audit_delete_message">%1$s还没有通过审核。删除后注册信息和资质图一并删除，不能恢复。</string>
+    <string name="farm_audit_delete_confirm">删除</string>
+    <string name="farm_audit_deleted">已删除%1$s</string>
+    <string name="farm_row_name">名称</string>
+    <string name="farm_row_address">地址</string>
+    <string name="farm_row_scale">规模</string>
+    <string name="farm_row_category">主要品类</string>
+    <string name="farm_row_contact">联系人</string>
+    <string name="farm_row_qual">资质图</string>
+    <string name="farm_count_photos">%1$d 张</string>
+    <string name="farm_reshoot_tag">%1$d 张需重拍</string>
+    <string name="farm_reshoot">需重拍</string>
+    <string name="farm_qual_source">养殖场资质图</string>
+    <string name="farm_qual_source_reshoot">养殖场资质图 · 需重拍</string>
+
+    <!-- F05 养殖场信息 -->
+    <string name="farm_info_title">养殖场信息</string>
+    <string name="farm_info_basic">基本信息</string>
+    <string name="farm_info_basic_note">可直接修改</string>
+    <string name="farm_info_registration">注册信息</string>
+    <string name="farm_info_registration_note">修改需重新审核</string>
+    <string name="farm_info_registration_note_manager">由所有者提交修改</string>
+    <string name="farm_info_contact_phone">联系电话</string>
+    <string name="farm_info_intro">简介</string>
+    <string name="farm_info_scale_value">设计存栏 %1$s</string>
+    <string name="farm_info_notice">名称、地址和资质图的修改由所有者提交，需要重新审核，审核期间旧信息照常有效。</string>
+    <string name="farm_info_change_pending">资料变更已在 %1$s 提交，审核期间旧信息照常有效，结果发到消息中心。</string>
+    <string name="farm_info_change_rejected">资料变更已驳回</string>
+    <string name="farm_info_change_reedit">重新修改</string>
+    <string name="farm_info_members">成员管理</string>
+    <string name="farm_info_members_count">%1$d 人</string>
+    <string name="farm_info_transfer">转让所有权</string>
+    <string name="farm_info_transfer_pending">待%1$s确认</string>
+    <string name="farm_info_disable">停用养殖场</string>
+    <string name="farm_info_disable_note">数据保留，可重新启用</string>
+    <string name="farm_info_enable">重新启用养殖场</string>
+    <string name="farm_info_quit">退出养殖场</string>
+    <string name="farm_info_role_line">你是%1$s · %2$s</string>
+    <string name="farm_info_status_pending">待审核</string>
+    <string name="farm_disable_title">停用%1$s？</string>
+    <string name="farm_disable_message">停用后，%1$s的数据全部保留，但只能查看，不能再登记新的记录。\n\n以后你可以在养殖场信息中重新启用。</string>
+    <string name="farm_disable_confirm">停用</string>
+    <string name="farm_enable_title">重新启用%1$s？</string>
+    <string name="farm_enable_message">启用后，成员可以继续登记新的记录。</string>
+    <string name="farm_enable_confirm">启用</string>
+    <string name="farm_quit_title">退出%1$s？</string>
+    <string name="farm_quit_message">退出后，你从下一次操作起就看不到%1$s的数据。你登记过的记录保留。</string>
+    <string name="farm_quit_confirm">退出</string>
+    <string name="farm_edit_contact_name">修改联系人</string>
+    <string name="farm_edit_contact_phone">修改联系电话</string>
+    <string name="farm_edit_scale">修改规模</string>
+    <string name="farm_edit_intro">修改简介</string>
+    <string name="farm_field_scale_design">设计存栏</string>
+
+    <!-- F06 资料变更 -->
+    <string name="farm_change_title">资料变更</string>
+    <string name="farm_change_notice_head">名称、地址和资质图的修改需要重新审核，只有所有者可以提交。</string>
+    <string name="farm_change_notice_bold">审核期间旧信息照常有效</string>
+    <string name="farm_change_notice_tail">，结果发到消息中心。</string>
+    <string name="farm_change_pending_notice">资料变更审核中，审核期间不能再次提交。</string>
+    <string name="farm_change_unmodified">未修改</string>
+    <string name="farm_change_modified">已修改 · 当前：%1$s</string>
+    <string name="farm_change_modified_tag">已修改</string>
+    <string name="farm_change_new_tag">新增</string>
+    <string name="farm_change_remark">变更说明（选填）</string>
+    <string name="farm_change_submit">提交重新审核</string>
+    <string name="farm_change_submitted">已提交资料变更，审核期间旧信息照常有效</string>
+
+    <!-- F07 成员管理 -->
+    <string name="farm_members_title">成员管理</string>
+    <string name="farm_members_filter_all">全部</string>
+    <string name="farm_members_filter_manager">场长</string>
+    <string name="farm_members_filter_staff">员工</string>
+    <string name="farm_members_filter_invite">邀请</string>
+    <string name="farm_members_header">成员 · %1$d 人</string>
+    <string name="farm_invites_header">邀请 · %1$d 条</string>
+    <string name="farm_members_search_hint">搜索姓名或手机号</string>
+    <string name="farm_members_invite_fab">邀请成员</string>
+    <string name="farm_members_reinvite">重新邀请</string>
+    <string name="farm_members_only_owner">还没有其他成员。点‘邀请成员’，邀请场长或员工加入。</string>
+    <string name="farm_members_empty_manager">没有场长</string>
+    <string name="farm_members_empty_staff">没有员工</string>
+    <string name="farm_members_empty_invite">没有邀请记录</string>
+    <string name="farm_members_empty_search">没有找到相关成员</string>
+    <string name="farm_members_all_pens">全部栏舍</string>
+    <string name="farm_members_pens">负责 %1$s</string>
+    <string name="farm_members_no_pens">还没有负责栏舍</string>
+    <string name="farm_members_me">%1$s（你）</string>
+    <string name="farm_members_unassigned">%1$s没有负责员工，提醒和待办暂时发给所有者和场长。在员工的成员详情中点‘调整栏舍’即可分配。</string>
+    <string name="farm_members_load_failed">成员列表没有加载出来</string>
+
+    <!-- F08 邀请成员 -->
+    <string name="farm_invite_title">邀请成员</string>
+    <string name="farm_invite_phone">对方手机号</string>
+    <string name="farm_invite_phone_helper">对方用这个手机号注册或登录后，在消息中心同意即可加入</string>
+    <string name="farm_invite_role">角色</string>
+    <string name="farm_role_manager">场长</string>
+    <string name="farm_role_manager_desc">可使用除成员管理、停用养殖场、转让所有权以外的全部功能</string>
+    <string name="farm_role_staff">员工</string>
+    <string name="farm_role_staff_desc">只能查看和登记负责栏舍的作业记录，看不到收支和经营数据</string>
+    <string name="farm_invite_pens">负责栏舍</string>
+    <string name="farm_invite_expire_notice">邀请 7 天内有效，过期或被拒绝后可以重新邀请。</string>
+    <string name="farm_invite_send">发送邀请</string>
+    <string name="farm_invite_no_pens">%1$s还没有栏舍，对方加入后可以再分配。</string>
+
+    <!-- F09 成员详情 -->
+    <string name="farm_member_title">成员详情</string>
+    <string name="farm_member_joined">%1$s加入%2$s</string>
+    <string name="farm_member_created">%1$s创建%2$s</string>
+    <string name="farm_member_phone">手机号</string>
+    <string name="farm_member_cd_call">拨打电话</string>
+    <string name="farm_member_section">角色与负责栏舍</string>
+    <string name="farm_member_role">角色</string>
+    <string name="farm_member_change_role">修改角色</string>
+    <string name="farm_member_pens">负责栏舍</string>
+    <string name="farm_member_adjust_pens">调整栏舍</string>
+    <string name="farm_member_remove">移出养殖场</string>
+    <string name="farm_member_remove_note">只有所有者可以操作</string>
+    <string name="farm_member_quit_note">退出后看不到%1$s的数据</string>
+    <string name="farm_member_role_sheet_title">修改%1$s的角色</string>
+    <string name="farm_member_pen_sheet_title">调整负责栏舍</string>
+    <string name="farm_member_remove_title">把%1$s移出%2$s？</string>
+    <string name="farm_member_remove_p1">移出后，%1$s从下一次操作起就看不到%2$s的数据，他的账号仍可继续使用。他登记过的记录保留，登记人仍显示%1$s。</string>
+    <string name="farm_member_remove_p2">他还没完成的作业类待办会转给所有者和场长。</string>
+    <string name="farm_member_remove_p2_pens">%1$s将没有负责员工，请在移出后重新分配。</string>
+    <string name="farm_member_remove_confirm">移出</string>
+
+    <!-- F10 转让所有权 -->
+    <string name="farm_transfer_title">转让所有权</string>
+    <string name="farm_transfer_select">选择新的所有者</string>
+    <string name="farm_transfer_select_note">只能从本场的场长中选择。要转给员工，需要先把他的角色改为场长。</string>
+    <string name="farm_transfer_after">转让生效后</string>
+    <string name="farm_transfer_new_owner">%1$s成为所有者</string>
+    <string name="farm_transfer_new_owner_placeholder">新所有者</string>
+    <string name="farm_transfer_new_owner_desc">可以邀请和移出成员、修改角色、停用养殖场、转让所有权</string>
+    <string name="farm_transfer_me">你变为场长</string>
+    <string name="farm_transfer_me_desc">仍可使用上述操作以外的全部功能，包括查看经营数据和提交修改申请</string>
+    <string name="farm_transfer_notice_bold">对方确认后才生效。</string>
+    <string name="farm_transfer_notice">%1$s会在消息中心收到转让请求，确认前你仍是%2$s的所有者。</string>
+    <string name="farm_transfer_pending_notice">已向%1$s发送转让请求，等待对方确认。确认前你仍是%2$s的所有者。</string>
+    <string name="farm_transfer_confirm">确认转让</string>
+    <string name="farm_transfer_cancel">撤回转让</string>
+    <string name="farm_transfer_cancel_title">撤回转让请求？</string>
+    <string name="farm_transfer_cancel_message">撤回后，%1$s收到的转让请求失效，你仍是%2$s的所有者。</string>
+    <string name="farm_transfer_cancel_confirm">撤回</string>
+    <string name="farm_transfer_empty">%1$s还没有场长。先在成员详情中把一名成员改为场长，再转让所有权。</string>
+    <string name="farm_transfer_go_members">去成员管理</string>
+    <string name="farm_transfer_head">你是所有者 · %1$s · 存栏 %2$s</string>
+</resources>

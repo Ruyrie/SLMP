@@ -1,0 +1,45 @@
+{
+  "code": 0,
+  "message": "已提交资料变更，审核期间旧信息照常有效",
+  "data": {
+    "change_id": 21,
+    "change_no": 1,
+    "status": "PENDING",
+    "status_text": "待审核",
+    "submitted_at": "2026-10-19 10:12:00",
+    "audited_at": null,
+    "reject_reason": null,
+    "remark": "按实际位置重新选点，补充新换发的防疫证",
+    "changed_fields": ["ADDRESS", "QUALIFICATION"],
+    "added_count": 1,
+    "removed_count": 0,
+    "before": {
+      "name": "东山猪场",
+      "address": "赤峰市松山区太平地镇",
+      "qualification_files": [
+        {"file_id": 9001, "url": "file:///android_asset/mock/media/qual_license.jpg", "thumb_url": "file:///android_asset/mock/media/qual_license.jpg", "sort_no": 1},
+        {"file_id": 9002, "url": "file:///android_asset/mock/media/qual_epidemic.jpg", "thumb_url": "file:///android_asset/mock/media/qual_epidemic.jpg", "sort_no": 2},
+        {"file_id": 9003, "url": "file:///android_asset/mock/media/farm_env.jpg", "thumb_url": "file:///android_asset/mock/media/farm_env.jpg", "sort_no": 3}
+      ]
+    },
+    "after": {
+      "name": "东山猪场",
+      "address": "赤峰市松山区太平地镇 S206 省道北侧",
+      "province": "内蒙古自治区",
+      "city": "赤峰市",
+      "district": "松山区",
+      "township": "太平地镇",
+      "adcode": "150404",
+      "longitude": 118.8532100,
+      "latitude": 42.3051200,
+      "loc_accuracy": null,
+      "qualification_files": [
+        {"file_id": 9001, "url": "file:///android_asset/mock/media/qual_license.jpg", "thumb_url": "file:///android_asset/mock/media/qual_license.jpg", "sort_no": 1},
+        {"file_id": 9002, "url": "file:///android_asset/mock/media/qual_epidemic.jpg", "thumb_url": "file:///android_asset/mock/media/qual_epidemic.jpg", "sort_no": 2},
+        {"file_id": 9003, "url": "file:///android_asset/mock/media/farm_env.jpg", "thumb_url": "file:///android_asset/mock/media/farm_env.jpg", "sort_no": 3},
+        {"file_id": 9101, "url": "file:///android_asset/mock/media/upload_sample.jpg", "thumb_url": "file:///android_asset/mock/media/upload_sample.jpg", "sort_no": 4, "is_new": true}
+      ]
+    }
+  },
+  "trace_id": "mock-f14"
+}

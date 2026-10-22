@@ -1,0 +1,10 @@
+{
+  "code": 40001,
+  "message": "已向这个手机号发出邀请，10月24日前有效",
+  "data": {
+    "field_errors": [
+      {"field": "invitee_phone", "message": "已向这个手机号发出邀请，10月24日前有效"}
+    ]
+  },
+  "trace_id": "mock-f20-40001-pending"
+}

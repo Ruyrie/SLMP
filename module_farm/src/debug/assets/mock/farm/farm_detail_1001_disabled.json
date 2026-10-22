@@ -1,0 +1,76 @@
+{
+  "code": 0,
+  "message": "已停用东山猪场",
+  "data": {
+    "farm_id": 1001,
+    "current_stock": 870,
+    "name": "东山猪场",
+    "status": "DISABLED",
+    "status_text": "已停用",
+    "role": "OWNER",
+    "role_text": "所有者",
+    "species_text": "猪",
+    "main_category_name": "育肥猪",
+    "count_unit": "HEAD",
+    "approved_at": "2026-03-04 10:00:00",
+    "disabled_at": "2026-10-19 10:30:00",
+    "restrict_tip": "东山猪场已停用。数据只能查看，不能登记新的记录。",
+    "basic": {
+      "contact_name": "王建国",
+      "contact_phone": "13800006620",
+      "contact_phone_masked": "138****6620",
+      "intro": "以杜长大三元育肥猪为主，共 7 栋栏舍",
+      "scale": 1500,
+      "version": 4
+    },
+    "registration": {
+      "name": "东山猪场",
+      "address": "赤峰市松山区太平地镇",
+      "province": "内蒙古自治区",
+      "city": "赤峰市",
+      "district": "松山区",
+      "township": "太平地镇",
+      "adcode": "150404",
+      "longitude": 118.8516000,
+      "latitude": 42.3025000,
+      "qualification_count": 3,
+      "qualification_files": [
+        {"file_id": 9001, "url": "file:///android_asset/mock/media/qual_license.jpg", "thumb_url": "file:///android_asset/mock/media/qual_license.jpg", "media_type": "IMAGE", "width": 640, "height": 480, "sort_no": 1},
+        {"file_id": 9002, "url": "file:///android_asset/mock/media/qual_epidemic.jpg", "thumb_url": "file:///android_asset/mock/media/qual_epidemic.jpg", "media_type": "IMAGE", "width": 640, "height": 480, "sort_no": 2},
+        {"file_id": 9003, "url": "file:///android_asset/mock/media/farm_env.jpg", "thumb_url": "file:///android_asset/mock/media/farm_env.jpg", "media_type": "IMAGE", "width": 640, "height": 480, "sort_no": 3}
+      ]
+    },
+    "member_summary": {
+      "member_total": 4,
+      "owner_count": 1,
+      "manager_count": 1,
+      "staff_count": 2,
+      "invite_count": 2,
+      "invite_pending_count": 1,
+      "avatars": ["王", "刘", "李", "张"],
+      "unassigned_pens": [],
+      "show_unassigned_banner": false
+    },
+    "permissions": {
+      "can_view_farm_info": true,
+      "can_view_members": true,
+      "can_edit_basic": false,
+      "can_adjust_pens": false,
+      "can_submit_change": false,
+      "can_disable": false,
+      "can_invite": false,
+      "can_change_role": false,
+      "can_enable": true,
+      "can_transfer": true,
+      "can_remove_member": true,
+      "can_quit": false,
+      "can_view_finance": true,
+      "can_submit_change_request": false,
+      "writable": false
+    },
+    "pending_change": null,
+    "rejected_change": null,
+    "pending_transfer": null
+  },
+  "trace_id": "mock-f11-1001"
+}

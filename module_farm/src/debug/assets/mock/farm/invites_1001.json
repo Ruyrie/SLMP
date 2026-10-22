@@ -1,0 +1,44 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "invite_id": 6001,
+        "invitee_phone_masked": "139****2051",
+        "invitee_phone": "13904762051",
+        "role": "STAFF",
+        "role_text": "员工",
+        "status": "PENDING",
+        "status_text": "待接受",
+        "invited_at": "2026-10-17 09:30:00",
+        "expires_at": "2026-10-24 09:30:00",
+        "handled_at": null,
+        "can_reinvite": false,
+        "pens": [
+          {"pen_id": 2005, "name": "5 号育肥舍", "pen_type_text": "育肥舍"},
+          {"pen_id": 2006, "name": "母猪舍", "pen_type_text": "母猪舍"}
+        ]
+      },
+      {
+        "invite_id": 6002,
+        "invitee_phone_masked": "136****8817",
+        "invitee_phone": "13604768817",
+        "role": "MANAGER",
+        "role_text": "场长",
+        "status": "EXPIRED",
+        "status_text": "已过期",
+        "invited_at": "2026-10-03 10:00:00",
+        "expires_at": "2026-10-10 10:00:00",
+        "handled_at": null,
+        "can_reinvite": true,
+        "pens": []
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-f19-1001"
+}

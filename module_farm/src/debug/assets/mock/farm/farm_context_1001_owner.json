@@ -1,0 +1,34 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "farm_id": 1001,
+    "name": "东山猪场",
+    "status": "NORMAL",
+    "status_text": "正常",
+    "species_text": "猪",
+    "main_category_name": "育肥猪",
+    "main_category_id": 101,
+    "count_unit": "HEAD",
+    "role": "OWNER",
+    "role_text": "所有者",
+    "permissions": {
+      "can_view_farm_info": true,
+      "can_view_members": true,
+      "can_edit_basic": true,
+      "can_adjust_pens": true,
+      "can_submit_change": true,
+      "can_disable": true,
+      "can_invite": true,
+      "can_change_role": true,
+      "can_enable": false,
+      "can_transfer": true,
+      "can_remove_member": true,
+      "can_quit": false,
+      "can_view_finance": true,
+      "can_submit_change_request": true,
+      "writable": true
+    }
+  },
+  "trace_id": "mock-f02-owner"
+}

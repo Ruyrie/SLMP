@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 角色单选组（F08 邀请成员、F09 修改角色面板共用）：场长 / 员工两项，各 90 dp，单选按钮 + 角色名 + 两行说明 -->
+<com.zhimu.slmp.base.widget.GroupedListLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/role_manager"
+        style="@style/Widget.Zmt.Card.ListItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:minHeight="90dp"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/base_space_1"
+            android:paddingTop="@dimen/base_space_3"
+            android:paddingEnd="@dimen/base_space_4"
+            android:paddingBottom="@dimen/base_space_3">
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/role_manager_radio"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:clickable="false"
+                android:focusable="false"
+                android:importantForAccessibility="no" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_1"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/farm_role_manager"
+                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/farm_role_manager_desc"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/role_staff"
+        style="@style/Widget.Zmt.Card.ListItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:minHeight="90dp"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/base_space_1"
+            android:paddingTop="@dimen/base_space_3"
+            android:paddingEnd="@dimen/base_space_4"
+            android:paddingBottom="@dimen/base_space_3">
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/role_staff_radio"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:clickable="false"
+                android:focusable="false"
+                android:importantForAccessibility="no" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_1"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/farm_role_staff"
+                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/farm_role_staff_desc"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</com.zhimu.slmp.base.widget.GroupedListLayout>

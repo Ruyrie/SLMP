@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- debug 包：F01 切换养殖场演示页（单独运行时同样在 src/alone 清单中声明） -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <activity
+            android:name="com.zhimu.slmp.farm.debug.FarmSwitcherDemoActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.farm.debug.SWITCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

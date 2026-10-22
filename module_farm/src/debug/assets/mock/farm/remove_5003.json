@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "已把李明移出东山猪场",
+  "data": {
+    "unassigned_pens": [
+      {"pen_id": 2003, "name": "3 号育肥舍", "pen_type_text": "育肥舍"}
+    ]
+  },
+  "trace_id": "mock-f26-5003"
+}

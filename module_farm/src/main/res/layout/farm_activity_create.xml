@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F02 新建养殖场 / 修改注册信息（UI 文档 F02）：说明横幅、名称、地址（进入 F04）、规模 + 主要品类、联系人 + 联系电话、资质图网格、底部“提交审核” -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.farm.ui.create.FarmCreateViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/top_bar"
+            layout="@layout/base_include_top_app_bar" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="注册信息加载失败"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_1"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:noticeIcon="@drawable/ic_info"
+                        app:noticeText="@string/farm_create_notice" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_name"
+                        style="@style/Widget.Zmt.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:hint="@string/farm_field_name"
+                        app:helperText="@string/farm_field_name_helper"
+                        app:helperTextEnabled="true">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:enabled="@{!vm.submitting}"
+                            android:imeOptions="actionNext"
+                            android:inputType="text"
+                            android:maxLength="30"
+                            android:singleLine="true"
+                            android:text="@={vm.name}" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_address"
+                        style="@style/Widget.Zmt.TextInputLayout.Picker"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:hint="@string/farm_field_address"
+                        app:endIconContentDescription="@string/farm_field_address"
+                        app:endIconDrawable="@drawable/ic_chevron_right"
+                        app:helperTextEnabled="true"
+                        app:placeholderText="@string/farm_field_address_placeholder"
+                        app:startIconDrawable="@drawable/ic_location_on"
+                        app:startIconTint="?attr/colorPrimary">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_address"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:maxLines="2" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/til_scale"
+                            style="@style/Widget.Zmt.TextInputLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="@string/farm_field_scale"
+                            app:suffixText="@{vm.scaleUnit}">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_scale"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:enabled="@{!vm.submitting}"
+                                android:inputType="number"
+                                android:maxLength="7"
+                                android:singleLine="true"
+                                android:text="@={vm.scale}" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/til_category"
+                            style="@style/Widget.Zmt.TextInputLayout.Dropdown"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/base_space_3"
+                            android:layout_weight="1"
+                            android:hint="@string/farm_field_category">
+
+                            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                                android:id="@+id/et_category"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/til_contact_name"
+                            style="@style/Widget.Zmt.TextInputLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="10"
+                            android:hint="@string/farm_field_contact_name">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_contact_name"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:enabled="@{!vm.submitting}"
+                                android:inputType="textPersonName"
+                                android:maxLength="30"
+                                android:singleLine="true"
+                                android:text="@={vm.contactName}" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/til_contact_phone"
+                            style="@style/Widget.Zmt.TextInputLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/base_space_3"
+                            android:layout_weight="13"
+                            android:hint="@string/farm_field_contact_phone">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_contact_phone"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:enabled="@{!vm.submitting}"
+                                android:inputType="phone"
+                                android:maxLength="13"
+                                android:singleLine="true"
+                                android:text="@={vm.contactPhone}" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/qual_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_6"
+                        android:text="@string/farm_qual_title"
+                        android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <TextView
+                        android:id="@+id/qual_rule"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_1"
+                        android:text="@string/farm_qual_rule"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                    <com.zhimu.slmp.media.picker.MediaPickerView
+                        android:id="@+id/qual_files"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        app:mediaAddIcon="@drawable/ic_add_photo_alternate"
+                        app:mediaCameraTitle="@string/farm_qual_camera_title"
+                        app:mediaDeletedText="已删除 1 张资质图"
+                        app:mediaMaxCount="9"
+                        app:mediaSheetTitle="添加资质图"
+                        app:mediaShowCount="true"
+                        app:mediaSourceText="@string/farm_qual_source" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:barPrimaryText="@string/farm_create_submit" />
+    </LinearLayout>
+</layout>

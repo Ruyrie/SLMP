@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "message": "已加入东山猪场",
+  "data": {
+    "farm_id": 1001,
+    "farm_name": "东山猪场",
+    "role": "STAFF",
+    "role_text": "员工"
+  },
+  "trace_id": "mock-f21"
+}

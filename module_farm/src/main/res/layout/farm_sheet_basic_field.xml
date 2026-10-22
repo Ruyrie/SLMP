@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F05 基本信息单字段修改面板：一个描边输入框（联系人 / 联系电话 / 设计存栏 / 简介），底部“保存”由基类提供 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.farm.ui.info.FarmInfoViewModel" />
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/base_sheet_padding_horizontal"
+        android:paddingEnd="@dimen/base_sheet_padding_horizontal"
+        android:paddingBottom="@dimen/base_space_2">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_value"
+            style="@style/Widget.Zmt.TextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:boxBackgroundColor="?attr/colorSurfaceContainerLow"
+            app:error="@{vm.editError}"
+            app:errorEnabled="@{vm.editError != null}">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_value"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@={vm.editValue}" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </FrameLayout>
+</layout>

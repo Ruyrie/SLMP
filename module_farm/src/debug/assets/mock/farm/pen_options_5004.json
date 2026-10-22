@@ -1,0 +1,13 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {"pen_id": 2001, "pen_code": "BY-01", "name": "1 号保育舍", "selected": true, "other_staff_count": 0},
+    {"pen_id": 2003, "pen_code": "YF-03", "name": "3 号育肥舍", "selected": false, "other_staff_count": 1},
+    {"pen_id": 2004, "pen_code": "YF-04", "name": "4 号育肥舍", "selected": false, "other_staff_count": 0},
+    {"pen_id": 2005, "pen_code": "YF-05", "name": "5 号育肥舍", "selected": false, "other_staff_count": 0},
+    {"pen_id": 2006, "pen_code": "MZ-01", "name": "母猪舍", "selected": false, "other_staff_count": 0},
+    {"pen_id": 2007, "pen_code": "CF-01", "name": "产房", "selected": false, "other_staff_count": 0}
+  ],
+  "trace_id": "mock-f18-5004"
+}

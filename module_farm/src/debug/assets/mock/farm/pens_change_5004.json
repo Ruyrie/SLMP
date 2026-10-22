@@ -1,0 +1,35 @@
+{
+  "code": 0,
+  "message": "已更新张伟的负责栏舍",
+  "data": {
+    "member": {
+      "member_id": 5004,
+      "user_id": 10004,
+      "name": "张伟",
+      "name_initial": "张",
+      "phone_masked": "186****4402",
+      "phone": "18604764402",
+      "farm_name": "东山猪场",
+      "role": "STAFF",
+      "role_text": "员工",
+      "join_type": "INVITE",
+      "join_type_text": "邀请加入",
+      "joined_at": "2026-08-21 10:00:00",
+      "is_me": false,
+      "all_pens": false,
+      "can_adjust_pens": true,
+      "pens": [
+        {"pen_id": 2001, "name": "1 号保育舍", "pen_type_text": "保育舍"}
+      ],
+      "version": 2,
+      "actions": {
+        "can_change_role": true,
+        "can_adjust_pens": true,
+        "can_remove": true,
+        "can_quit": false
+      }
+    },
+    "newly_unassigned_pens": []
+  },
+  "trace_id": "mock-f24-5004"
+}

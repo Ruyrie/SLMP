@@ -1,0 +1,14 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "member_id": 5003,
+    "member_name": "李明",
+    "role": "STAFF",
+    "pending_work_todo_count": 2,
+    "orphan_pens": [
+      {"pen_id": 2003, "name": "3 号育肥舍", "pen_type_text": "育肥舍"}
+    ]
+  },
+  "trace_id": "mock-f25-5003"
+}

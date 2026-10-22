@@ -1,0 +1,100 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "farm_id": 1001,
+    "current_stock": 870,
+    "name": "东山猪场",
+    "status": "NORMAL",
+    "status_text": "正常",
+    "role": "OWNER",
+    "role_text": "所有者",
+    "species_text": "猪",
+    "main_category_name": "育肥猪",
+    "count_unit": "HEAD",
+    "approved_at": "2026-03-04 10:00:00",
+    "disabled_at": null,
+    "restrict_tip": null,
+    "basic": {
+      "contact_name": "王建国",
+      "contact_phone": "13800006620",
+      "contact_phone_masked": "138****6620",
+      "intro": "以杜长大三元育肥猪为主，共 7 栋栏舍",
+      "scale": 1500,
+      "version": 3
+    },
+    "registration": {
+      "name": "东山猪场",
+      "address": "赤峰市松山区太平地镇",
+      "province": "内蒙古自治区",
+      "city": "赤峰市",
+      "district": "松山区",
+      "township": "太平地镇",
+      "adcode": "150404",
+      "longitude": 118.8516000,
+      "latitude": 42.3025000,
+      "qualification_count": 3,
+      "qualification_files": [
+        {
+          "file_id": 9001,
+          "url": "file:///android_asset/mock/media/qual_license.jpg",
+          "thumb_url": "file:///android_asset/mock/media/qual_license.jpg",
+          "media_type": "IMAGE",
+          "width": 640,
+          "height": 480,
+          "sort_no": 1
+        },
+        {
+          "file_id": 9002,
+          "url": "file:///android_asset/mock/media/qual_epidemic.jpg",
+          "thumb_url": "file:///android_asset/mock/media/qual_epidemic.jpg",
+          "media_type": "IMAGE",
+          "width": 640,
+          "height": 480,
+          "sort_no": 2
+        },
+        {
+          "file_id": 9003,
+          "url": "file:///android_asset/mock/media/farm_env.jpg",
+          "thumb_url": "file:///android_asset/mock/media/farm_env.jpg",
+          "media_type": "IMAGE",
+          "width": 640,
+          "height": 480,
+          "sort_no": 3
+        }
+      ]
+    },
+    "member_summary": {
+      "member_total": 4,
+      "owner_count": 1,
+      "manager_count": 1,
+      "staff_count": 2,
+      "invite_count": 2,
+      "invite_pending_count": 1,
+      "avatars": ["王", "刘", "李", "张"],
+      "unassigned_pens": [],
+      "show_unassigned_banner": false
+    },
+    "permissions": {
+      "can_view_farm_info": true,
+      "can_view_members": true,
+      "can_edit_basic": true,
+      "can_adjust_pens": true,
+      "can_submit_change": true,
+      "can_disable": true,
+      "can_invite": true,
+      "can_change_role": true,
+      "can_enable": false,
+      "can_transfer": true,
+      "can_remove_member": true,
+      "can_quit": false,
+      "can_view_finance": true,
+      "can_submit_change_request": true,
+      "writable": true
+    },
+    "pending_change": null,
+    "rejected_change": null,
+    "pending_transfer": null
+  },
+  "trace_id": "mock-f09-1001"
+}

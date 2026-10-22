@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 负责栏舍多选 Chip（F08、F09 调整栏舍面板）：32 dp，圆角 8 dp；已选 secondary-container + check -->
+<com.google.android.material.chip.Chip xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Widget.Zmt.Chip.Filter"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />

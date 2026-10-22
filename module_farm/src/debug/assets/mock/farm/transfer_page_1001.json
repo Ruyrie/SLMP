@@ -1,0 +1,24 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "farm": {
+      "farm_id": 1001,
+      "name": "东山猪场",
+      "main_category_name": "育肥猪",
+      "count_unit": "HEAD",
+      "current_stock": 870
+    },
+    "candidates": [
+      {
+        "member_id": 5002,
+        "user_id": 10002,
+        "name": "刘芳",
+        "name_initial": "刘",
+        "phone_masked": "139****1234"
+      }
+    ],
+    "pending": null
+  },
+  "trace_id": "mock-f28-1001"
+}

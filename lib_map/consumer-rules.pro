@@ -9,3 +9,6 @@
 -keep class com.amap.api.fence.** { *; }
 -keep class com.loc.** { *; }
 -keep class com.amap.api.services.** { *; }
+
+# 地图本地模型（PickLocationContract 经 Intent 传递）
+-keep class com.zhimu.slmp.map.model.vo.** { *; }

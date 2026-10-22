@@ -22,6 +22,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- F01 切换养殖场演示页（debug 源集，单独运行时本清单替换 debug 清单，需在此重复声明） -->
+        <activity
+            android:name="com.zhimu.slmp.farm.debug.FarmSwitcherDemoActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.farm.debug.SWITCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

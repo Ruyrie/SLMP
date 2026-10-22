@@ -1,0 +1,10 @@
+{
+  "code": 40001,
+  "message": "这个手机号已经是东山猪场的成员",
+  "data": {
+    "field_errors": [
+      {"field": "invitee_phone", "message": "这个手机号已经是东山猪场的成员"}
+    ]
+  },
+  "trace_id": "mock-f20-40001-member"
+}

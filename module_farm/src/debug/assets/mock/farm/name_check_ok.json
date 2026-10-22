@@ -1,0 +1,9 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "available": true,
+    "message": null
+  },
+  "trace_id": "mock-f04-ok"
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- F04 养殖场位置选点（模块02 UI 文档 F04、2.5 节） -->
+    <string name="map_pick_title">选择养殖场位置</string>
+    <string name="map_search_hint">搜索地址或地名</string>
+    <string name="map_tips_empty">没有找到相关地址，换个关键词试试</string>
+    <string name="map_confirm">确认位置</string>
+    <string name="map_cd_locate">定位到当前位置</string>
+    <string name="map_permission_notice">允许定位后，地图会移到你现在的位置。你也可以直接搜索地址。</string>
+    <string name="map_permission_action">允许定位</string>
+    <string name="map_load_failed">地图没有加载出来</string>
+    <string name="map_reload">重新加载</string>
+    <string name="map_address_loading">正在获取地址</string>
+    <string name="map_address_failed">没有获取到地址，点按这里手动填写</string>
+    <string name="map_address_none">还没有选择位置。搜索地址或拖动地图选点。</string>
+    <string name="map_manual_edit_hint">详细地址</string>
+    <!-- 未配置高德 Key 时的手动填写（技术准备补充） -->
+    <string name="map_no_key">未配置高德地图 Key，可以手动填写地址</string>
+    <string name="map_manual_province">省</string>
+    <string name="map_manual_city">市</string>
+    <string name="map_manual_district">区县</string>
+    <string name="map_manual_address">详细地址</string>
+    <string name="map_manual_helper">填写所在省、市、区县和村镇门牌；直辖市的“市”可不填</string>
+</resources>

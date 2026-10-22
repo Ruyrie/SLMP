@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F10 转让所有权（UI 文档 F10）：养殖场头部、选择新的所有者、转让生效后、生效说明横幅、底部“确认转让”；没有场长时空状态 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/top_bar"
+            layout="@layout/base_include_top_app_bar" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="转让信息加载失败"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_1"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <!-- 养殖场头部 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/farm_bg_rounded_16"
+                            android:backgroundTint="?attr/colorSecondaryContainer">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_domain"
+                                app:tint="?attr/colorOnSecondaryContainer" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/base_space_4"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/farm_name"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Zmt.TitleLarge"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:id="@+id/farm_line"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- 空状态：没有场长 -->
+                    <LinearLayout
+                        android:id="@+id/empty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="96dp"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_person_search"
+                            app:tint="?attr/colorOnSurfaceVariant" />
+
+                        <TextView
+                            android:id="@+id/empty_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            android:gravity="center"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/go_members"
+                            style="@style/Widget.Zmt.Button.Tonal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            android:text="@string/farm_transfer_go_members" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/content"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            android:text="@string/farm_transfer_select"
+                            android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+                            android:textColor="?attr/colorPrimary" />
+
+                        <com.zhimu.slmp.base.widget.GroupedListLayout
+                            android:id="@+id/candidates"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_2" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/base_page_margin"
+                            android:layout_marginTop="@dimen/base_space_2"
+                            android:text="@string/farm_transfer_select_note"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            android:text="@string/farm_transfer_after"
+                            android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+                            android:textColor="?attr/colorPrimary" />
+
+                        <com.zhimu.slmp.base.widget.GroupedListLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_2">
+
+                            <com.zhimu.slmp.base.widget.ListRowView
+                                android:id="@+id/row_new_owner"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:leadingTone="secondary"
+                                app:rowLeadingIcon="@drawable/ic_workspace_premium"
+                                app:rowSubtitle="@string/farm_transfer_new_owner_desc" />
+
+                            <com.zhimu.slmp.base.widget.ListRowView
+                                android:id="@+id/row_me"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:leadingTone="neutral"
+                                app:rowLeadingIcon="@drawable/ic_person"
+                                app:rowSubtitle="@string/farm_transfer_me_desc"
+                                app:rowTitle="@string/farm_transfer_me" />
+                        </com.zhimu.slmp.base.widget.GroupedListLayout>
+
+                        <com.zhimu.slmp.base.widget.NoticeView
+                            android:id="@+id/notice"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            app:noticeIcon="@drawable/ic_schedule" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+    </LinearLayout>
+</layout>
