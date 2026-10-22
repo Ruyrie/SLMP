@@ -1,0 +1,10 @@
+{
+  "code": 40904,
+  "message": "这个手机号已经注册，可以直接登录",
+  "data": {
+    "field_errors": [
+      {"field": "phone", "message": "这个手机号已经注册，可以直接登录"}
+    ]
+  },
+  "trace_id": "mock-a01-40904"
+}

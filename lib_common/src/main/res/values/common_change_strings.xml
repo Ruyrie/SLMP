@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- U01 提交修改申请、U02 我的修改申请（02 号第十一节） -->
+<resources>
+    <string name="common_change_form_title">提交修改申请</string>
+    <string name="common_change_record_label">原记录</string>
+    <string name="common_change_field">修改项</string>
+    <string name="common_change_void_option">作废这条记录</string>
+    <string name="common_change_old_value">原值</string>
+    <string name="common_change_new_value">新值</string>
+    <string name="common_change_reason">修改原因</string>
+    <string name="common_change_reason_helper">必填，审核结果会通过消息中心通知你</string>
+    <string name="common_change_recalc_title">审核通过后会重新计算</string>
+    <string name="common_change_cancel">取消</string>
+    <string name="common_change_submit">提交修改申请</string>
+    <string name="common_change_reject_prefix">驳回原因：%1$s</string>
+    <string name="common_change_form_error_title">原记录加载失败</string>
+    <string name="common_change_discard_title">放弃这次修改申请？</string>
+    <string name="common_change_discard_message">已填写的内容不会保存。</string>
+    <string name="common_change_keep">继续填写</string>
+    <string name="common_change_discard">放弃</string>
+
+    <string name="common_change_list_title">我的修改申请</string>
+    <string name="common_change_filter_all">全部</string>
+    <string name="common_change_filter_pending">待审核</string>
+    <string name="common_change_filter_approved">已通过</string>
+    <string name="common_change_filter_rejected">已驳回</string>
+    <string name="common_change_filter_count">%1$s %2$d</string>
+    <string name="common_change_tag_void">作废</string>
+    <string name="common_change_valid">有效</string>
+    <string name="common_change_voided">已作废</string>
+    <string name="common_change_resubmit">重新提交</string>
+    <string name="common_change_empty_title">还没有修改申请</string>
+    <string name="common_change_empty_message">需要修改存栏、成本、库存等关键记录时，打开那条记录，在“更多”菜单中选择“提交修改申请”。</string>
+    <string name="common_change_empty_action">去栏舍与存栏</string>
+    <string name="common_change_filter_empty">没有%1$s的修改申请</string>
+    <string name="common_change_view_all">查看全部</string>
+    <string name="common_change_list_error_title">修改申请加载失败</string>
+    <string name="common_change_list_error_message">网络连接不稳定，没能取到你的修改申请。请检查网络后重新加载。</string>
+    <string name="common_change_footer_all">已显示全部 %1$d 条</string>
+    <string name="common_change_footer_retry">加载失败，点按重试</string>
+    <string name="common_change_switched">已切换到%1$s</string>
+    <string name="common_change_switch_back">切回%1$s</string>
+</resources>

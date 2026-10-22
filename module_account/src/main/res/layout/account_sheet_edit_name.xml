@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A07 修改姓名面板内容：姓名输入框（1–20 字，辅助文字）；右对齐“取消”文字按钮与“保存”填充按钮 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.account.ui.mine.MineViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/base_sheet_padding_horizontal"
+        android:paddingEnd="@dimen/base_sheet_padding_horizontal"
+        android:paddingBottom="@dimen/base_space_4">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/account_edit_name_field"
+            style="@style/account_style_field"
+            android:layout_marginTop="@dimen/base_space_4"
+            android:hint="@string/account_edit_name_field"
+            app:helperText="@string/account_edit_name_helper">
+
+            <com.google.android.material.textfield.TextInputEditText
+                style="@style/account_style_edit"
+                android:imeOptions="actionDone"
+                android:inputType="textPersonName"
+                android:text="@={vm.editName}" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="@dimen/base_space_6"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/account_edit_name_cancel"
+                style="@style/Widget.Zmt.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/account_cancel" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/account_edit_name_save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:text="@string/account_save"
+                app:loading="@{vm.submitting}" />
+        </LinearLayout>
+    </LinearLayout>
+</layout>

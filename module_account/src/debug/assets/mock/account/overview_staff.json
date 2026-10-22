@@ -1,0 +1,41 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "user": {
+      "user_id": 10003,
+      "name": "李明",
+      "name_initial": "李",
+      "phone_masked": "137****5678"
+    },
+    "profile_version": 1,
+    "current_farm": {
+      "farm_id": 1001,
+      "name": "东山猪场",
+      "species_text": "育肥猪",
+      "status": "NORMAL",
+      "status_text": "正常",
+      "role": "STAFF"
+    },
+    "farm_stats": {
+      "total_count": 1,
+      "pending_audit_count": 0,
+      "rejected_count": 0
+    },
+    "reminder_summary": {
+      "digest_enabled": true,
+      "digest_time": "07:00",
+      "quiet_enabled": false,
+      "quiet_start": null,
+      "quiet_end": null
+    },
+    "security": {
+      "phone_masked": "137****5678",
+      "password_updated_at": "2026-10-05 08:00:00",
+      "recovery_code_generated_at": "2026-10-05 08:00:00",
+      "cancel_restricted": false,
+      "cancel_available_date": null
+    }
+  },
+  "trace_id": "mock-a15-staff"
+}

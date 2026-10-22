@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- U01 修改项菜单的一项：普通字段为 on-surface；“作废这条记录”为 error 色、前置 block 图标、上方 1 dp 分隔线 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/common_change_option_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorOutlineVariant"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_space_4"
+        android:paddingEnd="@dimen/base_space_4">
+
+        <ImageView
+            android:id="@+id/common_change_option_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="@dimen/base_space_3"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_block"
+            android:visibility="gone"
+            app:tint="?attr/colorError" />
+
+        <TextView
+            android:id="@+id/common_change_option_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurface" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,10 @@
+{
+  "code": 40103,
+  "message": "验证码不正确，请重新输入",
+  "data": {
+    "field_errors": [
+      {"field": "sms_code", "message": "验证码不正确，请重新输入"}
+    ]
+  },
+  "trace_id": "mock-40103"
+}

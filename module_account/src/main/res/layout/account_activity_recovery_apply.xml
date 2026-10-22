@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A05 找回账号：说明、规则横幅（锁定时换成 error 横幅）、原手机号、恢复码、新手机号、新手机号验证码、情况说明、客服电话卡片；底部“提交找回申请” -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.account.ui.recovery.RecoveryApplyViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/account_recovery_top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{@string/account_recovery_title}" />
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/account_recovery_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/base_page_margin"
+                android:paddingEnd="@dimen/base_page_margin"
+                android:paddingBottom="@dimen/base_space_6">
+
+                <TextView
+                    style="@style/account_style_desc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/base_space_3"
+                    android:text="@string/account_recovery_desc" />
+
+                <com.zhimu.slmp.base.widget.NoticeView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/base_space_4"
+                    app:noticeLevel="warning"
+                    app:noticeText="@string/account_recovery_rule_text"
+                    app:noticeTitle="@string/account_recovery_rule_title"
+                    app:visibleIf="@{vm.lockBanner == null}" />
+
+                <com.zhimu.slmp.base.widget.NoticeView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/base_space_4"
+                    android:visibility="gone"
+                    app:accountNotice="@{vm.lockBanner}"
+                    app:noticeIcon="@drawable/ic_warning"
+                    app:noticeLevel="error" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/account_recovery_old_phone"
+                    style="@style/account_style_field"
+                    android:layout_marginTop="@dimen/base_space_5"
+                    android:hint="@string/account_recovery_old_phone"
+                    app:prefixText="@string/account_phone_prefix">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        style="@style/account_style_edit"
+                        android:imeOptions="actionNext"
+                        android:inputType="phone"
+                        android:text="@={vm.oldPhone}" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/account_recovery_code"
+                    style="@style/account_style_field"
+                    android:layout_marginTop="@dimen/base_space_4"
+                    android:hint="@string/account_recovery_code">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        style="@style/account_style_edit"
+                        android:imeOptions="actionNext"
+                        android:inputType="textCapCharacters|textNoSuggestions|textVisiblePassword"
+                        android:text="@={vm.recoveryCode}" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/account_recovery_new_phone"
+                    style="@style/account_style_field"
+                    android:layout_marginTop="@dimen/base_space_4"
+                    android:hint="@string/account_recovery_new_phone"
+                    app:prefixText="@string/account_phone_prefix">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        style="@style/account_style_edit"
+                        android:imeOptions="actionNext"
+                        android:inputType="phone"
+                        android:text="@={vm.newPhone}" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/account_recovery_sms"
+                    style="@style/account_style_field"
+                    android:layout_marginTop="@dimen/base_space_4"
+                    android:hint="@string/account_recovery_new_phone_code">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        style="@style/account_style_edit"
+                        android:autofillHints="smsOTPCode"
+                        android:imeOptions="actionNext"
+                        android:inputType="number"
+                        android:text="@={vm.newPhoneSmsCode}" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/account_recovery_description"
+                    style="@style/account_style_field"
+                    android:layout_marginTop="@dimen/base_space_4"
+                    android:hint="@string/account_recovery_description"
+                    app:counterEnabled="true"
+                    app:counterMaxLength="200">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        style="@style/account_style_edit"
+                        android:gravity="top|start"
+                        android:inputType="textMultiLine"
+                        android:maxLength="200"
+                        android:maxLines="3"
+                        android:minLines="3"
+                        android:scrollbars="vertical"
+                        android:text="@={vm.description}" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.zhimu.slmp.base.widget.ListRowView
+                    android:id="@+id/account_recovery_service"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/base_space_4"
+                    app:rowLeadingIcon="@drawable/account_ic_support_agent"
+                    app:rowTitle="@string/account_recovery_service_title"
+                    app:rowTrailingIcon="@drawable/ic_call" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/account_recovery_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:barLoading="@{vm.submitting}"
+            app:barPrimaryEnabled="@{vm.canSubmit}"
+            app:barPrimaryText="@string/account_recovery_submit" />
+    </LinearLayout>
+</layout>

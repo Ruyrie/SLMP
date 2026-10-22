@@ -1,0 +1,42 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "user": {
+      "user_id": 10001,
+      "name": "王建国",
+      "name_initial": "王",
+      "phone_masked": "138****6620"
+    },
+    "profile_version": 3,
+    "current_farm": {
+      "farm_id": 1001,
+      "name": "东山猪场",
+      "species_text": "育肥猪",
+      "status": "NORMAL",
+      "status_text": "正常",
+      "role": "OWNER"
+    },
+    "farm_stats": {
+      "total_count": 3,
+      "pending_audit_count": 1,
+      "rejected_count": 0
+    },
+    "change_request_pending_count": 1,
+    "reminder_summary": {
+      "digest_enabled": true,
+      "digest_time": "07:00",
+      "quiet_enabled": true,
+      "quiet_start": "22:00",
+      "quiet_end": "07:00"
+    },
+    "security": {
+      "phone_masked": "138****6620",
+      "password_updated_at": "2026-10-01 08:00:00",
+      "recovery_code_generated_at": "2026-09-20 10:00:00",
+      "cancel_restricted": false,
+      "cancel_available_date": null
+    }
+  },
+  "trace_id": "mock-a15-owner"
+}

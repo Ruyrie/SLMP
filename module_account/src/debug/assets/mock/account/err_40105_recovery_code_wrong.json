@@ -1,0 +1,11 @@
+{
+  "code": 40105,
+  "message": "恢复码不正确，还可以再试 3 次",
+  "data": {
+    "remaining_attempts": 3,
+    "field_errors": [
+      {"field": "recovery_code", "message": "恢复码不正确，还可以再试 3 次"}
+    ]
+  },
+  "trace_id": "mock-a10-40105"
+}

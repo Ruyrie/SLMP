@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "name": "王建国",
+    "name_initial": "王",
+    "version": 4
+  },
+  "trace_id": "mock-a16-owner"
+}

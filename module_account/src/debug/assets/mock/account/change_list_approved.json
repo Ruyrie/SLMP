@@ -1,0 +1,58 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 9005,
+        "request_no": "CR2610150002",
+        "biz_type": "SALE_ORDER",
+        "biz_type_text": "出栏单",
+        "biz_id": 6101,
+        "record_locator": "ZM2609-038",
+        "change_type": "UPDATE",
+        "field_code": "total_weight",
+        "field_name": "出栏重量",
+        "before_display": "11,670 千克",
+        "after_display": "11,760 千克",
+        "after_value": "11760",
+        "status": "APPROVED",
+        "status_text": "已通过",
+        "submitted_at": "2026-10-15 17:30:00",
+        "reviewed_at": "2026-10-17 10:00:00",
+        "recalc_summary": "已重新计算批次收益",
+        "farm_id": 1001,
+        "farm_name": "东山猪场",
+        "batch_id": 3004
+      },
+      {
+        "id": 9003,
+        "request_no": "CR2610130001",
+        "biz_type": "BATCH_DEATH",
+        "biz_type_text": "死淘记录",
+        "biz_id": 8301,
+        "record_locator": "3 号育肥舍 · 10月12日",
+        "change_type": "UPDATE",
+        "field_code": "quantity",
+        "field_name": "死淘数量",
+        "before_display": "6 头",
+        "after_display": "5 头",
+        "after_value": "5",
+        "status": "APPROVED",
+        "status_text": "已通过",
+        "submitted_at": "2026-10-13 09:10:00",
+        "reviewed_at": "2026-10-14 11:00:00",
+        "recalc_summary": "已重新计算存栏",
+        "farm_id": 1001,
+        "farm_name": "东山猪场",
+        "batch_id": 3001
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {"ALL": 4, "PENDING": 1, "APPROVED": 2, "REJECTED": 1}
+  },
+  "trace_id": "mock-u03-approved"
+}

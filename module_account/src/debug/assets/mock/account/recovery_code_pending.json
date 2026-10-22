@@ -1,0 +1,14 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "recovery_code_id": 503,
+    "code": "8KQ4T2MW7HXN3PDR",
+    "generated_at": "2026-10-19 09:30:00",
+    "phone_masked": "138****6620",
+    "scene": "REGISTER",
+    "scene_text": "注册",
+    "is_regenerated": true
+  },
+  "trace_id": "mock-a12-ok"
+}

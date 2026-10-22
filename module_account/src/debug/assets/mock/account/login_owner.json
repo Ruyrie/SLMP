@@ -1,0 +1,21 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "access_token": "mock-owner",
+    "token_type": "Bearer",
+    "expires_in": 7200,
+    "refresh_expires_in": 2592000,
+    "refresh_token": "mock-owner-refresh",
+    "next_step": "NONE",
+    "next_step_text": "无需操作",
+    "user": {
+      "user_id": 10001,
+      "name": "王建国",
+      "name_initial": "王",
+      "phone_masked": "138****6620"
+    },
+    "last_farm_id": 1001
+  },
+  "trace_id": "mock-account-a04-owner"
+}

@@ -1,0 +1,9 @@
+{
+  "code": 40310,
+  "message": "东山猪场仍在使用，请先转让给场长或停用后再注销",
+  "data": {
+    "block_reasons": ["OWNED_FARM_ACTIVE"],
+    "cancel_available_date": null
+  },
+  "trace_id": "mock-a20-40310"
+}

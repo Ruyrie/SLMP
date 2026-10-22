@@ -1,0 +1,24 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 9009,
+    "request_no": "CR2610190009",
+    "biz_type": "FEED_RECORD",
+    "biz_type_text": "投喂记录",
+    "biz_id": 7001,
+    "record_locator": "3 号育肥舍 · 10月18日 晚餐",
+    "change_type": "UPDATE",
+    "field_code": "actual_qty",
+    "field_name": "实际投喂量",
+    "before_display": "140 千克",
+    "after_display": "160 千克",
+    "after_value": "160",
+    "status": "PENDING",
+    "status_text": "待审核",
+    "farm_id": 1001,
+    "farm_name": "东山猪场",
+    "submitted_at": "2026-10-19 10:05:00"
+  },
+  "trace_id": "mock-u02-ok"
+}

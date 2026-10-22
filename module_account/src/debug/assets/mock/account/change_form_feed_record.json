@@ -1,0 +1,57 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "biz_type": "FEED_RECORD",
+    "biz_id": 7001,
+    "biz_type_text": "投喂记录",
+    "record_locator": "3 号育肥舍 · ZM2610-031 · 10月18日 晚餐",
+    "record_title": "投喂记录 · 3 号育肥舍",
+    "record_subtitle": "ZM2610-031 · 10月18日 晚餐 · 李明登记",
+    "record_version": "3",
+    "record_card": [
+      {"label": "饲料", "value": "育肥全价料"},
+      {"label": "实际投喂量", "value": "140 千克"},
+      {"label": "计划量", "value": "160 千克"}
+    ],
+    "fields": [
+      {
+        "field_code": "feed_id",
+        "field_name": "饲料",
+        "value": "育肥全价料",
+        "value_unit": null,
+        "input_type": "SELECT",
+        "options": [
+          {"value": "4001", "label": "育肥全价料"},
+          {"value": "4002", "label": "保育料"}
+        ],
+        "min": null,
+        "max": null
+      },
+      {
+        "field_code": "actual_qty",
+        "field_name": "实际投喂量",
+        "value": "140",
+        "value_unit": "千克",
+        "input_type": "NUMBER",
+        "options": [],
+        "min": 0,
+        "max": 1000
+      }
+    ],
+    "linked_rules": ["修改实际投喂量会同步调整饲料库存出库数量"],
+    "review_tip": "这条记录会影响饲料库存和成本统计，需要管理员审核。审核期间原记录照常有效，审核通过后才会修改并重新计算。",
+    "pending_request_id": null,
+    "void_allowed": true,
+    "void_notice": "审核通过后这条投喂记录作废，140 千克育肥全价料退回库存；10月18日 晚餐的饲喂任务在补登期限内（10月19日 24:00 前）恢复为待投喂，超过期限记为未执行。",
+    "void_recalc_tags": ["库存（退回饲料）", "成本", "统计"],
+    "recalc_tags": {
+      "feed_id": ["饲料成本", "经营报表"],
+      "actual_qty": ["头均采食量", "料肉比", "饲料成本", "经营报表"]
+    },
+    "field_hints": {
+      "actual_qty": "计划 160 千克"
+    }
+  },
+  "trace_id": "mock-u01-feed"
+}
