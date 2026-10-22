@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 更多菜单与记录菜单项 ID（MoreMenuHelper） -->
+<resources>
+    <item name="breed_menu_exited" type="id" />
+    <item name="breed_menu_reminder" type="id" />
+    <item name="breed_menu_edit_archive" type="id" />
+    <item name="breed_menu_archive_log" type="id" />
+    <item name="breed_menu_exit" type="id" />
+    <item name="breed_menu_edit_record" type="id" />
+    <item name="breed_menu_view_batch" type="id" />
+    <item name="breed_menu_request_change" type="id" />
+    <item name="breed_menu_pending" type="id" />
+    <item name="breed_menu_record_log" type="id" />
+    <item name="breed_menu_inc_edit" type="id" />
+    <item name="breed_menu_inc_log" type="id" />
+    <item name="breed_menu_inc_change" type="id" />
+</resources>

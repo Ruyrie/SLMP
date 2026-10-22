@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "record_type": "FARROWING",
+    "record_id": {{seq}},
+    "animal_id": 4131,
+    "ear_tag": "0131",
+    "animal_status": "LACTATING",
+    "animal_status_text": "哺乳",
+    "batch_id": null,
+    "batch_no": null,
+    "todo_completed": true
+  },
+  "trace_id": "mock-breed-farrowing_no_batch"
+}

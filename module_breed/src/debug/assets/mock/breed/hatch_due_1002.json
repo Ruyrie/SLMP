@@ -1,0 +1,60 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "group": "TODAY",
+        "group_text": "今天",
+        "pen_id": 2301,
+        "pen_name": "1 号种鸡舍",
+        "incubation_id": 6001,
+        "breeding_batch_id": 3211,
+        "flock_text": "1 号种鸡舍 · ZM2603-015",
+        "set_date": "2026-09-28",
+        "set_count": 9600,
+        "fertile_count": 9120,
+        "expected_hatch_date": "2026-10-19",
+        "days_to_hatch": 0,
+        "remind_before_date": "2026-10-18",
+        "remind_before_sent_at": "2026-10-18 08:00:00",
+        "remind_due_sent_at": "2026-10-19 08:00:00",
+        "reminder_text": "已提醒 10月18日、今天",
+        "staff_names": [],
+        "can_register": true,
+        "can_open": true
+      },
+      {
+        "group": "WITHIN_7",
+        "group_text": "7 天内",
+        "pen_id": 2302,
+        "pen_name": "2 号种鸡舍",
+        "incubation_id": 6002,
+        "breeding_batch_id": 3212,
+        "flock_text": "2 号种鸡舍 · ZM2603-016",
+        "set_date": "2026-10-05",
+        "set_count": 9200,
+        "fertile_count": 8740,
+        "expected_hatch_date": "2026-10-26",
+        "days_to_hatch": 7,
+        "remind_before_date": "2026-10-25",
+        "remind_before_sent_at": null,
+        "remind_due_sent_at": null,
+        "reminder_text": "10月25日提醒",
+        "staff_names": [],
+        "can_register": false,
+        "can_open": true
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "TODAY": 1,
+      "WITHIN_7": 1,
+      "LATER": 0
+    }
+  },
+  "trace_id": "mock-breed-hatch_due_1002"
+}

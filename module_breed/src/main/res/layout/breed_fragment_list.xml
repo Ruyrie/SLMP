@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 分段列表（B01 母猪列表、B01 / B02 待产、B02 待出雏）：首屏骨架屏与加载失败，下拉刷新 -->
+<com.zhimu.slmp.base.widget.StateLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/breed_list_state"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:stateErrorTitle="@string/breed_error_title"
+    app:stateSkeletonLayout="@layout/base_skeleton_list">
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/breed_list_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/breed_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/base_page_margin"
+            android:paddingEnd="@dimen/base_page_margin"
+            android:paddingBottom="@dimen/base_fab_list_bottom_space" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+</com.zhimu.slmp.base.widget.StateLayout>

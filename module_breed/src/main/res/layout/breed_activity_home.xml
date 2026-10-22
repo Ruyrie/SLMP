@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    B01 种畜与待产（图 5-1）：顶部栏 search、more_vert；连接按钮组“母猪档案 24 / 待产 11”；分段内容为
+    母猪列表（AnimalListFragment）或待产列表（FarrowDueFragment，复用 B02）；右下角扩展 FAB“登记”。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/breed_top_bar"
+            layout="@layout/base_include_top_app_bar" />
+
+        <include
+            android:id="@+id/breed_search"
+            layout="@layout/breed_include_search_bar" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/breed_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/breed_error_title"
+            app:stateNoPermissionTitle="@string/breed_no_permission_title"
+            app:stateSkeletonLayout="@layout/base_skeleton_list">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <com.zhimu.slmp.base.widget.ConnectedButtonGroup
+                    android:id="@+id/breed_segments"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/base_page_margin"
+                    android:layout_marginTop="@dimen/base_space_1"
+                    android:layout_marginEnd="@dimen/base_page_margin"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/breed_segment_archive"
+                        style="@style/Widget.Zmt.Button.Connected"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/breed_segment_due"
+                        style="@style/Widget.Zmt.Button.Connected"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+                </com.zhimu.slmp.base.widget.ConnectedButtonGroup>
+
+                <FrameLayout
+                    android:id="@+id/breed_home_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+        </com.zhimu.slmp.base.widget.StateLayout>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/breed_fab"
+        style="@style/Widget.Zmt.ExtendedFloatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/base_space_4"
+        android:text="@string/breed_fab_register"
+        app:icon="@drawable/ic_add" />
+</FrameLayout>

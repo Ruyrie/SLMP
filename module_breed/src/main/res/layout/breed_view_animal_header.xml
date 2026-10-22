@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- B01 母猪档案分段的列表头部：临产横幅（查看待产）、状态筛选 Chip 行（横向滚动）、空状态与“新增母猪” -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <com.zhimu.slmp.base.widget.NoticeView
+        android:id="@+id/breed_due_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_4"
+        android:visibility="gone"
+        app:noticeActionText="@string/breed_banner_view_due"
+        app:noticeIcon="@drawable/breed_ic_event_upcoming" />
+
+    <HorizontalScrollView
+        android:id="@+id/breed_chip_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_4"
+        android:layout_marginBottom="@dimen/base_space_3"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/breed_chips"
+            style="@style/Widget.Zmt.ChipGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleLine="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/breed_chip_all"
+                style="@style/Widget.Zmt.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/breed_chip_all" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/breed_chip_empty"
+                style="@style/Widget.Zmt.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/breed_chip_empty" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/breed_chip_mated"
+                style="@style/Widget.Zmt.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/breed_chip_mated" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/breed_chip_pregnant"
+                style="@style/Widget.Zmt.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/breed_chip_pregnant" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/breed_chip_lactating"
+                style="@style/Widget.Zmt.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/breed_chip_lactating" />
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <LinearLayout
+        android:id="@+id/breed_animal_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/base_space_8"
+        android:paddingBottom="@dimen/base_space_8"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/breed_animal_empty_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingStart="@dimen/base_space_6"
+            android:paddingEnd="@dimen/base_space_6"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/breed_animal_empty_action"
+            style="@style/Widget.Zmt.Button.Tonal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_4"
+            android:text="@string/breed_action_new_animal"
+            app:icon="@drawable/ic_add" />
+    </LinearLayout>
+</LinearLayout>

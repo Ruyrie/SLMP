@@ -1,0 +1,65 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "batch_id": 3211,
+        "batch_no": "ZM2603-015",
+        "breed_id": 2101,
+        "breed_name": "白羽肉鸡",
+        "category_name": "种鸡",
+        "breed_title": "白羽肉鸡种鸡",
+        "purpose": "BREEDING",
+        "source": "PURCHASED",
+        "status": "ACTIVE",
+        "pens": [
+          {
+            "pen_id": 2301,
+            "pen_name": "1 号种鸡舍",
+            "stock_count": 3200
+          }
+        ],
+        "entry_date": "2026-03-12",
+        "entry_age_days": 150,
+        "day_age": 371,
+        "stage_name": "产蛋期",
+        "current_count": 3200,
+        "mortality_rate": 0.031,
+        "in_withdrawal": false,
+        "end_date": null
+      },
+      {
+        "batch_id": 3212,
+        "batch_no": "ZM2603-016",
+        "breed_id": 2101,
+        "breed_name": "白羽肉鸡",
+        "category_name": "种鸡",
+        "breed_title": "白羽肉鸡种鸡",
+        "purpose": "BREEDING",
+        "source": "PURCHASED",
+        "status": "ACTIVE",
+        "pens": [
+          {
+            "pen_id": 2302,
+            "pen_name": "2 号种鸡舍",
+            "stock_count": 2800
+          }
+        ],
+        "entry_date": "2026-03-20",
+        "entry_age_days": 150,
+        "day_age": 363,
+        "stage_name": "产蛋期",
+        "current_count": 2800,
+        "mortality_rate": 0.028,
+        "in_withdrawal": false,
+        "end_date": null
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-breed-flocks_breeding"
+}

@@ -1,0 +1,80 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "animal_id": 4133,
+        "breed_id": 1201,
+        "pen_id": 2006,
+        "ear_tag": "0133",
+        "breed_name": "长大二元",
+        "pen_name": "母猪舍",
+        "status": "EMPTY",
+        "status_text": "空怀",
+        "parity": 1,
+        "version": 3,
+        "last_wean_date": "2026-10-10",
+        "next_action": "MATING",
+        "next_action_text": "登记配种"
+      },
+      {
+        "animal_id": 4139,
+        "breed_id": 1201,
+        "pen_id": 2006,
+        "ear_tag": "0139",
+        "breed_name": "长大二元",
+        "pen_name": "母猪舍",
+        "status": "EMPTY",
+        "status_text": "空怀",
+        "parity": 2,
+        "version": 9,
+        "last_wean_date": "2026-10-05",
+        "next_action": "MATING",
+        "next_action_text": "登记配种"
+      },
+      {
+        "animal_id": 4145,
+        "breed_id": 1201,
+        "pen_id": 2006,
+        "ear_tag": "0145",
+        "breed_name": "长大二元",
+        "pen_name": "母猪舍",
+        "status": "EMPTY",
+        "status_text": "空怀",
+        "parity": 3,
+        "version": 8,
+        "last_wean_date": "2026-09-30",
+        "next_action": "MATING",
+        "next_action_text": "登记配种"
+      },
+      {
+        "animal_id": 4182,
+        "breed_id": 1201,
+        "pen_id": 2006,
+        "ear_tag": "0182",
+        "breed_name": "长大二元",
+        "pen_name": "母猪舍",
+        "status": "EMPTY",
+        "status_text": "空怀",
+        "parity": 0,
+        "version": 3,
+        "next_action": "MATING",
+        "next_action_text": "登记配种"
+      }
+    ],
+    "total": 24,
+    "page": 2,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "ALL": 24,
+      "EMPTY": 5,
+      "MATED": 4,
+      "PREGNANT": 11,
+      "LACTATING": 4,
+      "EXITED": 2
+    }
+  },
+  "trace_id": "mock-breed-animals_all_p2"
+}

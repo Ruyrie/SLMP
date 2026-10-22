@@ -1,0 +1,89 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "animal_id": 4155,
+        "breed_id": 1201,
+        "pen_id": 2006,
+        "ear_tag": "0155",
+        "breed_name": "长大二元",
+        "pen_name": "母猪舍",
+        "status": "MATED",
+        "status_text": "已配种",
+        "parity": 3,
+        "version": 4,
+        "first_mating_date": "2026-09-24",
+        "days_since_mating": 25,
+        "pending_check": true,
+        "next_action": "PREG_CHECK",
+        "next_action_text": "登记妊检"
+      },
+      {
+        "animal_id": 4149,
+        "breed_id": 1201,
+        "pen_id": 2006,
+        "ear_tag": "0149",
+        "breed_name": "长大二元",
+        "pen_name": "母猪舍",
+        "status": "MATED",
+        "status_text": "已配种",
+        "parity": 2,
+        "version": 5,
+        "first_mating_date": "2026-09-28",
+        "days_since_mating": 21,
+        "pending_check": true,
+        "next_action": "PREG_CHECK",
+        "next_action_text": "登记妊检"
+      },
+      {
+        "animal_id": 4166,
+        "breed_id": 1201,
+        "pen_id": 2006,
+        "ear_tag": "0166",
+        "breed_name": "长大二元",
+        "pen_name": "母猪舍",
+        "status": "MATED",
+        "status_text": "已配种",
+        "parity": 1,
+        "version": 8,
+        "first_mating_date": "2026-10-08",
+        "days_since_mating": 11,
+        "pending_check": false,
+        "next_action": "PREG_CHECK",
+        "next_action_text": "登记妊检"
+      },
+      {
+        "animal_id": 4172,
+        "breed_id": 1201,
+        "pen_id": 2006,
+        "ear_tag": "0172",
+        "breed_name": "长大二元",
+        "pen_name": "母猪舍",
+        "status": "MATED",
+        "status_text": "已配种",
+        "parity": 2,
+        "version": 7,
+        "first_mating_date": "2026-10-14",
+        "days_since_mating": 5,
+        "pending_check": false,
+        "next_action": "PREG_CHECK",
+        "next_action_text": "登记妊检"
+      }
+    ],
+    "total": 4,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "ALL": 24,
+      "EMPTY": 5,
+      "MATED": 4,
+      "PREGNANT": 11,
+      "LACTATING": 4,
+      "EXITED": 2
+    }
+  },
+  "trace_id": "mock-breed-animals_mated"
+}

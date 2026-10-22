@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    本模块分组列表项（UI 2.2“分组列表 ListItem”）：前置 40 dp 图标底或天数徽标、主文字 + 说明（最多两行）+ 第三行、
+    临产标签；尾部状态标签或 80 × 32 dp 色调按钮。B01 母猪、B02 待产 / 待出雏、B03 待妊检、B06 繁育记录共用。
+-->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/breed_row_card"
+    style="@style/Widget.Zmt.Card.ListItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="72dp"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_space_4"
+        android:paddingTop="@dimen/base_space_3"
+        android:paddingEnd="@dimen/base_space_4"
+        android:paddingBottom="@dimen/base_space_3">
+
+        <FrameLayout
+            android:id="@+id/breed_row_leading"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="top"
+            android:layout_marginTop="2dp"
+            android:background="@drawable/breed_bg_leading">
+
+            <ImageView
+                android:id="@+id/breed_row_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                tools:src="@drawable/breed_ic_female" />
+
+            <LinearLayout
+                android:id="@+id/breed_row_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/breed_row_badge_number"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium.Number"
+                    tools:text="3" />
+
+                <TextView
+                    android:id="@+id/breed_row_badge_unit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:text="@string/breed_unit_day"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_4"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/breed_row_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.Zmt.TitleMedium.Number"
+                android:textColor="?attr/colorOnSurface"
+                tools:text="0131 · 长大二元" />
+
+            <TextView
+                android:id="@+id/breed_row_subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                tools:text="产房 · 第 3 胎 · 预产期 10月19日" />
+
+            <TextView
+                android:id="@+id/breed_row_line3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="gone"
+                tools:text="已提醒 10月16日、今天" />
+
+            <com.zhimu.slmp.base.widget.StatusTagView
+                android:id="@+id/breed_row_extra_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_1"
+                android:visibility="gone"
+                app:tagType="warning"
+                tools:text="今天预产" />
+        </LinearLayout>
+
+        <com.zhimu.slmp.base.widget.StatusTagView
+            android:id="@+id/breed_row_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_2"
+            android:visibility="gone"
+            tools:text="妊娠" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/breed_row_action"
+            style="@style/Widget.Zmt.Button.Tonal.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_2"
+            android:minWidth="80dp"
+            android:visibility="gone"
+            tools:text="登记产仔" />
+
+        <!-- 记录菜单的锚点（MoreMenuHelper 会给锚点加按下态圆底，不能直接锚在卡片上）：菜单在该项下方右对齐弹出 -->
+        <View
+            android:id="@+id/breed_row_anchor"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_gravity="bottom"
+            android:visibility="invisible" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

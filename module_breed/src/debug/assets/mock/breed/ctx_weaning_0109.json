@@ -1,0 +1,26 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "type": "WEANING",
+    "animal": {
+      "animal_id": 4109,
+      "ear_tag": "0109",
+      "breed_name": "长大二元",
+      "parity": 3,
+      "status": "LACTATING",
+      "status_text": "哺乳",
+      "pen_id": 2007,
+      "pen_name": "产房",
+      "version": 7,
+      "last_farrow_date": "2026-09-21",
+      "live_born": 12
+    },
+    "cycle_id": 5109,
+    "farrowing_id": 8109,
+    "farrow_date": "2026-09-21",
+    "nursing_days": 28,
+    "live_born": 12
+  },
+  "trace_id": "mock-breed-ctx_weaning_0109"
+}

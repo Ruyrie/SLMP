@@ -1,0 +1,47 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "animal_id": 4109,
+    "breed_id": 1201,
+    "pen_id": 2007,
+    "ear_tag": "0109",
+    "breed_name": "长大二元",
+    "pen_name": "产房",
+    "status": "LACTATING",
+    "status_text": "哺乳",
+    "parity": 3,
+    "version": 7,
+    "next_action": "WEANING",
+    "next_action_text": "登记断奶",
+    "animal_label": "母猪",
+    "filing_date": "2025-03-02",
+    "source": "PURCHASED",
+    "source_text": "外购",
+    "initial_parity": 1,
+    "birth_date": "2024-02-02",
+    "stats": {
+      "farrowing_count": 2,
+      "last_wean_date": "2026-05-24",
+      "last_weaned_count": 10,
+      "avg_live_born": 11.5
+    },
+    "current_cycle": {
+      "cycle_id": 5109,
+      "status": "FARROWED",
+      "first_mating_date": "2026-05-30",
+      "mating_count": 1,
+      "days_since_mating": 142,
+      "check_due_date": "2026-06-20",
+      "pending_check": false,
+      "expected_due_date": "2026-09-21",
+      "days_to_due": null,
+      "farrow_date": "2026-09-21",
+      "live_born": 12,
+      "nursing_days": 28
+    },
+    "can_edit": true,
+    "can_exit": true
+  },
+  "trace_id": "mock-breed-animal_0109"
+}

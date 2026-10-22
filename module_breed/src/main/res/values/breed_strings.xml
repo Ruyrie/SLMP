@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 通用 -->
+    <string name="breed_unit_day">天</string>
+    <string name="breed_list_load_failed">加载失败，点按重试</string>
+    <string name="breed_list_all_shown">已显示全部</string>
+    <string name="breed_action_retry">重新加载</string>
+    <string name="breed_discard_title">放弃本次登记？</string>
+    <string name="breed_discard_message">已填写的内容不会保存。</string>
+    <string name="breed_action_keep_editing">继续填写</string>
+    <string name="breed_action_discard">放弃</string>
+    <string name="breed_no_permission_title">你没有登记繁育记录的权限</string>
+    <string name="breed_error_title">加载失败</string>
+    <string name="breed_search_hint_animal">输入耳号</string>
+    <string name="breed_search_hint_due">输入耳号、批次号或栏舍名</string>
+    <string name="breed_cd_search">搜索</string>
+    <string name="breed_cd_more">更多</string>
+    <string name="breed_cd_clear">清空</string>
+    <string name="breed_cd_close_search">退出搜索</string>
+    <string name="breed_view_batch">查看批次</string>
+    <string name="breed_dot_sep">" · "</string>
+
+    <!-- B01 种畜与待产 -->
+    <string name="breed_home_title">种畜与待产</string>
+    <string name="breed_home_exited_title">已淘汰和死亡的母猪</string>
+    <string name="breed_segment_archive">%1$s档案 %2$d</string>
+    <string name="breed_segment_due">待产 %1$d</string>
+    <string name="breed_banner_view_due">查看待产</string>
+    <string name="breed_chip_all">全部</string>
+    <string name="breed_chip_empty">空怀</string>
+    <string name="breed_chip_mated">已配种</string>
+    <string name="breed_chip_pregnant">妊娠</string>
+    <string name="breed_chip_lactating">哺乳</string>
+    <string name="breed_fab_register">登记</string>
+    <string name="breed_menu_exited">已淘汰和死亡的母猪</string>
+    <string name="breed_menu_reminder">提醒设置</string>
+    <string name="breed_empty_none">还没有母猪档案。先新增母猪，再登记配种。</string>
+    <string name="breed_empty_exited">没有已淘汰或死亡的母猪。</string>
+    <string name="breed_action_new_animal">新增母猪</string>
+    <string name="breed_register_sheet_title">繁育登记</string>
+    <string name="breed_register_sheet_desc">登记到%1$s</string>
+    <string name="breed_register_mating">登记配种 / 妊检</string>
+    <string name="breed_register_farrowing">登记产仔</string>
+    <string name="breed_register_weaning">登记断奶</string>
+
+    <!-- B02 待产与待出雏 -->
+    <string name="breed_due_title">待产与待出雏</string>
+    <string name="breed_tab_farrow">待产</string>
+    <string name="breed_tab_farrow_count">待产 %1$d</string>
+    <string name="breed_tab_hatch">待出雏</string>
+    <string name="breed_tab_hatch_count">待出雏 %1$d</string>
+    <string name="breed_switch_action">切换</string>
+    <string name="breed_action_register_farrow">登记产仔</string>
+    <string name="breed_action_register_hatch">登记出雏</string>
+    <string name="breed_action_register_set">登记入孵</string>
+    <string name="breed_no_staff">无负责员工</string>
+    <string name="breed_staff_prefix">负责员工 %1$s</string>
+
+    <!-- B03 登记配种 / 妊检 -->
+    <string name="breed_mating_title">登记配种 / 妊检</string>
+    <string name="breed_mating_edit_title">修改配种记录</string>
+    <string name="breed_field_animal">母猪</string>
+    <string name="breed_mating_animal_helper">只能选择空怀或已配种的母猪，妊娠、哺乳中的不可选</string>
+    <string name="breed_mating_animal_empty">没有可以配种的母猪。只有空怀或已配种的母猪可以登记配种。</string>
+    <string name="breed_field_mating_date">配种日期</string>
+    <string name="breed_field_mating_method">配种方式</string>
+    <string name="breed_method_artificial">人工授精</string>
+    <string name="breed_method_natural">本交</string>
+    <string name="breed_due_card_label">系统推算预产期</string>
+    <string name="breed_due_card_note">按%1$s妊娠期 %2$d 天推算；同一情期再次配种时，仍按首次配种日期计算</string>
+    <string name="breed_due_card_pending">选择母猪后推算</string>
+    <string name="breed_field_boar">与配公猪（选填）</string>
+    <string name="breed_boar_hint">输入公猪耳号或精液批号</string>
+    <string name="breed_pending_title">待妊检 · %1$d 头</string>
+    <string name="breed_action_register_check">登记妊检</string>
+    <string name="breed_action_register_mating">登记配种</string>
+    <string name="breed_action_save_edit">保存修改</string>
+
+    <!-- 妊检面板 -->
+    <string name="breed_check_title">登记妊检</string>
+    <string name="breed_check_edit_title">修改妊检</string>
+    <string name="breed_field_check_date">妊检日期</string>
+    <string name="breed_field_check_result">妊检结果</string>
+    <string name="breed_check_positive">阳性</string>
+    <string name="breed_check_negative">阴性</string>
+    <string name="breed_check_negative_desc">回到空怀，可以再次配种</string>
+    <string name="breed_check_confirm">确认结果</string>
+
+    <!-- B04 登记产仔 -->
+    <string name="breed_farrowing_title">登记产仔</string>
+    <string name="breed_farrowing_edit_title">修改产仔记录</string>
+    <string name="breed_farrowing_animal_empty">没有妊娠中的母猪。妊检结果为阳性后，母猪会出现在这里。</string>
+    <string name="breed_field_farrow_date">产仔日期</string>
+    <string name="breed_field_total_born">总产仔数</string>
+    <string name="breed_field_live_born">活仔数</string>
+    <string name="breed_field_stillborn">死胎数</string>
+    <string name="breed_unit_head">头</string>
+    <string name="breed_transfer_title">活仔一键转为新批次</string>
+    <string name="breed_transfer_desc">登记后自动入栏，出现在存栏中</string>
+    <string name="breed_kv_entry_pen">入栏栏舍</string>
+    <string name="breed_kv_breed">品种</string>
+    <string name="breed_kv_entry_count">入栏数量</string>
+    <string name="breed_kv_entry_age">入栏日龄 · 来源</string>
+    <string name="breed_kv_batch_no">批次号</string>
+    <string name="breed_entry_age_value">0 日龄 · 自繁</string>
+    <string name="breed_batch_no_auto">提交后由系统生成</string>
+    <string name="breed_capacity_check">我已确认，仍要入栏</string>
+    <string name="breed_pick_pen_title">入栏栏舍</string>
+
+    <!-- B05 登记断奶 -->
+    <string name="breed_weaning_title">登记断奶</string>
+    <string name="breed_weaning_edit_title">修改断奶记录</string>
+    <string name="breed_weaning_animal_empty">没有哺乳中的母猪。登记产仔后，母猪会出现在这里。</string>
+    <string name="breed_kv_pen">所在栏舍</string>
+    <string name="breed_kv_farrow_date">产仔日期</string>
+    <string name="breed_kv_live_born">产仔时活仔</string>
+    <string name="breed_field_wean_date">断奶日期</string>
+    <string name="breed_field_weaned">断奶仔猪数</string>
+    <string name="breed_field_weight">断奶窝重（选填）</string>
+    <string name="breed_weight_hint">输入总重</string>
+    <string name="breed_unit_kg">千克</string>
+    <string name="breed_status_after">提交后母猪状态</string>
+    <string name="breed_status_lactating">哺乳</string>
+    <string name="breed_status_empty">空怀</string>
+
+    <!-- B06 种畜档案 -->
+    <string name="breed_archive_title">种畜档案</string>
+    <string name="breed_section_info">档案信息</string>
+    <string name="breed_section_stats">繁育表现</string>
+    <string name="breed_section_records">繁育记录</string>
+    <string name="breed_kv_ear_tag">耳号</string>
+    <string name="breed_kv_birth">出生日期</string>
+    <string name="breed_kv_source">来源</string>
+    <string name="breed_kv_filing">建档日期</string>
+    <string name="breed_kv_exit">死亡 / 淘汰</string>
+    <string name="breed_stat_parity">胎次</string>
+    <string name="breed_stat_avg_live">窝均活仔</string>
+    <string name="breed_stat_last_wean">上次断奶</string>
+    <string name="breed_unit_parity">胎</string>
+    <string name="breed_no_data">无数据</string>
+    <string name="breed_records_empty">还没有繁育记录。登记配种后，记录会按时间显示在这里。</string>
+    <string name="breed_menu_edit">编辑档案</string>
+    <string name="breed_menu_log">查看修改记录</string>
+    <string name="breed_menu_exit">登记死亡 / 淘汰</string>
+    <string name="breed_menu_exit_desc">淘汰后不再出现在配种选择中，历史记录保留</string>
+    <string name="breed_record_edit">编辑</string>
+    <string name="breed_record_view_batch">查看批次</string>
+    <string name="breed_record_request_change">提交修改申请</string>
+    <string name="breed_record_pending">修改申请审核中</string>
+    <string name="breed_exit_title">登记死亡 / 淘汰</string>
+    <string name="breed_exit_cull">淘汰</string>
+    <string name="breed_exit_death">死亡</string>
+    <string name="breed_field_exit_date">日期</string>
+    <string name="breed_field_reason">原因</string>
+    <string name="breed_exit_confirm">确认登记</string>
+    <string name="breed_log_title">修改记录</string>
+    <string name="breed_log_empty">还没有修改记录。</string>
+
+    <!-- 档案表单 -->
+    <string name="breed_form_new_title">新增母猪</string>
+    <string name="breed_form_edit_title">编辑档案</string>
+    <string name="breed_field_ear_tag">耳号</string>
+    <string name="breed_field_breed">品种</string>
+    <string name="breed_field_birth">出生日期（选填）</string>
+    <string name="breed_field_source">来源</string>
+    <string name="breed_source_purchased">外购</string>
+    <string name="breed_source_self_bred">自繁</string>
+    <string name="breed_field_pen">所在栏舍</string>
+    <string name="breed_field_initial_parity">建档时胎次</string>
+    <string name="breed_initial_parity_helper">已在其他地方产过的胎数，0–30</string>
+    <string name="breed_action_save_archive">保存档案</string>
+
+    <!-- B07 禽类孵化 -->
+    <string name="breed_incubation_title">禽类孵化</string>
+    <string name="breed_step_set">入孵</string>
+    <string name="breed_step_candle">照蛋</string>
+    <string name="breed_step_hatch">出雏</string>
+    <string name="breed_kv_fertility">受精率</string>
+    <string name="breed_section_set">入孵登记</string>
+    <string name="breed_section_candle">照蛋登记</string>
+    <string name="breed_section_hatch">出雏登记</string>
+    <string name="breed_section_result">出雏结果</string>
+    <string name="breed_field_set_date">入孵日期</string>
+    <string name="breed_field_flock">种禽群</string>
+    <string name="breed_flock_helper">列出本场用途为种用的在栏禽类批次</string>
+    <string name="breed_flock_empty">没有可以入孵的种禽群。种用批次在 L08 批次入栏时登记（用途选种用）。</string>
+    <string name="breed_field_set_count">入孵蛋数</string>
+    <string name="breed_unit_egg">枚</string>
+    <string name="breed_unit_bird">只</string>
+    <string name="breed_hatch_card_label">预计出雏日</string>
+    <string name="breed_hatch_card_note">按%1$s孵化期 %2$d 天推算</string>
+    <string name="breed_hatch_card_pending">选择种禽群后推算</string>
+    <string name="breed_hatch_card_unknown">提交后按品种孵化期推算</string>
+    <string name="breed_field_candle_date">照蛋日期</string>
+    <string name="breed_field_fertile">受精蛋数</string>
+    <string name="breed_field_hatch_date">出雏日期</string>
+    <string name="breed_field_hatched">出雏数</string>
+    <string name="breed_field_healthy">健雏数</string>
+    <string name="breed_field_weak">弱雏数</string>
+    <string name="breed_weak_helper">按出雏减健雏自动计算</string>
+    <string name="breed_hatch_transfer_title">健雏转为新批次</string>
+    <string name="breed_field_target_pen">入栏鸡舍</string>
+    <string name="breed_action_register_candle">登记照蛋</string>
+    <string name="breed_kv_hatch_rate">孵化率</string>
+    <string name="breed_kv_new_batch">新批次</string>
+    <string name="breed_kv_not_transferred">未转批次</string>
+    <string name="breed_menu_edit_incubation">修改入孵 / 照蛋记录</string>
+    <string name="breed_step_detail_title">%1$s记录</string>
+    <string name="breed_kv_registrant">登记人</string>
+    <string name="breed_kv_registered_at">登记时间</string>
+    <string name="breed_action_save">保存修改</string>
+</resources>

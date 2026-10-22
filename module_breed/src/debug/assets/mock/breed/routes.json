@@ -1,0 +1,1926 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding/overview",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "overview_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding/overview",
+    "when": {
+      "header": {
+        "X-Farm-Id": "1002"
+      }
+    },
+    "file": "overview_1002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding/overview",
+    "file": "overview_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_role.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals",
+    "when": {
+      "query": {
+        "status": "ALL",
+        "page": "2"
+      }
+    },
+    "file": "animals_all_p2.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals",
+    "when": {
+      "query": {
+        "status": "EMPTY"
+      }
+    },
+    "file": "animals_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals",
+    "when": {
+      "query": {
+        "status": "MATED"
+      }
+    },
+    "file": "animals_mated.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals",
+    "when": {
+      "query": {
+        "status": "PREGNANT"
+      }
+    },
+    "file": "animals_pregnant.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals",
+    "when": {
+      "query": {
+        "status": "LACTATING"
+      }
+    },
+    "file": "animals_lactating.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals",
+    "when": {
+      "query": {
+        "status": "EXITED"
+      }
+    },
+    "file": "animals_exited.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals",
+    "when": {
+      "query": {
+        "keyword": "0161"
+      }
+    },
+    "file": "animals_kw_0161.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals",
+    "when": {
+      "query": {
+        "keyword": "0131"
+      }
+    },
+    "file": "animals_kw_0131.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals",
+    "when": {
+      "query": {
+        "keyword": "9999"
+      }
+    },
+    "file": "animals_kw_none.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals",
+    "file": "animals_all_p1.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/options",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_role.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/options",
+    "when": {
+      "query": {
+        "purpose": "MATING"
+      }
+    },
+    "file": "options_mating.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/options",
+    "when": {
+      "query": {
+        "purpose": "FARROWING"
+      }
+    },
+    "file": "options_farrowing.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/options",
+    "when": {
+      "query": {
+        "purpose": "WEANING"
+      }
+    },
+    "file": "options_weaning.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_role.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4131"
+      },
+      "query": {
+        "type": "FARROWING"
+      }
+    },
+    "file": "ctx_farrowing_0131.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4136"
+      },
+      "query": {
+        "type": "FARROWING"
+      }
+    },
+    "file": "ctx_farrowing_0136.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4118"
+      },
+      "query": {
+        "type": "WEANING"
+      }
+    },
+    "file": "ctx_weaning_0118.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4109"
+      },
+      "query": {
+        "type": "WEANING"
+      }
+    },
+    "file": "ctx_weaning_0109.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4124"
+      },
+      "query": {
+        "type": "WEANING"
+      }
+    },
+    "file": "ctx_weaning_0124.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4127"
+      },
+      "query": {
+        "type": "WEANING"
+      }
+    },
+    "file": "ctx_weaning_0127.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4142"
+      },
+      "query": {
+        "type": "FARROWING"
+      }
+    },
+    "file": "ctx_farrowing_0142.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4146"
+      },
+      "query": {
+        "type": "FARROWING"
+      }
+    },
+    "file": "ctx_farrowing_0146.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4152"
+      },
+      "query": {
+        "type": "FARROWING"
+      }
+    },
+    "file": "ctx_farrowing_0152.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4157"
+      },
+      "query": {
+        "type": "FARROWING"
+      }
+    },
+    "file": "ctx_farrowing_0157.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4163"
+      },
+      "query": {
+        "type": "FARROWING"
+      }
+    },
+    "file": "ctx_farrowing_0163.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4168"
+      },
+      "query": {
+        "type": "FARROWING"
+      }
+    },
+    "file": "ctx_farrowing_0168.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4171"
+      },
+      "query": {
+        "type": "FARROWING"
+      }
+    },
+    "file": "ctx_farrowing_0171.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4174"
+      },
+      "query": {
+        "type": "FARROWING"
+      }
+    },
+    "file": "ctx_farrowing_0174.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4178"
+      },
+      "query": {
+        "type": "FARROWING"
+      }
+    },
+    "file": "ctx_farrowing_0178.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4155"
+      },
+      "query": {
+        "type": "MATING"
+      }
+    },
+    "file": "ctx_mating_0155.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4155"
+      },
+      "query": {
+        "type": "PREG_CHECK"
+      }
+    },
+    "file": "ctx_check_0155.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4149"
+      },
+      "query": {
+        "type": "MATING"
+      }
+    },
+    "file": "ctx_mating_0149.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4149"
+      },
+      "query": {
+        "type": "PREG_CHECK"
+      }
+    },
+    "file": "ctx_check_0149.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4166"
+      },
+      "query": {
+        "type": "MATING"
+      }
+    },
+    "file": "ctx_mating_0166.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4166"
+      },
+      "query": {
+        "type": "PREG_CHECK"
+      }
+    },
+    "file": "ctx_check_0166.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4172"
+      },
+      "query": {
+        "type": "MATING"
+      }
+    },
+    "file": "ctx_mating_0172.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4172"
+      },
+      "query": {
+        "type": "PREG_CHECK"
+      }
+    },
+    "file": "ctx_check_0172.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4161"
+      },
+      "query": {
+        "type": "MATING"
+      }
+    },
+    "file": "ctx_mating_0161.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4133"
+      },
+      "query": {
+        "type": "MATING"
+      }
+    },
+    "file": "ctx_mating_0133.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4139"
+      },
+      "query": {
+        "type": "MATING"
+      }
+    },
+    "file": "ctx_mating_0139.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4145"
+      },
+      "query": {
+        "type": "MATING"
+      }
+    },
+    "file": "ctx_mating_0145.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "when": {
+      "path": {
+        "id": "4182"
+      },
+      "query": {
+        "type": "MATING"
+      }
+    },
+    "file": "ctx_mating_0182.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/register-context",
+    "file": "err_40903_state.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_role.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_role.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4131"
+      }
+    },
+    "file": "animal_0131.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4131"
+      }
+    },
+    "file": "records_0131.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4136"
+      }
+    },
+    "file": "animal_0136.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4136"
+      }
+    },
+    "file": "records_0136.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4118"
+      }
+    },
+    "file": "animal_0118.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4118"
+      }
+    },
+    "file": "records_0118.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4109"
+      }
+    },
+    "file": "animal_0109.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4109"
+      }
+    },
+    "file": "records_0109.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4124"
+      }
+    },
+    "file": "animal_0124.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4124"
+      }
+    },
+    "file": "records_0124.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4127"
+      }
+    },
+    "file": "animal_0127.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4127"
+      }
+    },
+    "file": "records_0127.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4142"
+      }
+    },
+    "file": "animal_0142.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4142"
+      }
+    },
+    "file": "records_0142.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4146"
+      }
+    },
+    "file": "animal_0146.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4146"
+      }
+    },
+    "file": "records_0146.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4152"
+      }
+    },
+    "file": "animal_0152.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4152"
+      }
+    },
+    "file": "records_0152.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4157"
+      }
+    },
+    "file": "animal_0157.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4157"
+      }
+    },
+    "file": "records_0157.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4163"
+      }
+    },
+    "file": "animal_0163.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4163"
+      }
+    },
+    "file": "records_0163.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4168"
+      }
+    },
+    "file": "animal_0168.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4168"
+      }
+    },
+    "file": "records_0168.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4171"
+      }
+    },
+    "file": "animal_0171.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4171"
+      }
+    },
+    "file": "records_0171.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4174"
+      }
+    },
+    "file": "animal_0174.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4174"
+      }
+    },
+    "file": "records_0174.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4178"
+      }
+    },
+    "file": "animal_0178.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4178"
+      }
+    },
+    "file": "records_0178.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4155"
+      }
+    },
+    "file": "animal_0155.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4155"
+      }
+    },
+    "file": "records_0155.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4149"
+      }
+    },
+    "file": "animal_0149.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4149"
+      }
+    },
+    "file": "records_0149.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4166"
+      }
+    },
+    "file": "animal_0166.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4166"
+      }
+    },
+    "file": "records_0166.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4172"
+      }
+    },
+    "file": "animal_0172.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4172"
+      }
+    },
+    "file": "records_0172.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4161"
+      }
+    },
+    "file": "animal_0161.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4161"
+      }
+    },
+    "file": "records_0161.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4133"
+      }
+    },
+    "file": "animal_0133.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4133"
+      }
+    },
+    "file": "records_0133.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4139"
+      }
+    },
+    "file": "animal_0139.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4139"
+      }
+    },
+    "file": "records_0139.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4145"
+      }
+    },
+    "file": "animal_0145.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4145"
+      }
+    },
+    "file": "records_0145.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4182"
+      }
+    },
+    "file": "animal_0182.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4182"
+      }
+    },
+    "file": "records_0182.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4102"
+      }
+    },
+    "file": "animal_0102.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4102"
+      }
+    },
+    "file": "records_0102.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4115"
+      }
+    },
+    "file": "animal_0115.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "when": {
+      "path": {
+        "id": "4115"
+      }
+    },
+    "file": "records_0115.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}",
+    "file": "err_40401.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding-animals/{id}/records",
+    "file": "records_empty.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/breeding-animals",
+    "when": {
+      "body": "\"ear_tag\":\"0161\""
+    },
+    "file": "err_40905_ear_tag.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/breeding-animals",
+    "file": "animal_created.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/breeding-animals/{id}",
+    "when": {
+      "path": {
+        "id": "4102"
+      }
+    },
+    "file": "err_40903_exited.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/breeding-animals/{id}",
+    "file": "animal_0161.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/breeding-animals/{id}/exit",
+    "when": {
+      "body": "\"exit_type\":\"DEATH\""
+    },
+    "file": "exit_death.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/breeding-animals/{id}/exit",
+    "file": "exit_cull.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/matings",
+    "when": {
+      "body": "\"animal_id\":4161"
+    },
+    "file": "mating_0161.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/matings",
+    "when": {
+      "body": "\"animal_id\":4133"
+    },
+    "file": "mating_0133.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/matings",
+    "when": {
+      "body": "\"animal_id\":4139"
+    },
+    "file": "mating_0139.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/matings",
+    "when": {
+      "body": "\"animal_id\":4145"
+    },
+    "file": "mating_0145.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/matings",
+    "when": {
+      "body": "\"animal_id\":4182"
+    },
+    "file": "mating_0182.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/matings",
+    "when": {
+      "body": "\"animal_id\":4155"
+    },
+    "file": "mating_0155.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/matings",
+    "when": {
+      "body": "\"animal_id\":4149"
+    },
+    "file": "mating_0149.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/matings",
+    "when": {
+      "body": "\"animal_id\":4166"
+    },
+    "file": "mating_0166.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/matings",
+    "when": {
+      "body": "\"animal_id\":4172"
+    },
+    "file": "mating_0172.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/matings",
+    "file": "mating_0161.json",
+    "delay": 600
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/matings/{id}",
+    "file": "mating_updated.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding/pending-checks",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_role.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding/pending-checks",
+    "file": "pending_checks.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/pregnancy-checks",
+    "when": {
+      "body": [
+        "\"animal_id\":4155",
+        "\"result\":\"POSITIVE\""
+      ]
+    },
+    "file": "check_0155_positive.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/pregnancy-checks",
+    "when": {
+      "body": [
+        "\"animal_id\":4155",
+        "\"result\":\"NEGATIVE\""
+      ]
+    },
+    "file": "check_0155_negative.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/pregnancy-checks",
+    "when": {
+      "body": [
+        "\"animal_id\":4149",
+        "\"result\":\"POSITIVE\""
+      ]
+    },
+    "file": "check_0149_positive.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/pregnancy-checks",
+    "when": {
+      "body": [
+        "\"animal_id\":4149",
+        "\"result\":\"NEGATIVE\""
+      ]
+    },
+    "file": "check_0149_negative.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/pregnancy-checks",
+    "when": {
+      "body": [
+        "\"animal_id\":4166",
+        "\"result\":\"POSITIVE\""
+      ]
+    },
+    "file": "check_0166_positive.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/pregnancy-checks",
+    "when": {
+      "body": [
+        "\"animal_id\":4166",
+        "\"result\":\"NEGATIVE\""
+      ]
+    },
+    "file": "check_0166_negative.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/pregnancy-checks",
+    "when": {
+      "body": [
+        "\"animal_id\":4172",
+        "\"result\":\"POSITIVE\""
+      ]
+    },
+    "file": "check_0172_positive.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/pregnancy-checks",
+    "when": {
+      "body": [
+        "\"animal_id\":4172",
+        "\"result\":\"NEGATIVE\""
+      ]
+    },
+    "file": "check_0172_negative.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/pregnancy-checks",
+    "file": "check_0155_positive.json",
+    "delay": 600
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/pregnancy-checks/{id}",
+    "file": "check_updated.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farrowings",
+    "when": {
+      "body": "\"capacity_confirmed\":true"
+    },
+    "file": "farrowing_ok.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farrowings",
+    "when": {
+      "body": "\"live_born\":45"
+    },
+    "file": "err_42206_farrowing.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farrowings",
+    "when": {
+      "body": "\"transfer_to_batch\":false"
+    },
+    "file": "farrowing_no_batch.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/farrowings",
+    "file": "farrowing_ok.json",
+    "delay": 700
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/farrowings/{id}",
+    "when": {
+      "path": {
+        "id": "8161"
+      }
+    },
+    "file": "err_40307_farrowing.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/farrowings/{id}",
+    "file": "farrowing_updated.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farrowings/{id}",
+    "when": {
+      "path": {
+        "id": "8161"
+      }
+    },
+    "file": "farrowing_8161.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farrowings/{id}",
+    "file": "farrowing_8118.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/weanings",
+    "file": "weaning_ok.json",
+    "delay": 600
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/weanings/{id}",
+    "file": "weaning_updated.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding/farrow-due",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "farrow_due_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding/farrow-due",
+    "when": {
+      "header": {
+        "X-Farm-Id": "1002"
+      }
+    },
+    "file": "due_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding/farrow-due",
+    "when": {
+      "query": {
+        "keyword": "0131"
+      }
+    },
+    "file": "farrow_due_kw_0131.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding/farrow-due",
+    "file": "farrow_due_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batches",
+    "when": {
+      "query": {
+        "purpose": "BREEDING"
+      }
+    },
+    "file": "flocks_breeding.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens",
+    "when": {
+      "query": {
+        "category_id": "201"
+      }
+    },
+    "file": "pens_chicken.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/pens",
+    "when": {
+      "query": {
+        "category_id": "102"
+      }
+    },
+    "file": "pens_sow.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/incubations/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303_role.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/incubations/{id}",
+    "when": {
+      "path": {
+        "id": "6001"
+      }
+    },
+    "file": "incubation_6001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/incubations/{id}",
+    "when": {
+      "path": {
+        "id": "6002"
+      }
+    },
+    "file": "incubation_6002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/incubations/{id}",
+    "when": {
+      "path": {
+        "id": "6003"
+      }
+    },
+    "file": "incubation_6003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/incubations/{id}",
+    "when": {
+      "path": {
+        "id": "6004"
+      }
+    },
+    "file": "incubation_6004.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/incubations/{id}",
+    "when": {
+      "path": {
+        "id": "6005"
+      }
+    },
+    "file": "incubation_6005.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/incubations/{id}",
+    "when": {
+      "path": {
+        "id": "6006"
+      }
+    },
+    "file": "incubation_6006.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/incubations/{id}",
+    "file": "err_40401.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/incubations/{id}",
+    "when": {
+      "path": {
+        "id": "6004"
+      }
+    },
+    "file": "err_40307_incubation.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/incubations/{id}",
+    "when": {
+      "path": {
+        "id": "6001"
+      }
+    },
+    "file": "incubation_6001.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/incubations/{id}",
+    "when": {
+      "path": {
+        "id": "6002"
+      }
+    },
+    "file": "incubation_6002.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/incubations/{id}",
+    "when": {
+      "path": {
+        "id": "6003"
+      }
+    },
+    "file": "incubation_6003.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations",
+    "file": "incubation_set_ok.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/candling",
+    "when": {
+      "path": {
+        "id": "6003"
+      }
+    },
+    "file": "incubation_6003_candled.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/candling",
+    "file": "err_40903_candled.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/hatch",
+    "when": {
+      "path": {
+        "id": "6001"
+      },
+      "body": "\"capacity_confirmed\":true"
+    },
+    "file": "hatch_ok_6001.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/hatch",
+    "when": {
+      "path": {
+        "id": "6001"
+      },
+      "body": "\"target_pen_id\":2202"
+    },
+    "file": "err_42206_hatch.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/hatch",
+    "when": {
+      "path": {
+        "id": "6001"
+      },
+      "body": "\"transfer_to_batch\":false"
+    },
+    "file": "hatch_no_batch_6001.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/hatch",
+    "when": {
+      "path": {
+        "id": "6001"
+      }
+    },
+    "file": "hatch_ok_6001.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/hatch",
+    "when": {
+      "path": {
+        "id": "6002"
+      },
+      "body": "\"capacity_confirmed\":true"
+    },
+    "file": "hatch_ok_6002.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/hatch",
+    "when": {
+      "path": {
+        "id": "6002"
+      },
+      "body": "\"target_pen_id\":2202"
+    },
+    "file": "err_42206_hatch.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/hatch",
+    "when": {
+      "path": {
+        "id": "6002"
+      },
+      "body": "\"transfer_to_batch\":false"
+    },
+    "file": "hatch_no_batch_6002.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/hatch",
+    "when": {
+      "path": {
+        "id": "6002"
+      }
+    },
+    "file": "hatch_ok_6002.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/hatch",
+    "when": {
+      "path": {
+        "id": "6003"
+      },
+      "body": "\"capacity_confirmed\":true"
+    },
+    "file": "hatch_ok_6003.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/hatch",
+    "when": {
+      "path": {
+        "id": "6003"
+      },
+      "body": "\"target_pen_id\":2202"
+    },
+    "file": "err_42206_hatch.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/hatch",
+    "when": {
+      "path": {
+        "id": "6003"
+      },
+      "body": "\"transfer_to_batch\":false"
+    },
+    "file": "hatch_no_batch_6003.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/hatch",
+    "when": {
+      "path": {
+        "id": "6003"
+      }
+    },
+    "file": "hatch_ok_6003.json",
+    "delay": 700
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/incubations/{id}/hatch",
+    "file": "err_40903_hatched.json",
+    "delay": 600
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding/hatch-due",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "due_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding/hatch-due",
+    "when": {
+      "header": {
+        "X-Farm-Id": "1002"
+      }
+    },
+    "file": "hatch_due_1002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding/hatch-due",
+    "file": "due_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/breeding/submissions/{client_request_id}",
+    "file": "submission_unsaved.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "BREEDING_ANIMAL"
+      }
+    },
+    "file": "logs_animal.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "MATING"
+      }
+    },
+    "file": "logs_record.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "PREG_CHECK"
+      }
+    },
+    "file": "logs_record.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "FARROWING"
+      }
+    },
+    "file": "logs_record.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "WEANING"
+      }
+    },
+    "file": "logs_record.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "INCUBATION"
+      }
+    },
+    "file": "logs_record.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "BREEDING_EXIT"
+      }
+    },
+    "file": "logs_record.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "FARROWING"
+      }
+    },
+    "file": "change_form_farrowing.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "INCUBATION"
+      }
+    },
+    "file": "change_form_incubation.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "BREEDING_EXIT"
+      }
+    },
+    "file": "change_form_exit.json"
+  }
+]

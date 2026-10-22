@@ -1,0 +1,38 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "animal_id": 4102,
+    "breed_id": 1201,
+    "pen_id": 2006,
+    "ear_tag": "0102",
+    "breed_name": "长大二元",
+    "pen_name": "母猪舍",
+    "status": "CULLED",
+    "status_text": "已淘汰",
+    "parity": 6,
+    "version": 12,
+    "next_action": null,
+    "next_action_text": null,
+    "exit_type": "CULL",
+    "exit_type_text": "淘汰",
+    "exit_date": "2026-09-15",
+    "exit_reason": "连续两胎产仔少，繁殖性能下降",
+    "animal_label": "母猪",
+    "filing_date": "2025-03-22",
+    "source": "SELF_BRED",
+    "source_text": "自繁",
+    "initial_parity": 4,
+    "birth_date": "2024-07-22",
+    "stats": {
+      "farrowing_count": 2,
+      "avg_live_born": 10.5,
+      "last_wean_date": "2026-08-26",
+      "last_weaned_count": 10
+    },
+    "current_cycle": null,
+    "can_edit": false,
+    "can_exit": false
+  },
+  "trace_id": "mock-breed-animal_0102"
+}

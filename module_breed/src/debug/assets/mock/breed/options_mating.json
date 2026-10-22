@@ -1,0 +1,129 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "animal_id": 4161,
+        "ear_tag": "0161",
+        "breed_name": "长大二元",
+        "parity": 2,
+        "status": "EMPTY",
+        "status_text": "空怀",
+        "pen_id": 2006,
+        "pen_name": "母猪舍",
+        "version": 3,
+        "gestation_days": 114,
+        "last_wean_date": "2026-10-12"
+      },
+      {
+        "animal_id": 4133,
+        "ear_tag": "0133",
+        "breed_name": "长大二元",
+        "parity": 1,
+        "status": "EMPTY",
+        "status_text": "空怀",
+        "pen_id": 2006,
+        "pen_name": "母猪舍",
+        "version": 3,
+        "gestation_days": 114,
+        "last_wean_date": "2026-10-10"
+      },
+      {
+        "animal_id": 4139,
+        "ear_tag": "0139",
+        "breed_name": "长大二元",
+        "parity": 2,
+        "status": "EMPTY",
+        "status_text": "空怀",
+        "pen_id": 2006,
+        "pen_name": "母猪舍",
+        "version": 9,
+        "gestation_days": 114,
+        "last_wean_date": "2026-10-05"
+      },
+      {
+        "animal_id": 4145,
+        "ear_tag": "0145",
+        "breed_name": "长大二元",
+        "parity": 3,
+        "status": "EMPTY",
+        "status_text": "空怀",
+        "pen_id": 2006,
+        "pen_name": "母猪舍",
+        "version": 8,
+        "gestation_days": 114,
+        "last_wean_date": "2026-09-30"
+      },
+      {
+        "animal_id": 4182,
+        "ear_tag": "0182",
+        "breed_name": "长大二元",
+        "parity": 0,
+        "status": "EMPTY",
+        "status_text": "空怀",
+        "pen_id": 2006,
+        "pen_name": "母猪舍",
+        "version": 3,
+        "gestation_days": 114
+      },
+      {
+        "animal_id": 4155,
+        "ear_tag": "0155",
+        "breed_name": "长大二元",
+        "parity": 3,
+        "status": "MATED",
+        "status_text": "已配种",
+        "pen_id": 2006,
+        "pen_name": "母猪舍",
+        "version": 4,
+        "gestation_days": 114,
+        "first_mating_date": "2026-09-24"
+      },
+      {
+        "animal_id": 4149,
+        "ear_tag": "0149",
+        "breed_name": "长大二元",
+        "parity": 2,
+        "status": "MATED",
+        "status_text": "已配种",
+        "pen_id": 2006,
+        "pen_name": "母猪舍",
+        "version": 5,
+        "gestation_days": 114,
+        "first_mating_date": "2026-09-28"
+      },
+      {
+        "animal_id": 4166,
+        "ear_tag": "0166",
+        "breed_name": "长大二元",
+        "parity": 1,
+        "status": "MATED",
+        "status_text": "已配种",
+        "pen_id": 2006,
+        "pen_name": "母猪舍",
+        "version": 8,
+        "gestation_days": 114,
+        "first_mating_date": "2026-10-08"
+      },
+      {
+        "animal_id": 4172,
+        "ear_tag": "0172",
+        "breed_name": "长大二元",
+        "parity": 2,
+        "status": "MATED",
+        "status_text": "已配种",
+        "pen_id": 2006,
+        "pen_name": "母猪舍",
+        "version": 7,
+        "gestation_days": 114,
+        "first_mating_date": "2026-10-14"
+      }
+    ],
+    "total": 9,
+    "page": 1,
+    "size": 50,
+    "has_more": false
+  },
+  "trace_id": "mock-breed-options_mating"
+}

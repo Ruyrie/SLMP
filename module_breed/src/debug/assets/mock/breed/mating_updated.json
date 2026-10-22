@@ -1,0 +1,29 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "record_type": "MATING",
+    "record_type_text": "配种",
+    "record_id": 71123,
+    "record_date": "2026-09-24",
+    "mating_method": "ARTIFICIAL",
+    "mating_method_text": "人工授精",
+    "boar_info": null,
+    "registrant": {
+      "user_id": 10001,
+      "name": "王建国",
+      "avatar_url": null,
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "created_at": "2026-09-24 10:05:00",
+    "change_state": {
+      "can_edit": true,
+      "pending_request_id": null
+    },
+    "can_request_change": false,
+    "has_change_log": false,
+    "version": 1
+  },
+  "trace_id": "mock-breed-mating_updated"
+}

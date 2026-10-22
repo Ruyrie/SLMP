@@ -1,0 +1,27 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "farm_kind": "POULTRY",
+    "farm_kind_text": "禽类",
+    "animal_label": "种禽",
+    "count_unit": "BIRD",
+    "count_unit_text": "只",
+    "counts": {
+      "all": 0,
+      "empty": 0,
+      "mated": 0,
+      "pregnant": 0,
+      "lactating": 0,
+      "exited": 0
+    },
+    "farrow_due_count": 0,
+    "hatch_due_count": 2,
+    "due_soon": [],
+    "due_soon_total": 0,
+    "pen_options": [],
+    "has_incubation": true,
+    "switch_farms": []
+  },
+  "trace_id": "mock-breed-overview_1002"
+}

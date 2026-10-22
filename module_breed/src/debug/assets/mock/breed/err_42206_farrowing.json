@@ -1,0 +1,15 @@
+{
+  "code": 42206,
+  "message": "入栏后超过栏舍容量。产房容量 40 头，现有 0 头，入栏后共 45 头，超出 5 头。",
+  "data": {
+    "need_confirm": true,
+    "pen_id": 2007,
+    "pen_name": "产房",
+    "capacity": 40,
+    "current_count": 0,
+    "after_count": 45,
+    "over_count": 5,
+    "unit": "头"
+  },
+  "trace_id": "mock-breed-err_42206_farrowing"
+}

@@ -1,0 +1,15 @@
+{
+  "code": 42206,
+  "message": "入栏后超过栏舍容量。2 号鸡舍容量 10,000 只，现有 9,300 只，入栏后共 17,780 只，超出 7,780 只。",
+  "data": {
+    "need_confirm": true,
+    "pen_id": 2202,
+    "pen_name": "2 号鸡舍",
+    "capacity": 10000,
+    "current_count": 9300,
+    "after_count": 17780,
+    "over_count": 7780,
+    "unit": "只"
+  },
+  "trace_id": "mock-breed-err_42206_hatch"
+}

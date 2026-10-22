@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "record_type": "PREG_CHECK",
+    "record_id": {{seq}},
+    "animal_id": 4166,
+    "ear_tag": "0166",
+    "animal_status": "PREGNANT",
+    "animal_status_text": "妊娠",
+    "cycle_id": 5166,
+    "is_first": null,
+    "expected_due_date": "2027-01-30"
+  },
+  "trace_id": "mock-breed-check_0166_positive"
+}

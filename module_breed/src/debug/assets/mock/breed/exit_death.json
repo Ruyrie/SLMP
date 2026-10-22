@@ -1,0 +1,38 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "animal_id": 4161,
+    "breed_id": 1201,
+    "pen_id": 2006,
+    "ear_tag": "0161",
+    "breed_name": "长大二元",
+    "pen_name": "母猪舍",
+    "status": "DEAD",
+    "status_text": "已死亡",
+    "parity": 2,
+    "version": 3,
+    "next_action": null,
+    "next_action_text": null,
+    "animal_label": "母猪",
+    "filing_date": "2025-01-10",
+    "source": "PURCHASED",
+    "source_text": "外购",
+    "initial_parity": 0,
+    "birth_date": "2024-06-08",
+    "stats": {
+      "farrowing_count": 2,
+      "last_wean_date": "2026-10-12",
+      "last_weaned_count": 10,
+      "avg_live_born": 10.5
+    },
+    "current_cycle": null,
+    "can_edit": false,
+    "can_exit": false,
+    "exit_type": "DEATH",
+    "exit_type_text": "死亡",
+    "exit_date": "2026-10-19",
+    "exit_reason": "繁殖性能下降"
+  },
+  "trace_id": "mock-breed-exit_death"
+}

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 信息卡内的键值行（UI 2.2“信息卡”）：左侧标签 14 sp on-surface-variant，右侧数值 14 sp on-surface 右对齐，行高 32 dp -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="label"
+            type="CharSequence" />
+
+        <variable
+            name="value"
+            type="CharSequence" />
+
+        <!-- 数值用 on-surface-variant（“提交后由系统生成”） -->
+        <variable
+            name="muted"
+            type="boolean" />
+
+        <!-- 可点（入栏栏舍改选），右侧显示 chevron -->
+        <variable
+            name="chevron"
+            type="boolean" />
+    </data>
+
+    <LinearLayout
+        android:id="@+id/breed_kv_root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="32dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{label}"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_4"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:text="@{value}"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+            android:textColor="@{muted ? @color/zm_on_surface_variant : @color/zm_on_surface}" />
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="@dimen/base_space_1"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="?attr/colorOnSurfaceVariant"
+            app:visibleIf="@{chevron}" />
+    </LinearLayout>
+</layout>

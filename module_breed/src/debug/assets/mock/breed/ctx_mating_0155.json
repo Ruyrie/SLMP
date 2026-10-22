@@ -1,0 +1,28 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "type": "MATING",
+    "animal": {
+      "animal_id": 4155,
+      "ear_tag": "0155",
+      "breed_name": "长大二元",
+      "parity": 3,
+      "status": "MATED",
+      "status_text": "已配种",
+      "pen_id": 2006,
+      "pen_name": "母猪舍",
+      "version": 4,
+      "gestation_days": 114,
+      "first_mating_date": "2026-09-24"
+    },
+    "breed_name": "长大二元",
+    "gestation_days": 114,
+    "min_mating_date": "2026-09-24",
+    "cycle_id": 5155,
+    "first_mating_date": "2026-09-24",
+    "days_since_mating": 25,
+    "expected_due_date": "2027-01-16"
+  },
+  "trace_id": "mock-breed-ctx_mating_0155"
+}

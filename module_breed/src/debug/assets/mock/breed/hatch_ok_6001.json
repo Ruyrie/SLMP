@@ -1,0 +1,14 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "record_type": "INCUBATION",
+    "record_id": 6001,
+    "incubation_id": 6004,
+    "expected_hatch_date": "2026-10-19",
+    "batch_id": 3272,
+    "batch_no": "ZM2610-072",
+    "todo_completed": true
+  },
+  "trace_id": "mock-breed-hatch_ok_6001"
+}

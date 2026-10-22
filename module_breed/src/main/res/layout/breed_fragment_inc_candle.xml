@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- B07 第 2 步“照蛋登记”：照蛋日期、受精蛋数（不能多于入孵蛋数），受精率在进度卡中实时显示 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="com.zhimu.slmp.breed.util.BreedTextFormatter" />
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.breed.ui.incubation.IncubationViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            style="@style/breed_section_title"
+            android:text="@string/breed_section_candle" />
+
+        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+            android:id="@+id/breed_candle_date_layout"
+            style="@style/Widget.Zmt.TextInputLayout.Picker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/breed_field_candle_date"
+            app:breedError="@{vm.fieldErrors[`candle_date`]}">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/breed_candle_date_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dateText="@{vm.candleDate}"
+                app:dateWithWeek="@{true}" />
+        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+            android:id="@+id/breed_fertile_layout"
+            style="@style/Widget.Zmt.TextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:hint="@string/breed_field_fertile"
+            app:breedError="@{vm.fieldErrors[`fertile_count`]}"
+            app:helperText="@{vm.detail == null ? null : `不能多于入孵蛋数 ` + BreedTextFormatter.qty(vm.detail.setCount, BreedTextFormatter.UNIT_EGG)}"
+            app:helperTextEnabled="true"
+            app:suffixText="@string/breed_unit_egg">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/breed_fertile_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:maxLength="6"
+                android:text="@={vm.fertileCount}"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+    </LinearLayout>
+</layout>

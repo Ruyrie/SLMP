@@ -1,0 +1,40 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "pen_id": 2101,
+      "pen_code": "RJ-01",
+      "pen_name": "1 号鸡舍",
+      "pen_type": "BROILER",
+      "stock_count": 2700,
+      "capacity": 10000,
+      "disabled": false,
+      "hint": null,
+      "unit_text": "只"
+    },
+    {
+      "pen_id": 2202,
+      "pen_code": "RJ-02",
+      "pen_name": "2 号鸡舍",
+      "pen_type": "BROILER",
+      "stock_count": 9300,
+      "capacity": 10000,
+      "disabled": false,
+      "hint": null,
+      "unit_text": "只"
+    },
+    {
+      "pen_id": 2203,
+      "pen_code": "RJ-03",
+      "pen_name": "3 号鸡舍",
+      "pen_type": "BROILER",
+      "stock_count": 0,
+      "capacity": 10000,
+      "disabled": false,
+      "hint": null,
+      "unit_text": "只"
+    }
+  ],
+  "trace_id": "mock-breed-pens_chicken"
+}

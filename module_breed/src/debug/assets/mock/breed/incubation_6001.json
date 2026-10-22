@@ -1,0 +1,57 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "incubation_id": 6001,
+    "breeding_batch_id": 3211,
+    "farm_name": "西岭鸡场",
+    "flock_text": "1 号种鸡舍 · ZM2603-015",
+    "breed_name": "白羽肉鸡",
+    "incubation_days": 21,
+    "set_date": "2026-09-28",
+    "expected_hatch_date": "2026-10-19",
+    "set_count": 9600,
+    "days_to_hatch": 0,
+    "status": "CANDLED",
+    "status_text": "已照蛋",
+    "current_step": 3,
+    "version": 2,
+    "reminder_text": "已提醒 10月18日、今天",
+    "candle_date": "2026-10-05",
+    "fertile_count": 9120,
+    "fertility_rate": 0.95,
+    "timeline": [
+      {
+        "step": "CANDLE",
+        "step_text": "照蛋",
+        "registered_at": "2026-10-05 16:40:00",
+        "registrant": {
+          "user_id": 10011,
+          "name": "孙立军",
+          "avatar_url": null,
+          "role": "OWNER",
+          "role_text": "所有者"
+        }
+      },
+      {
+        "step": "SET",
+        "step_text": "入孵",
+        "registered_at": "2026-09-28 09:10:00",
+        "registrant": {
+          "user_id": 10001,
+          "name": "王建国",
+          "avatar_url": null,
+          "role": "MANAGER",
+          "role_text": "场长"
+        }
+      }
+    ],
+    "can_edit": true,
+    "can_request_change": false,
+    "change_state": {
+      "can_edit": true,
+      "pending_request_id": null
+    }
+  },
+  "trace_id": "mock-breed-incubation_6001"
+}

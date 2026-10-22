@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- “繁育登记”面板的选项行：56 dp 高，24 dp 图标 on-surface-variant，body-l 文字 -->
+    <style name="breed_sheet_row">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:drawablePadding">@dimen/base_space_4</item>
+        <item name="android:drawableTint">?attr/colorOnSurfaceVariant</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">@dimen/base_sheet_padding_horizontal</item>
+        <item name="android:paddingEnd">@dimen/base_sheet_padding_horizontal</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyLarge</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- 分组标题（出雏登记、档案信息等）：title-s 14 sp primary -->
+    <style name="breed_section_title">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">@dimen/base_space_1</item>
+        <item name="android:layout_marginTop">@dimen/base_space_5</item>
+        <item name="android:layout_marginBottom">@dimen/base_space_3</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.TitleSmall</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
+    </style>
+</resources>

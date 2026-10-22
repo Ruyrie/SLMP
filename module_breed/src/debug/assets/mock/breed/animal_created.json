@@ -1,0 +1,33 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "animal_id": 4185,
+    "breed_id": 1201,
+    "pen_id": 2006,
+    "ear_tag": "0185",
+    "breed_name": "长大二元",
+    "pen_name": "母猪舍",
+    "status": "EMPTY",
+    "status_text": "空怀",
+    "parity": 0,
+    "version": 1,
+    "next_action": "MATING",
+    "next_action_text": "登记配种",
+    "animal_label": "母猪",
+    "filing_date": "2026-10-19",
+    "source": "PURCHASED",
+    "source_text": "外购",
+    "initial_parity": 0,
+    "birth_date": "2024-03-21",
+    "stats": {
+      "farrowing_count": 0,
+      "last_wean_date": null,
+      "last_weaned_count": null
+    },
+    "current_cycle": null,
+    "can_edit": true,
+    "can_exit": true
+  },
+  "trace_id": "mock-breed-animal_created"
+}

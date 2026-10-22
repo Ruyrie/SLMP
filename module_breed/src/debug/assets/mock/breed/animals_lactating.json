@@ -1,0 +1,89 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "animal_id": 4118,
+        "breed_id": 1201,
+        "pen_id": 2007,
+        "ear_tag": "0118",
+        "breed_name": "长大二元",
+        "pen_name": "产房",
+        "status": "LACTATING",
+        "status_text": "哺乳",
+        "parity": 4,
+        "version": 9,
+        "nursing_days": 11,
+        "last_farrow_date": "2026-10-08",
+        "live_born": 11,
+        "next_action": "WEANING",
+        "next_action_text": "登记断奶"
+      },
+      {
+        "animal_id": 4109,
+        "breed_id": 1201,
+        "pen_id": 2007,
+        "ear_tag": "0109",
+        "breed_name": "长大二元",
+        "pen_name": "产房",
+        "status": "LACTATING",
+        "status_text": "哺乳",
+        "parity": 3,
+        "version": 7,
+        "nursing_days": 28,
+        "last_farrow_date": "2026-09-21",
+        "live_born": 12,
+        "next_action": "WEANING",
+        "next_action_text": "登记断奶"
+      },
+      {
+        "animal_id": 4124,
+        "breed_id": 1201,
+        "pen_id": 2007,
+        "ear_tag": "0124",
+        "breed_name": "长大二元",
+        "pen_name": "产房",
+        "status": "LACTATING",
+        "status_text": "哺乳",
+        "parity": 2,
+        "version": 8,
+        "nursing_days": 17,
+        "last_farrow_date": "2026-10-02",
+        "live_born": 10,
+        "next_action": "WEANING",
+        "next_action_text": "登记断奶"
+      },
+      {
+        "animal_id": 4127,
+        "breed_id": 1201,
+        "pen_id": 2007,
+        "ear_tag": "0127",
+        "breed_name": "长大二元",
+        "pen_name": "产房",
+        "status": "LACTATING",
+        "status_text": "哺乳",
+        "parity": 3,
+        "version": 4,
+        "nursing_days": 21,
+        "last_farrow_date": "2026-09-28",
+        "live_born": 12,
+        "next_action": "WEANING",
+        "next_action_text": "登记断奶"
+      }
+    ],
+    "total": 4,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "ALL": 24,
+      "EMPTY": 5,
+      "MATED": 4,
+      "PREGNANT": 11,
+      "LACTATING": 4,
+      "EXITED": 2
+    }
+  },
+  "trace_id": "mock-breed-animals_lactating"
+}

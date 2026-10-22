@@ -1,0 +1,51 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 99201,
+      "operator": {
+        "user_id": 10001,
+        "name": "王建国",
+        "avatar_url": null,
+        "role": "OWNER",
+        "role_text": "所有者"
+      },
+      "op_action": "UPDATE",
+      "op_action_text": "修改",
+      "changes": [
+        {
+          "field_name": "所在栏舍",
+          "before": "产房",
+          "after": "母猪舍"
+        }
+      ],
+      "reason": null,
+      "change_request_no": null,
+      "created_at": "2026-10-12 16:20:00"
+    },
+    {
+      "id": 99188,
+      "operator": {
+        "user_id": 10002,
+        "name": "刘芳",
+        "avatar_url": null,
+        "role": "MANAGER",
+        "role_text": "场长"
+      },
+      "op_action": "UPDATE",
+      "op_action_text": "修改",
+      "changes": [
+        {
+          "field_name": "出生日期",
+          "before": "2024年6月18日",
+          "after": "2024年6月8日"
+        }
+      ],
+      "reason": null,
+      "change_request_no": null,
+      "created_at": "2025-01-12 09:30:00"
+    }
+  ],
+  "trace_id": "mock-breed-logs_animal"
+}

@@ -1,0 +1,6 @@
+{
+  "code": 40903,
+  "message": "母猪的状态已变化，请刷新后再登记",
+  "data": null,
+  "trace_id": "mock-breed-err_40903_state"
+}

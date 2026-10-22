@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- B07 出雏登记完成后：只读结果卡（出雏日期、出雏数、健雏数、弱雏数、孵化率、新批次号，批次号可点进入 L06） -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="com.zhimu.slmp.breed.util.BreedTextFormatter" />
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.breed.ui.incubation.IncubationViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            style="@style/breed_section_title"
+            android:text="@string/breed_section_result" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Zmt.Card.Summary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include
+                    layout="@layout/breed_include_kv"
+                    app:label="@{@string/breed_field_hatch_date}"
+                    app:value="@{BreedTextFormatter.fullDate(vm.detail.hatchDate)}" />
+
+                <include
+                    layout="@layout/breed_include_kv"
+                    app:label="@{@string/breed_field_hatched}"
+                    app:value="@{BreedTextFormatter.qty(vm.detail.hatchedCount, BreedTextFormatter.UNIT_BIRD)}" />
+
+                <include
+                    layout="@layout/breed_include_kv"
+                    app:label="@{@string/breed_field_healthy}"
+                    app:value="@{BreedTextFormatter.qty(vm.detail.healthyCount, BreedTextFormatter.UNIT_BIRD)}" />
+
+                <include
+                    layout="@layout/breed_include_kv"
+                    app:label="@{@string/breed_field_weak}"
+                    app:value="@{BreedTextFormatter.qty(vm.detail.weakCount, BreedTextFormatter.UNIT_BIRD)}" />
+
+                <include
+                    layout="@layout/breed_include_kv"
+                    app:label="@{@string/breed_kv_hatch_rate}"
+                    app:value="@{BreedTextFormatter.percent(vm.detail.hatchRate)}" />
+
+                <include
+                    android:id="@+id/breed_result_batch"
+                    layout="@layout/breed_include_kv"
+                    app:chevron="@{vm.detail.batchId != null}"
+                    app:label="@{@string/breed_kv_new_batch}"
+                    app:value="@{vm.detail.batchNo == null ? @string/breed_kv_not_transferred : vm.detail.batchNo + ` · ` + vm.detail.targetPenName}" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</layout>

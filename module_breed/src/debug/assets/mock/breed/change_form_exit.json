@@ -1,0 +1,52 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "biz_type": "BREEDING_EXIT",
+    "biz_id": 4102,
+    "biz_type_text": "死亡 / 淘汰",
+    "record_locator": "母猪舍 · 0102 · 9月15日 淘汰",
+    "record_title": "淘汰 · 0102",
+    "record_subtitle": "东山猪场 · 9月15日 · 王建国登记",
+    "record_version": "12",
+    "record_card": [
+      {
+        "label": "类型",
+        "value": "淘汰"
+      },
+      {
+        "label": "原因",
+        "value": "连续两胎产仔少，繁殖性能下降"
+      }
+    ],
+    "fields": [
+      {
+        "field_code": "exit_date",
+        "field_name": "日期",
+        "value": "2026-09-15",
+        "value_unit": null,
+        "input_type": "DATE",
+        "options": [],
+        "min": null,
+        "max": null
+      },
+      {
+        "field_code": "reason",
+        "field_name": "原因",
+        "value": "连续两胎产仔少，繁殖性能下降",
+        "value_unit": null,
+        "input_type": "TEXT",
+        "options": [],
+        "min": null,
+        "max": 50
+      }
+    ],
+    "linked_rules": [],
+    "pending_request_id": null,
+    "void_allowed": true,
+    "review_tip": "死亡淘汰会影响在档种畜数和配种选择，需要管理员审核。审核期间原记录照常有效。",
+    "recalc_tags": {},
+    "field_hints": {}
+  },
+  "trace_id": "mock-breed-change_form_exit"
+}
