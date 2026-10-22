@@ -1,0 +1,9 @@
+// 基础组件（lib_*）：始终按 library 构建，保留规则随组件发布
+apply plugin: 'com.android.library'
+apply from: rootProject.file('gradle/android-common.gradle')
+
+android {
+    defaultConfig {
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+}

@@ -1,0 +1,15 @@
+apply from: rootProject.file('gradle/lib-component.gradle')
+
+android {
+    namespace 'com.zhimu.slmp.map'
+}
+
+dependencies {
+    api project(':lib_common')
+    api libs.amap
+    annotationProcessor libs.dagger.compiler
+
+    testImplementation libs.junit
+    testImplementation libs.core.testing
+    testImplementation libs.mockito.core
+}

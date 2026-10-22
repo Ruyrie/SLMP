@@ -1,42 +1,62 @@
 plugins {
     alias(libs.plugins.android.application)
 }
+apply from: rootProject.file('gradle/android-common.gradle')
+
+def bizModules = ['module_account', 'module_farm', 'module_today', 'module_herd']
+def props = rootProject.ext.localProps
 
 android {
-    namespace 'com.example.slmp'
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    namespace 'com.zhimu.slmp'
 
     defaultConfig {
-        applicationId "com.example.slmp"
-        minSdk 31
-        targetSdk 36
-        versionCode 1
-        versionName "1.0"
+        applicationId "com.zhimu.slmp"
+        targetSdk = 36
+        versionCode 10000
+        versionName "1.0.0"
+    }
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    signingConfigs {
+        release {
+            // 正式签名只在负责发布的组员电脑上配置（local.properties：release.storeFile 等）
+            if (props.getProperty('release.storeFile')) {
+                storeFile file(props.getProperty('release.storeFile'))
+                storePassword props.getProperty('release.storePassword')
+                keyAlias props.getProperty('release.keyAlias')
+                keyPassword props.getProperty('release.keyPassword')
+            }
+        }
     }
 
     buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        debug {
+            applicationIdSuffix '.debug'
         }
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (props.getProperty('release.storeFile')) {
+                signingConfig signingConfigs.release
+            }
+        }
     }
 }
 
 dependencies {
-    implementation libs.appcompat
-    implementation libs.material
-    implementation libs.activity
-    implementation libs.constraintlayout
+    implementation project(':lib_common')
+    implementation project(':lib_media')
+    implementation project(':lib_map')
+    // 单独运行中的业务组件不参与壳工程构建
+    bizModules.each { m ->
+        if (!rootProject.ext.isRunAlone(m)) {
+            implementation project(":${m}")
+        }
+    }
+    implementation libs.core.splashscreen
+    annotationProcessor libs.dagger.compiler
+    debugImplementation libs.leakcanary
+
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core

@@ -1,0 +1,17 @@
+apply from: rootProject.file('gradle/biz-component.gradle')
+
+android {
+    namespace 'com.zhimu.slmp.today'
+}
+
+dependencies {
+    implementation project(':lib_common')
+    implementation libs.jpush
+    annotationProcessor libs.dagger.compiler
+
+    testImplementation libs.junit
+    testImplementation libs.core.testing
+    testImplementation libs.mockito.core
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.espresso.core
+}

@@ -1,0 +1,42 @@
+apply from: rootProject.file('gradle/lib-component.gradle')
+
+android {
+    namespace 'com.zhimu.slmp.base'
+}
+
+dependencies {
+    // 界面基础
+    api libs.appcompat
+    api libs.material
+    api libs.constraintlayout
+    api libs.activity
+    api libs.fragment
+    api libs.recyclerview
+    api libs.swiperefreshlayout
+    api libs.viewpager2
+
+    // Jetpack
+    api libs.lifecycle.viewmodel
+    api libs.lifecycle.livedata
+    api libs.lifecycle.viewmodel.savedstate
+    api libs.lifecycle.process
+    api libs.lifecycle.common.java8
+    api libs.paging.runtime
+    api libs.paging.rxjava3
+    api libs.room.runtime
+    api libs.room.rxjava3
+    annotationProcessor libs.room.compiler
+
+    // 异步、注入、序列化、图片
+    api libs.rxjava
+    api libs.rxandroid
+    api libs.dagger
+    annotationProcessor libs.dagger.compiler
+    api libs.gson
+    api libs.glide
+    annotationProcessor libs.glide.compiler
+
+    testImplementation libs.junit
+    testImplementation libs.core.testing
+    testImplementation libs.mockito.core
+}

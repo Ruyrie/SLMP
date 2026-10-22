@@ -1,0 +1,18 @@
+apply from: rootProject.file('gradle/lib-component.gradle')
+
+android {
+    namespace 'com.zhimu.slmp.network'
+}
+
+dependencies {
+    api project(':lib_base')
+    api libs.okhttp
+    api libs.okhttp.logging
+    api libs.retrofit
+    api libs.retrofit.gson
+    api libs.retrofit.rxjava3
+    annotationProcessor libs.dagger.compiler
+
+    testImplementation libs.junit
+    testImplementation libs.mockito.core
+}

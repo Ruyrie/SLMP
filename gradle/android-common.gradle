@@ -1,0 +1,46 @@
+// 全部组件共用的 Android 配置：SDK 版本、Java 17、构建功能、BuildConfig 字段与清单占位符。
+// 由 gradle/lib-component.gradle、gradle/biz-component.gradle 与 app/build.gradle 在应用插件之后引入。
+def props = rootProject.ext.localProps
+
+android {
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
+
+    defaultConfig {
+        minSdk = 31
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // 服务端地址与 Mock 开关（local.properties：zmt.baseUrl、zmt.useMock）
+        buildConfigField "String", "BASE_URL", "\"${props.getProperty('zmt.baseUrl', 'https://api.zhimutong.example.com/')}\""
+        buildConfigField "boolean", "USE_MOCK", "${props.getProperty('zmt.useMock', 'true')}"
+        buildConfigField "String", "APP_VERSION_NAME", "\"${rootProject.findProperty('zmt.versionName') ?: '1.0.0'}\""
+
+        // 第三方 Key（local.properties：amap.key、jpush.appKey），为空时对应 SDK 不初始化
+        buildConfigField "String", "AMAP_KEY", "\"${props.getProperty('amap.key', '')}\""
+        buildConfigField "String", "JPUSH_APPKEY", "\"${props.getProperty('jpush.appKey', '')}\""
+        manifestPlaceholders.putAll([
+                AMAP_KEY     : props.getProperty('amap.key', ''),
+                JPUSH_APPKEY : props.getProperty('jpush.appKey', ''),
+                JPUSH_CHANNEL: 'developer-default',
+                JPUSH_PKGNAME: 'com.zhimu.slmp'
+        ])
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        dataBinding = true
+        viewBinding = true
+        buildConfig = true
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+}

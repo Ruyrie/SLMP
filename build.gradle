@@ -1,4 +1,18 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+}
+
+// local.properties 中的服务地址、Mock 开关与第三方 Key，由 gradle/android-common.gradle 写入 BuildConfig 与清单占位符
+def localProps = new Properties()
+def localFile = rootProject.file('local.properties')
+if (localFile.exists()) {
+    localFile.withInputStream { localProps.load(it) }
+}
+ext.localProps = localProps
+
+// 业务组件是否单独运行：gradle.properties 中 runAlone.<组件名>=true
+ext.isRunAlone = { String moduleName ->
+    return Boolean.parseBoolean(String.valueOf(rootProject.findProperty("runAlone.${moduleName}") ?: 'false'))
 }

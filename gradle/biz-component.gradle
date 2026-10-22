@@ -1,0 +1,32 @@
+// 业务组件（module_*）：gradle.properties 中 runAlone.<组件名>=true 时按 application 单独运行，
+// 此时合并 src/alone 下自带启动页的清单与代码（只用于 debug），壳工程 app 不再依赖该组件。
+def runAlone = rootProject.ext.isRunAlone(project.name)
+if (runAlone) {
+    apply plugin: 'com.android.application'
+} else {
+    apply plugin: 'com.android.library'
+}
+apply from: rootProject.file('gradle/android-common.gradle')
+
+android {
+    defaultConfig {
+        if (runAlone) {
+            applicationId "com.zhimu.slmp.${project.name.replace('module_', '')}.alone"
+            targetSdk = 36
+            versionCode 10000
+            versionName "1.0.0"
+        } else {
+            consumerProguardFiles 'consumer-rules.pro'
+        }
+    }
+
+    sourceSets {
+        debug {
+            if (runAlone) {
+                manifest.srcFile 'src/alone/AndroidManifest.xml'
+                java.srcDirs += 'src/alone/java'
+                res.srcDirs += 'src/alone/res'
+            }
+        }
+    }
+}
