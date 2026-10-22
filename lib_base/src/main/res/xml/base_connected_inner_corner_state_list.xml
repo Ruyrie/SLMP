@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 连接按钮组内侧角：默认 8 dp，选中项四角都变为全圆（02 号 5.2、7.5 节） -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:state_checked="true" app:cornerSize="50%" />
+    <item app:cornerSize="@dimen/base_radius_sm" />
+</selector>

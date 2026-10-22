@@ -1,0 +1,90 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/login/password",
+    "when": {
+      "body": [
+        "13800006620",
+        "Zmt12345"
+      ]
+    },
+    "file": "login_owner.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/login/password",
+    "when": {
+      "body": [
+        "13700005678",
+        "Zmt12345"
+      ]
+    },
+    "file": "login_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/session",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "session_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/session",
+    "file": "session_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/context",
+    "when": {
+      "path": {
+        "farmId": "1001"
+      },
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "farm_context_1001_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/farms/{farmId}/context",
+    "when": {
+      "path": {
+        "farmId": "1001"
+      }
+    },
+    "file": "farm_context_1001_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/base/categories",
+    "file": "categories.json",
+    "delay": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/base/dicts/{dict_type}",
+    "when": {
+      "path": {
+        "dict_type": "PEN_TYPE"
+      }
+    },
+    "file": "dict_pen_type.json",
+    "delay": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/base/dicts/{dict_type}",
+    "when": {
+      "path": {
+        "dict_type": "DEATH_REASON"
+      }
+    },
+    "file": "dict_death_reason.json",
+    "delay": 200
+  }
+]

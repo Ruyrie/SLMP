@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    状态占位（02 号 7.19 节，U03 版式）：96 dp 圆形图标底 + 48 dp 图标 → 24 dp → 标题 title-l → 8 dp → 说明 body-m（左右 32 dp，最多 3 行）
+    → 24 dp → 40 dp 按钮；整组在内容区垂直居中、略偏上。加载失败另附 trace_id 小字。
+    按钮按状态取用：空状态 / 无权查看为色调按钮，加载失败为填充按钮，筛选后为空为文字按钮。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/base_state_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusable="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/base_space_12">
+
+        <FrameLayout
+            android:layout_width="@dimen/base_state_icon_circle"
+            android:layout_height="@dimen/base_state_icon_circle"
+            android:background="@drawable/base_bg_state_icon_circle">
+
+            <ImageView
+                android:id="@+id/base_state_icon"
+                android:layout_width="@dimen/base_icon_size_state"
+                android:layout_height="@dimen/base_icon_size_state"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                app:tint="?attr/colorOnSurfaceVariant" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/base_state_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_state_message_margin"
+            android:layout_marginTop="@dimen/base_space_6"
+            android:layout_marginEnd="@dimen/base_state_message_margin"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Zmt.TitleLarge"
+            android:textColor="?attr/colorOnSurface" />
+
+        <TextView
+            android:id="@+id/base_state_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_state_message_margin"
+            android:layout_marginTop="@dimen/base_space_2"
+            android:layout_marginEnd="@dimen/base_state_message_margin"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="3"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <!-- 按钮区：上 24 dp（按钮自带 4 dp inset，外边距 20 dp） -->
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_5">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/base_state_button_filled"
+                style="@style/Widget.Zmt.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/base_state_button_tonal"
+                style="@style/Widget.Zmt.Button.Tonal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/base_state_button_text"
+                style="@style/Widget.Zmt.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/base_state_trace"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_state_message_margin"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:layout_marginEnd="@dimen/base_state_message_margin"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall.Number"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textIsSelectable="true"
+            android:visibility="gone" />
+    </LinearLayout>
+</FrameLayout>

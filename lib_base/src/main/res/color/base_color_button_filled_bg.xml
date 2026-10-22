@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 填充按钮底色：primary；禁用为 surface-container-highest（02 号 7.5 节） -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="?attr/colorSurfaceContainerHighest" android:state_enabled="false" />
+    <item android:color="?attr/colorPrimary" />
+</selector>

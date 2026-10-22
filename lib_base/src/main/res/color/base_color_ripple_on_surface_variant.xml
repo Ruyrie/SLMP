@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 按下状态层：on-surface-variant 10%（02 号 8.2 节） -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:alpha="0.10" android:color="?attr/colorOnSurfaceVariant" />
+</selector>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 圆角阶梯（02 号《UI设计规范》5.1 节），在 Theme.Zmt 中设置到 shapeAppearanceCornerXxx。 -->
+<resources>
+
+    <style name="ShapeAppearance.Zmt.Corner.None" parent="ShapeAppearance.Material3.Corner.None">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">0dp</item>
+    </style>
+
+    <!-- radius-xs 4 dp：输入框、分组列表中间项、Snackbar、普通提示气泡 -->
+    <style name="ShapeAppearance.Zmt.Corner.ExtraSmall" parent="ShapeAppearance.Material3.Corner.ExtraSmall">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/base_radius_xs</item>
+    </style>
+
+    <!-- radius-sm 8 dp：筛选 Chip、状态标签、养殖场标签、连接按钮组内侧角 -->
+    <style name="ShapeAppearance.Zmt.Corner.Small" parent="ShapeAppearance.Material3.Corner.Small">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/base_radius_sm</item>
+    </style>
+
+    <!-- radius-md 12 dp：列表前置图标块、菜单、缩略图、按钮按下时的形变终点 -->
+    <style name="ShapeAppearance.Zmt.Corner.Medium" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/base_radius_md</item>
+    </style>
+
+    <!-- radius-lg 16 dp：卡片、FAB、Notice 横幅 -->
+    <style name="ShapeAppearance.Zmt.Corner.Large" parent="ShapeAppearance.Material3.Corner.Large">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/base_radius_lg</item>
+    </style>
+
+    <!-- radius-lg-plus 20 dp：分组列表首末项外侧角、指标卡、详情摘要卡、快捷登记图标块 -->
+    <style name="ShapeAppearance.Zmt.Corner.LargePlus" parent="ShapeAppearance.Material3.Corner.LargeIncreased">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/base_radius_lg_plus</item>
+    </style>
+
+    <!-- radius-xl 28 dp：底部面板顶部两角、对话框、AI 结论卡 -->
+    <style name="ShapeAppearance.Zmt.Corner.ExtraLarge" parent="ShapeAppearance.Material3.Corner.ExtraLarge">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/base_radius_xl</item>
+    </style>
+
+    <!-- radius-full：按钮、导航指示器、头像、角标、胶囊 -->
+    <style name="ShapeAppearance.Zmt.Corner.Full" parent="ShapeAppearance.Material3.Corner.Full">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- 底部面板：顶部两角 28 dp，底部直角 -->
+    <style name="ShapeAppearance.Zmt.BottomSheet" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">@dimen/base_radius_xl</item>
+        <item name="cornerSizeTopRight">@dimen/base_radius_xl</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+</resources>

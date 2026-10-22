@@ -1,0 +1,39 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 501,
+      "code": "NURSERY",
+      "name": "保育舍",
+      "remark_required": false,
+      "is_system": false,
+      "sort_no": 1
+    },
+    {
+      "id": 502,
+      "code": "FATTENING",
+      "name": "育肥舍",
+      "remark_required": false,
+      "is_system": false,
+      "sort_no": 2
+    },
+    {
+      "id": 503,
+      "code": "SOW",
+      "name": "母猪舍",
+      "remark_required": false,
+      "is_system": false,
+      "sort_no": 3
+    },
+    {
+      "id": 504,
+      "code": "FARROWING",
+      "name": "产房",
+      "remark_required": false,
+      "is_system": false,
+      "sort_no": 4
+    }
+  ],
+  "trace_id": "mock-u10-pen-type"
+}

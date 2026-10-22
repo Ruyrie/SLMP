@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 尺寸 token（02 号《UI设计规范》2.1–2.4、5.1、6.1、7.x 节）。所有间距只取 4 dp 阶梯值。 -->
+<resources>
+    <!-- 4 dp 间距阶梯（2.3 节） -->
+    <dimen name="base_space_1">4dp</dimen>
+    <dimen name="base_space_2">8dp</dimen>
+    <dimen name="base_space_3">12dp</dimen>
+    <dimen name="base_space_4">16dp</dimen>
+    <dimen name="base_space_5">20dp</dimen>
+    <dimen name="base_space_6">24dp</dimen>
+    <dimen name="base_space_8">32dp</dimen>
+    <dimen name="base_space_12">48dp</dimen>
+
+    <!-- 页面骨架（2.1、2.2 节） -->
+    <dimen name="base_page_margin">16dp</dimen>
+    <dimen name="base_top_bar_height">64dp</dimen>
+    <dimen name="base_nav_bar_height">64dp</dimen>
+    <dimen name="base_bottom_action_bar_height">64dp</dimen>
+    <dimen name="base_touch_target">48dp</dimen>
+    <!-- 页面有 FAB 时列表最后一项下方留白（2.4 节） -->
+    <dimen name="base_fab_list_bottom_space">88dp</dimen>
+    <!-- 分组列表项间的缝隙（2.4 节） -->
+    <dimen name="base_list_gap">2dp</dimen>
+    <!-- 分组标题与下方列表、上一组与下一个分组标题（2.3 节） -->
+    <dimen name="base_section_title_gap">12dp</dimen>
+    <dimen name="base_section_gap">24dp</dimen>
+    <!-- 表单相邻输入框外框间距（2.3 节） -->
+    <dimen name="base_form_field_gap">20dp</dimen>
+
+    <!-- 圆角阶梯（5.1 节） -->
+    <dimen name="base_radius_xs">4dp</dimen>
+    <dimen name="base_radius_sm">8dp</dimen>
+    <dimen name="base_radius_md">12dp</dimen>
+    <dimen name="base_radius_lg">16dp</dimen>
+    <dimen name="base_radius_lg_plus">20dp</dimen>
+    <dimen name="base_radius_xl">28dp</dimen>
+
+    <!-- 描边 -->
+    <dimen name="base_stroke">1dp</dimen>
+    <dimen name="base_stroke_focused">2dp</dimen>
+
+    <!-- 图标（6.1 节） -->
+    <dimen name="base_icon_size">24dp</dimen>
+    <dimen name="base_icon_size_small">20dp</dimen>
+    <dimen name="base_icon_size_xsmall">18dp</dimen>
+    <dimen name="base_icon_size_tag">16dp</dimen>
+    <dimen name="base_icon_size_state">48dp</dimen>
+
+    <!-- 按钮（7.5 节）：可视高度 32 / 40 / 56 dp，点击区域至少 48 dp -->
+    <dimen name="base_button_height_small">32dp</dimen>
+    <dimen name="base_button_height">40dp</dimen>
+    <dimen name="base_button_height_large">56dp</dimen>
+    <dimen name="base_button_padding_horizontal">16dp</dimen>
+    <dimen name="base_button_icon_padding">8dp</dimen>
+    <dimen name="base_button_progress_size">20dp</dimen>
+
+    <!-- 输入框（7.9 节） -->
+    <dimen name="base_text_field_height">56dp</dimen>
+
+    <!-- Chip 与标签（7.6 节） -->
+    <dimen name="base_chip_height">32dp</dimen>
+    <dimen name="base_tag_height">24dp</dimen>
+    <dimen name="base_tag_padding_horizontal">8dp</dimen>
+
+    <!-- 列表项（7.7 节） -->
+    <dimen name="base_list_item_min_height">56dp</dimen>
+    <dimen name="base_list_item_two_line_min_height">72dp</dimen>
+    <dimen name="base_list_leading_size">40dp</dimen>
+    <dimen name="base_unread_dot">8dp</dimen>
+    <!-- 键值列表的键宽：值从 x 128 起（16 + 16 + 96） -->
+    <dimen name="base_kv_key_width">96dp</dimen>
+
+    <!-- 指标卡（7.8 节） -->
+    <dimen name="base_stat_card_compact_height">84dp</dimen>
+
+    <!-- 头像与角标（7.1、7.20 节） -->
+    <dimen name="base_avatar_top_bar">32dp</dimen>
+    <dimen name="base_avatar_list">40dp</dimen>
+    <dimen name="base_badge_size">16dp</dimen>
+
+    <!-- 状态占位（7.19 节） -->
+    <dimen name="base_state_icon_circle">96dp</dimen>
+    <dimen name="base_state_message_margin">32dp</dimen>
+
+    <!-- 底部导航（7.3 节） -->
+    <dimen name="base_nav_indicator_width">56dp</dimen>
+    <dimen name="base_nav_indicator_height">32dp</dimen>
+
+    <!-- 菜单（7.11 节） -->
+    <dimen name="base_menu_min_width">112dp</dimen>
+    <dimen name="base_menu_max_width">280dp</dimen>
+    <dimen name="base_menu_item_height">48dp</dimen>
+
+    <!-- 提示气泡（7.11 节） -->
+    <dimen name="base_tip_rich_max_width">312dp</dimen>
+
+    <!-- 对话框与底部面板（7.11、7.12 节） -->
+    <dimen name="base_dialog_width">312dp</dimen>
+    <dimen name="base_dialog_padding">24dp</dimen>
+    <dimen name="base_sheet_padding_horizontal">24dp</dimen>
+    <dimen name="base_sheet_option_height">64dp</dimen>
+
+    <!-- 阴影层级（5.4 节） -->
+    <dimen name="base_elevation_1">1dp</dimen>
+    <dimen name="base_elevation_2">3dp</dimen>
+    <dimen name="base_elevation_3">6dp</dimen>
+</resources>

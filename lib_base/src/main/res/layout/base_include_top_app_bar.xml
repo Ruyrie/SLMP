@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    二级页通用顶部栏（02 号 2.2、7.1 节）：返回 arrow_back（x 16）+ 标题 title-l 22 sp（x 60）+ 右侧最多 2 个操作图标（菜单）。
+    高 64 dp，surface 底，滚动后 surface-container（不加阴影）；AppBarLayout 延伸到状态栏下并自动加上状态栏高度。
+    用法：<include android:id="@+id/top_bar" layout="@layout/base_include_top_app_bar" app:title="@{@string/xxx}" />
+    （非 DataBinding 布局在代码中 TopAppBarHelper.setupBack(toolbar, title)；菜单图标用 TopAppBarHelper.tintMenu 着色）
+-->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="title"
+            type="CharSequence" />
+    </data>
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/base_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/base_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/base_top_bar_height"
+            android:title="@{title}"
+            app:navigationContentDescription="@string/base_cd_back"
+            app:navigationIcon="@drawable/ic_arrow_back" />
+    </com.google.android.material.appbar.AppBarLayout>
+</layout>

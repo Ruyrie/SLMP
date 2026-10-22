@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- lib_base 通用文案（02 号《UI设计规范》第九章）。各页面的具体文案放在本组件 strings 中。 -->
+<resources>
+    <!-- 通用操作 -->
+    <string name="base_action_back">返回</string>
+    <string name="base_action_cancel">取消</string>
+    <string name="base_action_retry">重新加载</string>
+    <string name="base_action_got_it">知道了</string>
+    <string name="base_action_view_all">查看全部</string>
+    <string name="base_action_keep_editing">继续填写</string>
+    <string name="base_action_discard">放弃</string>
+
+    <!-- 无障碍描述（6.1 节：只放图标的通用操作必须提供 contentDescription） -->
+    <string name="base_cd_back">返回</string>
+    <string name="base_cd_close">关闭</string>
+    <string name="base_cd_more">更多操作</string>
+    <string name="base_cd_info">说明</string>
+    <string name="base_cd_scan">扫码查看档案</string>
+    <string name="base_cd_messages">消息</string>
+    <string name="base_cd_pick_date">选择日期</string>
+    <string name="base_cd_pick_time">选择时间</string>
+    <string name="base_cd_unread">未读</string>
+    <string name="base_cd_loading">正在加载</string>
+
+    <!-- 状态占位（7.19、9.6 节；U03） -->
+    <string name="base_state_empty_title">还没有内容</string>
+    <string name="base_state_error_title">内容加载失败</string>
+    <string name="base_state_error_message_network">网络连接不稳定，没能取到数据。请检查网络后重新加载。</string>
+    <string name="base_state_error_message_server">服务暂时不可用，请稍后重新加载。</string>
+    <string name="base_state_no_permission_title">你没有这项内容的查看权限</string>
+    <string name="base_state_no_permission_message">如需查看，请联系所有者或场长。</string>
+    <!-- 加载失败页附 trace_id，便于用户反馈（03 号文档错误码 5xxxx） -->
+    <string name="base_state_trace_id">错误编号：%1$s</string>
+
+    <!-- 菜单（7.11 节） -->
+    <string name="base_menu_needs_review">需审核</string>
+
+    <!-- 底部面板（7.12 节） -->
+    <string name="base_sheet_disabled_group">不可选择</string>
+
+    <!-- 对话框（7.11 节） -->
+    <string name="base_reason_helper_required">必填</string>
+    <string name="base_discard_title">放弃已填写的内容？</string>
+    <string name="base_discard_message">返回后，这次填写的内容不会保存。</string>
+
+    <!-- 日期与时间选择 -->
+    <string name="base_picker_date_title">选择日期</string>
+    <string name="base_picker_time_title">选择时间</string>
+    <string name="base_picker_ok">确定</string>
+
+    <!-- 指标卡特殊值（7.8 节） -->
+    <string name="base_stat_no_data">无数据</string>
+    <string name="base_stat_not_comparable">无法比较</string>
+
+    <!-- 未读角标超过 99 -->
+    <string name="base_badge_overflow">99+</string>
+</resources>

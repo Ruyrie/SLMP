@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 色调按钮文字与图标：on-secondary-container；禁用为 outline -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="?attr/colorOutline" android:state_enabled="false" />
+    <item android:color="?attr/colorOnSecondaryContainer" />
+</selector>

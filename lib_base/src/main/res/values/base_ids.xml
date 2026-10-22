@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- UI 套件（base.widget / base.dialog）使用的视图 tag 键 -->
+<resources>
+    <item name="base_tag_loading" type="id" />
+    <item name="base_tag_loading_text" type="id" />
+    <item name="base_tag_loading_icon" type="id" />
+    <item name="base_tag_loading_icon_padding" type="id" />
+    <item name="base_tag_loading_min_width" type="id" />
+    <item name="base_tag_loading_clickable" type="id" />
+    <item name="base_tag_menu_anchor_bg" type="id" />
+    <item name="base_tag_group_position" type="id" />
+</resources>

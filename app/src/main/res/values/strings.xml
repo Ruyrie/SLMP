@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">智牧通</string>
+
+    <!-- 底部导航 -->
+    <string name="app_tab_today">今日</string>
+    <string name="app_tab_production">生产</string>
+    <string name="app_tab_my_pens">我的栏舍</string>
+    <string name="app_tab_assistant">助手</string>
+    <string name="app_tab_business">经营</string>
+    <string name="app_tab_mine">我的</string>
+    <string name="app_tab_placeholder">该功能将在后续版本开放</string>
 </resources>

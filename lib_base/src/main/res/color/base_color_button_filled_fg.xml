@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 填充按钮文字与图标：on-primary；禁用为 outline（02 号 7.5 节） -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="?attr/colorOutline" android:state_enabled="false" />
+    <item android:color="?attr/colorOnPrimary" />
+</selector>

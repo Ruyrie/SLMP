@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- KeyValueRowView 内容：左侧键 body-m on-surface-variant（96 dp 宽），右侧值 body-l on-surface（x 128 起），值下可加说明。02 号 2.4 节 -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:parentTag="com.google.android.material.card.MaterialCardView">
+
+    <LinearLayout
+        android:id="@+id/base_kv_root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/base_list_item_min_height"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_space_4"
+        android:paddingTop="@dimen/base_space_3"
+        android:paddingEnd="@dimen/base_space_4"
+        android:paddingBottom="@dimen/base_space_3">
+
+        <TextView
+            android:id="@+id/base_kv_key"
+            android:layout_width="@dimen/base_kv_key_width"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_marginTop="2dp"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <LinearLayout
+            android:id="@+id/base_kv_value_column"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/base_kv_value"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number"
+                android:textColor="?attr/colorOnSurface" />
+
+            <TextView
+                android:id="@+id/base_kv_note"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/base_kv_chevron"
+            android:layout_width="@dimen/base_icon_size"
+            android:layout_height="@dimen/base_icon_size"
+            android:layout_marginStart="@dimen/base_space_2"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_chevron_right"
+            android:visibility="gone"
+            app:tint="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+</merge>

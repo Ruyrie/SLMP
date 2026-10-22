@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 框架核心（隐私政策、软件更新、单独运行启动页）文案 -->
+<resources>
+    <string name="common_core_privacy_title">欢迎使用智牧通</string>
+    <string name="common_core_privacy_message">在你使用智牧通前，请阅读并同意《用户协议》和《隐私政策》。\n\n我们会用手机号为你创建和登录账号；只在你使用拍照、扫码、选择位置、接收提醒时才申请相机、位置和通知权限。点按“同意”后才会初始化地图定位和消息推送服务。</string>
+    <string name="common_core_privacy_user_agreement">《用户协议》</string>
+    <string name="common_core_privacy_policy">《隐私政策》</string>
+    <string name="common_core_privacy_agree">同意</string>
+    <string name="common_core_privacy_disagree">不同意并退出</string>
+
+    <string name="common_core_update_title">发现新版本</string>
+    <string name="common_core_update_message">当前版本过低，请更新到 %1$s 及以上版本后继续使用。</string>
+    <string name="common_core_update_action">去更新</string>
+
+    <string name="common_core_relogin_message">登录已失效，请重新登录</string>
+
+    <string name="common_core_alone_title">组件单独运行</string>
+    <string name="common_core_alone_not_logged_in">当前未登录</string>
+    <string name="common_core_alone_login_owner">以所有者登录（王建国）</string>
+    <string name="common_core_alone_login_staff">以员工登录（李明）</string>
+    <string name="common_core_alone_logout">退出登录</string>
+    <string name="common_core_alone_pages">本组件页面</string>
+    <string name="common_core_alone_no_pages">还没有登记调试页面（在 XxxModuleEntry.debugPages() 中列出）</string>
+    <string name="common_core_alone_logged_in">%1$s · %2$s</string>
+</resources>

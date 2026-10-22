@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 一级页顶部栏 FirstLevelTopBar -->
+    <declare-styleable name="FirstLevelTopBar">
+        <!-- 是否显示扫码按钮，默认 true -->
+        <attr name="topBarShowScan" format="boolean" />
+        <!-- 切换器中是否提供“全部养殖场”（只有 T03、T06、E02、E13 为 true） -->
+        <attr name="topBarAllowAllFarms" format="boolean" />
+    </declare-styleable>
+</resources>

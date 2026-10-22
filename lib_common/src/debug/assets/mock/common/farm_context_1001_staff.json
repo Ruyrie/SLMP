@@ -1,0 +1,37 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "farm_id": 1001,
+    "name": "东山猪场",
+    "status": "NORMAL",
+    "status_text": "正常",
+    "species_text": "猪",
+    "main_category_name": "育肥猪",
+    "main_category_id": 101,
+    "count_unit": "HEAD",
+    "role": "STAFF",
+    "role_text": "员工",
+    "my_pen_ids": [
+      2003
+    ],
+    "permissions": {
+      "can_view_farm_info": false,
+      "can_view_members": false,
+      "can_edit_basic": false,
+      "can_adjust_pens": false,
+      "can_submit_change": false,
+      "can_disable": false,
+      "can_invite": false,
+      "can_change_role": false,
+      "can_enable": false,
+      "can_transfer": false,
+      "can_remove_member": false,
+      "can_quit": true,
+      "can_view_finance": false,
+      "can_submit_change_request": false,
+      "writable": true
+    }
+  },
+  "trace_id": "mock-f02-staff"
+}

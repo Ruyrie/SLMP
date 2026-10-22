@@ -1,4 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <application>
+        <!-- 组件单独运行的调试启动页：src/alone 清单中改为 exported 并加 LAUNCHER -->
+        <activity
+            android:name="com.zhimu.slmp.common.app.AloneLauncherActivity"
+            android:exported="false" />
+
+        <!-- U03 通用状态页（类由 UI 套件编写） -->
+        <activity
+            android:name="com.zhimu.slmp.common.ui.status.StatusActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.U03" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
 </manifest>

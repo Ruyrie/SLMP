@@ -1,0 +1,40 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 601,
+      "code": "SICK",
+      "name": "病死",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 1
+    },
+    {
+      "id": 602,
+      "code": "CULL",
+      "name": "淘汰",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 2
+    },
+    {
+      "id": 603,
+      "code": "ACCIDENT",
+      "name": "意外死亡",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 3
+    },
+    {
+      "id": 604,
+      "code": "OTHER",
+      "name": "其他",
+      "remark_required": true,
+      "is_system": true,
+      "sort_no": 4,
+      "description": "选择“其他”时需填写备注"
+    }
+  ],
+  "trace_id": "mock-u10-death-reason"
+}

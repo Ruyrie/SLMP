@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ===== 主题属性：MDC 没有的色彩角色（值见 colors.xml 的 zm_ 颜色，在 Theme.Zmt 中赋值） ===== -->
+    <attr name="colorWarning" format="color" />
+    <attr name="colorWarningContainer" format="color" />
+    <attr name="colorOnWarningContainer" format="color" />
+    <attr name="colorSuccess" format="color" />
+    <attr name="colorSuccessContainer" format="color" />
+    <attr name="colorOnSuccessContainer" format="color" />
+    <attr name="colorScrim" format="color" />
+    <attr name="colorMediaBackdrop" format="color" />
+    <attr name="colorOnMedia" format="color" />
+
+    <!-- 分组列表项的位置（决定四角圆角，02 号 5.2 节）：ListRowView、KeyValueRowView 共用 -->
+    <attr name="groupPosition" format="enum">
+        <enum name="single" value="0" />
+        <enum name="top" value="1" />
+        <enum name="middle" value="2" />
+        <enum name="bottom" value="3" />
+    </attr>
+
+    <!-- 状态标签语义（02 号 3.3 节）：StatusTagView、ListRowView 共用 -->
+    <attr name="tagType" format="enum">
+        <enum name="neutral" value="0" />
+        <enum name="primary" value="1" />
+        <enum name="warning" value="2" />
+        <enum name="error" value="3" />
+        <enum name="success" value="4" />
+        <enum name="tertiary" value="5" />
+        <enum name="farm" value="6" />
+    </attr>
+
+    <!-- 列表前置图标块语义（02 号 3.3 节） -->
+    <attr name="leadingTone" format="enum">
+        <enum name="secondary" value="0" />
+        <enum name="error" value="1" />
+        <enum name="warning" value="2" />
+        <enum name="tertiary" value="3" />
+        <enum name="neutral" value="4" />
+        <enum name="primary" value="5" />
+    </attr>
+
+    <!-- ===== StateLayout：内容 / 骨架屏 / 空 / 加载失败 / 无权查看 ===== -->
+    <declare-styleable name="StateLayout">
+        <!-- 骨架屏布局；不设时使用 base_skeleton_list -->
+        <attr name="stateSkeletonLayout" format="reference" />
+        <attr name="stateEmptyIcon" format="reference" />
+        <attr name="stateEmptyTitle" format="string" />
+        <attr name="stateEmptyMessage" format="string" />
+        <attr name="stateEmptyActionText" format="string" />
+        <attr name="stateEmptyActionIcon" format="reference" />
+        <!-- 空状态按钮样式：tonal 色调按钮（默认）或 text 文字按钮（筛选后为空的“查看全部”） -->
+        <attr name="stateEmptyActionStyle" format="enum">
+            <enum name="tonal" value="0" />
+            <enum name="text" value="1" />
+        </attr>
+        <!-- 加载失败标题，写“对象 + 加载失败” -->
+        <attr name="stateErrorTitle" format="string" />
+        <!-- 无权查看标题，写“你没有这个 + 对象 + 的查看权限” -->
+        <attr name="stateNoPermissionTitle" format="string" />
+        <!-- 无权查看按钮，写“返回 + 来源页”，默认“返回” -->
+        <attr name="stateNoPermissionActionText" format="string" />
+        <attr name="stateInitial" format="enum">
+            <enum name="content" value="0" />
+            <enum name="loading" value="1" />
+            <enum name="empty" value="2" />
+        </attr>
+    </declare-styleable>
+
+    <!-- ===== NoticeView：页内横幅 ===== -->
+    <declare-styleable name="NoticeView">
+        <attr name="noticeLevel" format="enum">
+            <enum name="normal" value="0" />
+            <enum name="warning" value="1" />
+            <enum name="error" value="2" />
+            <enum name="success" value="3" />
+        </attr>
+        <attr name="noticeIcon" format="reference" />
+        <!-- 结论句，加粗显示在正文前 -->
+        <attr name="noticeTitle" format="string" />
+        <attr name="noticeText" format="string" />
+        <attr name="noticeActionText" format="string" />
+        <!-- 正文下方的确认复选框文字（如“我已确认，仍要入栏”） -->
+        <attr name="noticeCheckText" format="string" />
+    </declare-styleable>
+
+    <!-- ===== StatCardView：指标卡 ===== -->
+    <declare-styleable name="StatCardView">
+        <attr name="statLabel" format="string" />
+        <attr name="statIcon" format="reference" />
+        <attr name="statValue" format="string" />
+        <attr name="statUnit" format="string" />
+        <attr name="statTrendText" format="string" />
+        <attr name="statTrend" format="enum">
+            <enum name="none" value="0" />
+            <enum name="good" value="1" />
+            <enum name="bad" value="2" />
+            <enum name="neutral" value="3" />
+        </attr>
+        <attr name="statTrendDirection" format="enum">
+            <enum name="none" value="0" />
+            <enum name="up" value="1" />
+            <enum name="down" value="2" />
+        </attr>
+        <!-- 重点卡：primary-container 底 -->
+        <attr name="statEmphasis" format="boolean" />
+        <attr name="statSize" format="enum">
+            <enum name="compact" value="0" />
+            <enum name="large" value="1" />
+        </attr>
+    </declare-styleable>
+
+    <!-- ===== StatusTagView：状态标签 ===== -->
+    <declare-styleable name="StatusTagView">
+        <attr name="tagType" />
+        <attr name="tagIcon" format="reference" />
+    </declare-styleable>
+
+    <!-- ===== SectionHeaderView：分组标题 + 文字按钮 ===== -->
+    <declare-styleable name="SectionHeaderView">
+        <attr name="sectionTitle" format="string" />
+        <attr name="sectionActionText" format="string" />
+        <attr name="sectionActionIcon" format="reference" />
+    </declare-styleable>
+
+    <!-- ===== ListRowView：分组列表项 ===== -->
+    <declare-styleable name="ListRowView">
+        <attr name="groupPosition" />
+        <attr name="rowLeadingIcon" format="reference" />
+        <attr name="leadingTone" />
+        <!-- 前置头像姓名（显示首字）；与 rowLeadingIcon 二选一 -->
+        <attr name="rowAvatarName" format="string" />
+        <attr name="rowTitle" format="string" />
+        <attr name="rowSubtitle" format="string" />
+        <attr name="rowSubtitleMaxLines" format="integer" />
+        <attr name="rowTrailingText" format="string" />
+        <attr name="rowTrailingIcon" format="reference" />
+        <attr name="rowTagText" format="string" />
+        <attr name="tagType" />
+        <attr name="rowTagIcon" format="reference" />
+        <attr name="rowShowChevron" format="boolean" />
+        <attr name="rowUnread" format="boolean" />
+        <attr name="rowTitleStrikeThrough" format="boolean" />
+    </declare-styleable>
+
+    <!-- ===== KeyValueRowView：键值列表行 ===== -->
+    <declare-styleable name="KeyValueRowView">
+        <attr name="groupPosition" />
+        <attr name="kvKey" format="string" />
+        <attr name="kvValue" format="string" />
+        <attr name="kvNote" format="string" />
+        <attr name="kvKeyWidth" format="dimension" />
+        <!-- 值的对齐：start（x 128 起左对齐，默认）或 end（右对齐） -->
+        <attr name="kvValueAlign" format="enum">
+            <enum name="start" value="0" />
+            <enum name="end" value="1" />
+        </attr>
+        <!-- 值为空时隐藏整行（员工无权的字段不渲染），默认 true -->
+        <attr name="kvHideWhenEmpty" format="boolean" />
+        <attr name="kvShowChevron" format="boolean" />
+    </declare-styleable>
+
+    <!-- ===== AvatarView：姓名首字头像 ===== -->
+    <declare-styleable name="AvatarView">
+        <!-- 姓名，取第一个字显示 -->
+        <attr name="avatarName" format="string" />
+    </declare-styleable>
+
+    <!-- ===== BottomActionBar：表单页底部固定操作栏 ===== -->
+    <declare-styleable name="BottomActionBar">
+        <attr name="barPrimaryText" format="string" />
+        <attr name="barPrimaryIcon" format="reference" />
+        <attr name="barSecondaryText" format="string" />
+        <attr name="barSecondaryIcon" format="reference" />
+        <!-- 主按钮为危险操作（error 底） -->
+        <attr name="barPrimaryDanger" format="boolean" />
+    </declare-styleable>
+
+    <!-- ===== SkeletonView：骨架块 ===== -->
+    <declare-styleable name="SkeletonView">
+        <attr name="skeletonShape" format="enum">
+            <enum name="rect" value="0" />
+            <enum name="circle" value="1" />
+        </attr>
+        <attr name="skeletonCornerRadius" format="dimension" />
+        <attr name="skeletonAnimate" format="boolean" />
+    </declare-styleable>
+
+    <!-- ===== GroupedListLayout：自动按可见项设置分组圆角与 2 dp 缝隙 ===== -->
+    <declare-styleable name="GroupedListLayout">
+        <attr name="groupGap" format="dimension" />
+    </declare-styleable>
+
+</resources>

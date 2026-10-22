@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 底部导航图标：当前项 on-secondary-container，其余 on-surface-variant（7.3 节） -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="?attr/colorOnSecondaryContainer" android:state_checked="true" />
+    <item android:color="?attr/colorOnSurfaceVariant" />
+</selector>

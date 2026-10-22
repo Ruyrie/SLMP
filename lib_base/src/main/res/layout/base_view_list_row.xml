@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ListRowView 内容：前置区 40 dp → 正文（主文字 + 辅助文字 + 扩展区）→ 尾部（标签、文字、图标、箭头）。02 号 7.7 节 -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:parentTag="com.google.android.material.card.MaterialCardView">
+
+    <LinearLayout
+        android:id="@+id/base_row_root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/base_list_item_min_height"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_space_4"
+        android:paddingTop="@dimen/base_space_3"
+        android:paddingEnd="@dimen/base_space_4"
+        android:paddingBottom="@dimen/base_space_3">
+
+        <FrameLayout
+            android:id="@+id/base_row_leading"
+            android:layout_width="@dimen/base_list_leading_size"
+            android:layout_height="@dimen/base_list_leading_size"
+            android:layout_marginEnd="@dimen/base_space_4"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/base_row_leading_icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:importantForAccessibility="no"
+                android:scaleType="center"
+                android:visibility="gone" />
+
+            <com.zhimu.slmp.base.widget.AvatarView
+                android:id="@+id/base_row_avatar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/base_row_unread"
+                    android:layout_width="@dimen/base_unread_dot"
+                    android:layout_height="@dimen/base_unread_dot"
+                    android:layout_marginEnd="@dimen/base_space_2"
+                    android:contentDescription="@string/base_cd_unread"
+                    android:src="@drawable/base_bg_unread_dot"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/base_row_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                    android:textColor="?attr/colorOnSurface" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/base_row_subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="gone" />
+
+            <!-- 扩展区：XML 中写在 ListRowView 里的子视图会移到这里（如修改前后对比、行内按钮） -->
+            <LinearLayout
+                android:id="@+id/base_row_extra"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <com.zhimu.slmp.base.widget.StatusTagView
+            android:id="@+id/base_row_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_3"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/base_row_trailing_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_3"
+            android:gravity="end"
+            android:maxLines="2"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/base_row_trailing_icon"
+            android:layout_width="@dimen/base_icon_size"
+            android:layout_height="@dimen/base_icon_size"
+            android:layout_marginStart="@dimen/base_space_3"
+            android:importantForAccessibility="no"
+            android:visibility="gone"
+            app:tint="?attr/colorOnSurfaceVariant" />
+
+        <ImageView
+            android:id="@+id/base_row_chevron"
+            android:layout_width="@dimen/base_icon_size"
+            android:layout_height="@dimen/base_icon_size"
+            android:layout_marginStart="@dimen/base_space_2"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_chevron_right"
+            android:visibility="gone"
+            app:tint="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+</merge>

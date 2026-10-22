@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- BottomActionBar 内置按钮：左侧描边次按钮（可选）+ 右侧填充主按钮，各 40 dp 高、间距 12 dp。02 号 2.2 节 -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:orientation="horizontal"
+    tools:parentTag="android.widget.LinearLayout">
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/base_bar_secondary"
+        style="@style/Widget.Zmt.Button.Outlined"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/base_space_3"
+        android:layout_weight="1"
+        android:visibility="gone" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/base_bar_primary"
+        style="@style/Widget.Zmt.Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:visibility="gone" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/base_bar_primary_danger"
+        style="@style/Widget.Zmt.Button.Danger"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:visibility="gone" />
+</merge>

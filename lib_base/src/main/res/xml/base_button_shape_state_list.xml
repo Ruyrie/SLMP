@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 按钮形状：默认全圆角，按下时变为 12 dp 圆角（02 号 7.5、5.6 节） -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:state_pressed="true" app:shapeAppearance="@style/ShapeAppearance.Zmt.Corner.Medium" />
+    <item app:shapeAppearance="@style/ShapeAppearance.Zmt.Corner.Full" />
+</selector>

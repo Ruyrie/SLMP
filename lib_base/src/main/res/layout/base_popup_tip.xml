@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 普通提示气泡：一句话说明，inverse-on-surface 文字 body-s 12 sp，左右内边距 8 dp（02 号 7.11 节；底色由 TipPopup 设置） -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/base_tip_text"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="24dp"
+    android:paddingStart="@dimen/base_space_2"
+    android:paddingTop="@dimen/base_space_1"
+    android:paddingEnd="@dimen/base_space_2"
+    android:paddingBottom="@dimen/base_space_1"
+    android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+    android:textColor="?attr/colorOnSurfaceInverse" />

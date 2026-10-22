@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    智牧通颜色 token（02 号《UI设计规范》3.1 节），只做浅色。
+    Material 3 已有的色彩角色在 themes.xml 的 Theme.Zmt 中映射到主题属性；
+    warning、success、scrim、media-backdrop 等 MDC 没有的角色在 attrs.xml 声明同名主题属性。
+    布局只引用 ?attr/colorXxx 或 @color/zm_xxx，不写死色值。
+-->
+<resources>
+    <!-- primary -->
+    <color name="zm_primary">#FF0B57D0</color>
+    <color name="zm_on_primary">#FFFFFFFF</color>
+    <color name="zm_primary_container">#FFD3E3FD</color>
+    <color name="zm_on_primary_container">#FF041E49</color>
+    <color name="zm_inverse_primary">#FFA8C7FA</color>
+
+    <!-- secondary（on-secondary 规范未列出，取白色） -->
+    <color name="zm_secondary">#FF00639B</color>
+    <color name="zm_on_secondary">#FFFFFFFF</color>
+    <color name="zm_secondary_container">#FFC2E7FF</color>
+    <color name="zm_on_secondary_container">#FF001D35</color>
+
+    <!-- tertiary：只用于 AI 内容（3.4 节）；on-tertiary 规范未列出，取白色 -->
+    <color name="zm_tertiary">#FF6E4FA0</color>
+    <color name="zm_on_tertiary">#FFFFFFFF</color>
+    <color name="zm_tertiary_container">#FFEADDFF</color>
+    <color name="zm_on_tertiary_container">#FF25005A</color>
+
+    <!-- surface 层级（3.2 节，从浅到深） -->
+    <color name="zm_surface">#FFF8FAFD</color>
+    <color name="zm_surface_container_lowest">#FFFFFFFF</color>
+    <color name="zm_surface_container_low">#FFF3F6FC</color>
+    <color name="zm_surface_container">#FFF0F4F9</color>
+    <color name="zm_surface_container_high">#FFE9EEF6</color>
+    <color name="zm_surface_container_highest">#FFDDE3EA</color>
+    <color name="zm_on_surface">#FF1F1F1F</color>
+    <color name="zm_on_surface_variant">#FF444746</color>
+    <color name="zm_inverse_surface">#FF303030</color>
+    <color name="zm_inverse_on_surface">#FFF2F2F2</color>
+
+    <!-- 描边 -->
+    <color name="zm_outline">#FF747775</color>
+    <color name="zm_outline_variant">#FFC4C7C5</color>
+
+    <!-- error -->
+    <color name="zm_error">#FFB3261E</color>
+    <color name="zm_on_error">#FFFFFFFF</color>
+    <color name="zm_error_container">#FFF9DEDC</color>
+    <color name="zm_on_error_container">#FF410E0B</color>
+
+    <!-- warning（主题属性 colorWarning / colorWarningContainer / colorOnWarningContainer） -->
+    <color name="zm_warning">#FF8A5100</color>
+    <color name="zm_warning_container">#FFFFDDB8</color>
+    <color name="zm_on_warning_container">#FF2C1700</color>
+
+    <!-- success（主题属性 colorSuccess / colorSuccessContainer / colorOnSuccessContainer） -->
+    <color name="zm_success">#FF146C2E</color>
+    <color name="zm_success_container">#FFC4EED0</color>
+    <color name="zm_on_success_container">#FF072711</color>
+
+    <!-- 遮罩：黑色 32%；对话框与底部面板窗口另设 backgroundDimAmount 0.32 -->
+    <color name="zm_scrim">#52000000</color>
+
+    <!-- 全屏图片、视频预览与视频区 -->
+    <color name="zm_media_backdrop">#FF0B0B0C</color>
+    <color name="zm_on_media">#FFFFFFFF</color>
+
+    <!-- 透明（系统栏、无底色控件） -->
+    <color name="zm_transparent">#00000000</color>
+</resources>

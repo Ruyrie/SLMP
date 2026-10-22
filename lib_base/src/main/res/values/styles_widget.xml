@@ -1,0 +1,613 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    组件默认样式与变体（02 号《UI设计规范》第七章）。Theme.Zmt 把这些样式设为各组件的默认样式，
+    布局中只有变体（色调、描边、危险、小、大等）需要显式写 style。
+-->
+<resources>
+
+    <!-- ===================== 按钮（7.5 节） ===================== -->
+    <!-- 填充按钮（每屏唯一主操作）：可视高 40 dp（48 dp 点击区 - 上下 4 dp inset），按下变 12 dp 圆角 -->
+    <style name="Widget.Zmt.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">@dimen/base_touch_target</item>
+        <item name="android:insetTop">4dp</item>
+        <item name="android:insetBottom">4dp</item>
+        <item name="android:paddingLeft">@dimen/base_button_padding_horizontal</item>
+        <item name="android:paddingRight">@dimen/base_button_padding_horizontal</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.LabelLarge</item>
+        <item name="android:textColor">@color/base_color_button_filled_fg</item>
+        <item name="backgroundTint">@color/base_color_button_filled_bg</item>
+        <item name="iconTint">@color/base_color_button_filled_fg</item>
+        <item name="iconSize">@dimen/base_icon_size_small</item>
+        <item name="iconPadding">@dimen/base_button_icon_padding</item>
+        <item name="iconGravity">textStart</item>
+        <item name="shapeAppearance">@xml/base_button_shape_state_list</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+    </style>
+
+    <!-- 色调按钮：secondary-container 底（次要操作、空状态下一步、无权查看的返回） -->
+    <style name="Widget.Zmt.Button.Tonal">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.Material3.Button.TonalButton</item>
+        <item name="backgroundTint">@color/base_color_button_tonal_bg</item>
+        <item name="android:textColor">@color/base_color_button_tonal_fg</item>
+        <item name="iconTint">@color/base_color_button_tonal_fg</item>
+    </style>
+
+    <!-- 危险按钮：error 底 + on-error 文字（注销、删除、作废、停用、移出） -->
+    <style name="Widget.Zmt.Button.Danger">
+        <item name="backgroundTint">@color/base_color_button_danger_bg</item>
+        <item name="android:textColor">@color/base_color_button_danger_fg</item>
+        <item name="iconTint">@color/base_color_button_danger_fg</item>
+        <item name="rippleColor">@color/base_color_ripple_on_error</item>
+    </style>
+
+    <!-- 小按钮：可视高 32 dp，左右内边距 12 dp（卡片、列表项内） -->
+    <style name="Widget.Zmt.Button.Small">
+        <item name="android:insetTop">8dp</item>
+        <item name="android:insetBottom">8dp</item>
+        <item name="android:paddingLeft">@dimen/base_space_3</item>
+        <item name="android:paddingRight">@dimen/base_space_3</item>
+    </style>
+    <style name="Widget.Zmt.Button.Tonal.Small">
+        <item name="android:insetTop">8dp</item>
+        <item name="android:insetBottom">8dp</item>
+        <item name="android:paddingLeft">@dimen/base_space_3</item>
+        <item name="android:paddingRight">@dimen/base_space_3</item>
+    </style>
+
+    <!-- 大按钮：可视高 56 dp，title-m 16 sp（整屏只有一个确认动作的页面，如 F04“确认位置”） -->
+    <style name="Widget.Zmt.Button.Large">
+        <item name="android:minHeight">@dimen/base_button_height_large</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingLeft">@dimen/base_space_6</item>
+        <item name="android:paddingRight">@dimen/base_space_6</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.TitleMedium</item>
+        <item name="iconSize">@dimen/base_icon_size</item>
+    </style>
+    <style name="Widget.Zmt.Button.Tonal.Large">
+        <item name="android:minHeight">@dimen/base_button_height_large</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingLeft">@dimen/base_space_6</item>
+        <item name="android:paddingRight">@dimen/base_space_6</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.TitleMedium</item>
+        <item name="iconSize">@dimen/base_icon_size</item>
+    </style>
+
+    <!-- 描边按钮：透明底 + 1 dp outline + on-surface-variant 文字（与主操作并列的取消、辅助操作） -->
+    <style name="Widget.Zmt.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">@dimen/base_touch_target</item>
+        <item name="android:insetTop">4dp</item>
+        <item name="android:insetBottom">4dp</item>
+        <item name="android:paddingLeft">@dimen/base_button_padding_horizontal</item>
+        <item name="android:paddingRight">@dimen/base_button_padding_horizontal</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.LabelLarge</item>
+        <item name="strokeWidth">@dimen/base_stroke</item>
+        <item name="iconSize">@dimen/base_icon_size_small</item>
+        <item name="iconPadding">@dimen/base_button_icon_padding</item>
+        <item name="iconGravity">textStart</item>
+        <item name="shapeAppearance">@xml/base_button_shape_state_list</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+        <item name="android:textColor">@color/base_color_button_outlined_fg</item>
+        <item name="iconTint">@color/base_color_button_outlined_fg</item>
+        <item name="rippleColor">@color/base_color_ripple_on_surface_variant</item>
+    </style>
+    <style name="Widget.Zmt.Button.Outlined.Small">
+        <item name="android:insetTop">8dp</item>
+        <item name="android:insetBottom">8dp</item>
+        <item name="android:paddingLeft">@dimen/base_space_3</item>
+        <item name="android:paddingRight">@dimen/base_space_3</item>
+    </style>
+
+    <!-- 文字按钮：primary 文字（行内操作、分组标题旁的操作、对话框按钮） -->
+    <style name="Widget.Zmt.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:minHeight">@dimen/base_touch_target</item>
+        <item name="android:insetTop">4dp</item>
+        <item name="android:insetBottom">4dp</item>
+        <item name="android:paddingLeft">@dimen/base_space_3</item>
+        <item name="android:paddingRight">@dimen/base_space_3</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.LabelLarge</item>
+        <item name="iconSize">@dimen/base_icon_size_small</item>
+        <item name="iconPadding">@dimen/base_button_icon_padding</item>
+        <item name="iconGravity">textStart</item>
+        <item name="shapeAppearance">@xml/base_button_shape_state_list</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+    </style>
+    <!-- 文字按钮（危险）：error 色文字 -->
+    <style name="Widget.Zmt.Button.Text.Danger">
+        <item name="android:textColor">@color/base_color_button_text_danger_fg</item>
+        <item name="iconTint">@color/base_color_button_text_danger_fg</item>
+        <item name="rippleColor">@color/base_color_ripple_error</item>
+    </style>
+    <!-- 对话框按钮 -->
+    <style name="Widget.Zmt.Button.Text.Dialog" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.LabelLarge</item>
+        <item name="shapeAppearance">@xml/base_button_shape_state_list</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+    </style>
+    <style name="Widget.Zmt.Button.Text.Dialog.Danger">
+        <item name="android:textColor">@color/base_color_button_text_danger_fg</item>
+        <item name="iconTint">@color/base_color_button_text_danger_fg</item>
+        <item name="rippleColor">@color/base_color_ripple_error</item>
+    </style>
+
+    <!-- 图标按钮：可视图标 24 dp，点击区域 48 × 48 dp，圆形水波纹 -->
+    <style name="Widget.Zmt.Button.Icon" parent="Widget.Material3.Button.IconButton">
+        <item name="android:minWidth">@dimen/base_touch_target</item>
+        <item name="android:minHeight">@dimen/base_touch_target</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:padding">12dp</item>
+        <item name="iconSize">@dimen/base_icon_size</item>
+        <item name="iconPadding">0dp</item>
+        <item name="iconGravity">textStart</item>
+        <item name="iconTint">@color/base_color_icon_button</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Zmt.Corner.Full</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+    </style>
+
+    <!-- ===================== 连接按钮组（7.5 节） ===================== -->
+    <!-- MaterialButtonToggleGroup：项间 2 dp，外侧全圆角，内侧 8 dp，选中项四角全圆 -->
+    <style name="Widget.Zmt.ButtonToggleGroup" parent="Widget.Material3.MaterialButtonToggleGroup">
+        <item name="android:spacing">@dimen/base_list_gap</item>
+        <item name="innerCornerSize">@xml/base_connected_inner_corner_state_list</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Zmt.Corner.Full</item>
+        <item name="singleSelection">true</item>
+        <item name="selectionRequired">true</item>
+    </style>
+    <!-- 连接按钮组中的按钮：选中 primary 底 + 前置 check 18 dp（对勾由 ConnectedButtonGroup 处理），未选中 surface-container-highest -->
+    <style name="Widget.Zmt.Button.Connected" parent="Widget.Material3.Button">
+        <item name="android:checkable">true</item>
+        <item name="android:minHeight">@dimen/base_touch_target</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="android:insetTop">4dp</item>
+        <item name="android:insetBottom">4dp</item>
+        <item name="android:paddingLeft">@dimen/base_button_padding_horizontal</item>
+        <item name="android:paddingRight">@dimen/base_button_padding_horizontal</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.LabelLarge</item>
+        <item name="android:textColor">@color/base_color_connected_fg</item>
+        <item name="backgroundTint">@color/base_color_connected_bg</item>
+        <item name="rippleColor">@color/base_color_connected_ripple</item>
+        <item name="iconTint">@color/base_color_connected_fg</item>
+        <item name="iconSize">@dimen/base_icon_size_xsmall</item>
+        <item name="iconPadding">@dimen/base_button_icon_padding</item>
+        <item name="iconGravity">textStart</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <!-- ===================== Chip（7.6 节） ===================== -->
+    <!-- 筛选 Chip：高 32 dp、圆角 8 dp；未选中透明底 + 1 dp outline；选中 secondary-container + 对勾 18 dp -->
+    <style name="Widget.Zmt.Chip.Filter" parent="Widget.Material3.Chip.Filter">
+        <item name="chipMinHeight">@dimen/base_chip_height</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Zmt.Corner.Small</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.LabelLarge</item>
+        <item name="android:textColor">@color/base_color_chip_text</item>
+        <item name="chipBackgroundColor">@color/base_color_chip_bg</item>
+        <item name="chipStrokeColor">@color/base_color_chip_stroke</item>
+        <item name="chipStrokeWidth">@dimen/base_stroke</item>
+        <item name="checkedIcon">@drawable/ic_check</item>
+        <item name="checkedIconTint">@color/base_color_chip_text</item>
+        <item name="checkedIconVisible">true</item>
+        <item name="chipIconSize">@dimen/base_icon_size_xsmall</item>
+        <item name="chipStartPadding">8dp</item>
+        <item name="iconStartPadding">0dp</item>
+        <item name="iconEndPadding">0dp</item>
+        <item name="textStartPadding">8dp</item>
+        <item name="textEndPadding">8dp</item>
+        <item name="chipEndPadding">8dp</item>
+        <item name="android:elevation">0dp</item>
+        <item name="ensureMinTouchTargetSize">true</item>
+    </style>
+    <!-- 选择 Chip（表单中的单选 / 多选项，如 L05 栏舍类型、L11 死淘原因）：外观同筛选 Chip -->
+    <style name="Widget.Zmt.Chip.Choice" parent="Widget.Zmt.Chip.Filter" />
+    <!-- 下拉 Chip（“类型 ▾”“全部养殖场 ▾”）：尾部 arrow_drop_down 18 dp，不可勾选，点击打开菜单或底部面板 -->
+    <style name="Widget.Zmt.Chip.Dropdown" parent="Widget.Zmt.Chip.Filter">
+        <item name="android:checkable">false</item>
+        <item name="closeIcon">@drawable/ic_arrow_drop_down</item>
+        <item name="closeIconVisible">true</item>
+        <item name="closeIconSize">@dimen/base_icon_size_xsmall</item>
+        <item name="closeIconTint">@color/base_color_chip_text</item>
+        <item name="closeIconStartPadding">4dp</item>
+        <item name="closeIconEndPadding">0dp</item>
+        <item name="textEndPadding">0dp</item>
+    </style>
+    <style name="Widget.Zmt.ChipGroup" parent="Widget.Material3.ChipGroup">
+        <item name="chipSpacingHorizontal">@dimen/base_space_2</item>
+        <item name="chipSpacingVertical">0dp</item>
+    </style>
+
+    <!-- ===================== 描边输入框（7.9 节） ===================== -->
+    <style name="Widget.Zmt.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/base_color_text_field_stroke</item>
+        <item name="boxStrokeErrorColor">?attr/colorError</item>
+        <item name="boxStrokeWidth">@dimen/base_stroke</item>
+        <item name="boxStrokeWidthFocused">@dimen/base_stroke_focused</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Zmt.Corner.ExtraSmall</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+        <item name="expandedHintEnabled">false</item>
+        <item name="hintTextAppearance">@style/TextAppearance.Zmt.BodySmall</item>
+        <item name="hintTextColor">?attr/colorPrimary</item>
+        <item name="android:textColorHint">?attr/colorOnSurfaceVariant</item>
+        <item name="placeholderTextAppearance">@style/TextAppearance.Zmt.BodyLarge</item>
+        <item name="placeholderTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="helperTextTextAppearance">@style/TextAppearance.Zmt.BodySmall</item>
+        <item name="helperTextTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="errorTextAppearance">@style/TextAppearance.Zmt.BodySmall</item>
+        <item name="errorTextColor">?attr/colorError</item>
+        <item name="errorIconDrawable">@drawable/ic_error</item>
+        <item name="errorIconTint">?attr/colorError</item>
+        <item name="counterTextAppearance">@style/TextAppearance.Zmt.BodySmall</item>
+        <item name="counterTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="counterOverflowTextAppearance">@style/TextAppearance.Zmt.BodySmall</item>
+        <item name="counterOverflowTextColor">?attr/colorError</item>
+        <item name="suffixTextAppearance">@style/TextAppearance.Zmt.BodyMedium</item>
+        <item name="suffixTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="prefixTextAppearance">@style/TextAppearance.Zmt.BodyLarge</item>
+        <item name="prefixTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="endIconTint">?attr/colorOnSurfaceVariant</item>
+        <item name="startIconTint">?attr/colorOnSurfaceVariant</item>
+        <item name="materialThemeOverlay">@style/ThemeOverlay.Zmt.TextInputEditText.OutlinedBox</item>
+    </style>
+    <!-- 只读：1 dp outline-variant 描边，值 on-surface-variant，不可聚焦（因业务原因暂不能改的字段同此） -->
+    <style name="Widget.Zmt.TextInputLayout.ReadOnly">
+        <item name="boxStrokeColor">@color/base_color_text_field_readonly_stroke</item>
+        <item name="materialThemeOverlay">@style/ThemeOverlay.Zmt.TextInputEditText.ReadOnly</item>
+    </style>
+    <!-- 日期 / 时间字段：尾部 calendar_month，点击整个输入框打开选择器（不可键盘输入） -->
+    <style name="Widget.Zmt.TextInputLayout.Picker">
+        <item name="endIconMode">custom</item>
+        <item name="endIconDrawable">@drawable/ic_calendar_month</item>
+        <item name="endIconContentDescription">@string/base_cd_pick_date</item>
+        <item name="materialThemeOverlay">@style/ThemeOverlay.Zmt.TextInputEditText.Picker</item>
+    </style>
+    <!-- 下拉选择（选项不超过 4 个、只有文字时）：MaterialAutoCompleteTextView -->
+    <style name="Widget.Zmt.TextInputLayout.Dropdown" parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <item name="boxStrokeColor">@color/base_color_text_field_stroke</item>
+        <item name="boxStrokeErrorColor">?attr/colorError</item>
+        <item name="boxStrokeWidth">@dimen/base_stroke</item>
+        <item name="boxStrokeWidthFocused">@dimen/base_stroke_focused</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Zmt.Corner.ExtraSmall</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+        <item name="expandedHintEnabled">false</item>
+        <item name="hintTextAppearance">@style/TextAppearance.Zmt.BodySmall</item>
+        <item name="hintTextColor">?attr/colorPrimary</item>
+        <item name="android:textColorHint">?attr/colorOnSurfaceVariant</item>
+        <item name="placeholderTextAppearance">@style/TextAppearance.Zmt.BodyLarge</item>
+        <item name="placeholderTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="helperTextTextAppearance">@style/TextAppearance.Zmt.BodySmall</item>
+        <item name="helperTextTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="errorTextAppearance">@style/TextAppearance.Zmt.BodySmall</item>
+        <item name="errorTextColor">?attr/colorError</item>
+        <item name="errorIconDrawable">@drawable/ic_error</item>
+        <item name="errorIconTint">?attr/colorError</item>
+        <item name="endIconTint">?attr/colorOnSurfaceVariant</item>
+        <item name="materialThemeOverlay">@style/ThemeOverlay.Zmt.AutoCompleteTextView.OutlinedBox</item>
+    </style>
+
+    <style name="ThemeOverlay.Zmt.TextInputEditText.OutlinedBox" parent="ThemeOverlay.Material3.TextInputEditText.OutlinedBox">
+        <item name="editTextStyle">@style/Widget.Zmt.TextInputEditText</item>
+    </style>
+    <style name="ThemeOverlay.Zmt.TextInputEditText.ReadOnly" parent="ThemeOverlay.Material3.TextInputEditText.OutlinedBox">
+        <item name="editTextStyle">@style/Widget.Zmt.TextInputEditText.ReadOnly</item>
+    </style>
+    <style name="ThemeOverlay.Zmt.TextInputEditText.Picker" parent="ThemeOverlay.Material3.TextInputEditText.OutlinedBox">
+        <item name="editTextStyle">@style/Widget.Zmt.TextInputEditText.Picker</item>
+    </style>
+    <style name="ThemeOverlay.Zmt.AutoCompleteTextView.OutlinedBox" parent="ThemeOverlay.Material3.AutoCompleteTextView.OutlinedBox">
+        <item name="autoCompleteTextViewStyle">@style/Widget.Zmt.AutoCompleteTextView</item>
+    </style>
+
+    <style name="Widget.Zmt.TextInputEditText" parent="Widget.Material3.TextInputEditText.OutlinedBox">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyLarge</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+    <style name="Widget.Zmt.TextInputEditText.ReadOnly">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:focusable">false</item>
+        <item name="android:focusableInTouchMode">false</item>
+        <item name="android:cursorVisible">false</item>
+        <item name="android:longClickable">false</item>
+    </style>
+    <style name="Widget.Zmt.TextInputEditText.Picker">
+        <item name="android:focusable">false</item>
+        <item name="android:focusableInTouchMode">false</item>
+        <item name="android:cursorVisible">false</item>
+        <item name="android:longClickable">false</item>
+        <item name="android:clickable">true</item>
+        <item name="android:inputType">none</item>
+    </style>
+    <style name="Widget.Zmt.AutoCompleteTextView" parent="Widget.Material3.AutoCompleteTextView.OutlinedBox">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyLarge</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:inputType">none</item>
+    </style>
+
+    <!-- ===================== 底部导航（7.3 节） ===================== -->
+    <!-- 高 64 dp；指示器 56 × 32 dp secondary-container，距上缘 6 dp；选中标签 secondary -->
+    <style name="Widget.Zmt.BottomNavigation" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:background">?attr/colorSurfaceContainer</item>
+        <item name="android:minHeight">@dimen/base_nav_bar_height</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.Zmt.BottomNavigation.ActiveIndicator</item>
+        <item name="itemIconSize">@dimen/base_icon_size</item>
+        <item name="itemIconTint">@color/base_color_nav_icon</item>
+        <item name="itemTextColor">@color/base_color_nav_label</item>
+        <item name="itemTextAppearanceActive">@style/TextAppearance.Zmt.LabelMedium</item>
+        <item name="itemTextAppearanceInactive">@style/TextAppearance.Zmt.LabelMedium</item>
+        <item name="itemTextAppearanceActiveBoldEnabled">false</item>
+        <item name="itemPaddingTop">6dp</item>
+        <item name="itemPaddingBottom">6dp</item>
+        <item name="activeIndicatorLabelPadding">4dp</item>
+        <item name="elevation">0dp</item>
+    </style>
+    <style name="Widget.Zmt.BottomNavigation.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:width">@dimen/base_nav_indicator_width</item>
+        <item name="android:height">@dimen/base_nav_indicator_height</item>
+        <item name="android:color">?attr/colorSecondaryContainer</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Zmt.Corner.Full</item>
+    </style>
+
+    <!-- ===================== 顶部栏（7.1 节） ===================== -->
+    <!-- AppBarLayout：surface 底，滚动后 surface-container，不加阴影 -->
+    <style name="Widget.Zmt.AppBarLayout" parent="Widget.Material3.AppBarLayout">
+        <item name="android:background">?attr/colorSurface</item>
+        <item name="liftOnScroll">true</item>
+        <item name="liftOnScrollColor">?attr/colorSurfaceContainer</item>
+    </style>
+    <!-- MaterialToolbar：高 64 dp；返回图标 x 16，标题 x 60（title-l 22 sp）；右侧图标点击区 48 dp，最右图标距屏幕 16 dp -->
+    <style name="Widget.Zmt.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:minHeight">@dimen/base_top_bar_height</item>
+        <item name="android:paddingEnd">4dp</item>
+        <item name="titleTextAppearance">@style/TextAppearance.Zmt.TitleLarge</item>
+        <item name="titleTextColor">?attr/colorOnSurface</item>
+        <item name="subtitleTextAppearance">@style/TextAppearance.Zmt.BodyMedium</item>
+        <item name="subtitleTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="navigationIconTint">?attr/colorOnSurfaceVariant</item>
+        <item name="contentInsetStart">@dimen/base_page_margin</item>
+        <item name="contentInsetStartWithNavigation">4dp</item>
+        <item name="contentInsetEnd">0dp</item>
+        <item name="materialThemeOverlay">@style/ThemeOverlay.Zmt.Toolbar</item>
+    </style>
+    <style name="ThemeOverlay.Zmt.Toolbar" parent="ThemeOverlay.Material3.Toolbar.Surface">
+        <item name="colorControlNormal">?attr/colorOnSurfaceVariant</item>
+        <item name="actionMenuTextColor">?attr/colorPrimary</item>
+    </style>
+
+    <!-- 一级页大标题（headline-l 32 sp）与副标题（body-m 14 sp on-surface-variant），2.2 节 -->
+    <style name="Widget.Zmt.TextView.PageTitle" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.HeadlineLarge</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    <style name="Widget.Zmt.TextView.PageSubtitle" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyMedium</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+    <!-- 二级页页内大标题（headline-m 28 sp） -->
+    <style name="Widget.Zmt.TextView.DetailTitle" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.HeadlineMedium</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+    <!-- 表单中的小节标签（如 L05“类型”、L11“原因”）：body-s on-surface-variant -->
+    <style name="Widget.Zmt.TextView.FieldLabel" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodySmall</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- ===================== 卡片 ===================== -->
+    <!-- 卡片：surface-container-lowest 底，16 dp 圆角，无描边无阴影（3.2、5.1 节） -->
+    <style name="Widget.Zmt.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerLowest</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Zmt.Corner.Large</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+    </style>
+    <!-- 详情摘要卡：20 dp 圆角，内边距 16 dp（2.4 节） -->
+    <style name="Widget.Zmt.Card.Summary">
+        <item name="shapeAppearance">@style/ShapeAppearance.Zmt.Corner.LargePlus</item>
+        <item name="contentPadding">@dimen/base_space_4</item>
+    </style>
+    <!-- 分组列表项：形状按位置由 GroupedRowShapes 设置 -->
+    <style name="Widget.Zmt.Card.ListItem">
+        <item name="shapeAppearance">@style/ShapeAppearance.Zmt.Corner.ExtraSmall</item>
+    </style>
+
+    <!-- ===================== Snackbar（7.10 节） ===================== -->
+    <style name="Widget.Zmt.Snackbar" parent="Widget.Material3.Snackbar">
+        <item name="backgroundTint">?attr/colorSurfaceInverse</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Zmt.Corner.ExtraSmall</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+        <item name="android:layout_margin">@dimen/base_space_4</item>
+        <item name="actionTextColorAlpha">1</item>
+        <item name="elevation">@dimen/base_elevation_3</item>
+        <item name="animationMode">slide</item>
+    </style>
+    <style name="Widget.Zmt.Snackbar.TextView" parent="Widget.Material3.Snackbar.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyMedium</item>
+        <item name="android:textColor">?attr/colorOnSurfaceInverse</item>
+        <item name="android:alpha">1</item>
+        <item name="android:maxLines">2</item>
+    </style>
+    <style name="Widget.Zmt.Snackbar.Button" parent="Widget.Material3.Button.TextButton.Snackbar">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.LabelLarge</item>
+        <item name="android:textColor">?attr/colorPrimaryInverse</item>
+    </style>
+
+    <!-- ===================== 底部面板（7.12 节） ===================== -->
+    <style name="ThemeOverlay.Zmt.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.Zmt.BottomSheet</item>
+        <item name="bottomSheetDragHandleStyle">@style/Widget.Zmt.BottomSheet.DragHandle</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.32</item>
+        <item name="android:navigationBarColor">@color/zm_transparent</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+    <style name="Widget.Zmt.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">?attr/colorSurfaceContainerLow</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Zmt.BottomSheet</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+        <item name="android:elevation">@dimen/base_elevation_3</item>
+    </style>
+    <style name="Widget.Zmt.BottomSheet.DragHandle" parent="Widget.Material3.BottomSheet.DragHandle">
+        <item name="tint">@color/base_color_drag_handle</item>
+    </style>
+
+    <!-- ===================== 对话框（7.11 节） ===================== -->
+    <!-- surface-container-high 底，28 dp 圆角，遮罩 32%；标题 headline-s，正文 body-m on-surface-variant -->
+    <style name="ThemeOverlay.Zmt.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="alertDialogStyle">@style/MaterialAlertDialog.Zmt</item>
+        <item name="android:backgroundDimAmount">0.32</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/MaterialAlertDialog.Zmt.Title.Text</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/MaterialAlertDialog.Zmt.Body.Text</item>
+        <item name="materialAlertDialogTitleIconStyle">@style/MaterialAlertDialog.Zmt.Title.Icon</item>
+        <item name="buttonBarButtonStyle">@style/Widget.Zmt.Button.Text.Dialog</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.Zmt.Button.Text.Dialog</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.Zmt.Button.Text.Dialog</item>
+    </style>
+    <!-- 危险操作：确认按钮 error 色 -->
+    <style name="ThemeOverlay.Zmt.MaterialAlertDialog.Danger">
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.Zmt.Button.Text.Dialog.Danger</item>
+    </style>
+    <!-- 带顶部图标：图标（secondary）与标题居中 -->
+    <style name="ThemeOverlay.Zmt.MaterialAlertDialog.Centered">
+        <item name="materialAlertDialogTitlePanelStyle">@style/MaterialAlertDialog.Material3.Title.Panel.CenterStacked</item>
+        <item name="materialAlertDialogTitleIconStyle">@style/MaterialAlertDialog.Zmt.Title.Icon.CenterStacked</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/MaterialAlertDialog.Zmt.Title.Text.CenterStacked</item>
+    </style>
+    <style name="ThemeOverlay.Zmt.MaterialAlertDialog.Centered.Danger">
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.Zmt.Button.Text.Dialog.Danger</item>
+    </style>
+
+    <style name="MaterialAlertDialog.Zmt" parent="MaterialAlertDialog.Material3">
+        <item name="backgroundTint">?attr/colorSurfaceContainerHigh</item>
+        <item name="backgroundInsetStart">@dimen/base_dialog_padding</item>
+        <item name="backgroundInsetEnd">@dimen/base_dialog_padding</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Zmt.Corner.ExtraLarge</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+    </style>
+    <style name="MaterialAlertDialog.Zmt.Title.Text" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.HeadlineSmall</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+    <style name="MaterialAlertDialog.Zmt.Title.Text.CenterStacked" parent="MaterialAlertDialog.Material3.Title.Text.CenterStacked">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.HeadlineSmall</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+    <style name="MaterialAlertDialog.Zmt.Body.Text" parent="MaterialAlertDialog.Material3.Body.Text">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyMedium</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+    <style name="MaterialAlertDialog.Zmt.Title.Icon" parent="MaterialAlertDialog.Material3.Title.Icon">
+        <item name="android:layout_width">@dimen/base_icon_size</item>
+        <item name="android:layout_height">@dimen/base_icon_size</item>
+        <item name="android:theme">@style/ThemeOverlay.Zmt.MaterialAlertDialog.Title.Icon</item>
+    </style>
+    <style name="MaterialAlertDialog.Zmt.Title.Icon.CenterStacked" parent="MaterialAlertDialog.Material3.Title.Icon.CenterStacked">
+        <item name="android:layout_width">@dimen/base_icon_size</item>
+        <item name="android:layout_height">@dimen/base_icon_size</item>
+        <item name="android:theme">@style/ThemeOverlay.Zmt.MaterialAlertDialog.Title.Icon</item>
+    </style>
+    <style name="ThemeOverlay.Zmt.MaterialAlertDialog.Title.Icon" parent="ThemeOverlay.MaterialAlertDialog.Material3.Title.Icon">
+        <item name="colorControlNormal">?attr/colorSecondary</item>
+    </style>
+
+    <!-- ===================== FAB（7.4 节） ===================== -->
+    <!-- 扩展型 FAB：高 56 dp，primary-container 底，左 16 / 图标 24 / 间距 12 / 文字 title-m / 右 20，16 dp 圆角 -->
+    <style name="Widget.Zmt.ExtendedFloatingActionButton" parent="Widget.Material3.ExtendedFloatingActionButton.Icon.Primary">
+        <item name="android:minHeight">56dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.TitleMedium</item>
+        <item name="iconSize">@dimen/base_icon_size</item>
+        <item name="iconPadding">12dp</item>
+        <item name="collapsedSize">56dp</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Zmt.Corner.Large</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+        <item name="backgroundTint">?attr/colorPrimaryContainer</item>
+        <item name="android:textColor">?attr/colorOnPrimaryContainer</item>
+        <item name="iconTint">?attr/colorOnPrimaryContainer</item>
+        <item name="elevation">@dimen/base_elevation_3</item>
+    </style>
+    <style name="Widget.Zmt.FloatingActionButton" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="backgroundTint">?attr/colorPrimaryContainer</item>
+        <item name="tint">?attr/colorOnPrimaryContainer</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Zmt.Corner.Large</item>
+        <item name="shapeAppearanceOverlay">@null</item>
+        <item name="elevation">@dimen/base_elevation_3</item>
+    </style>
+
+    <!-- ===================== 其他基础控件（7.20 节） ===================== -->
+    <!-- 开关：轨道 52 × 32 dp，开启时 primary + 白色滑块带 16 dp 对勾 -->
+    <style name="Widget.Zmt.Switch" parent="Widget.Material3.CompoundButton.MaterialSwitch">
+        <item name="thumbIcon">@drawable/base_switch_thumb_icon</item>
+        <item name="thumbIconTint">@color/base_color_switch_thumb_icon</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyLarge</item>
+    </style>
+    <style name="Widget.Zmt.CheckBox" parent="Widget.Material3.CompoundButton.CheckBox">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyMedium</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+    <style name="Widget.Zmt.RadioButton" parent="Widget.Material3.CompoundButton.RadioButton">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyLarge</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+    <!-- 线性进度条：primary 指示、surface-container-highest 轨道、两端圆角，无间隙与停止点 -->
+    <style name="Widget.Zmt.LinearProgressIndicator" parent="Widget.Material3.LinearProgressIndicator">
+        <item name="indicatorColor">?attr/colorPrimary</item>
+        <item name="trackColor">?attr/colorSurfaceContainerHighest</item>
+        <item name="trackThickness">4dp</item>
+        <item name="trackCornerRadius">2dp</item>
+        <item name="indicatorTrackGapSize">0dp</item>
+        <item name="trackStopIndicatorSize">0dp</item>
+    </style>
+    <!-- AI 卡内的可能性条：tertiary -->
+    <style name="Widget.Zmt.LinearProgressIndicator.Ai">
+        <item name="indicatorColor">?attr/colorTertiary</item>
+    </style>
+    <!-- 环形进度：默认 24 dp（列表底部加载行） -->
+    <style name="Widget.Zmt.CircularProgressIndicator" parent="Widget.Material3.CircularProgressIndicator">
+        <item name="indicatorColor">?attr/colorPrimary</item>
+        <item name="indicatorSize">24dp</item>
+        <item name="trackThickness">3dp</item>
+        <item name="indicatorTrackGapSize">0dp</item>
+        <item name="trackColor">@color/zm_transparent</item>
+    </style>
+    <!-- 分隔线：1 dp outline-variant，只做装饰 -->
+    <style name="Widget.Zmt.Divider" parent="Widget.Material3.MaterialDivider">
+        <item name="dividerColor">?attr/colorOutlineVariant</item>
+        <item name="dividerThickness">@dimen/base_stroke</item>
+    </style>
+    <!-- 未读角标：16 dp，error 底 + on-error 数字 label-s 11 sp，超过 99 显示 99+ -->
+    <style name="Widget.Zmt.Badge" parent="Widget.Material3.Badge">
+        <item name="backgroundColor">?attr/colorError</item>
+        <item name="badgeTextColor">?attr/colorOnError</item>
+        <item name="badgeTextAppearance">@style/TextAppearance.Zmt.LabelSmall.Number</item>
+        <item name="badgeHeight">@dimen/base_badge_size</item>
+        <item name="badgeWithTextHeight">@dimen/base_badge_size</item>
+        <item name="badgeWidth">@dimen/base_badge_size</item>
+        <item name="badgeWithTextWidth">@dimen/base_badge_size</item>
+        <item name="maxCharacterCount">3</item>
+    </style>
+    <!-- 弹出菜单（PopupMenu / 下拉选项）：surface-container 底，12 dp 圆角，elevation-2 -->
+    <style name="Widget.Zmt.PopupMenu" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">@drawable/base_bg_menu</item>
+        <item name="android:popupElevation">@dimen/base_elevation_2</item>
+    </style>
+    <style name="Widget.Zmt.PopupMenu.ListPopupWindow" parent="Widget.Material3.PopupMenu.ListPopupWindow">
+        <item name="android:popupBackground">@drawable/base_bg_menu</item>
+        <item name="android:popupElevation">@dimen/base_elevation_2</item>
+    </style>
+
+</resources>

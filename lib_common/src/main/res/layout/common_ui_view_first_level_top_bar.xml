@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 一级页顶部栏（02 号 2.2、7.1、7.2 节）：左侧养殖场切换器（养殖场名 title-l 22 sp + arrow_drop_down 24 dp，x 16 起）；
+     右侧扫码、消息（带未读角标）、头像（32 dp），中心间距 48 dp，头像右缘距屏幕 16 dp。高 64 dp。 -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:orientation="horizontal"
+    tools:parentTag="android.widget.LinearLayout">
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/common_ui_farm_switcher"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/base_touch_target"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="@dimen/base_space_2"
+            android:background="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/base_space_2"
+            android:paddingEnd="@dimen/base_space_1">
+
+            <TextView
+                android:id="@+id/common_ui_farm_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.Zmt.TitleLarge"
+                android:textColor="?attr/colorOnSurface" />
+
+            <ImageView
+                android:id="@+id/common_ui_farm_arrow"
+                android:layout_width="@dimen/base_icon_size"
+                android:layout_height="@dimen/base_icon_size"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_arrow_drop_down"
+                app:tint="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/common_ui_scan"
+        android:layout_width="@dimen/base_touch_target"
+        android:layout_height="@dimen/base_touch_target"
+        android:layout_gravity="center_vertical"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/common_ui_cd_scan">
+
+        <ImageView
+            android:layout_width="@dimen/base_icon_size"
+            android:layout_height="@dimen/base_icon_size"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_qr_code_scanner"
+            app:tint="?attr/colorOnSurfaceVariant" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/common_ui_messages"
+        android:layout_width="@dimen/base_touch_target"
+        android:layout_height="@dimen/base_touch_target"
+        android:layout_gravity="center_vertical"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:contentDescription="@string/common_ui_cd_messages">
+
+        <ImageView
+            android:id="@+id/common_ui_messages_icon"
+            android:layout_width="@dimen/base_icon_size"
+            android:layout_height="@dimen/base_icon_size"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_notifications"
+            app:tint="?attr/colorOnSurfaceVariant" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/common_ui_avatar_cell"
+        android:layout_width="@dimen/base_touch_target"
+        android:layout_height="@dimen/base_touch_target"
+        android:layout_gravity="center_vertical"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/common_ui_cd_mine">
+
+        <com.zhimu.slmp.base.widget.AvatarView
+            android:id="@+id/common_ui_avatar"
+            android:layout_width="@dimen/base_avatar_top_bar"
+            android:layout_height="@dimen/base_avatar_top_bar"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no" />
+    </FrameLayout>
+</merge>

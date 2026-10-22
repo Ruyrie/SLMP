@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 底部面板骨架（02 号 7.12 节）：拖动条 → 标题 title-l（左 24 dp）→ 说明 body-m（可选）→ 内容区（超出时在面板内滚动）
+     → 底部按钮（只有快捷操作才有，左右 16 dp）。底色与圆角由主题 bottomSheetStyle 设置。 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+        android:id="@+id/base_sheet_drag_handle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/base_sheet_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/base_sheet_padding_horizontal"
+        android:paddingEnd="@dimen/base_sheet_padding_horizontal"
+        android:textAppearance="@style/TextAppearance.Zmt.TitleLarge"
+        android:textColor="?attr/colorOnSurface"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/base_sheet_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_1"
+        android:paddingStart="@dimen/base_sheet_padding_horizontal"
+        android:paddingEnd="@dimen/base_sheet_padding_horizontal"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone" />
+
+    <!-- 内容区：wrap_content + weight，面板达到最大高度时被压缩并在内部滚动，标题与底部按钮保持可见 -->
+    <FrameLayout
+        android:id="@+id/base_sheet_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_3"
+        android:layout_weight="1" />
+
+    <FrameLayout
+        android:id="@+id/base_sheet_footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/base_space_4"
+        android:paddingTop="@dimen/base_space_2"
+        android:paddingEnd="@dimen/base_space_4"
+        android:paddingBottom="@dimen/base_space_2"
+        android:visibility="gone">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/base_sheet_primary"
+            style="@style/Widget.Zmt.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </FrameLayout>
+</LinearLayout>

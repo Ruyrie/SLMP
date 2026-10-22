@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- lib_common UI 套件文案：U03 通用状态页、一级页顶部栏（02 号第十一节 U03、7.1、7.2 节） -->
+<resources>
+    <!-- U03 通用状态页 -->
+    <string name="common_ui_status_error_title">内容加载失败</string>
+    <string name="common_ui_status_no_permission_title">你没有这项内容的查看权限</string>
+
+    <!-- 一级页顶部栏 -->
+    <string name="common_ui_all_farms">全部养殖场</string>
+    <string name="common_ui_cd_switch_farm">切换养殖场，当前%1$s</string>
+    <string name="common_ui_cd_scan">扫码查看档案</string>
+    <string name="common_ui_cd_messages">消息</string>
+    <string name="common_ui_cd_messages_unread">消息，%1$d 条未读</string>
+    <string name="common_ui_cd_mine">我的</string>
+</resources>

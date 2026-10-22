@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- U03 通用状态页（02 号第十一节）：二级页顶部栏（返回 + 目标页标题）+ 内容区状态占位（加载失败 / 无权查看） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/common_ui_status_top_bar"
+        layout="@layout/base_include_top_app_bar" />
+
+    <com.zhimu.slmp.base.widget.StateLayout
+        android:id="@+id/common_ui_status_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+</LinearLayout>

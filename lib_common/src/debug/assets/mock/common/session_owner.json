@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "user": {
+      "user_id": 10001,
+      "name": "王建国",
+      "name_initial": "王",
+      "phone_masked": "138****6620"
+    },
+    "next_step": "NONE",
+    "next_step_text": "无需操作",
+    "last_farm_id": 1001
+  },
+  "trace_id": "mock-a08-owner"
+}

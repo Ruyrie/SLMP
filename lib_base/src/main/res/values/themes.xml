@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    智牧通主题 Theme.Zmt（只做浅色）：02 号《UI设计规范》第三至七章。
+    - 颜色 token 映射到 Material 3 色彩角色；warning、success、scrim、media 用 attrs.xml 中的自定义主题属性。
+    - 字阶 TextAppearance.Zmt.*、圆角 ShapeAppearance.Zmt.*、各组件默认样式 Widget.Zmt.*。
+    - 系统栏透明、深色图标（edge-to-edge），页面自行处理 insets。
+-->
+<resources>
+
+    <style name="Base.Theme.Zmt" parent="Theme.Material3.Light.NoActionBar">
+        <!-- primary -->
+        <item name="colorPrimary">@color/zm_primary</item>
+        <item name="colorOnPrimary">@color/zm_on_primary</item>
+        <item name="colorPrimaryContainer">@color/zm_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/zm_on_primary_container</item>
+        <item name="colorPrimaryInverse">@color/zm_inverse_primary</item>
+        <!-- secondary -->
+        <item name="colorSecondary">@color/zm_secondary</item>
+        <item name="colorOnSecondary">@color/zm_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/zm_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/zm_on_secondary_container</item>
+        <!-- tertiary：只用于 AI -->
+        <item name="colorTertiary">@color/zm_tertiary</item>
+        <item name="colorOnTertiary">@color/zm_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/zm_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/zm_on_tertiary_container</item>
+        <!-- error -->
+        <item name="colorError">@color/zm_error</item>
+        <item name="colorOnError">@color/zm_on_error</item>
+        <item name="colorErrorContainer">@color/zm_error_container</item>
+        <item name="colorOnErrorContainer">@color/zm_on_error_container</item>
+        <!-- surface -->
+        <item name="android:colorBackground">@color/zm_surface</item>
+        <item name="colorOnBackground">@color/zm_on_surface</item>
+        <item name="colorSurface">@color/zm_surface</item>
+        <item name="colorOnSurface">@color/zm_on_surface</item>
+        <item name="colorSurfaceVariant">@color/zm_surface_container_highest</item>
+        <item name="colorOnSurfaceVariant">@color/zm_on_surface_variant</item>
+        <item name="colorSurfaceBright">@color/zm_surface</item>
+        <item name="colorSurfaceDim">@color/zm_surface_container_highest</item>
+        <item name="colorSurfaceContainerLowest">@color/zm_surface_container_lowest</item>
+        <item name="colorSurfaceContainerLow">@color/zm_surface_container_low</item>
+        <item name="colorSurfaceContainer">@color/zm_surface_container</item>
+        <item name="colorSurfaceContainerHigh">@color/zm_surface_container_high</item>
+        <item name="colorSurfaceContainerHighest">@color/zm_surface_container_highest</item>
+        <item name="colorSurfaceInverse">@color/zm_inverse_surface</item>
+        <item name="colorOnSurfaceInverse">@color/zm_inverse_on_surface</item>
+        <item name="colorOutline">@color/zm_outline</item>
+        <item name="colorOutlineVariant">@color/zm_outline_variant</item>
+        <!-- 自定义角色（attrs.xml） -->
+        <item name="colorWarning">@color/zm_warning</item>
+        <item name="colorWarningContainer">@color/zm_warning_container</item>
+        <item name="colorOnWarningContainer">@color/zm_on_warning_container</item>
+        <item name="colorSuccess">@color/zm_success</item>
+        <item name="colorSuccessContainer">@color/zm_success_container</item>
+        <item name="colorOnSuccessContainer">@color/zm_on_success_container</item>
+        <item name="colorScrim">@color/zm_scrim</item>
+        <item name="colorMediaBackdrop">@color/zm_media_backdrop</item>
+        <item name="colorOnMedia">@color/zm_on_media</item>
+
+        <!-- 窗口与系统栏：透明、深色图标（edge-to-edge） -->
+        <item name="android:windowBackground">@color/zm_surface</item>
+        <item name="android:statusBarColor">@color/zm_transparent</item>
+        <item name="android:navigationBarColor">@color/zm_transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+
+        <!-- 字阶（4.2 节） -->
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.Zmt.DisplaySmall</item>
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Zmt.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Zmt.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Zmt.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Zmt.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Zmt.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Zmt.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Zmt.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Zmt.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Zmt.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Zmt.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Zmt.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Zmt.LabelSmall</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyMedium</item>
+        <item name="android:textColorPrimary">@color/zm_on_surface</item>
+        <item name="android:textColorSecondary">@color/zm_on_surface_variant</item>
+
+        <!-- 圆角阶梯（5.1 节） -->
+        <item name="shapeAppearanceCornerExtraSmall">@style/ShapeAppearance.Zmt.Corner.ExtraSmall</item>
+        <item name="shapeAppearanceCornerSmall">@style/ShapeAppearance.Zmt.Corner.Small</item>
+        <item name="shapeAppearanceCornerMedium">@style/ShapeAppearance.Zmt.Corner.Medium</item>
+        <item name="shapeAppearanceCornerLarge">@style/ShapeAppearance.Zmt.Corner.Large</item>
+        <item name="shapeAppearanceCornerLargeIncreased">@style/ShapeAppearance.Zmt.Corner.LargePlus</item>
+        <item name="shapeAppearanceCornerExtraLarge">@style/ShapeAppearance.Zmt.Corner.ExtraLarge</item>
+
+        <!-- 组件默认样式（第七章） -->
+        <item name="materialButtonStyle">@style/Widget.Zmt.Button</item>
+        <item name="materialButtonTonalStyle">@style/Widget.Zmt.Button.Tonal</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.Zmt.Button.Outlined</item>
+        <item name="borderlessButtonStyle">@style/Widget.Zmt.Button.Text</item>
+        <item name="materialIconButtonStyle">@style/Widget.Zmt.Button.Icon</item>
+        <item name="materialButtonToggleGroupStyle">@style/Widget.Zmt.ButtonToggleGroup</item>
+        <item name="chipStyle">@style/Widget.Zmt.Chip.Filter</item>
+        <item name="chipGroupStyle">@style/Widget.Zmt.ChipGroup</item>
+        <item name="textInputStyle">@style/Widget.Zmt.TextInputLayout</item>
+        <item name="textInputOutlinedStyle">@style/Widget.Zmt.TextInputLayout</item>
+        <item name="bottomNavigationStyle">@style/Widget.Zmt.BottomNavigation</item>
+        <item name="appBarLayoutStyle">@style/Widget.Zmt.AppBarLayout</item>
+        <item name="toolbarStyle">@style/Widget.Zmt.Toolbar</item>
+        <item name="materialCardViewStyle">@style/Widget.Zmt.Card</item>
+        <item name="snackbarStyle">@style/Widget.Zmt.Snackbar</item>
+        <item name="snackbarTextViewStyle">@style/Widget.Zmt.Snackbar.TextView</item>
+        <item name="snackbarButtonStyle">@style/Widget.Zmt.Snackbar.Button</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.Zmt.BottomSheetDialog</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Zmt.MaterialAlertDialog</item>
+        <item name="extendedFloatingActionButtonStyle">@style/Widget.Zmt.ExtendedFloatingActionButton</item>
+        <item name="floatingActionButtonStyle">@style/Widget.Zmt.FloatingActionButton</item>
+        <item name="materialSwitchStyle">@style/Widget.Zmt.Switch</item>
+        <item name="checkboxStyle">@style/Widget.Zmt.CheckBox</item>
+        <item name="radioButtonStyle">@style/Widget.Zmt.RadioButton</item>
+        <item name="linearProgressIndicatorStyle">@style/Widget.Zmt.LinearProgressIndicator</item>
+        <item name="circularProgressIndicatorStyle">@style/Widget.Zmt.CircularProgressIndicator</item>
+        <item name="materialDividerStyle">@style/Widget.Zmt.Divider</item>
+        <item name="badgeStyle">@style/Widget.Zmt.Badge</item>
+        <item name="popupMenuStyle">@style/Widget.Zmt.PopupMenu</item>
+        <item name="listPopupWindowStyle">@style/Widget.Zmt.PopupMenu.ListPopupWindow</item>
+    </style>
+
+    <style name="Theme.Zmt" parent="Base.Theme.Zmt" />
+
+    <!-- 全屏媒体页（I08、I09、K05、K06）：media-backdrop 底，系统栏白色图标 -->
+    <style name="Theme.Zmt.Media">
+        <item name="android:windowBackground">@color/zm_media_backdrop</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
+</resources>

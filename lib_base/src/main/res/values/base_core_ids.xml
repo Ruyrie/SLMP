@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 框架核心使用的视图 tag 键 -->
+<resources>
+    <item name="base_core_click_throttle" type="id" />
+</resources>

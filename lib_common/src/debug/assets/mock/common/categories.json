@@ -1,0 +1,89 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 101,
+      "name": "育肥猪",
+      "species": "PIG",
+      "species_text": "猪",
+      "count_unit": "HEAD",
+      "count_unit_text": "头",
+      "is_breeding": false,
+      "breeds": [
+        {
+          "id": 1101,
+          "name": "杜长大",
+          "has_std_weight": true,
+          "has_feed_std": true,
+          "has_immune_template": true
+        },
+        {
+          "id": 1102,
+          "name": "长白",
+          "has_std_weight": true,
+          "has_feed_std": true,
+          "has_immune_template": true
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "name": "种猪",
+      "species": "PIG",
+      "species_text": "猪",
+      "count_unit": "HEAD",
+      "count_unit_text": "头",
+      "is_breeding": true,
+      "breeds": [
+        {
+          "id": 1201,
+          "name": "长大二元",
+          "gestation_days": 114,
+          "pregnancy_check_days": 21,
+          "offspring_breed_id": 1101,
+          "has_std_weight": false,
+          "has_feed_std": true,
+          "has_immune_template": true
+        }
+      ]
+    },
+    {
+      "id": 201,
+      "name": "肉鸡",
+      "species": "POULTRY",
+      "species_text": "禽",
+      "count_unit": "BIRD",
+      "count_unit_text": "只",
+      "is_breeding": false,
+      "breeds": [
+        {
+          "id": 2101,
+          "name": "白羽肉鸡",
+          "has_std_weight": true,
+          "has_feed_std": true,
+          "has_immune_template": true
+        }
+      ]
+    },
+    {
+      "id": 301,
+      "name": "肉牛",
+      "species": "CATTLE",
+      "species_text": "牛",
+      "count_unit": "HEAD",
+      "count_unit_text": "头",
+      "is_breeding": false,
+      "breeds": [
+        {
+          "id": 3101,
+          "name": "西门塔尔",
+          "has_std_weight": true,
+          "has_feed_std": false,
+          "has_immune_template": true
+        }
+      ]
+    }
+  ],
+  "trace_id": "mock-u09"
+}

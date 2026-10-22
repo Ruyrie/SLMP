@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 分组列表项之间 2 dp 透明缝隙（GroupedListLayout 使用） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/zm_transparent" />
+    <size android:width="@dimen/base_list_gap" android:height="@dimen/base_list_gap" />
+</shape>
