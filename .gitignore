@@ -13,3 +13,8 @@ build/
 .externalNativeBuild
 .cxx
 local.properties
+
+# Local design and prototype materials
+/.tech-prep/
+/原型导出/
+/第六组_智牧通_UI设计与技术准备文档/
