@@ -1,0 +1,28 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 8104,
+        "record_type": "WEIGH",
+        "biz_type": "WEIGH_RECORD",
+        "biz_id": 7104,
+        "biz_date": "2026-10-16",
+        "occurred_at": "2026-10-16 09:00:00",
+        "title": "称重 · 平均 60.0 千克",
+        "subtitle": "抽样 20 头 · 李明",
+        "operator_name": "李明",
+        "is_today": false,
+        "expandable": false,
+        "action": "NONE",
+        "route": "G06"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-herd-timeline_3001_weigh"
+}

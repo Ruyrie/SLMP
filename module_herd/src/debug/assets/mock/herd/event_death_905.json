@@ -1,0 +1,59 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "event_id": 905,
+    "batch_id": 3001,
+    "event_type": "DEATH",
+    "status": "EFFECTIVE",
+    "batch_no": "ZM2610-031",
+    "breed_title": "杜长大育肥猪",
+    "event_date": "2026-10-17",
+    "created_at": "2026-10-17 16:20:00",
+    "quantity": 2,
+    "over_capacity_count": 0,
+    "version": 2,
+    "capacity_confirmed": false,
+    "pen": {
+      "pen_id": 2003,
+      "name": "3 号育肥舍",
+      "pen_type_text": "育肥舍"
+    },
+    "reason_code": "SICK",
+    "remark": "精神沉郁，已隔离观察",
+    "executor": {
+      "user_id": 10003,
+      "name": "李明",
+      "role": "STAFF",
+      "role_text": "员工"
+    },
+    "registrant": {
+      "user_id": 10001,
+      "name": "王建国",
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "photos": [
+      {
+        "file_id": 9004,
+        "url": "file:///android_asset/mock/media/death_photo.jpg",
+        "thumb_url": "file:///android_asset/mock/media/death_photo.jpg",
+        "media_type": "IMAGE",
+        "mime_type": "image/jpeg",
+        "size": 20959,
+        "width": 640,
+        "height": 480,
+        "status": "READY",
+        "sort_no": 1,
+        "source_text": "死淘登记 · 3 号育肥舍",
+        "shot_by": "王建国",
+        "shot_at": "2026-10-17 16:15:00"
+      }
+    ],
+    "change_state": {
+      "can_edit": true,
+      "edit_deadline": "2026-10-20 23:59:59"
+    }
+  },
+  "trace_id": "mock-herd-event_death_905"
+}

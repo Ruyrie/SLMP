@@ -1,0 +1,8 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "exists": false
+  },
+  "trace_id": "mock-herd-request_check_none"
+}

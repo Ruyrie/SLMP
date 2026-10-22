@@ -1,0 +1,15 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "pen_id": 2003,
+      "pen_name": "3 号育肥舍",
+      "first_in_date": "2026-10-01",
+      "stock_count": 200,
+      "capacity": 220,
+      "unit_text": "头"
+    }
+  ],
+  "trace_id": "mock-herd-pen_stocks_3001"
+}

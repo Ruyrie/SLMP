@@ -1,0 +1,13 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "result": "OK",
+    "batch_id": 3002,
+    "batch_no": "ZM2610-019",
+    "farm_id": 1001,
+    "farm_name": "东山猪场",
+    "role": "OWNER"
+  },
+  "trace_id": "mock-herd-lookup_ok_3002"
+}

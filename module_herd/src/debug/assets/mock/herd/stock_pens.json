@@ -1,0 +1,156 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "pen_id": 2001,
+        "pen_code": "BY-01",
+        "pen_name": "1 号保育舍",
+        "pen_type": "NURSERY",
+        "pen_type_text": "保育舍",
+        "category_name": "育肥猪",
+        "capacity": 360,
+        "stock_count": 320,
+        "is_breeding_pen": false,
+        "in_withdrawal": false,
+        "display_status": "IN_USE",
+        "unit_text": "头",
+        "occupancy_rate": 0.8889,
+        "mortality_rate": 0.0184,
+        "batch_count": 1,
+        "first_batch": {
+          "batch_id": 3003,
+          "batch_no": "ZM2610-045",
+          "day_age": 35,
+          "stage_name": "保育期"
+        }
+      },
+      {
+        "pen_id": 2002,
+        "pen_code": "BY-02",
+        "pen_name": "2 号保育舍",
+        "pen_type": "NURSERY",
+        "pen_type_text": "保育舍",
+        "category_name": "育肥猪",
+        "capacity": 400,
+        "stock_count": 200,
+        "is_breeding_pen": false,
+        "in_withdrawal": false,
+        "display_status": "IN_USE",
+        "unit_text": "头",
+        "occupancy_rate": 0.5,
+        "mortality_rate": 0.0233,
+        "batch_count": 1,
+        "first_batch": {
+          "batch_id": 3004,
+          "batch_no": "ZM2609-038",
+          "day_age": 63,
+          "stage_name": "保育期"
+        }
+      },
+      {
+        "pen_id": 2003,
+        "pen_code": "YF-03",
+        "pen_name": "3 号育肥舍",
+        "pen_type": "FATTENING",
+        "pen_type_text": "育肥舍",
+        "category_name": "育肥猪",
+        "capacity": 220,
+        "stock_count": 200,
+        "is_breeding_pen": false,
+        "in_withdrawal": true,
+        "display_status": "IN_USE",
+        "unit_text": "头",
+        "occupancy_rate": 0.9091,
+        "mortality_rate": 0.0244,
+        "batch_count": 1,
+        "first_batch": {
+          "batch_id": 3001,
+          "batch_no": "ZM2610-031",
+          "day_age": 96,
+          "stage_name": "育肥期"
+        }
+      },
+      {
+        "pen_id": 2004,
+        "pen_code": "YF-04",
+        "pen_name": "4 号育肥舍",
+        "pen_type": "FATTENING",
+        "pen_type_text": "育肥舍",
+        "category_name": "育肥猪",
+        "capacity": 220,
+        "stock_count": 150,
+        "is_breeding_pen": false,
+        "in_withdrawal": false,
+        "display_status": "IN_USE",
+        "unit_text": "头",
+        "occupancy_rate": 0.6818,
+        "mortality_rate": 0.0132,
+        "batch_count": 1,
+        "first_batch": {
+          "batch_id": 3002,
+          "batch_no": "ZM2610-019",
+          "day_age": 82,
+          "stage_name": "育肥期"
+        }
+      },
+      {
+        "pen_id": 2005,
+        "pen_code": "YF-05",
+        "pen_name": "5 号育肥舍",
+        "pen_type": "FATTENING",
+        "pen_type_text": "育肥舍",
+        "category_name": "育肥猪",
+        "capacity": 400,
+        "stock_count": 0,
+        "is_breeding_pen": false,
+        "in_withdrawal": false,
+        "display_status": "EMPTY",
+        "unit_text": "头",
+        "occupancy_rate": 0.0,
+        "batch_count": 0,
+        "last_ended_batch": {
+          "batch_no": "ZM2609-012",
+          "end_date": "2026-10-13",
+          "end_type": "ALL_SOLD"
+        }
+      },
+      {
+        "pen_id": 2006,
+        "pen_code": "ZC-01",
+        "pen_name": "母猪舍",
+        "pen_type": "SOW",
+        "pen_type_text": "母猪舍",
+        "category_name": "种猪",
+        "capacity": 60,
+        "stock_count": 0,
+        "is_breeding_pen": true,
+        "in_withdrawal": false,
+        "display_status": "IN_USE",
+        "unit_text": "头",
+        "batch_count": 0
+      },
+      {
+        "pen_id": 2007,
+        "pen_code": "ZC-02",
+        "pen_name": "产房",
+        "pen_type": "FARROWING",
+        "pen_type_text": "产房",
+        "category_name": "种猪",
+        "capacity": 40,
+        "stock_count": 0,
+        "is_breeding_pen": true,
+        "in_withdrawal": false,
+        "display_status": "IN_USE",
+        "unit_text": "头",
+        "batch_count": 0
+      }
+    ],
+    "total": 7,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-herd-stock_pens"
+}

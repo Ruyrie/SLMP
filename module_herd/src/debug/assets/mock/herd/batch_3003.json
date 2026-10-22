@@ -1,0 +1,60 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "batch_id": 3003,
+    "farm_id": 1001,
+    "category_id": 101,
+    "breed_id": 1101,
+    "entry_event_id": 904,
+    "batch_no": "ZM2610-045",
+    "farm_name": "东山猪场",
+    "category_name": "育肥猪",
+    "breed_name": "杜长大",
+    "breed_title": "杜长大保育猪",
+    "purpose": "COMMERCIAL",
+    "source": "PURCHASED",
+    "status": "ACTIVE",
+    "entry_date": "2026-10-12",
+    "qr_content": "https://web.zhimutong.example.com/s/b/Rt6yU1oP3a",
+    "label_text": "东山猪场 · 1 号保育舍 · 杜长大",
+    "stage_name": "保育期",
+    "pens": [
+      {
+        "pen_id": 2001,
+        "pen_name": "1 号保育舍",
+        "stock_count": 320
+      }
+    ],
+    "entry_pen": {
+      "pen_id": 2001,
+      "name": "1 号保育舍",
+      "pen_type_text": "保育舍"
+    },
+    "day_age": 35,
+    "days_raised": 7,
+    "current_count": 320,
+    "entry_count": 326,
+    "death_count": 6,
+    "sold_count": 0,
+    "entry_age_days": 28,
+    "version": 3,
+    "mortality_rate": 0.0184,
+    "withdrawal": {
+      "in_withdrawal": false
+    },
+    "actions": {
+      "can_transfer": true,
+      "can_register_death": true,
+      "can_submit_change_request": true,
+      "can_edit_entry": false,
+      "can_delete": false
+    },
+    "unit": "HEAD",
+    "unit_text": "头",
+    "entry_avg_weight": 8.5,
+    "intro_unit_price": 420.0,
+    "pending_change_request_count": 0
+  },
+  "trace_id": "mock-herd-batch_3003"
+}

@@ -1,0 +1,22 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "event_id": 907,
+    "batch_id": 3001,
+    "quantity": 20,
+    "over_capacity_count": 0,
+    "message": "已转栏 20 头到 4 号育肥舍",
+    "from_pen": {
+      "pen_id": 2003,
+      "pen_name": "3 号育肥舍",
+      "stock_count": 180
+    },
+    "to_pen": {
+      "pen_id": 2004,
+      "pen_name": "4 号育肥舍",
+      "stock_count": 170
+    }
+  },
+  "trace_id": "mock-herd-transfer_result_edit"
+}

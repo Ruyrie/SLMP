@@ -1,0 +1,41 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 8106,
+        "record_type": "FEED",
+        "biz_type": "FEED_RECORD",
+        "biz_id": 7106,
+        "biz_date": "2026-10-19",
+        "occurred_at": "2026-10-19 07:32:00",
+        "title": "投喂 · 早餐 158 千克",
+        "subtitle": "育肥全价料 · 计划 160 千克 · 李明",
+        "operator_name": "李明",
+        "is_today": true,
+        "expandable": true,
+        "action": "NONE",
+        "detail": [
+          {
+            "key": "登记人",
+            "value": "李明"
+          },
+          {
+            "key": "登记时间",
+            "value": "今天 07:32"
+          },
+          {
+            "key": "备注",
+            "value": "采食正常"
+          }
+        ]
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-herd-timeline_3001_feed"
+}

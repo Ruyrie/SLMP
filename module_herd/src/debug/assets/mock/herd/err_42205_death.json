@@ -1,0 +1,10 @@
+{
+  "code": 42205,
+  "message": "3 号育肥舍的在栏数已变为 195 头，不能超过 195 头",
+  "data": {
+    "pen_id": 2003,
+    "pen_name": "3 号育肥舍",
+    "stock_count": 195
+  },
+  "trace_id": "mock-herd-err_42205_death"
+}

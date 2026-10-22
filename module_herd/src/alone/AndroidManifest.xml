@@ -22,6 +22,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 调试页：托管 L01 / L02 一级页（源码在 src/debug） -->
+        <activity
+            android:name="com.zhimu.slmp.herd.debug.HerdTabHostActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.herd.debug.TAB" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

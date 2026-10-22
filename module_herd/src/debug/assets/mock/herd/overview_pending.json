@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "farm_id": 1003,
+    "farm_name": "北湾牛场",
+    "farm_status": "PENDING",
+    "today": "2026-10-19"
+  },
+  "trace_id": "mock-herd-overview_pending"
+}

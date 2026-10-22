@@ -1,0 +1,23 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "batch_id": {{seq}},
+    "pen_id": 2005,
+    "batch_no": "ZM2610-058",
+    "qr_content": "https://web.zhimutong.example.com/s/b/Nw4pX7cR2e",
+    "label_text": "东山猪场 · 5 号育肥舍 · 杜长大",
+    "farm_name": "东山猪场",
+    "pen_name": "5 号育肥舍",
+    "breed_name": "杜长大",
+    "purpose": "COMMERCIAL",
+    "entry_date": "2026-10-19",
+    "entry_count": 90,
+    "entry_age_days": 70,
+    "pen_stock_after": 90,
+    "capacity": 400,
+    "over_capacity_count": 0,
+    "unit_text": "头"
+  },
+  "trace_id": "mock-herd-entry_result_ok"
+}

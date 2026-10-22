@@ -1,0 +1,40 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "batch_id": 3001,
+        "breed_id": 1101,
+        "batch_no": "ZM2610-031",
+        "breed_name": "杜长大",
+        "category_name": "育肥猪",
+        "breed_title": "杜长大育肥猪",
+        "entry_date": "2026-10-01",
+        "purpose": "COMMERCIAL",
+        "source": "PURCHASED",
+        "status": "ACTIVE",
+        "pens": [
+          {
+            "pen_id": 2003,
+            "pen_name": "3 号育肥舍",
+            "stock_count": 200
+          }
+        ],
+        "entry_age_days": 78,
+        "day_age": 96,
+        "current_count": 200,
+        "mortality_rate": 0.0244,
+        "in_withdrawal": true,
+        "stage_name": "育肥期",
+        "unit": "HEAD",
+        "unit_text": "头"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-herd-batches_staff"
+}

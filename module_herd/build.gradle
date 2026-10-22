@@ -7,6 +7,8 @@ android {
 dependencies {
     implementation project(':lib_common')
     implementation project(':lib_media')
+    // 批次二维码位图（L06 二维码面板、L09 入栏成功）
+    implementation libs.zxing.core
     annotationProcessor libs.dagger.compiler
 
     testImplementation libs.junit

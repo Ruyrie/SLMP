@@ -1,0 +1,15 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "pen_id": 2002,
+      "pen_name": "2 号保育舍",
+      "first_in_date": "2026-09-20",
+      "stock_count": 200,
+      "capacity": 400,
+      "unit_text": "头"
+    }
+  ],
+  "trace_id": "mock-herd-pen_stocks_3004"
+}

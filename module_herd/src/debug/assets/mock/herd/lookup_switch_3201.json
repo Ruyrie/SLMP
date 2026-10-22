@@ -1,0 +1,14 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "result": "SWITCH_FARM",
+    "message": "已切换到西岭鸡场",
+    "batch_id": 3201,
+    "batch_no": "ZM2610-026",
+    "farm_id": 1002,
+    "farm_name": "西岭鸡场",
+    "role": "MANAGER"
+  },
+  "trace_id": "mock-herd-lookup_switch_3201"
+}

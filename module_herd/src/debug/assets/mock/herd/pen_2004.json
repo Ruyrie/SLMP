@@ -1,0 +1,39 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "pen_id": 2004,
+    "category_id": 101,
+    "pen_code": "YF-04",
+    "pen_name": "4 号育肥舍",
+    "pen_type": "FATTENING",
+    "pen_type_text": "育肥舍",
+    "category_name": "育肥猪",
+    "capacity": 220,
+    "stock_count": 150,
+    "remaining_capacity": 70,
+    "over_capacity_count": 0,
+    "version": 4,
+    "occupancy_rate": 0.6818,
+    "status": "ENABLED",
+    "display_status": "IN_USE",
+    "display_status_text": "在用",
+    "is_breeding_pen": false,
+    "can_disable": false,
+    "can_enable": false,
+    "staff": [],
+    "batches": [
+      {
+        "batch_id": 3002,
+        "batch_no": "ZM2610-019",
+        "breed_title": "杜长大育肥猪",
+        "day_age": 82,
+        "qty_in_pen": 150,
+        "in_withdrawal": false
+      }
+    ],
+    "unit_text": "头",
+    "disable_block_reason": "栏舍里还有 1 个在栏批次，全部转出或出栏后才能停用"
+  },
+  "trace_id": "mock-herd-pen_2004"
+}

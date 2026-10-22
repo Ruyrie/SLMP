@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 模块04：L03 存栏总览、L04 栏舍详情、L05 新增 / 编辑栏舍文案 -->
+<resources>
+
+    <!-- ===== L03 ===== -->
+    <string name="herd_stock_title">存栏总览</string>
+    <string name="herd_stock_error_title">存栏加载失败</string>
+    <string name="herd_stock_search">搜索</string>
+    <string name="herd_stock_add">新增栏舍</string>
+    <string name="herd_stock_search_hint">输入栏舍名称或批次号</string>
+    <string name="herd_stock_view_pen">栏舍</string>
+    <string name="herd_stock_view_category">品类</string>
+    <string name="herd_stock_view_batch">批次</string>
+    <string name="herd_stock_total">总存栏</string>
+    <string name="herd_stock_title_pen">栏舍 · %1$d 个</string>
+    <string name="herd_stock_title_category">品类 · %1$d 个</string>
+    <string name="herd_stock_title_batch">批次 · %1$d 个</string>
+    <string name="herd_stock_sort_code">按编号</string>
+    <string name="herd_stock_sort_stock">按存栏</string>
+    <string name="herd_stock_sort_occupancy">按占用率</string>
+    <string name="herd_stock_sort_entry_date">按入栏日期</string>
+    <string name="herd_stock_sort_day_age">按日龄</string>
+    <string name="herd_stock_fab">批次入栏</string>
+    <string name="herd_stock_search_empty">没有找到匹配的栏舍或批次</string>
+    <string name="herd_stock_no_pen_title">还没有栏舍</string>
+    <string name="herd_stock_no_pen_message">先新增栏舍，再登记批次入栏。</string>
+    <string name="herd_stock_no_batch">还没有在养批次。点右下角“批次入栏”登记第一个批次。</string>
+
+    <!-- ===== L04 ===== -->
+    <string name="herd_pen_detail_title">栏舍详情</string>
+    <string name="herd_pen_detail_error_title">栏舍详情加载失败</string>
+    <string name="herd_pen_detail_no_permission">你没有这个栏舍的查看权限</string>
+    <string name="herd_pen_capacity">容量占用</string>
+    <string name="herd_pen_over_tag">超出容量</string>
+    <string name="herd_pen_info">栏舍信息</string>
+    <string name="herd_pen_code">编号</string>
+    <string name="herd_pen_type">类型</string>
+    <string name="herd_pen_category">适用品类</string>
+    <string name="herd_pen_capacity_value">容量</string>
+    <string name="herd_pen_staff">负责员工</string>
+    <string name="herd_pen_no_staff">还没有负责员工</string>
+    <string name="herd_pen_assign">去分配</string>
+    <string name="herd_pen_staff_sub">员工 · 在成员管理中分配</string>
+    <string name="herd_pen_batches">在栏批次 · %1$d 个</string>
+    <string name="herd_pen_empty_batches">这个栏舍现在是空栏</string>
+    <string name="herd_pen_menu_edit">编辑栏舍</string>
+    <string name="herd_pen_menu_log">查看修改记录</string>
+    <string name="herd_pen_menu_disable">停用栏舍</string>
+    <string name="herd_pen_menu_enable">启用栏舍</string>
+    <string name="herd_pen_disable_title">停用 %1$s？</string>
+    <string name="herd_pen_disable_message">停用后不能再向这个栏舍入栏或转入，历史记录照常保留。</string>
+    <string name="herd_pen_disable_action">停用</string>
+    <string name="herd_pen_change_log">修改记录</string>
+    <string name="herd_pen_change_log_empty">还没有修改记录</string>
+
+    <!-- ===== L05 ===== -->
+    <string name="herd_pen_edit_title_new">新增栏舍</string>
+    <string name="herd_pen_edit_title_edit">编辑栏舍</string>
+    <string name="herd_pen_edit_error_title">栏舍表单加载失败</string>
+    <string name="herd_pen_edit_code">栏舍编号</string>
+    <string name="herd_pen_edit_code_helper">本场内唯一，保存后不能修改</string>
+    <string name="herd_pen_edit_code_readonly">编号不能修改</string>
+    <string name="herd_pen_edit_name">栏舍名称</string>
+    <string name="herd_pen_edit_name_helper">改名后，历史记录仍按编号关联</string>
+    <string name="herd_pen_edit_type">类型</string>
+    <string name="herd_pen_edit_category">适用品类</string>
+    <string name="herd_pen_edit_category_helper">从平台品类品种字典中选择</string>
+    <string name="herd_pen_edit_capacity">容量</string>
+    <string name="herd_pen_edit_capacity_helper">转入后超过容量时，需要确认后才能保存</string>
+    <string name="herd_pen_edit_staff_notice">负责员工在成员管理中分配。保存后，可以到成员管理为员工分配这个栏舍。</string>
+</resources>

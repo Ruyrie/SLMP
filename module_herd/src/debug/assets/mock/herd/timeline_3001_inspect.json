@@ -1,0 +1,28 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 8107,
+        "record_type": "INSPECT",
+        "biz_type": "INSPECTION",
+        "biz_id": 7107,
+        "biz_date": "2026-10-19",
+        "occurred_at": "2026-10-19 08:40:00",
+        "title": "巡检 · 3 项正常",
+        "subtitle": "精神状态、采食、粪便 · 李明 · 现场",
+        "operator_name": "李明",
+        "is_today": true,
+        "expandable": false,
+        "action": "NONE",
+        "route": "I04"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-herd-timeline_3001_inspect"
+}

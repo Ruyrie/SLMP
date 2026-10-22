@@ -1,0 +1,41 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "pen_types": [
+      {
+        "value": "NURSERY",
+        "label": "保育舍"
+      },
+      {
+        "value": "FATTENING",
+        "label": "育肥舍"
+      },
+      {
+        "value": "SOW",
+        "label": "母猪舍"
+      },
+      {
+        "value": "FARROWING",
+        "label": "产房"
+      }
+    ],
+    "categories": [
+      {
+        "category_id": 101,
+        "category_name": "育肥猪",
+        "count_unit": "HEAD",
+        "count_unit_text": "头",
+        "is_breeding": false
+      },
+      {
+        "category_id": 102,
+        "category_name": "种猪",
+        "count_unit": "HEAD",
+        "count_unit_text": "头",
+        "is_breeding": true
+      }
+    ]
+  },
+  "trace_id": "mock-herd-pen_form_options"
+}

@@ -1,0 +1,132 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "category_id": 101,
+      "category_name": "育肥猪",
+      "is_breeding": false,
+      "stock": 870,
+      "batch_count": 4,
+      "mortality_rate": 0.021,
+      "pen_names": [
+        "1 号保育舍",
+        "2 号保育舍",
+        "3 号育肥舍",
+        "4 号育肥舍"
+      ],
+      "batches": [
+        {
+          "batch_id": 3001,
+          "breed_id": 1101,
+          "batch_no": "ZM2610-031",
+          "breed_name": "杜长大",
+          "category_name": "育肥猪",
+          "breed_title": "杜长大育肥猪",
+          "entry_date": "2026-10-01",
+          "purpose": "COMMERCIAL",
+          "source": "PURCHASED",
+          "status": "ACTIVE",
+          "pens": [
+            {
+              "pen_id": 2003,
+              "pen_name": "3 号育肥舍",
+              "stock_count": 200
+            }
+          ],
+          "entry_age_days": 78,
+          "day_age": 96,
+          "current_count": 200,
+          "mortality_rate": 0.0244,
+          "in_withdrawal": true,
+          "stage_name": "育肥期",
+          "unit": "HEAD",
+          "unit_text": "头"
+        },
+        {
+          "batch_id": 3002,
+          "breed_id": 1101,
+          "batch_no": "ZM2610-019",
+          "breed_name": "杜长大",
+          "category_name": "育肥猪",
+          "breed_title": "杜长大育肥猪",
+          "entry_date": "2026-10-05",
+          "purpose": "COMMERCIAL",
+          "source": "PURCHASED",
+          "status": "ACTIVE",
+          "pens": [
+            {
+              "pen_id": 2004,
+              "pen_name": "4 号育肥舍",
+              "stock_count": 150
+            }
+          ],
+          "entry_age_days": 68,
+          "day_age": 82,
+          "current_count": 150,
+          "mortality_rate": 0.0132,
+          "in_withdrawal": false,
+          "stage_name": "育肥期",
+          "unit": "HEAD",
+          "unit_text": "头"
+        },
+        {
+          "batch_id": 3003,
+          "breed_id": 1101,
+          "batch_no": "ZM2610-045",
+          "breed_name": "杜长大",
+          "category_name": "育肥猪",
+          "breed_title": "杜长大保育猪",
+          "entry_date": "2026-10-12",
+          "purpose": "COMMERCIAL",
+          "source": "PURCHASED",
+          "status": "ACTIVE",
+          "pens": [
+            {
+              "pen_id": 2001,
+              "pen_name": "1 号保育舍",
+              "stock_count": 320
+            }
+          ],
+          "entry_age_days": 28,
+          "day_age": 35,
+          "current_count": 320,
+          "mortality_rate": 0.0184,
+          "in_withdrawal": false,
+          "stage_name": "保育期",
+          "unit": "HEAD",
+          "unit_text": "头"
+        },
+        {
+          "batch_id": 3004,
+          "breed_id": 1101,
+          "batch_no": "ZM2609-038",
+          "breed_name": "杜长大",
+          "category_name": "育肥猪",
+          "breed_title": "杜长大保育猪",
+          "entry_date": "2026-09-20",
+          "purpose": "COMMERCIAL",
+          "source": "PURCHASED",
+          "status": "ACTIVE",
+          "pens": [
+            {
+              "pen_id": 2002,
+              "pen_name": "2 号保育舍",
+              "stock_count": 200
+            }
+          ],
+          "entry_age_days": 34,
+          "day_age": 63,
+          "current_count": 200,
+          "mortality_rate": 0.0233,
+          "in_withdrawal": false,
+          "stage_name": "保育期",
+          "unit": "HEAD",
+          "unit_text": "头"
+        }
+      ],
+      "unit_text": "头"
+    }
+  ],
+  "trace_id": "mock-herd-stock_categories"
+}

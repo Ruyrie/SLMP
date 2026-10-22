@@ -1,0 +1,6 @@
+{
+  "code": 40307,
+  "message": "这个批次已有后续记录，不能删除",
+  "data": null,
+  "trace_id": "mock-herd-err_40307_delete"
+}

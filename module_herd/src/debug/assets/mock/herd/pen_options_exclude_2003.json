@@ -1,0 +1,69 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "pen_id": 2001,
+      "pen_code": "BY-01",
+      "pen_name": "1 号保育舍",
+      "pen_type": "NURSERY",
+      "stock_count": 320,
+      "capacity": 360,
+      "disabled": false,
+      "unit_text": "头"
+    },
+    {
+      "pen_id": 2002,
+      "pen_code": "BY-02",
+      "pen_name": "2 号保育舍",
+      "pen_type": "NURSERY",
+      "stock_count": 200,
+      "capacity": 400,
+      "disabled": false,
+      "unit_text": "头"
+    },
+    {
+      "pen_id": 2004,
+      "pen_code": "YF-04",
+      "pen_name": "4 号育肥舍",
+      "pen_type": "FATTENING",
+      "stock_count": 150,
+      "capacity": 220,
+      "disabled": false,
+      "unit_text": "头"
+    },
+    {
+      "pen_id": 2005,
+      "pen_code": "YF-05",
+      "pen_name": "5 号育肥舍",
+      "pen_type": "FATTENING",
+      "stock_count": 0,
+      "capacity": 400,
+      "disabled": false,
+      "unit_text": "头"
+    },
+    {
+      "pen_id": 2006,
+      "pen_code": "ZC-01",
+      "pen_name": "母猪舍",
+      "pen_type": "SOW",
+      "stock_count": 0,
+      "capacity": 60,
+      "disabled": true,
+      "unit_text": "头",
+      "hint": "已有其他品类批次在栏"
+    },
+    {
+      "pen_id": 2007,
+      "pen_code": "ZC-02",
+      "pen_name": "产房",
+      "pen_type": "FARROWING",
+      "stock_count": 0,
+      "capacity": 40,
+      "disabled": true,
+      "unit_text": "头",
+      "hint": "已有其他品类批次在栏"
+    }
+  ],
+  "trace_id": "mock-herd-pen_options_exclude_2003"
+}

@@ -1,0 +1,28 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 8103,
+        "record_type": "IMMUNE",
+        "biz_type": "IMMUNE_RECORD",
+        "biz_id": 7103,
+        "biz_date": "2026-10-12",
+        "occurred_at": "2026-10-12 10:00:00",
+        "title": "免疫 · 口蹄疫灭活疫苗",
+        "subtitle": "全群接种 · 李明",
+        "operator_name": "李明",
+        "is_today": false,
+        "expandable": false,
+        "action": "NONE",
+        "route": "D01"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-herd-timeline_3001_immune"
+}

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- L07 扫码查看档案宿主页：取景由 lib_media 相机页（扫码模式）负责；本页为 media-backdrop 底，显示查询进度，
+     或识别暂停时的“继续扫码”“输入批次号” -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorMediaBackdrop"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/herd_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/base_top_bar_height"
+        android:background="?attr/colorMediaBackdrop"
+        app:navigationContentDescription="@string/base_cd_back"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="?attr/colorOnMedia"
+        app:title="@string/herd_scan_title"
+        app:titleTextColor="?attr/colorOnMedia" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/herd_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                app:indicatorColor="?attr/colorOnMedia" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_4"
+                android:text="@string/herd_scan_opening"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="?attr/colorOnMedia" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/herd_paused"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="@dimen/base_space_6"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_qr_code_scanner"
+                app:tint="?attr/colorOnMedia" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_4"
+                android:text="@string/herd_scan_paused"
+                android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                android:textColor="?attr/colorOnMedia" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_2"
+                android:gravity="center"
+                android:text="@string/herd_scan_manual_hint"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="?attr/colorOnMedia" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/herd_resume"
+                style="@style/Widget.Zmt.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_6"
+                android:text="@string/herd_scan_resume"
+                app:icon="@drawable/ic_qr_code_scanner" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/herd_input"
+                style="@style/Widget.Zmt.Button.Outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_3"
+                android:text="@string/herd_scan_manual"
+                android:textColor="?attr/colorOnMedia"
+                app:icon="@drawable/ic_keyboard"
+                app:iconTint="?attr/colorOnMedia"
+                app:strokeColor="?attr/colorOnMedia" />
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

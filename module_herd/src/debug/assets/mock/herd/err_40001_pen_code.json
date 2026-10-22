@@ -1,0 +1,13 @@
+{
+  "code": 40001,
+  "message": "参数校验失败",
+  "data": {
+    "field_errors": [
+      {
+        "field": "pen_code",
+        "message": "本场已有编号为 YF-03 的栏舍"
+      }
+    ]
+  },
+  "trace_id": "mock-herd-err_40001_pen_code"
+}
