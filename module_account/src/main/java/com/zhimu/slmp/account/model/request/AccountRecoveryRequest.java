@@ -22,6 +22,13 @@ public class AccountRecoveryRequest {
         this.description = description;
     }
 
+    /** 换成另一个新手机号验证码的副本（测试直连校验通过后提交给 Mock 用），相同时返回自身 */
+    @NonNull
+    public AccountRecoveryRequest withNewPhoneSmsCode(@NonNull String code) {
+        return code.equals(newPhoneSmsCode) ? this
+                : new AccountRecoveryRequest(oldPhone, recoveryCode, newPhone, code, description);
+    }
+
     public String getOldPhone() {
         return oldPhone;
     }

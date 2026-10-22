@@ -21,14 +21,28 @@ public class RegisterRequest {
 
     public RegisterRequest(@NonNull String phone, @NonNull String smsCode, @NonNull String password,
                            boolean agreeTerms, @NonNull String agreementVersion, @NonNull DeviceInfo device) {
+        this(phone, smsCode, password, agreeTerms, agreementVersion, device.getDeviceId(), device.getDeviceModel(),
+                device.getOsVersion());
+    }
+
+    private RegisterRequest(@NonNull String phone, @NonNull String smsCode, @NonNull String password,
+                            boolean agreeTerms, @NonNull String agreementVersion, String deviceId,
+                            @Nullable String deviceModel, @Nullable String osVersion) {
         this.phone = phone;
         this.smsCode = smsCode;
         this.password = password;
         this.agreeTerms = agreeTerms;
         this.agreementVersion = agreementVersion;
-        this.deviceId = device.getDeviceId();
-        this.deviceModel = device.getDeviceModel();
-        this.osVersion = device.getOsVersion();
+        this.deviceId = deviceId;
+        this.deviceModel = deviceModel;
+        this.osVersion = osVersion;
+    }
+
+    /** 换成另一个验证码的副本（测试直连校验通过后提交给 Mock 用），相同时返回自身 */
+    @NonNull
+    public RegisterRequest withSmsCode(@NonNull String code) {
+        return code.equals(smsCode) ? this : new RegisterRequest(phone, code, password, agreeTerms, agreementVersion,
+                deviceId, deviceModel, osVersion);
     }
 
     public String getPhone() {

@@ -17,6 +17,12 @@ public class AccountCancelRequest {
         this.confirmed = confirmed;
     }
 
+    /** 换成另一个验证码的副本（测试直连校验通过后提交给 Mock 用），相同时返回自身 */
+    @NonNull
+    public AccountCancelRequest withSmsCode(@NonNull String code) {
+        return code.equals(smsCode) ? this : new AccountCancelRequest(code, checklistVersion, confirmed);
+    }
+
     public String getSmsCode() {
         return smsCode;
     }

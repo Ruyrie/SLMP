@@ -17,11 +17,22 @@ public class SmsLoginRequest {
     private final String osVersion;
 
     public SmsLoginRequest(@NonNull String phone, @NonNull String smsCode, @NonNull DeviceInfo device) {
+        this(phone, smsCode, device.getDeviceId(), device.getDeviceModel(), device.getOsVersion());
+    }
+
+    private SmsLoginRequest(@NonNull String phone, @NonNull String smsCode, String deviceId,
+                            @Nullable String deviceModel, @Nullable String osVersion) {
         this.phone = phone;
         this.smsCode = smsCode;
-        this.deviceId = device.getDeviceId();
-        this.deviceModel = device.getDeviceModel();
-        this.osVersion = device.getOsVersion();
+        this.deviceId = deviceId;
+        this.deviceModel = deviceModel;
+        this.osVersion = osVersion;
+    }
+
+    /** 换成另一个验证码的副本（测试直连校验通过后提交给 Mock 用），相同时返回自身 */
+    @NonNull
+    public SmsLoginRequest withSmsCode(@NonNull String code) {
+        return code.equals(smsCode) ? this : new SmsLoginRequest(phone, code, deviceId, deviceModel, osVersion);
     }
 
     public String getPhone() {

@@ -15,6 +15,17 @@ public class SmsCodeSendVO {
     /** 有效期秒数，300 */
     private int expireSeconds;
 
+    /** Gson 反序列化用 */
+    public SmsCodeSendVO() {
+    }
+
+    /** 测试直连（DirectSmsGateway）在本地组装与接口相同的界面数据 */
+    public SmsCodeSendVO(@Nullable String phoneMasked, int cooldownSeconds, int expireSeconds) {
+        this.phoneMasked = phoneMasked;
+        this.cooldownSeconds = cooldownSeconds;
+        this.expireSeconds = expireSeconds;
+    }
+
     @Nullable
     public String getPhoneMasked() {
         return phoneMasked;

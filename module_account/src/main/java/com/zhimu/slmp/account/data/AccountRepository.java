@@ -41,6 +41,8 @@ import io.reactivex.rxjava3.core.Single;
 /**
  * 模块01 账号仓库：封装 AccountApi（Retrofit 已在 io 线程执行）；登录类接口（A03、A04、A05、A11、A17）成功后
  * 先交 SessionManager.saveToken，再把结果交给调用方。
+ * 短信验证码测试直连开启时（debug 包，见 {@link DirectSmsGateway}），A01、A02 改为直连阿里云发送，
+ * 带验证码的提交（A03、A05、A09、A10、A13、A20）先由阿里云校验再调原接口；关闭时与原来完全一致。
  */
 @FeatureScope
 public class AccountRepository {
@@ -48,31 +50,42 @@ public class AccountRepository {
     private final AccountApi api;
     private final SessionManager sessionManager;
     private final FarmContext farmContext;
+    private final DirectSmsGateway directSms;
 
     @Inject
     public AccountRepository(@NonNull AccountApi api, @NonNull SessionManager sessionManager,
-                             @NonNull FarmContext farmContext) {
+                             @NonNull FarmContext farmContext, @NonNull DirectSmsGateway directSms) {
         this.api = api;
         this.sessionManager = sessionManager;
         this.farmContext = farmContext;
+        this.directSms = directSms;
     }
 
-    /** API-A01 */
+    /** API-A01（直连开启时由阿里云发送） */
     @NonNull
     public Single<SmsCodeSendVO> sendSmsCode(@NonNull SmsCodeSendRequest request) {
+        if (directSms.isEnabled()) {
+            return directSms.send(request.getPhone(), request.getScene());
+        }
         return api.sendSmsCode(request).compose(RxResult.unwrap());
     }
 
-    /** API-A02 */
+    /** API-A02（直连开启且能确定本人手机号时由阿里云发送） */
     @NonNull
     public Single<SmsCodeSendVO> sendAccountSmsCode(@NonNull AccountSmsCodeRequest request) {
+        String phone = directSms.accountPhone();
+        if (phone != null) {
+            return directSms.send(phone, request.getScene());
+        }
         return api.sendAccountSmsCode(request).compose(RxResult.unwrap());
     }
 
     /** API-A03：成功后保存会话 */
     @NonNull
     public Single<AuthTokenVO> register(@NonNull RegisterRequest request, @NonNull String idemKey) {
-        return api.register(request, idemKey).compose(RxResult.unwrap()).doOnSuccess(sessionManager::saveToken);
+        return directSms.verifyThen(request.getPhone(), request.getSmsCode(),
+                        code -> api.register(request.withSmsCode(code), idemKey).compose(RxResult.unwrap()))
+                .doOnSuccess(sessionManager::saveToken);
     }
 
     /** API-A04：成功后保存会话 */
@@ -84,7 +97,9 @@ public class AccountRepository {
     /** API-A05：成功后保存会话 */
     @NonNull
     public Single<AuthTokenVO> loginBySms(@NonNull SmsLoginRequest request) {
-        return api.loginBySms(request).compose(RxResult.unwrap()).doOnSuccess(sessionManager::saveToken);
+        return directSms.verifyThen(request.getPhone(), request.getSmsCode(),
+                        code -> api.loginBySms(request.withSmsCode(code)).compose(RxResult.unwrap()))
+                .doOnSuccess(sessionManager::saveToken);
     }
 
     /** API-A07 */
@@ -119,14 +134,16 @@ public class AccountRepository {
     /** API-A09 */
     @NonNull
     public Completable resetPassword(@NonNull PasswordResetRequest request, @NonNull String idemKey) {
-        return RxResult.completable(api.resetPassword(request, idemKey));
+        return directSms.verifyThenComplete(request.getPhone(), request.getSmsCode(),
+                code -> RxResult.completable(api.resetPassword(request.withSmsCode(code), idemKey)));
     }
 
     /** API-A10 */
     @NonNull
     public Single<AccountRecoverySubmitVO> submitRecovery(@NonNull AccountRecoveryRequest request,
                                                           @NonNull String idemKey) {
-        return api.submitRecovery(request, idemKey).compose(RxResult.unwrap());
+        return directSms.verifyThen(request.getNewPhone(), request.getNewPhoneSmsCode(),
+                code -> api.submitRecovery(request.withNewPhoneSmsCode(code), idemKey).compose(RxResult.unwrap()));
     }
 
     /** API-A11：成功后先保存新令牌 */
@@ -147,7 +164,8 @@ public class AccountRepository {
     @NonNull
     public Single<RecoveryCodeVO> regenerateCode(@NonNull RecoveryCodeRegenerateRequest request,
                                                  @NonNull String idemKey) {
-        return api.regenerateCode(request, idemKey).compose(RxResult.unwrap());
+        return directSms.verifyThen(directSms.accountPhone(), request.getSmsCode(),
+                code -> api.regenerateCode(request.withSmsCode(code), idemKey).compose(RxResult.unwrap()));
     }
 
     /** API-A14 */
@@ -183,7 +201,8 @@ public class AccountRepository {
     /** API-A20：成功后清除本机全部数据（含解绑推送） */
     @NonNull
     public Completable cancelAccount(@NonNull AccountCancelRequest request, @NonNull String idemKey) {
-        return RxResult.completable(api.cancelAccount(request, idemKey))
+        return directSms.verifyThenComplete(directSms.accountPhone(), request.getSmsCode(),
+                        code -> RxResult.completable(api.cancelAccount(request.withSmsCode(code), idemKey)))
                 .andThen(Completable.fromAction(sessionManager::logout));
     }
 
