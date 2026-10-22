@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 列表底部说明：“没有更多记录了”、筛选无结果、空状态 -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:paddingTop="@dimen/base_space_4"
+    android:paddingBottom="@dimen/base_space_4"
+    android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+    android:textColor="?attr/colorOnSurfaceVariant" />

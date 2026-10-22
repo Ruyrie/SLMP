@@ -1,18 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- 相机（拍照、扫码）；没有相机的设备仍可从相册选择 -->
+    <!-- 相机（拍照、录像、扫码）；没有相机的设备仍可从相册选择 -->
     <uses-feature
         android:name="android.hardware.camera.any"
         android:required="false" />
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- 录像需要麦克风（2026-10-22 确认：被拒时引导去设置开启，不开启就不录像，仍可拍照） -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- 扫码成功震动 -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- 视频转码与上传以 dataSync 前台任务运行（通知“正在处理视频 62%”，锁屏不中断） -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application>
 
-        <!-- I08 拍照 / 扫码（录像预留） -->
+        <!-- I08 拍照 / 录像 / 扫码 -->
         <activity
             android:name=".ui.camera.CameraActivity"
             android:exported="false"
@@ -27,6 +37,7 @@
         <!-- I09 照片和视频全屏预览 -->
         <activity
             android:name=".ui.viewer.MediaViewerActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
             android:exported="false"
             android:theme="@style/Theme.Zmt.Media">
             <intent-filter>
@@ -34,6 +45,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <!-- WorkManager 前台任务服务：声明 dataSync 类型（Android 14 起必须与 ForegroundInfo 一致） -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
     </application>
 
 </manifest>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 已有视频时“录像”段文字、播放进度条缓冲段：on-media 50% -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:alpha="0.5" android:color="@color/zm_on_media" />
+</selector>

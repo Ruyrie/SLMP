@@ -177,7 +177,14 @@ final class MediaGridAdapter extends ListAdapter<MediaGridAdapter.Cell, Recycler
                     .load(MediaGlide.gridModel(it))
                     .centerCrop()
                     .into(b.mediaThumb);
-            b.mediaPlay.setVisibility(it.isVideo() && !it.isFailed() ? View.VISIBLE : View.GONE);
+            b.mediaPlay.setVisibility(it.isVideo() && !it.isFailed() && !it.isInProgress() ? View.VISIBLE : View.GONE);
+            Integer duration = it.getDurationSec();
+            if (it.isVideo() && duration != null && !it.isFailed()) {
+                b.mediaDuration.setText(com.zhimu.slmp.media.ui.viewer.ViewerItem.formatDuration(duration));
+                b.mediaDuration.setVisibility(View.VISIBLE);
+            } else {
+                b.mediaDuration.setVisibility(View.GONE);
+            }
             b.mediaDelete.setVisibility(cell.readOnly ? View.GONE : View.VISIBLE);
             if (it.getTagText() != null) {
                 b.mediaTag.setStatus(it.getTagText(), it.getTagType());
@@ -185,8 +192,10 @@ final class MediaGridAdapter extends ListAdapter<MediaGridAdapter.Cell, Recycler
             } else {
                 b.mediaTag.setVisibility(View.GONE);
             }
-            b.getRoot().setContentDescription(b.getRoot().getContext()
-                    .getString(R.string.media_picker_thumb, position + 1));
+            b.getRoot().setContentDescription(it.isVideo() && duration != null
+                    ? b.getRoot().getContext().getString(R.string.media_picker_video_thumb, position + 1,
+                    com.zhimu.slmp.media.ui.viewer.ViewerItem.formatDuration(duration))
+                    : b.getRoot().getContext().getString(R.string.media_picker_thumb, position + 1));
             bindProgress(it);
         }
 
@@ -198,7 +207,9 @@ final class MediaGridAdapter extends ListAdapter<MediaGridAdapter.Cell, Recycler
             if (!busy) {
                 return;
             }
-            boolean determinate = it.getStatus() == UploadItem.Status.UPLOADING && it.getProgress() > 0;
+            // 上传中、视频转码中（带进度）显示百分比；图片压缩无进度，显示不确定的环
+            boolean determinate = (it.getStatus() == UploadItem.Status.UPLOADING
+                    || it.getStatus() == UploadItem.Status.COMPRESSING) && it.getProgress() > 0;
             if (determinate) {
                 if (b.mediaProgress.isIndeterminate()) {
                     b.mediaProgress.setVisibility(View.INVISIBLE);
@@ -240,6 +251,8 @@ final class MediaGridAdapter extends ListAdapter<MediaGridAdapter.Cell, Recycler
             if (a.item != null && b.item != null && a.readOnly == b.readOnly
                     && a.item.getStatus() == b.item.getStatus()
                     && Objects.equals(a.item.getLocalPath(), b.item.getLocalPath())
+                    && Objects.equals(a.item.getThumbUrl(), b.item.getThumbUrl())
+                    && Objects.equals(a.item.getDurationSec(), b.item.getDurationSec())
                     && Objects.equals(a.item.getTagText(), b.item.getTagText())
                     && a.item.getFileId() == b.item.getFileId()) {
                 return PAYLOAD_PROGRESS;

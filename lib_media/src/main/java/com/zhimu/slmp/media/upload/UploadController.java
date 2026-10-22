@@ -3,6 +3,7 @@ package com.zhimu.slmp.media.upload;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 
 import com.zhimu.slmp.base.mvvm.UiMessage;
@@ -10,7 +11,9 @@ import com.zhimu.slmp.base.mvvm.UiMessage;
 import java.util.List;
 
 /**
- * 照片网格的数据与操作（由宿主 ViewModel 持有，MediaPickerView 只观察和转发点击）。实现类为 {@link UploadManager}。
+ * 照片网格的数据与操作（由宿主 ViewModel 持有，MediaPickerView 只观察和转发点击）。实现类：
+ * {@link UploadManager}（只有照片，选中即压缩上传，F02、F06、L11 使用）与
+ * {@link MediaQueueController}（照片和视频，Room upload_task + WorkManager 后台上传，模块07 使用）。
  * 所有方法在主线程调用。
  */
 public interface UploadController {
@@ -23,7 +26,7 @@ public interface UploadController {
     @NonNull
     LiveData<UiMessage> getMessage();
 
-    /** 最多张数 */
+    /** 最多张数（照片和视频合计） */
     int getMaxCount();
 
     /** 上传场景（MediaScene） */
@@ -61,4 +64,38 @@ public interface UploadController {
     boolean hasFailed();
 
     int getFailedCount();
+
+    // ===== 视频（MediaQueueController 支持；UploadManager 保持默认值，只收照片） =====
+
+    /** 最多几段视频；0 表示只收照片 */
+    default int getMaxVideoCount() {
+        return 0;
+    }
+
+    /** 网格中已有视频（含上传中） */
+    default boolean hasVideo() {
+        List<UploadItem> list = getItems().getValue();
+        if (list != null) {
+            for (UploadItem item : list) {
+                if (item.isVideo()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 上传队列的页面编号：不为 null 时相机页把拍摄结果直接写入 upload_task（page_code 为此值），
+     * 网格通过观察数据库更新；为 null 时相机页把照片路径带回，由 {@link #addCapturedFiles} 加入。
+     */
+    @Nullable
+    default String getQueuePageCode() {
+        return null;
+    }
+
+    /** 上传队列任务所属的养殖场（与 page_code 一起区分任务） */
+    default long getQueueFarmId() {
+        return 0;
+    }
 }

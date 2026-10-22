@@ -35,6 +35,9 @@ public final class ViewerItem implements Parcelable {
     private final String sourceLine;
     @Nullable
     private final String detailLine;
+    /** 照片网格中的项 id（UploadItem.getId()），从表单预览时“删除”后据此回传 */
+    @Nullable
+    private String key;
 
     public ViewerItem(long fileId, @Nullable String url, @Nullable String thumbUrl, @Nullable String mediaType,
                       @Nullable Integer durationSec, @Nullable String sourceLine, @Nullable String detailLine) {
@@ -51,6 +54,12 @@ public final class ViewerItem implements Parcelable {
     @NonNull
     public static ViewerItem local(@NonNull String pathOrUri, @Nullable String sourceLine) {
         return new ViewerItem(0, pathOrUri, null, UploadItem.MEDIA_IMAGE, null, sourceLine, null);
+    }
+
+    /** 本地视频（相机刚录的）：缩略图由 Glide 从视频取帧 */
+    @NonNull
+    public static ViewerItem localVideo(@NonNull String path, @Nullable String sourceLine) {
+        return new ViewerItem(0, path, path, UploadItem.MEDIA_VIDEO, null, sourceLine, null);
     }
 
     /**
@@ -97,8 +106,16 @@ public final class ViewerItem implements Parcelable {
         } else if (!item.isRemote() && item.getSourceUri() != null) {
             url = item.getSourceUri();
         }
-        return new ViewerItem(item.getFileId(), url, item.getThumbUrl(), item.getMediaType(),
-                item.getDurationSec(), sourceLine, null);
+        String thumb = item.getThumbUrl();
+        if (thumb == null && item.isVideo()) {
+            thumb = url;
+        }
+        String detail = item.isVideo() && item.getDurationSec() != null
+                ? "视频 " + formatDuration(item.getDurationSec()) : null;
+        ViewerItem v = new ViewerItem(item.getFileId(), url, thumb, item.getMediaType(),
+                item.getDurationSec(), sourceLine, detail);
+        v.key = item.getId();
+        return v;
     }
 
     /** “0:18” */
@@ -111,7 +128,15 @@ public final class ViewerItem implements Parcelable {
     /** API-U06 换到新的临时地址后 */
     @NonNull
     ViewerItem withUrl(@Nullable String newUrl) {
-        return new ViewerItem(fileId, newUrl, thumbUrl, mediaType, durationSec, sourceLine, detailLine);
+        ViewerItem v = new ViewerItem(fileId, newUrl, thumbUrl, mediaType, durationSec, sourceLine, detailLine);
+        v.key = key;
+        return v;
+    }
+
+    /** 照片网格中的项 id（只有从可编辑网格打开时有） */
+    @Nullable
+    public String getKey() {
+        return key;
     }
 
     public long getFileId() {
@@ -162,6 +187,7 @@ public final class ViewerItem implements Parcelable {
         durationSec = d < 0 ? null : d;
         sourceLine = in.readString();
         detailLine = in.readString();
+        key = in.readString();
     }
 
     @Override
@@ -173,6 +199,7 @@ public final class ViewerItem implements Parcelable {
         dest.writeInt(durationSec == null ? -1 : durationSec);
         dest.writeString(sourceLine);
         dest.writeString(detailLine);
+        dest.writeString(key);
     }
 
     @Override

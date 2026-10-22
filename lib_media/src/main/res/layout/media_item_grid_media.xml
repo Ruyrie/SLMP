@@ -82,6 +82,26 @@
         android:visibility="gone"
         app:tint="@color/zm_on_media" />
 
+    <!-- 视频时长角标：media-backdrop 全圆底，videocam 14 dp + “0:18” -->
+    <TextView
+        android:id="@+id/media_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="@dimen/media_tag_margin"
+        android:background="@drawable/media_bg_duration_badge"
+        android:drawablePadding="2dp"
+        android:gravity="center_vertical"
+        android:paddingStart="6dp"
+        android:paddingEnd="8dp"
+        android:textAppearance="@style/TextAppearance.Zmt.LabelSmall.Number"
+        android:textColor="?attr/colorOnMedia"
+        android:visibility="gone"
+        app:drawableStartCompat="@drawable/media_ic_videocam_14"
+        app:drawableTint="?attr/colorOnMedia"
+        tools:text="0:18"
+        tools:visibility="visible" />
+
     <com.zhimu.slmp.base.widget.StatusTagView
         android:id="@+id/media_tag"
         android:layout_width="wrap_content"

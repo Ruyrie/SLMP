@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- I06 诊断详情：紧急横幅、状态步骤条、AI 不可用横幅、上报信息卡（点底行展开）、AI 诊断结果卡（诊断中为占位卡）、推送说明、
+     处理结果卡；底部“登记处理结果 / 修改处理结果 / 重新诊断” -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.inspect.ui.diagnosis.DiagnosisDetailViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/inspect_top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{@string/inspect_diag_title}" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/inspect_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/inspect_diag_error"
+            app:stateNoPermissionTitle="@string/inspect_diag_no_permission"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_1"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/base_space_3"
+                        app:goneIfNull="@{vm.emergencyNotice}"
+                        app:inspectNoticeText="@{vm.emergencyNotice}"
+                        app:noticeIcon="@drawable/ic_emergency"
+                        app:noticeLevel="error" />
+
+                    <com.zhimu.slmp.inspect.ui.diagnosis.StepBarView
+                        android:id="@+id/inspect_steps"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        app:goneIfNull="@{vm.failureText}"
+                        app:inspectNoticeText="@{vm.failureText}"
+                        app:noticeIcon="@drawable/ic_cloud_off"
+                        app:noticeLevel="warning" />
+
+                    <!-- 上报信息卡 -->
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Zmt.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                        app:cardCornerRadius="20dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="@dimen/base_space_4">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/inspect_report_pen"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                                    android:textColor="?attr/colorOnSurface"
+                                    tools:text="3 号育肥舍" />
+
+                                <TextView
+                                    android:id="@+id/inspect_report_batch"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    tools:text="ZM2610-031" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_2"
+                                android:orientation="horizontal">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/inspect_diag_stock"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                    <TextView
+                                        android:id="@+id/inspect_report_stock"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textAppearance="@style/TextAppearance.Zmt.TitleLarge.Number"
+                                        android:textColor="?attr/colorOnSurface"
+                                        tools:text="200头" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/inspect_diag_sick"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                    <TextView
+                                        android:id="@+id/inspect_report_sick"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textAppearance="@style/TextAppearance.Zmt.TitleLarge.Number"
+                                        android:textColor="?attr/colorOnSurface"
+                                        tools:text="12头" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/inspect_diag_sick_rate"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                    <TextView
+                                        android:id="@+id/inspect_report_rate"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textAppearance="@style/TextAppearance.Zmt.TitleLarge.Number"
+                                        android:textColor="?attr/colorOnSurface"
+                                        tools:text="6.0%" />
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <!-- 展开区：症状标签、描述、缩略图 -->
+                            <LinearLayout
+                                android:id="@+id/inspect_report_expand"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="1dp"
+                                    android:layout_marginTop="@dimen/base_space_3"
+                                    android:background="?attr/colorOutlineVariant" />
+
+                                <com.google.android.material.chip.ChipGroup
+                                    android:id="@+id/inspect_report_symptoms"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="@dimen/base_space_3"
+                                    app:chipSpacingHorizontal="6dp"
+                                    app:chipSpacingVertical="6dp" />
+
+                                <TextView
+                                    android:id="@+id/inspect_report_description"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="@dimen/base_space_2"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <LinearLayout
+                                    android:id="@+id/inspect_report_thumbs"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="@dimen/base_space_3"
+                                    android:orientation="horizontal" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/inspect_report_footer"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_3"
+                                android:background="?attr/selectableItemBackground"
+                                android:drawablePadding="@dimen/base_space_2"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                app:drawableStartCompat="@drawable/ic_person"
+                                app:drawableTint="?attr/colorOnSurfaceVariant"
+                                tools:text="李明 09:20 上报 · 腹泻、呕吐、食欲减退 · 6 个照片和视频" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- AI 诊断中占位卡 -->
+                    <LinearLayout
+                        android:id="@+id/inspect_ai_placeholder"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:background="@drawable/inspect_bg_ai_card"
+                        android:orientation="vertical"
+                        android:padding="@dimen/base_space_4"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:drawablePadding="@dimen/base_space_2"
+                            android:gravity="center_vertical"
+                            android:text="@string/inspect_diag_diagnosing"
+                            android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+                            android:textColor="?attr/colorOnTertiaryContainer"
+                            app:drawableStartCompat="@drawable/ic_auto_awesome"
+                            app:drawableTint="?attr/colorOnTertiaryContainer" />
+
+                        <View
+                            android:id="@+id/inspect_skeleton_1"
+                            android:layout_width="match_parent"
+                            android:layout_height="12dp"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            android:background="@drawable/inspect_bg_skeleton_bar" />
+
+                        <View
+                            android:id="@+id/inspect_skeleton_2"
+                            android:layout_width="match_parent"
+                            android:layout_height="12dp"
+                            android:layout_marginTop="@dimen/base_space_2"
+                            android:layout_marginEnd="48dp"
+                            android:background="@drawable/inspect_bg_skeleton_bar" />
+
+                        <View
+                            android:id="@+id/inspect_skeleton_3"
+                            android:layout_width="match_parent"
+                            android:layout_height="12dp"
+                            android:layout_marginTop="@dimen/base_space_2"
+                            android:layout_marginEnd="120dp"
+                            android:background="@drawable/inspect_bg_skeleton_bar" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            android:text="@string/inspect_diag_diagnosing_hint"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                            android:textColor="?attr/colorOnTertiaryContainer" />
+                    </LinearLayout>
+
+                    <!-- AI 诊断结果卡 -->
+                    <LinearLayout
+                        android:id="@+id/inspect_ai_card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:background="@drawable/inspect_bg_ai_card"
+                        android:orientation="vertical"
+                        android:padding="@dimen/base_space_4"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:drawablePadding="@dimen/base_space_2"
+                                android:gravity="center_vertical"
+                                android:text="@string/inspect_diag_ai_title"
+                                android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+                                android:textColor="?attr/colorOnTertiaryContainer"
+                                app:drawableStartCompat="@drawable/ic_auto_awesome"
+                                app:drawableTint="?attr/colorOnTertiaryContainer" />
+
+                            <com.zhimu.slmp.base.widget.StatusTagView
+                                android:id="@+id/inspect_ai_urgency"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+                        </LinearLayout>
+
+                        <!-- 测试直连标注 -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_1"
+                            android:text="@{vm.sourceLabel}"
+                            android:textAppearance="@style/TextAppearance.Zmt.LabelSmall"
+                            android:textColor="?attr/colorOnTertiaryContainer"
+                            app:goneIfNull="@{vm.sourceLabel}"
+                            tools:text="测试直连 · 通义千问 qwen3.8-max" />
+
+                        <TextView
+                            android:id="@+id/inspect_ai_conclusion"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_2"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                            android:textColor="?attr/colorOnTertiaryContainer"
+                            tools:text="发病 12 头，达到存栏的 5% 以上，紧急程度至少为“关注”。" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_3"
+                            android:background="@drawable/inspect_bg_inner_card"
+                            android:orientation="vertical"
+                            android:padding="@dimen/base_space_3">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/inspect_diag_causes"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <LinearLayout
+                                android:id="@+id/inspect_ai_causes"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_3"
+                            android:background="@drawable/inspect_bg_inner_card"
+                            android:orientation="vertical"
+                            android:padding="@dimen/base_space_3">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/inspect_diag_advices"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <LinearLayout
+                                android:id="@+id/inspect_ai_advices"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_1"
+                                android:orientation="vertical" />
+                        </LinearLayout>
+
+                        <!-- 固定声明：始终显示，不可折叠 -->
+                        <TextView
+                            android:id="@+id/inspect_ai_disclaimer"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_3"
+                            android:drawablePadding="@dimen/base_space_1"
+                            android:gravity="center_vertical"
+                            android:text="仅供参考，需执业兽医确认"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                            android:textColor="?attr/colorOnTertiaryContainer"
+                            app:drawableStartCompat="@drawable/inspect_ic_info_16"
+                            app:drawableTint="?attr/colorOnTertiaryContainer"
+                            tools:ignore="HardcodedText" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:drawablePadding="@dimen/base_space_2"
+                        android:gravity="center_vertical"
+                        android:text="@{vm.pushText}"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        app:drawableStartCompat="@drawable/inspect_ic_notifications_active"
+                        app:drawableTint="?attr/colorOnSurfaceVariant"
+                        app:goneIfNull="@{vm.pushText}" />
+
+                    <TextView
+                        android:id="@+id/inspect_staff_hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:text="@string/inspect_diag_handle_by_owner"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:visibility="gone" />
+
+                    <!-- 处理结果卡 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/inspect_handle_card"
+                        style="@style/Widget.Zmt.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:visibility="gone"
+                        app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                        app:cardCornerRadius="20dp">
+
+                        <LinearLayout
+                            android:id="@+id/inspect_handle_body"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="@dimen/base_space_4" />
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/inspect_action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+    </LinearLayout>
+</layout>

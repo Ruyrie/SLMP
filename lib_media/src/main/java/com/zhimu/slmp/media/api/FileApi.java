@@ -1,5 +1,7 @@
 package com.zhimu.slmp.media.api;
 
+import androidx.annotation.Nullable;
+
 import com.zhimu.slmp.common.model.vo.FileVO;
 import com.zhimu.slmp.network.Headers;
 import com.zhimu.slmp.network.model.ApiResponse;
@@ -26,6 +28,20 @@ public interface FileApi {
     Single<ApiResponse<FileVO>> upload(@Part MultipartBody.Part file,
                                        @Part("scene") RequestBody scene,
                                        @Header(Headers.IDEMPOTENCY_KEY) String idemKey);
+
+    /**
+     * API-U05 上传照片或视频（上传队列使用）：视频另带 cover（第 0 秒帧 JPEG）与 duration_ms；
+     * X-Farm-Id 取任务所属养殖场（切换养殖场后任务按原养殖场继续）。为 null 的部分不发送。
+     */
+    @Multipart
+    @POST("api/v1/files")
+    Single<ApiResponse<FileVO>> uploadMedia(@Part MultipartBody.Part file,
+                                            @Part("scene") RequestBody scene,
+                                            @Nullable @Part MultipartBody.Part cover,
+                                            @Nullable @Part("duration_ms") RequestBody durationMs,
+                                            @Nullable @Part("shot_at") RequestBody shotAt,
+                                            @Header(Headers.IDEMPOTENCY_KEY) String idemKey,
+                                            @Nullable @Header(Headers.FARM_ID) String farmId);
 
     /** API-U06 文件信息与新的临时地址（地址过期时刷新） */
     @GET("api/v1/files/{id}")

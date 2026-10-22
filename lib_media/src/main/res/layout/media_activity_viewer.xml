@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- I09 照片和视频全屏预览（02 号规范 7.16 节）：media-backdrop 底；顶栏 关闭 / 序号 / 保存；底部来源说明与缩略图条 -->
+<!-- I09 照片和视频全屏预览（02 号规范 7.16 节，模块07 原型 7-13）：media-backdrop 底；顶栏 关闭 / 序号 / 保存 / 更多（从表单进入）；
+     视频项的播放进度条与控件行（播放、静音、倍速）；来源说明与缩略图条 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
@@ -53,17 +54,33 @@
                     android:textColor="?attr/colorOnMedia"
                     tools:text="3 / 6" />
 
-                <ImageButton
-                    android:id="@+id/media_save"
-                    android:layout_width="@dimen/base_touch_target"
-                    android:layout_height="@dimen/base_touch_target"
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical|end"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/media_viewer_save"
-                    android:enabled="@{!safeUnbox(vm.saving)}"
-                    android:src="@drawable/ic_download"
-                    app:onSafeClick="@{() -> vm.save()}"
-                    app:tint="?attr/colorOnMedia" />
+                    android:orientation="horizontal">
+
+                    <ImageButton
+                        android:id="@+id/media_save"
+                        android:layout_width="@dimen/base_touch_target"
+                        android:layout_height="@dimen/base_touch_target"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/media_viewer_save"
+                        android:enabled="@{!safeUnbox(vm.saving)}"
+                        android:src="@drawable/ic_download"
+                        app:onSafeClick="@{() -> vm.save()}"
+                        app:tint="?attr/colorOnMedia" />
+
+                    <ImageButton
+                        android:id="@+id/media_more"
+                        android:layout_width="@dimen/base_touch_target"
+                        android:layout_height="@dimen/base_touch_target"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/media_viewer_more"
+                        android:src="@drawable/ic_more_vert"
+                        app:tint="?attr/colorOnMedia"
+                        app:visibleIf="@{vm.deletable}" />
+                </LinearLayout>
             </FrameLayout>
         </FrameLayout>
 
@@ -75,6 +92,94 @@
             android:orientation="vertical"
             android:paddingTop="@dimen/base_space_3"
             android:paddingBottom="@dimen/base_space_3">
+
+            <!-- 视频控件：进度条（已播放白色、缓冲白色 50%、轨道白色 20%）、时间、播放 / 静音 / 倍速 -->
+            <LinearLayout
+                android:id="@+id/media_video_controls"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                app:visibleIf="@{vm.currentItem.video}">
+
+                <SeekBar
+                    android:id="@+id/media_seek"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:progressBackgroundTint="@color/media_color_on_media_20"
+                    android:progressTint="@color/zm_on_media"
+                    android:secondaryProgressTint="@color/media_color_on_media_50"
+                    android:thumbTint="@color/zm_on_media" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingEnd="@dimen/base_page_margin">
+
+                    <TextView
+                        android:id="@+id/media_time_position"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0:00"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall.Number"
+                        android:textColor="?attr/colorOnMedia"
+                        tools:ignore="HardcodedText" />
+
+                    <TextView
+                        android:id="@+id/media_time_duration"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall.Number"
+                        android:textColor="?attr/colorOnMedia"
+                        tools:text="0:18" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="@dimen/base_space_1"
+                    android:paddingEnd="@dimen/base_space_1">
+
+                    <ImageButton
+                        android:id="@+id/media_play_pause"
+                        android:layout_width="@dimen/base_touch_target"
+                        android:layout_height="@dimen/base_touch_target"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/media_viewer_play"
+                        android:src="@drawable/ic_play_arrow"
+                        app:tint="?attr/colorOnMedia" />
+
+                    <ImageButton
+                        android:id="@+id/media_mute"
+                        android:layout_width="@dimen/base_touch_target"
+                        android:layout_height="@dimen/base_touch_target"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/media_viewer_mute"
+                        android:onClick="@{() -> vm.toggleMute()}"
+                        android:src="@{safeUnbox(vm.muted) ? @drawable/media_ic_volume_off : @drawable/ic_volume_up}"
+                        app:tint="?attr/colorOnMedia" />
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1" />
+
+                    <ImageButton
+                        android:id="@+id/media_speed"
+                        android:layout_width="@dimen/base_touch_target"
+                        android:layout_height="@dimen/base_touch_target"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/media_viewer_speed"
+                        android:src="@drawable/ic_slow_motion_video"
+                        app:tint="?attr/colorOnMedia" />
+                </LinearLayout>
+            </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"

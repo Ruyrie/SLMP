@@ -18,6 +18,15 @@
     <string name="media_camera_permission_photo">请在系统设置中允许智牧通使用相机；你也可以返回后从相册选择照片</string>
     <string name="media_camera_permission_scan">扫码需要使用相机，请在系统设置中允许智牧通使用相机</string>
     <string name="media_camera_open_settings">去设置开启</string>
+    <string name="media_camera_mode_video">录像</string>
+    <string name="media_camera_record">开始录像</string>
+    <string name="media_camera_stop">停止录像</string>
+    <string name="media_camera_mic_title">录像需要麦克风权限</string>
+    <string name="media_camera_mic_message">请在系统设置中允许智牧通使用麦克风；不开启时仍可拍照</string>
+    <string name="media_camera_discard_title">放弃这段录像？</string>
+    <string name="media_camera_discard_message">已录制的内容不会保存。</string>
+    <string name="media_camera_keep_recording">继续录像</string>
+    <string name="media_camera_discard">放弃</string>
 
     <!-- I08 扫码模式 -->
     <string name="media_scan_title">扫码</string>
@@ -39,6 +48,11 @@
     <string name="media_undo">撤销</string>
     <string name="media_picker_thumb">照片 %1$d</string>
     <string name="media_picker_percent">%1$d%%</string>
+    <string name="media_picker_record">录像</string>
+    <string name="media_picker_has_video">已有 1 段视频</string>
+    <string name="media_picker_sheet_title_media">添加照片和视频</string>
+    <string name="media_picker_deleted_video">已删除 1 段视频</string>
+    <string name="media_picker_video_thumb">视频 %1$d，时长 %2$s</string>
 
     <!-- I09 全屏预览 -->
     <string name="media_viewer_close">关闭</string>
@@ -51,4 +65,15 @@
     <string name="media_viewer_shot">%1$s 拍摄</string>
     <string name="media_viewer_shot_by">拍摄人%1$s</string>
     <string name="media_viewer_video_duration">视频 %1$s</string>
+    <string name="media_viewer_more">更多</string>
+    <string name="media_viewer_delete">删除</string>
+    <string name="media_viewer_play">播放</string>
+    <string name="media_viewer_pause">暂停</string>
+    <string name="media_viewer_mute">静音</string>
+    <string name="media_viewer_unmute">取消静音</string>
+    <string name="media_viewer_speed">倍速</string>
+    <string name="media_viewer_video_failed">视频加载失败</string>
+    <string name="media_viewer_reload">重新加载</string>
+    <string name="media_viewer_deleted_photo">已删除 1 个照片</string>
+    <string name="media_viewer_deleted_video">已删除 1 段视频</string>
 </resources>

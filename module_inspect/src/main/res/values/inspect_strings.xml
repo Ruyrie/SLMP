@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 通用 -->
+    <string name="inspect_action_history">巡检历史</string>
+    <string name="inspect_action_calendar">选择日期</string>
+    <string name="inspect_action_more">更多</string>
+    <string name="inspect_action_keep_editing">继续填写</string>
+    <string name="inspect_action_discard">放弃</string>
+    <string name="inspect_action_cancel">取消</string>
+    <string name="inspect_action_save">保存</string>
+    <string name="inspect_unit_head">头</string>
+
+    <!-- I01 今日巡检 -->
+    <string name="inspect_today_title">今日巡检</string>
+    <string name="inspect_today_error">今日巡检加载失败</string>
+    <string name="inspect_today_should_all">全场应巡</string>
+    <string name="inspect_today_should">应巡</string>
+    <string name="inspect_today_done">已巡</string>
+    <string name="inspect_today_pending">未巡</string>
+    <string name="inspect_today_abnormal">异常</string>
+    <string name="inspect_today_unit">个</string>
+    <string name="inspect_today_edit_deadline">修改</string>
+    <string name="inspect_today_all_done">今天的巡检已全部完成</string>
+    <string name="inspect_filter_all">全部</string>
+    <string name="inspect_filter_pending">未巡</string>
+    <string name="inspect_filter_abnormal">异常</string>
+    <string name="inspect_filter_done">已巡</string>
+    <string name="inspect_today_recent_title">前 3 天 · 超时与补录</string>
+    <string name="inspect_today_group_today">今天</string>
+    <string name="inspect_action_register">登记巡检</string>
+    <string name="inspect_action_modify">修改巡检</string>
+    <string name="inspect_action_report">转上报</string>
+    <string name="inspect_action_view_diagnosis">查看诊断</string>
+    <string name="inspect_action_backfill">补录</string>
+    <string name="inspect_today_empty_batches">今天没有需要巡检的栏舍。批次入栏后，所在栏舍会自动列入巡检清单。</string>
+    <string name="inspect_today_empty_staff">你还没有负责的栏舍。请联系所有者或场长分配栏舍。</string>
+    <string name="inspect_today_empty_pending">今天的栏舍都已巡检</string>
+    <string name="inspect_today_empty_abnormal">今天没有异常栏舍</string>
+    <string name="inspect_today_empty_done">还没有已巡的栏舍</string>
+    <string name="inspect_today_batch_entry">批次入栏</string>
+
+    <!-- I01 截止时间面板 -->
+    <string name="inspect_deadline_title">巡检截止时间</string>
+    <string name="inspect_deadline_input">截止时间</string>
+    <string name="inspect_deadline_helper">默认 %1$s；超过截止时间登记的记录标为“超时”</string>
+    <string name="inspect_deadline_rules">提醒规则</string>
+    <string name="inspect_deadline_save_failed">保存失败，请检查网络后重试</string>
+
+    <!-- I02 / I03 表单 -->
+    <string name="inspect_form_registrant">登记人</string>
+    <string name="inspect_form_location">位置</string>
+    <string name="inspect_form_items">巡检项目</string>
+    <string name="inspect_form_items_hint">每项必选</string>
+    <string name="inspect_item_abnormal">异常</string>
+    <string name="inspect_form_manual_title">标记为异常</string>
+    <string name="inspect_form_manual_reason">异常原因</string>
+    <string name="inspect_form_manual_reason_hint">写明你发现的问题，例如个别仔猪咳嗽</string>
+    <string name="inspect_form_remark">说明</string>
+    <string name="inspect_form_optional">选填</string>
+    <string name="inspect_form_death_hint">发现死淘请另行登记，巡检不扣减存栏</string>
+    <string name="inspect_form_death_action">去登记</string>
+    <string name="inspect_form_media">照片和视频</string>
+    <string name="inspect_form_media_limit">最多 6 个，其中视频 1 段，不超过 30 秒</string>
+    <string name="inspect_form_executor">实际执行人</string>
+    <string name="inspect_form_executor_helper">代登记时必选</string>
+    <string name="inspect_form_location_notice">登记巡检时会记录位置，用来标注现场或非现场，不会拦截登记。</string>
+    <string name="inspect_form_location_allow">允许定位</string>
+    <string name="inspect_form_tag_off_site">非现场</string>
+    <string name="inspect_form_tag_no_location">无位置</string>
+    <string name="inspect_form_discard_title">放弃这次登记？</string>
+    <string name="inspect_form_discard_message">已选择的结果和照片不会保存。</string>
+    <string name="inspect_form_error">表单加载失败</string>
+    <string name="inspect_form_deleted_photo">已删除 1 个照片</string>
+    <string name="inspect_backfill_rule">只能补录前 3 天内的漏巡，提交后标为“补录”。超过 3 天的记录需要提交修改申请。</string>
+    <string name="inspect_backfill_date">补录日期</string>
+    <string name="inspect_backfill_tag">补录</string>
+
+    <!-- I04 巡检历史 -->
+    <string name="inspect_history_title">巡检历史</string>
+    <string name="inspect_history_error">巡检历史加载失败</string>
+    <string name="inspect_history_filter_overdue">超时</string>
+    <string name="inspect_history_filter_backfill">补录</string>
+    <string name="inspect_history_filter_off_site">非现场</string>
+    <string name="inspect_history_empty">这个栏舍还没有巡检记录。有在栏批次时，每天会自动列入巡检清单。</string>
+    <string name="inspect_history_no_more">没有更多记录了</string>
+    <string name="inspect_history_menu_detail">查看详情</string>
+    <string name="inspect_history_menu_modify">修改巡检</string>
+    <string name="inspect_history_menu_change">提交修改申请</string>
+    <string name="inspect_history_menu_view_change">查看修改申请</string>
+    <string name="inspect_history_menu_logs">查看修改记录</string>
+    <string name="inspect_record_logs_title">修改记录</string>
+    <string name="inspect_record_logs_empty">还没有修改记录</string>
+
+    <!-- I05 异常上报 -->
+    <string name="inspect_report_title">异常上报</string>
+    <string name="inspect_report_error">异常上报加载失败</string>
+    <string name="inspect_report_pen">栏舍</string>
+    <string name="inspect_report_batch">批次</string>
+    <string name="inspect_report_sick">发病数量</string>
+    <string name="inspect_report_symptoms">症状</string>
+    <string name="inspect_report_description">描述</string>
+    <string name="inspect_report_description_helper">至少 10 个字，或至少勾选一项症状</string>
+    <string name="inspect_report_submit">提交并诊断</string>
+    <string name="inspect_report_discard_title">放弃这次上报？</string>
+    <string name="inspect_report_discard_message">填写的内容和照片不会保存。</string>
+
+    <!-- I06 诊断详情 -->
+    <string name="inspect_diag_title">诊断详情</string>
+    <string name="inspect_diag_error">诊断详情加载失败</string>
+    <string name="inspect_diag_no_permission">你没有这条诊断记录的查看权限</string>
+    <string name="inspect_diag_step_pending">待诊断</string>
+    <string name="inspect_diag_step_diagnosed">已诊断</string>
+    <string name="inspect_diag_step_handled">已处理</string>
+    <string name="inspect_diag_step_closed">已结案</string>
+    <string name="inspect_diag_stock">存栏</string>
+    <string name="inspect_diag_sick">发病</string>
+    <string name="inspect_diag_sick_rate">发病率</string>
+    <string name="inspect_diag_ai_title">AI 诊断结果</string>
+    <string name="inspect_diag_causes">可能病因 · 按可能性从高到低</string>
+    <string name="inspect_diag_advices">处理建议</string>
+    <string name="inspect_diag_major">重大动物疫病</string>
+    <string name="inspect_diag_diagnosing">AI 正在诊断</string>
+    <string name="inspect_diag_diagnosing_hint">你可以先离开本页，诊断完成后会通知你。</string>
+    <string name="inspect_diag_handle">登记处理结果</string>
+    <string name="inspect_diag_modify_handle">修改处理结果</string>
+    <string name="inspect_diag_rediagnose">重新诊断</string>
+    <string name="inspect_diag_handle_title">处理结果</string>
+    <string name="inspect_diag_handle_by_owner">处理结果由所有者或场长登记</string>
+    <string name="inspect_diag_closed">已结案，处理结果不能再修改</string>
+    <string name="inspect_diag_menu_inspection">查看关联巡检</string>
+    <string name="inspect_diag_menu_logs">查看修改记录</string>
+    <string name="inspect_diag_kv_diagnostician">诊断人</string>
+    <string name="inspect_diag_kv_treatment">处理方式</string>
+    <string name="inspect_diag_kv_drug">用药</string>
+    <string name="inspect_diag_kv_outcome">转归</string>
+    <string name="inspect_diag_kv_ai">AI 诊断</string>
+
+    <!-- I07 登记处理结果 -->
+    <string name="inspect_handle_title">登记处理结果</string>
+    <string name="inspect_handle_title_modify">修改处理结果</string>
+    <string name="inspect_handle_diagnostician">诊断人</string>
+    <string name="inspect_handle_diagnostician_helper">填写实际做出诊断的人</string>
+    <string name="inspect_handle_treatment">处理方式</string>
+    <string name="inspect_handle_drug">用药</string>
+    <string name="inspect_handle_no_drug">未使用药品</string>
+    <string name="inspect_handle_used_drug">使用了药品</string>
+    <string name="inspect_handle_to_medication">转为用药记录</string>
+    <string name="inspect_handle_to_medication_hint">自动带入栏舍和批次，在用药记录中填写药品和用量</string>
+    <string name="inspect_handle_converted">已转为用药记录</string>
+    <string name="inspect_handle_view">查看</string>
+    <string name="inspect_handle_outcome">转归</string>
+    <string name="inspect_handle_cured">治愈</string>
+    <string name="inspect_handle_culled">死淘</string>
+    <string name="inspect_handle_ai_match">AI 诊断与实际是否相符</string>
+    <string name="inspect_handle_match">相符</string>
+    <string name="inspect_handle_not_match">不相符</string>
+    <string name="inspect_handle_note">保存后状态变为“已处理”。处理结果可以修改，系统保留修改记录；结案后不能再修改。</string>
+    <string name="inspect_handle_close_title">保存并结案？</string>
+    <string name="inspect_handle_close_keep">再看看</string>
+    <string name="inspect_handle_close_confirm">保存并结案</string>
+    <string name="inspect_handle_discard_title">放弃填写的处理结果？</string>
+</resources>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- I04 头部：栏舍名 22 sp、概况、近 7 天格、筛选 Chip（全部 / 异常 / 超时 / 补录 / 非现场）、规则横幅（员工不显示） -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.inspect.ui.history.InspectHistoryViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/base_space_3">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@{vm.overview.penName}"
+            android:textAppearance="@style/TextAppearance.Zmt.TitleLarge"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="3 号育肥舍" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="@{vm.overviewText}"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            tools:text="ZM2610-031 · 负责人 李明 · 近 7 天已巡 7 / 7 天" />
+
+        <com.zhimu.slmp.inspect.ui.history.SevenDayStripView
+            android:id="@+id/inspect_days"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_2" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_2"
+            android:scrollbars="none">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/inspect_history_filters"
+                style="@style/Widget.Zmt.ChipGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:selectionRequired="true"
+                app:singleLine="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/inspect_history_all"
+                    style="@style/Widget.Zmt.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/inspect_filter_all" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/inspect_history_abnormal"
+                    style="@style/Widget.Zmt.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/inspect_filter_abnormal" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/inspect_history_overdue"
+                    style="@style/Widget.Zmt.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/inspect_history_filter_overdue" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/inspect_history_backfill"
+                    style="@style/Widget.Zmt.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/inspect_history_filter_backfill" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/inspect_history_off_site"
+                    style="@style/Widget.Zmt.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/inspect_history_filter_off_site" />
+            </com.google.android.material.chip.ChipGroup>
+        </HorizontalScrollView>
+
+        <com.zhimu.slmp.base.widget.NoticeView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            app:goneIfNull="@{vm.ruleText}"
+            app:inspectNoticeText="@{vm.ruleText}"
+            app:noticeIcon="@drawable/ic_info"
+            app:noticeLevel="normal" />
+    </LinearLayout>
+</layout>

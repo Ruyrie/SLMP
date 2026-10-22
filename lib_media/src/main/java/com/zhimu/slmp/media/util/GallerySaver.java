@@ -88,6 +88,54 @@ public final class GallerySaver {
         resolver.update(target, values, null, null);
     }
 
+    /** 保存一段视频到 Movies/智牧通（在 io 线程订阅）；来源可以是 http(s)、本地文件、content:// 或 asset */
+    @NonNull
+    public static Completable saveVideo(@NonNull Context context, @NonNull String url) {
+        Context app = context.getApplicationContext();
+        return Completable.fromAction(() -> saveVideoBlocking(app, url));
+    }
+
+    @WorkerThread
+    static void saveVideoBlocking(@NonNull Context context, @NonNull String url) throws Exception {
+        InputStream in;
+        if (MediaGlide.isRemoteUrl(url)) {
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
+            conn.setConnectTimeout(15_000);
+            conn.setReadTimeout(60_000);
+            in = conn.getInputStream();
+        } else {
+            in = open(context, url);
+        }
+        ContentResolver resolver = context.getContentResolver();
+        ContentValues values = new ContentValues();
+        String name = new SimpleDateFormat("'ZMT_'yyyyMMdd_HHmmss_SSS", Locale.ROOT).format(new Date()) + ".mp4";
+        values.put(MediaStore.Video.Media.DISPLAY_NAME, name);
+        values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+        values.put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/" + ALBUM);
+        values.put(MediaStore.Video.Media.IS_PENDING, 1);
+        Uri target = resolver.insert(MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), values);
+        if (target == null) {
+            in.close();
+            throw new IOException("MediaStore insert failed");
+        }
+        try (InputStream src = in; OutputStream out = resolver.openOutputStream(target)) {
+            if (out == null) {
+                throw new IOException("openOutputStream failed");
+            }
+            byte[] buf = new byte[64 * 1024];
+            int n;
+            while ((n = src.read(buf)) > 0) {
+                out.write(buf, 0, n);
+            }
+        } catch (Exception e) {
+            resolver.delete(target, null, null);
+            throw e;
+        }
+        values.clear();
+        values.put(MediaStore.Video.Media.IS_PENDING, 0);
+        resolver.update(target, values, null, null);
+    }
+
     @NonNull
     private static InputStream open(@NonNull Context context, @NonNull String url) throws IOException {
         if (url.startsWith(ASSET_PREFIX)) {

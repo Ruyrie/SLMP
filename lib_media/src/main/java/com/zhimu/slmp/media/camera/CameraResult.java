@@ -25,15 +25,21 @@ public final class CameraResult {
     public static final int TYPE_SCAN = 2;
     /** 扫码页点了“手动输入”入口，由调用方打开输入面板 */
     public static final int TYPE_MANUAL_INPUT = 3;
+    /**
+     * 上传队列模式（{@link CameraArgs#media}）拍了照片或视频：已写入 upload_task，网格观察数据库自动更新；
+     * {@link #getQueuedCount()} 为写入的个数
+     */
+    public static final int TYPE_QUEUED = 4;
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({TYPE_CANCELED, TYPE_PHOTOS, TYPE_SCAN, TYPE_MANUAL_INPUT})
+    @IntDef({TYPE_CANCELED, TYPE_PHOTOS, TYPE_SCAN, TYPE_MANUAL_INPUT, TYPE_QUEUED})
     public @interface Type {
     }
 
     static final String EXTRA_TYPE = "media_result_type";
     static final String EXTRA_PHOTOS = "media_result_photos";
     static final String EXTRA_SCAN_TEXT = "media_result_scan_text";
+    static final String EXTRA_QUEUED = "media_result_queued";
 
     @Type
     private final int type;
@@ -41,6 +47,7 @@ public final class CameraResult {
     private final List<String> photoPaths;
     @Nullable
     private final String scanText;
+    private int queuedCount;
 
     private CameraResult(@Type int type, @Nullable List<String> photoPaths, @Nullable String scanText) {
         this.type = type;
@@ -69,12 +76,24 @@ public final class CameraResult {
         return new CameraResult(TYPE_MANUAL_INPUT, null, null);
     }
 
+    /** 上传队列模式：本次写入队列的照片和视频个数（0 时为取消） */
+    @NonNull
+    public static CameraResult queued(int count) {
+        if (count <= 0) {
+            return canceled();
+        }
+        CameraResult r = new CameraResult(TYPE_QUEUED, null, null);
+        r.queuedCount = count;
+        return r;
+    }
+
     @NonNull
     public Intent toIntent() {
         Intent data = new Intent();
         data.putExtra(EXTRA_TYPE, type);
         data.putStringArrayListExtra(EXTRA_PHOTOS, new ArrayList<>(photoPaths));
         data.putExtra(EXTRA_SCAN_TEXT, scanText);
+        data.putExtra(EXTRA_QUEUED, queuedCount);
         return data;
     }
 
@@ -93,6 +112,8 @@ public final class CameraResult {
                 return text == null ? canceled() : scan(text);
             case TYPE_MANUAL_INPUT:
                 return manualInput();
+            case TYPE_QUEUED:
+                return queued(data.getIntExtra(EXTRA_QUEUED, 0));
             default:
                 return canceled();
         }
@@ -111,6 +132,11 @@ public final class CameraResult {
     @Nullable
     public String getScanText() {
         return scanText;
+    }
+
+    /** 上传队列模式写入的个数 */
+    public int getQueuedCount() {
+        return queuedCount;
     }
 
     public boolean isCanceled() {

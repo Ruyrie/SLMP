@@ -1,0 +1,605 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- I02 登记巡检 / I03 补录巡检（共用）：规则与定位说明 Notice、栏舍信息卡（登记人、位置）、补录日期与实际执行人、巡检项目分组、
+     “标记为异常”卡（所有者、场长）、异常横幅、说明、发现死淘提示、照片和视频；底部“转上报”“提交” -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.inspect.ui.form.InspectFormViewModel" />
+
+        <!-- I03 才有，I02 为 null -->
+        <variable
+            name="backfill"
+            type="com.zhimu.slmp.inspect.ui.backfill.InspectBackfillViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/inspect_top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{vm.titleText}" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/inspect_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/inspect_form_error"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/inspect_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_2"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <!-- I03 规则横幅 -->
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/inspect_backfill_rule"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/base_space_3"
+                        app:noticeIcon="@drawable/ic_info"
+                        app:noticeLevel="normal"
+                        app:noticeText="@string/inspect_backfill_rule"
+                        app:visibleIf="@{backfill != null &amp;&amp; !safeUnbox(backfill.dateLocked)}" />
+
+                    <!-- 首次定位说明 -->
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/inspect_location_notice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/base_space_3"
+                        app:noticeActionText="@string/inspect_form_location_allow"
+                        app:noticeIcon="@drawable/ic_info"
+                        app:noticeLevel="normal"
+                        app:noticeText="@string/inspect_form_location_notice"
+                        app:visibleIf="@{vm.locationNoticeVisible}" />
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/base_space_3"
+                        app:goneIfNull="@{vm.registeredNotice}"
+                        app:noticeIcon="@drawable/ic_info"
+                        app:noticeLevel="normal"
+                        app:inspectNoticeText="@{vm.registeredNotice}" />
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/base_space_3"
+                        app:goneIfNull="@{vm.deadlineNotice}"
+                        app:noticeIcon="@drawable/ic_schedule"
+                        app:noticeLevel="normal"
+                        app:inspectNoticeText="@{vm.deadlineNotice}" />
+
+                    <!-- 栏舍信息卡 -->
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Zmt.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                        app:cardCornerRadius="20dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="@dimen/base_space_4">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
+                                    android:background="@drawable/inspect_bg_leading_secondary"
+                                    android:importantForAccessibility="no"
+                                    android:padding="8dp"
+                                    android:src="@drawable/ic_fence"
+                                    app:tint="?attr/colorOnSecondaryContainer" />
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="@dimen/base_space_3"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@{vm.infoTitle}"
+                                        android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                                        android:textColor="?attr/colorOnSurface"
+                                        tools:text="3 号育肥舍" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="2dp"
+                                        android:text="@{vm.infoSubtitle}"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                                        android:textColor="?attr/colorOnSurfaceVariant"
+                                        tools:text="ZM2610-031 · 存栏 200 头 · 10月19日 周一" />
+                                </LinearLayout>
+
+                                <com.zhimu.slmp.base.widget.StatusTagView
+                                    android:id="@+id/inspect_info_tag"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/inspect_backfill_tag"
+                                    app:tagIcon="@drawable/ic_history"
+                                    app:tagType="neutral"
+                                    app:visibleIf="@{backfill != null}" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginTop="@dimen/base_space_3"
+                                android:layout_marginBottom="@dimen/base_space_2"
+                                android:background="?attr/colorOutlineVariant" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="28dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:importantForAccessibility="no"
+                                    android:src="@drawable/ic_person"
+                                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="@dimen/base_space_2"
+                                    android:text="@string/inspect_form_registrant"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="@dimen/base_space_2"
+                                    android:layout_weight="1"
+                                    android:text="@{vm.registrantText}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.LabelLarge"
+                                    android:textColor="?attr/colorOnSurface"
+                                    tools:text="李明" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{vm.registrantTail}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    tools:text="自动记录" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:minHeight="28dp"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:importantForAccessibility="no"
+                                    android:src="@drawable/ic_location_on"
+                                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="@dimen/base_space_2"
+                                    android:text="@string/inspect_form_location"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                <com.google.android.material.progressindicator.CircularProgressIndicator
+                                    android:id="@+id/inspect_location_progress"
+                                    style="@style/Widget.Zmt.CircularProgressIndicator"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="@dimen/base_space_2"
+                                    android:indeterminate="true"
+                                    android:visibility="gone"
+                                    app:indicatorSize="16dp"
+                                    app:trackThickness="2dp" />
+
+                                <com.zhimu.slmp.base.widget.StatusTagView
+                                    android:id="@+id/inspect_location_tag"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="@dimen/base_space_2"
+                                    android:visibility="gone" />
+
+                                <TextView
+                                    android:id="@+id/inspect_location_text"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="@dimen/base_space_2"
+                                    android:layout_weight="1"
+                                    android:textAppearance="@style/TextAppearance.Zmt.LabelLarge"
+                                    android:textColor="?attr/colorOnSurface"
+                                    tools:text="现场 · 距养殖场 120 米" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{vm.timeText}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    tools:text="09:12" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- I03：补录日期 + 实际执行人；I02 代登记：实际执行人 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal"
+                        app:visibleIf="@{(backfill != null || safeUnbox(vm.canChooseExecutor)) &amp;&amp; !safeUnbox(vm.readOnly)}">
+
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                            android:id="@+id/inspect_date_layout"
+                            style="@style/Widget.Zmt.TextInputLayout.Picker"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/base_space_3"
+                            android:layout_weight="1"
+                            android:hint="@string/inspect_backfill_date"
+                            android:enabled="@{!safeUnbox(backfill.dateLocked)}"
+                            app:endIconDrawable="@drawable/inspect_ic_event"
+                            app:helperText="@{backfill.rangeText}"
+                            app:helperTextEnabled="true"
+                            app:inspectError="@{vm.fieldErrors[`inspect_date`]}"
+                            app:visibleIf="@{backfill != null}">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/inspect_date_input"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:dateText="@{backfill.inspectDate}"
+                                app:dateWithWeek="@{true}" />
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                            android:id="@+id/inspect_executor_layout"
+                            style="@style/Widget.Zmt.TextInputLayout.Dropdown"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="@string/inspect_form_executor"
+                            app:helperText="@string/inspect_form_executor_helper"
+                            app:helperTextEnabled="true"
+                            app:inspectError="@{vm.fieldErrors[`executor_id`]}"
+                            app:visibleIf="@{vm.canChooseExecutor}">
+
+                            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                                android:id="@+id/inspect_executor_input"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none" />
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+                    </LinearLayout>
+
+                    <!-- 巡检项目 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:layout_marginBottom="@dimen/base_space_2"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/inspect_form_items"
+                            android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+                            android:textColor="?attr/colorPrimary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/inspect_form_items_hint"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            app:visibleIf="@{!safeUnbox(vm.readOnly)}" />
+                    </LinearLayout>
+
+                    <com.zhimu.slmp.base.widget.GroupedListLayout
+                        android:id="@+id/inspect_items"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <!-- 只读：手动标记异常 · 原因 -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:drawablePadding="@dimen/base_space_2"
+                        android:gravity="center_vertical"
+                        android:text="@{vm.readOnlyManualText}"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                        android:textColor="?attr/colorOnSurface"
+                        app:drawableStartCompat="@drawable/inspect_ic_flag_filled"
+                        app:drawableTint="?attr/colorError"
+                        app:goneIfNull="@{vm.readOnlyManualText}" />
+
+                    <!-- 标记为异常卡（所有者、场长） -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/inspect_manual_card"
+                        style="@style/Widget.Zmt.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                        app:cardCornerRadius="20dp"
+                        app:visibleIf="@{vm.manualCardVisible}">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:id="@+id/inspect_manual_head"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="?attr/selectableItemBackground"
+                                android:gravity="center_vertical"
+                                android:minHeight="72dp"
+                                android:orientation="horizontal"
+                                android:paddingStart="@dimen/base_space_4"
+                                android:paddingEnd="@dimen/base_space_4">
+
+                                <ImageView
+                                    android:id="@+id/inspect_manual_icon"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
+                                    android:importantForAccessibility="no"
+                                    android:background="@drawable/inspect_bg_leading_neutral"
+                                    android:padding="8dp"
+                                    android:src="@drawable/inspect_ic_flag"
+                                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="@dimen/base_space_4"
+                                    android:layout_marginEnd="@dimen/base_space_3"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/inspect_form_manual_title"
+                                        android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                                        android:textColor="?attr/colorOnSurface" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@{vm.lockedText}"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                        android:textColor="?attr/colorOnSurfaceVariant"
+                                        tools:text="各项都正常但你发现其他问题时打开" />
+                                </LinearLayout>
+
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/inspect_manual_switch"
+                                    style="@style/Widget.Zmt.Switch"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="@{safeUnbox(vm.manualMarked)}"
+                                    android:clickable="false"
+                                    android:enabled="@{!safeUnbox(vm.switchLocked)}"
+                                    android:focusable="false" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:paddingStart="@dimen/base_space_4"
+                                android:paddingEnd="@dimen/base_space_4"
+                                android:paddingBottom="@dimen/base_space_3"
+                                app:visibleIf="@{vm.reasonVisible}">
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="1dp"
+                                    android:layout_marginBottom="@dimen/base_space_3"
+                                    android:background="?attr/colorOutlineVariant" />
+
+                                <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                                    android:id="@+id/inspect_reason_layout"
+                                    style="@style/Widget.Zmt.TextInputLayout"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/inspect_form_manual_reason"
+                                    app:counterEnabled="true"
+                                    app:counterMaxLength="100"
+                                    app:helperText="@{vm.reasonHelper}"
+                                    app:helperTextEnabled="true"
+                                    app:inspectError="@{vm.fieldErrors[`manual_reason`]}"
+                                    app:placeholderText="@string/inspect_form_manual_reason_hint">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/inspect_reason_input"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:inputType="textMultiLine"
+                                        android:maxLength="100"
+                                        android:maxLines="4"
+                                        android:minLines="2"
+                                        android:text="@={vm.manualReason}" />
+                                </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- 异常横幅 -->
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/inspect_abnormal_banner"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        app:goneIfNull="@{vm.abnormalBanner}"
+                        app:noticeIcon="@drawable/ic_report"
+                        app:noticeLevel="warning"
+                        app:inspectNoticeText="@{vm.abnormalBanner}" />
+
+                    <!-- 说明 -->
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                        android:id="@+id/inspect_remark_layout"
+                        style="@style/Widget.Zmt.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:enabled="@{!safeUnbox(vm.readOnly)}"
+                        android:hint="@string/inspect_form_remark"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="200"
+                        app:helperText="@string/inspect_form_optional"
+                        app:helperTextEnabled="true"
+                        app:inspectError="@{vm.fieldErrors[`remark`]}">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textMultiLine"
+                            android:maxLength="200"
+                            android:minLines="2"
+                            android:text="@={vm.remark}" />
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                    <!-- 发现死淘提示 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        app:visibleIf="@{!safeUnbox(vm.readOnly)}">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/inspect_form_death_hint"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/inspect_death_button"
+                            style="@style/Widget.Zmt.Button.Text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/inspect_form_death_action" />
+                    </LinearLayout>
+
+                    <!-- 照片和视频 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/inspect_form_media"
+                            android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@{vm.mediaCountText}"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodySmall.Number"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            tools:text="3 / 6" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/inspect_form_media_limit"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        app:visibleIf="@{!safeUnbox(vm.readOnly)}" />
+
+                    <com.zhimu.slmp.media.picker.MediaPickerView
+                        android:id="@+id/inspect_media"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        app:mediaDeletedText="@string/inspect_form_deleted_photo" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/inspect_action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:visibleIf="@{!safeUnbox(vm.readOnly)}">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/inspect_report_button"
+                style="@style/Widget.Zmt.Button.Tonal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/base_space_3"
+                android:layout_weight="1"
+                android:text="@string/inspect_action_report"
+                app:icon="@drawable/ic_report"
+                app:visibleIf="@{vm.reportVisible}" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/inspect_submit_button"
+                style="@style/Widget.Zmt.Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@{vm.primaryText}" />
+        </com.zhimu.slmp.base.widget.BottomActionBar>
+    </LinearLayout>
+</layout>

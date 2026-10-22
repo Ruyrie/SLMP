@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- I08 拍照（模块07 原型 7-12，本期不显示录像）：顶栏 关闭 / 闪光灯；3:4 取景；说明胶囊；最近一张 / 快门 / 切换摄像头 -->
+<!-- I08 拍照 / 录像（模块07 原型 7-12）：顶栏 关闭 / 录像计时胶囊 / 闪光灯；录像进度条；3:4 取景与上下文胶囊；
+     拍照 / 录像切换（只在照片和视频网格进入时显示）；最近一张 / 快门 / 切换摄像头；提示文字 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
@@ -29,6 +30,39 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:tint="?attr/colorOnMedia" />
+
+        <!-- 录像计时胶囊（录像中显示） -->
+        <LinearLayout
+            android:id="@+id/media_timer"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:background="@drawable/media_bg_record_timer"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/base_space_3"
+            android:paddingEnd="@dimen/base_space_4"
+            app:layout_constraintBottom_toBottomOf="@id/media_top_space"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:visibleIf="@{safeUnbox(vm.recording)}">
+
+            <View
+                android:id="@+id/media_timer_dot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/media_bg_record_dot" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:text="@{vm.elapsedText}"
+                android:textAppearance="@style/TextAppearance.Zmt.LabelSmall.Number"
+                android:textColor="?attr/colorOnMedia"
+                android:textSize="14sp"
+                tools:text="0:12 / 0:30" />
+        </LinearLayout>
 
         <ImageButton
             android:id="@+id/media_flash"
@@ -73,6 +107,23 @@
             app:layout_constraintTop_toBottomOf="@id/media_top_space"
             app:layout_constraintVertical_bias="0" />
 
+        <!-- 录像进度条：已录 error，剩余白色 40%，按 30 秒满长换算 -->
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/media_record_progress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:max="1000"
+            android:progress="@{safeUnbox(vm.recordProgress)}"
+            app:indicatorColor="@color/zm_error"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/media_preview"
+            app:trackColor="@color/media_color_on_media_40"
+            app:trackCornerRadius="0dp"
+            app:trackStopIndicatorSize="0dp"
+            app:trackThickness="3dp"
+            app:visibleIf="@{safeUnbox(vm.recording)}" />
+
         <View
             android:id="@+id/media_flash_white"
             android:layout_width="0dp"
@@ -91,21 +142,23 @@
             android:layout_marginStart="@dimen/base_page_margin"
             android:layout_marginEnd="@dimen/base_page_margin"
             android:layout_marginBottom="@dimen/base_space_3"
-            android:background="@drawable/media_bg_chip"
+            android:background="@{vm.allowVideo ? @drawable/media_bg_context_chip : @drawable/media_bg_chip}"
+            android:drawablePadding="@dimen/base_space_1"
             android:ellipsize="end"
+            android:gravity="center_vertical"
             android:maxLines="1"
-            android:paddingStart="@dimen/base_space_4"
+            android:paddingStart="@dimen/base_space_3"
             android:paddingTop="6dp"
             android:paddingEnd="@dimen/base_space_4"
             android:paddingBottom="6dp"
             android:text="@{vm.contextText}"
-            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
             android:textColor="?attr/colorOnMedia"
             app:goneIfNull="@{vm.contextText}"
             app:layout_constraintBottom_toBottomOf="@id/media_preview"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            tools:text="死淘登记 · 已添加 2 / 6" />
+            tools:text="登记巡检 · 3 号育肥舍 · 已添加 2 / 6" />
 
         <!-- 相机权限被拒绝 -->
         <LinearLayout
@@ -154,7 +207,55 @@
                 android:text="@string/media_camera_open_settings" />
         </LinearLayout>
 
-        <!-- 底部控制区 -->
+        <!-- 录像模式麦克风被拒：说明 + 去设置开启；不开启就不录像（仍可切回拍照） -->
+        <LinearLayout
+            android:id="@+id/media_mic_permission"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@color/media_color_chip_bg"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="@dimen/base_space_6"
+            app:layout_constraintBottom_toBottomOf="@id/media_preview"
+            app:layout_constraintEnd_toEndOf="@id/media_preview"
+            app:layout_constraintStart_toStartOf="@id/media_preview"
+            app:layout_constraintTop_toTopOf="@id/media_preview"
+            app:visibleIf="@{safeUnbox(vm.micDenied) &amp;&amp; !safeUnbox(vm.permissionDenied)}">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_mic"
+                app:tint="?attr/colorOnMedia" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_4"
+                android:text="@string/media_camera_mic_title"
+                android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                android:textColor="?attr/colorOnMedia" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_2"
+                android:gravity="center"
+                android:text="@string/media_camera_mic_message"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="@color/media_color_on_media_variant" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/media_mic_settings"
+                style="@style/Widget.Zmt.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_5"
+                android:text="@string/media_camera_open_settings" />
+        </LinearLayout>
+
+        <!-- 拍照模式标签（只拍照的旧用法） -->
         <TextView
             android:id="@+id/media_mode"
             android:layout_width="wrap_content"
@@ -171,7 +272,50 @@
             android:textColor="?attr/colorMediaBackdrop"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/media_controls" />
+            app:layout_constraintTop_toTopOf="@id/media_controls"
+            app:visibleIf="@{!vm.allowVideo}" />
+
+        <!-- 拍照 / 录像切换（照片和视频网格进入时显示；录像中不可点） -->
+        <LinearLayout
+            android:id="@+id/media_mode_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_5"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/media_controls"
+            app:visibleIf="@{vm.allowVideo}">
+
+            <TextView
+                android:id="@+id/media_mode_photo"
+                android:layout_width="60dp"
+                android:layout_height="32dp"
+                android:gravity="center"
+                android:onClick="@{() -> vm.switchMode(`PHOTO`)}"
+                android:text="@string/media_camera_mode_photo"
+                android:textAppearance="@style/TextAppearance.Zmt.LabelLarge"
+                android:textColor="@color/media_color_mode_text" />
+
+            <TextView
+                android:id="@+id/media_mode_video"
+                android:layout_width="60dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:gravity="center"
+                android:onClick="@{() -> vm.switchMode(`VIDEO`)}"
+                android:text="@string/media_camera_mode_video"
+                android:textAppearance="@style/TextAppearance.Zmt.LabelLarge"
+                android:textColor="@color/media_color_mode_text" />
+        </LinearLayout>
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/media_mode_barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierAllowsGoneWidgets="false"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="media_mode,media_mode_switch" />
 
         <ImageButton
             android:id="@+id/media_shutter"
@@ -183,7 +327,7 @@
             app:layout_constraintBottom_toTopOf="@id/media_remaining"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/media_mode"
+            app:layout_constraintTop_toBottomOf="@id/media_mode_barrier"
             app:onSafeClick="@{() -> vm.onShutter()}" />
 
         <com.google.android.material.imageview.ShapeableImageView
@@ -194,7 +338,6 @@
             android:contentDescription="@string/media_camera_last_thumb"
             android:onClick="@{() -> vm.onThumbClick()}"
             android:scaleType="centerCrop"
-            app:imageUrl="@{vm.lastThumb}"
             app:invisibleIf="@{vm.lastThumb == null}"
             app:layout_constraintBottom_toBottomOf="@id/media_shutter"
             app:layout_constraintStart_toStartOf="parent"
@@ -210,6 +353,7 @@
             android:layout_marginEnd="@dimen/base_space_8"
             android:background="@drawable/media_bg_circle_button"
             android:contentDescription="@string/media_camera_switch"
+            android:enabled="@{!safeUnbox(vm.recording)}"
             android:onClick="@{() -> vm.switchLens()}"
             android:src="@drawable/ic_cameraswitch"
             app:invisibleIf="@{!safeUnbox(vm.canSwitchLens)}"
@@ -229,6 +373,6 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            tools:text="还可以拍 4 张" />
+            tools:text="录像不超过 30 秒，自动压缩为 720p" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

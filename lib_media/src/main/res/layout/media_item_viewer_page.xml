@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- I09 的一页：可缩放图片；视频项显示封面、播放按钮与“视频播放将在后续版本支持” -->
+<!-- I09 的一页：可缩放图片；视频项为封面 + 中央播放按钮，点播放后由页面的 ExoPlayer 挂到 PlayerView 播放 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -11,6 +11,16 @@
         android:layout_height="match_parent"
         android:importantForAccessibility="no" />
 
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/media_player"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:resize_mode="fit"
+        app:shutter_background_color="@android:color/transparent"
+        app:surface_type="texture_view"
+        app:use_controller="false" />
+
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/media_loading"
         style="@style/Widget.Zmt.CircularProgressIndicator"
@@ -18,10 +28,24 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:indeterminate="true"
-        app:indicatorColor="?attr/colorOnMedia" />
+        app:indicatorColor="?attr/colorOnMedia"
+        app:indicatorSize="48dp" />
 
+    <ImageView
+        android:id="@+id/media_video_play"
+        android:layout_width="@dimen/media_viewer_play"
+        android:layout_height="@dimen/media_viewer_play"
+        android:layout_gravity="center"
+        android:background="@drawable/media_bg_scrim_circle"
+        android:contentDescription="@string/media_viewer_play"
+        android:padding="12dp"
+        android:src="@drawable/ic_play_arrow_filled"
+        android:visibility="gone"
+        app:tint="?attr/colorOnMedia" />
+
+    <!-- 视频加载失败 -->
     <LinearLayout
-        android:id="@+id/media_video_overlay"
+        android:id="@+id/media_video_error"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -29,23 +53,21 @@
         android:orientation="vertical"
         android:visibility="gone">
 
-        <ImageView
-            android:id="@+id/media_video_play"
-            android:layout_width="@dimen/media_viewer_play"
-            android:layout_height="@dimen/media_viewer_play"
-            android:background="@drawable/media_bg_scrim_circle"
-            android:contentDescription="@string/media_viewer_video_unsupported"
-            android:padding="12dp"
-            android:src="@drawable/ic_play_arrow_filled"
-            app:tint="?attr/colorOnMedia" />
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/base_space_3"
-            android:text="@string/media_viewer_video_unsupported"
+            android:text="@string/media_viewer_video_failed"
             android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
             android:textColor="?attr/colorOnMedia" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/media_video_reload"
+            style="@style/Widget.Zmt.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_2"
+            android:text="@string/media_viewer_reload"
+            android:textColor="@color/zm_inverse_primary" />
     </LinearLayout>
 
     <TextView

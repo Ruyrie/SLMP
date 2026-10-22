@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 列表中的分组标题（primary 14 sp）：“前 3 天 · 超时与补录”“昨天 · 10月18日” -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="@dimen/base_space_4"
+    android:paddingBottom="@dimen/base_space_2">
+
+    <TextView
+        android:id="@+id/inspect_section_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+        android:textColor="?attr/colorPrimary" />
+</FrameLayout>

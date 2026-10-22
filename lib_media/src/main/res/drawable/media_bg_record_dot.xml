@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 录像计时胶囊中的白色圆点（1 秒闪烁一次） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="@color/zm_on_media" />
+    <size
+        android:width="8dp"
+        android:height="8dp" />
+</shape>

@@ -1,0 +1,17 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "file_id": 9006,
+    "url": "file:///android_asset/mock/media/inspection_video.mp4",
+    "thumb_url": "file:///android_asset/mock/media/inspection_video_cover.jpg",
+    "media_type": "VIDEO",
+    "mime_type": "video/mp4",
+    "size": 301202,
+    "width": 480,
+    "height": 360,
+    "duration_sec": 18,
+    "status": "READY"
+  },
+  "trace_id": "mock-u06-9006"
+}
