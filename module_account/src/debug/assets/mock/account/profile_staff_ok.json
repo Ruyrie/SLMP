@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "name": "李明",
+    "name_initial": "李",
+    "version": 2
+  },
+  "trace_id": "mock-a16-staff"
+}

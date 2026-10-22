@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 模块01 账号与个人中心文案（UI 设计文档 2.2–2.5 节） -->
+<resources>
+    <!-- 通用 -->
+    <string name="account_app_name">智牧通</string>
+    <string name="account_app_slogan">养殖生产与经营管理</string>
+    <string name="account_field_phone">手机号</string>
+    <string name="account_field_password">密码</string>
+    <string name="account_field_sms_code">短信验证码</string>
+    <string name="account_field_new_password">新密码</string>
+    <string name="account_field_confirm_password">再次输入新密码</string>
+    <string name="account_field_confirm_placeholder">请再输入一次</string>
+    <string name="account_phone_prefix">+86</string>
+    <string name="account_password_rule">8–20 位，需同时包含字母和数字</string>
+    <string name="account_cancel">取消</string>
+    <string name="account_save">保存</string>
+
+    <!-- A01 登录 -->
+    <string name="account_login_title">登录</string>
+    <string name="account_login_desc">App 和网页版使用同一个账号</string>
+    <string name="account_login_mode_password">密码登录</string>
+    <string name="account_login_mode_sms">验证码登录</string>
+    <string name="account_login_forgot">忘记密码</string>
+    <string name="account_login_submit">登录</string>
+    <string name="account_login_phone_unusable">手机号无法使用</string>
+    <string name="account_login_no_account">还没有账号？</string>
+    <string name="account_login_register">注册</string>
+
+    <!-- A02 注册账号 -->
+    <string name="account_register_title">注册账号</string>
+    <string name="account_register_desc">用你自己的手机号注册。注册后立即可以登录，不需要审核；App 和网页版使用同一个账号。</string>
+    <string name="account_register_phone_helper">一个手机号只能注册一个账号</string>
+    <string name="account_register_set_password">设置密码</string>
+    <string name="account_register_agree_prefix">我已阅读并同意</string>
+    <string name="account_register_and">和</string>
+    <string name="account_register_user_agreement">《用户协议》</string>
+    <string name="account_register_privacy_policy">《隐私政策》</string>
+    <string name="account_register_submit">注册</string>
+
+    <!-- A03 重置密码 -->
+    <string name="account_reset_title">重置密码</string>
+    <string name="account_reset_desc">手机号还能使用时，用短信验证码就能自行重置密码，不需要联系客服。</string>
+    <string name="account_reset_notice">重置后，其他设备上的登录会自动失效，需要用新密码重新登录。</string>
+    <string name="account_reset_lost_phone">手机号已停机或丢失？</string>
+    <string name="account_reset_apply_recovery">申请找回账号</string>
+    <string name="account_reset_submit">重置密码</string>
+
+    <!-- A04 保存恢复码 -->
+    <string name="account_code_title">保存恢复码</string>
+    <string name="account_code_title_new">保存新的恢复码</string>
+    <string name="account_code_card_label">你的恢复码 · 16 位字母和数字</string>
+    <string name="account_code_copy">复制</string>
+    <string name="account_code_save_image">保存为图片</string>
+    <string name="account_code_warning_title">恢复码只显示这一次。</string>
+    <string name="account_code_warning_text">请截图或抄下来，放在安全的地方。没有恢复码的找回申请一律不受理。</string>
+    <string name="account_code_use_recover">找回账号时使用</string>
+    <string name="account_code_use_recover_desc">同时填写原手机号和新手机号，由客服核实</string>
+    <string name="account_code_use_regenerate">可以重新生成</string>
+    <string name="account_code_use_regenerate_desc">在“我的 → 账号与安全”中经短信验证后生成，旧恢复码同时作废</string>
+    <string name="account_code_saved_check">我已保存恢复码</string>
+    <string name="account_code_copied">已复制恢复码</string>
+    <string name="account_code_image_saved">已保存到相册</string>
+    <string name="account_code_image_view">查看</string>
+    <string name="account_code_image_failed">保存失败，请截图或抄下恢复码</string>
+    <string name="account_code_clip_label">智牧通恢复码</string>
+    <string name="account_code_error_title">恢复码加载失败</string>
+
+    <!-- A05 找回账号 -->
+    <string name="account_recovery_title">找回账号</string>
+    <string name="account_recovery_desc">客服核实后为你重置密码并换绑新手机号，新密码以短信发到新手机号。</string>
+    <string name="account_recovery_rule_title">恢复码连续填错 5 次，24 小时内不能再提交。</string>
+    <string name="account_recovery_rule_text">没有恢复码的申请不受理。</string>
+    <string name="account_recovery_old_phone">原手机号</string>
+    <string name="account_recovery_code">恢复码</string>
+    <string name="account_recovery_new_phone">新手机号</string>
+    <string name="account_recovery_new_phone_code">新手机号验证码</string>
+    <string name="account_recovery_description">情况说明</string>
+    <string name="account_recovery_service_title">也可以拨打客服电话</string>
+    <string name="account_recovery_service_desc">%1$s　由客服代为登记</string>
+    <string name="account_recovery_service_default">400-123-4567</string>
+    <string name="account_recovery_submit">提交找回申请</string>
+    <string name="account_recovery_discard_title">放弃这次找回申请？</string>
+    <string name="account_recovery_discard_message">已填写的内容不会保存。</string>
+    <string name="account_recovery_keep">继续填写</string>
+    <string name="account_recovery_discard">放弃</string>
+
+    <!-- A06 找回后首次登录 -->
+    <string name="account_after_title_password">修改密码</string>
+    <string name="account_after_step1">第 1 步，共 2 步</string>
+    <string name="account_after_step2">第 2 步，共 2 步</string>
+    <string name="account_after_next_hint">下一步：保存新的恢复码</string>
+    <string name="account_after_password_rule">8–20 位，需同时包含字母和数字，不能使用短信中的临时密码</string>
+    <string name="account_after_next_title">接下来：保存新的恢复码</string>
+    <string name="account_after_next_desc">旧恢复码已作废，修改密码后会显示新的恢复码，只显示一次</string>
+    <string name="account_after_submit">修改密码并继续</string>
+    <string name="account_enter_app">进入智牧通</string>
+
+    <!-- A07 我的 -->
+    <string name="account_mine_title">我的</string>
+    <string name="account_mine_profile_suffix">%1$s · 个人信息</string>
+    <string name="account_mine_farms">我的养殖场</string>
+    <string name="account_mine_change_requests">我的修改申请</string>
+    <string name="account_mine_change_requests_desc">提交记录和审核结果</string>
+    <string name="account_mine_reminder">提醒设置</string>
+    <string name="account_mine_security">账号与安全</string>
+    <string name="account_mine_security_desc">密码、恢复码、注销账号</string>
+    <string name="account_mine_about">关于智牧通</string>
+    <string name="account_mine_logout">退出登录</string>
+    <string name="account_mine_error_title">个人信息加载失败</string>
+    <string name="account_mine_error_message">请检查网络后重新加载。</string>
+    <string name="account_edit_name_title">修改姓名</string>
+    <string name="account_edit_name_field">姓名</string>
+    <string name="account_edit_name_helper">养殖场成员和登记记录中显示这个姓名</string>
+
+    <!-- A08 账号与安全 -->
+    <string name="account_security_title">账号与安全</string>
+    <string name="account_security_section_login">登录</string>
+    <string name="account_security_phone_desc">手机号 · 用于登录和接收验证码</string>
+    <string name="account_security_change_password">修改密码</string>
+    <string name="account_security_change_password_desc">修改后，其他设备上的登录会自动失效</string>
+    <string name="account_security_section_code">恢复码</string>
+    <string name="account_security_regenerate">重新生成恢复码</string>
+    <string name="account_security_regenerate_desc">需要短信验证，旧恢复码同时作废</string>
+    <string name="account_security_code_notice">手机号不能使用时，需要用恢复码找回账号。恢复码只在生成时显示一次，找不到时请重新生成并保存。</string>
+    <string name="account_security_section_cancel">注销</string>
+    <string name="account_security_cancel">注销账号</string>
+    <string name="account_security_cancel_desc">删除个人数据，不能撤销；你创建的养殖场须先转让或停用</string>
+    <string name="account_security_error_title">账号信息加载失败</string>
+    <string name="account_regenerate_title">重新生成恢复码</string>
+    <string name="account_regenerate_desc">验证后会生成新的恢复码，旧恢复码立即作废。</string>
+    <string name="account_regenerate_submit">验证并生成</string>
+
+    <!-- 修改密码页 -->
+    <string name="account_password_title">修改密码</string>
+    <string name="account_password_desc">修改后，其他设备上的登录会自动失效，需要用新密码重新登录。</string>
+    <string name="account_password_current">当前密码</string>
+    <string name="account_password_submit">修改密码</string>
+
+    <!-- 关于页、协议全文页 -->
+    <string name="account_about_title">关于智牧通</string>
+    <string name="account_about_version">版本 %1$s</string>
+    <string name="account_about_user_agreement">用户协议</string>
+    <string name="account_about_privacy_policy">隐私政策</string>
+    <string name="account_agreement_only_https">协议地址不是 HTTPS，无法打开</string>
+
+    <!-- A09 注销账号 -->
+    <string name="account_cancel_title">注销账号</string>
+    <string name="account_cancel_consequence_title">注销后立即生效，不能撤销。</string>
+    <string name="account_cancel_consequence_text">已登录的设备全部退出，手机号保留 30 天后才能重新注册。</string>
+    <string name="account_cancel_section">注销清单</string>
+    <string name="account_cancel_personal">个人数据</string>
+    <string name="account_cancel_personal_default">消息、AI 问答、待办设置、恢复码</string>
+    <string name="account_cancel_personal_disposal">注销后删除</string>
+    <string name="account_cancel_members">%1$d 名成员</string>
+    <string name="account_cancel_transfer">转让所有权</string>
+    <string name="account_cancel_disable">停用养殖场</string>
+    <string name="account_cancel_export">导出经营报表</string>
+    <string name="account_cancel_exit_desc">你登记的记录保留，登记人显示为“已注销用户”</string>
+    <string name="account_cancel_confirm_check">我已了解注销后果</string>
+    <string name="account_cancel_footnote">未处理的转让、邀请和修改申请会自动撤回，找回申请自动驳回。通过客服找回账号后 7 天内不能注销。注销 30 天后才能用同一手机号重新注册，得到的是一个全新的账号，以前的数据不会恢复。</string>
+    <string name="account_cancel_submit">注销账号</string>
+    <string name="account_cancel_dialog_title">注销这个账号？</string>
+    <string name="account_cancel_dialog_positive">注销</string>
+    <string name="account_cancel_error_title">注销信息加载失败</string>
+    <string name="account_cancel_pick_transfer">选择要转让的养殖场</string>
+    <string name="account_cancel_pick_disable">选择要停用的养殖场</string>
+</resources>

@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "recovery_code_id": 501,
+    "status": "ACTIVE",
+    "confirmed_at": "2026-10-19 09:32:00",
+    "next_step": "NONE"
+  },
+  "trace_id": "mock-a14-ok"
+}

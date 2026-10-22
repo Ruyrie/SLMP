@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 模块01 页面内复用的文字与表单样式（颜色只引用主题属性） -->
+<resources>
+    <!-- 页面说明 body-m 14 sp on-surface-variant -->
+    <style name="account_style_desc">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyMedium</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- 补充说明 body-s 12 sp on-surface-variant -->
+    <style name="account_style_note">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodySmall</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- 分组标题 title-s 14 sp primary -->
+    <style name="account_style_section_title">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.TitleSmall</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
+        <item name="android:layout_marginTop">@dimen/base_space_5</item>
+        <item name="android:layout_marginBottom">@dimen/base_space_3</item>
+    </style>
+
+    <!-- 表单输入框：上方 24 dp -->
+    <style name="account_style_field">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/base_space_6</item>
+    </style>
+
+    <!-- 输入框内文字 body-l 16 sp -->
+    <style name="account_style_edit">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyLarge</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- 复选框文字 16 sp on-surface -->
+    <style name="account_style_check">
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyLarge</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:minHeight">@dimen/base_touch_target</item>
+    </style>
+</resources>

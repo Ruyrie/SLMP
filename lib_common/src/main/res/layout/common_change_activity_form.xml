@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- U01 提交修改申请（02 号 11.3 节）：流程说明、已有待审核提示、上次驳回原因、原记录卡、修改项、原值 → 新值（作废时换成作废说明）、
+     修改原因、重新计算范围；底部“取消 / 提交修改申请” -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.common.ui.change.ChangeRequestFormViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/common_change_form_top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{@string/common_change_form_title}" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/common_change_form_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/common_change_form_error_title"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail"
+            app:uiState="@{vm.uiState}">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/common_change_form_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/common_change_review_tip"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        app:noticeLevel="normal" />
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/common_change_pending"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:visibility="gone"
+                        app:noticeLevel="warning" />
+
+                    <TextView
+                        android:id="@+id/common_change_reject"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:background="@drawable/common_change_bg_reject"
+                        android:padding="@dimen/base_space_3"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                        android:textColor="?attr/colorOnErrorContainer"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                        app:cardCornerRadius="@dimen/base_radius_lg_plus"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="@dimen/base_space_4">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/common_change_record_label"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_3"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:id="@+id/common_change_record_icon"
+                                    android:layout_width="@dimen/base_list_leading_size"
+                                    android:layout_height="@dimen/base_list_leading_size"
+                                    android:background="@drawable/common_change_bg_leading"
+                                    android:contentDescription="@null"
+                                    android:padding="8dp"
+                                    app:tint="?attr/colorOnSecondaryContainer" />
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="@dimen/base_space_4"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:id="@+id/common_change_record_title"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                                        android:textColor="?attr/colorOnSurface" />
+
+                                    <TextView
+                                        android:id="@+id/common_change_record_subtitle"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/common_change_record_card"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_4"
+                                android:orientation="horizontal" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/common_change_field"
+                        style="@style/Widget.Zmt.TextInputLayout.Dropdown"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:hint="@string/common_change_field">
+
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/common_change_field_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                            android:textColor="?attr/colorOnSurface" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <LinearLayout
+                        android:id="@+id/common_change_value_row"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/common_change_old_value"
+                            style="@style/Widget.Zmt.TextInputLayout.ReadOnly"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="@string/common_change_old_value">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/common_change_old_value_input"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:enabled="false"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="56dp"
+                            android:layout_marginTop="4dp"
+                            android:contentDescription="@null"
+                            android:scaleType="center"
+                            android:src="@drawable/ic_arrow_forward"
+                            app:tint="?attr/colorOnSurfaceVariant" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/common_change_new_value"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="@string/common_change_new_value">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/common_change_new_value_input"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:imeOptions="actionNext"
+                                android:inputType="numberDecimal"
+                                android:text="@={vm.newValue}"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                                android:textColor="?attr/colorOnSurface" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/common_change_void_notice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:visibility="gone"
+                        app:noticeIcon="@drawable/ic_block"
+                        app:noticeLevel="warning" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/common_change_reason"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:hint="@string/common_change_reason"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="200"
+                        app:helperText="@string/common_change_reason_helper">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/common_change_reason_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="top|start"
+                            android:inputType="textMultiLine"
+                            android:maxLength="200"
+                            android:minLines="3"
+                            android:text="@={vm.reason}"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                            android:textColor="?attr/colorOnSurface" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:id="@+id/common_change_recalc_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:text="@string/common_change_recalc_title"
+                        android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/common_change_recalc_tags"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_1"
+                        app:chipSpacingHorizontal="@dimen/base_space_2"
+                        app:chipSpacingVertical="@dimen/base_space_2" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/common_change_form_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:barLoading="@{vm.submitting}"
+            app:barPrimaryEnabled="@{vm.canSubmit}"
+            app:barPrimaryText="@string/common_change_submit"
+            app:barSecondaryText="@string/common_change_cancel" />
+    </LinearLayout>
+</layout>

@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "user": {
+      "user_id": 10003,
+      "name": "李明",
+      "name_initial": "李",
+      "phone_masked": "137****5678"
+    },
+    "next_step": "NONE",
+    "next_step_text": "无需操作",
+    "last_farm_id": 1001
+  },
+  "trace_id": "mock-account-a08-staff"
+}

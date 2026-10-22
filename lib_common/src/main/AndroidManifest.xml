@@ -7,6 +7,27 @@
             android:name="com.zhimu.slmp.common.app.AloneLauncherActivity"
             android:exported="false" />
 
+        <!-- U01 提交修改申请（模块01 编写） -->
+        <activity
+            android:name="com.zhimu.slmp.common.ui.change.ChangeRequestFormActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.U01" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- U02 我的修改申请（模块01 编写） -->
+        <activity
+            android:name="com.zhimu.slmp.common.ui.change.MyChangeRequestsActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.U02" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <!-- U03 通用状态页（类由 UI 套件编写） -->
         <activity
             android:name="com.zhimu.slmp.common.ui.status.StatusActivity"

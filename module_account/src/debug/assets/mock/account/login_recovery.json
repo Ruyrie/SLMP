@@ -1,0 +1,26 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "access_token": "mock-recovery",
+    "token_type": "Bearer",
+    "expires_in": 7200,
+    "refresh_expires_in": 2592000,
+    "refresh_token": "mock-recovery-refresh",
+    "next_step": "RECOVERY_CHANGE_PASSWORD",
+    "next_step_text": "请先修改密码",
+    "user": {
+      "user_id": 10001,
+      "name": "王建国",
+      "name_initial": "王",
+      "phone_masked": "151****2288"
+    },
+    "last_farm_id": 1001,
+    "recovery_info": {
+      "new_phone_masked": "151****2288",
+      "recovered_at": "2026-10-19 10:20:00",
+      "cancel_available_date": "2026-10-26"
+    }
+  },
+  "trace_id": "mock-account-a04-recovery"
+}

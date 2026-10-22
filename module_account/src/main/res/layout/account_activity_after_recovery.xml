@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A06 找回后首次登录：顶部栏只有标题（强制步骤）；步骤行与 4 dp 进度条；两步内容（Fragment）；底部固定主按钮 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/account_after_top_bar"
+        layout="@layout/base_include_top_app_bar" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingTop="@dimen/base_space_1"
+        android:paddingEnd="@dimen/base_page_margin">
+
+        <TextView
+            android:id="@+id/account_after_step"
+            style="@style/account_style_note"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/account_after_step1" />
+
+        <TextView
+            android:id="@+id/account_after_next"
+            style="@style/account_style_note"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/account_after_next_hint" />
+    </LinearLayout>
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/account_after_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_page_margin"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:layout_marginEnd="@dimen/base_page_margin"
+        android:max="100"
+        android:progress="50"
+        app:trackCornerRadius="2dp"
+        app:trackThickness="4dp" />
+
+    <FrameLayout
+        android:id="@+id/account_after_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <com.zhimu.slmp.base.widget.BottomActionBar
+        android:id="@+id/account_after_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:barPrimaryText="@string/account_after_submit" />
+</LinearLayout>

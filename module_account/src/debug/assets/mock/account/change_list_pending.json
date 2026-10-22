@@ -1,0 +1,36 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 9008,
+        "request_no": "CR2610190008",
+        "biz_type": "FEED_RECORD",
+        "biz_type_text": "投喂记录",
+        "biz_id": 7001,
+        "record_locator": "3 号育肥舍 · 10月18日 晚餐",
+        "change_type": "UPDATE",
+        "field_code": "actual_qty",
+        "field_name": "实际投喂量",
+        "before_display": "140 千克",
+        "after_display": "160 千克",
+        "after_value": "160",
+        "reason": "登记时把实际投喂量误填为 140 千克，当餐实际投喂 160 千克。",
+        "status": "PENDING",
+        "status_text": "待审核",
+        "submitted_by": {"user_id": 10001, "name": "王建国"},
+        "submitted_at": "2026-10-19 09:28:00",
+        "farm_id": 1001,
+        "farm_name": "东山猪场",
+        "batch_id": 3001
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {"ALL": 4, "PENDING": 1, "APPROVED": 2, "REJECTED": 1}
+  },
+  "trace_id": "mock-u03-pending"
+}

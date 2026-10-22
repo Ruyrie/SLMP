@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "phone_masked": "151****2288",
+    "cooldown_seconds": 60,
+    "expire_seconds": 300
+  },
+  "trace_id": "mock-a01-151"
+}

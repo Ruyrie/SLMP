@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A09 注销账号：后果横幅；找回 7 天内横幅；注销清单；养殖场处理横幅与行内按钮；退出卡片；确认勾选与短信验证码（满足条件时）；补充说明；底部危险按钮 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.account.ui.cancel.CancelAccountViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/account_cancel_top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{@string/account_cancel_title}" />
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/account_cancel_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/base_page_margin"
+                android:paddingEnd="@dimen/base_page_margin"
+                android:paddingBottom="@dimen/base_space_6">
+
+                <com.zhimu.slmp.base.widget.NoticeView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/base_space_2"
+                    app:noticeIcon="@drawable/ic_warning"
+                    app:noticeLevel="error"
+                    app:noticeText="@string/account_cancel_consequence_text"
+                    app:noticeTitle="@string/account_cancel_consequence_title" />
+
+                <com.zhimu.slmp.base.widget.StateLayout
+                    android:id="@+id/account_cancel_state"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="360dp"
+                    app:stateErrorTitle="@string/account_cancel_error_title"
+                    app:uiState="@{vm.uiState}">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <com.zhimu.slmp.base.widget.NoticeView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_3"
+                            android:visibility="gone"
+                            app:accountNotice="@{vm.recoveryBanner}"
+                            app:noticeIcon="@drawable/account_ic_event_busy"
+                            app:noticeLevel="error" />
+
+                        <TextView
+                            style="@style/account_style_section_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/account_cancel_section" />
+
+                        <com.zhimu.slmp.base.widget.GroupedListLayout
+                            android:id="@+id/account_cancel_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <LinearLayout
+                            android:id="@+id/account_cancel_farm_banner_box"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            android:background="@drawable/account_bg_notice_warning"
+                            android:orientation="vertical"
+                            android:paddingBottom="@dimen/base_space_1"
+                            app:goneIfNull="@{vm.farmBanner}">
+
+                            <com.zhimu.slmp.base.widget.NoticeView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:accountNotice="@{vm.farmBanner}"
+                                app:noticeIcon="@drawable/ic_info"
+                                app:noticeLevel="warning" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:paddingStart="40dp">
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/account_cancel_transfer"
+                                    style="@style/Widget.Zmt.Button.Text"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/account_cancel_transfer"
+                                    android:textColor="?attr/colorOnWarningContainer"
+                                    app:visibleIf="@{vm.showFarmActions}" />
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/account_cancel_disable"
+                                    style="@style/Widget.Zmt.Button.Text"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/account_cancel_disable"
+                                    android:textColor="?attr/colorOnWarningContainer"
+                                    app:visibleIf="@{vm.showFarmActions}" />
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/account_cancel_export"
+                                    style="@style/Widget.Zmt.Button.Text"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/account_cancel_export"
+                                    android:textColor="?attr/colorOnWarningContainer"
+                                    app:visibleIf="@{vm.showExport}" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <com.zhimu.slmp.base.widget.ListRowView
+                            android:id="@+id/account_cancel_exit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            app:leadingTone="neutral"
+                            app:rowLeadingIcon="@drawable/ic_logout"
+                            app:rowSubtitle="@string/account_cancel_exit_desc" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            app:visibleIf="@{vm.showConfirmArea}">
+
+                            <com.google.android.material.checkbox.MaterialCheckBox
+                                android:id="@+id/account_cancel_confirm"
+                                style="@style/account_style_check"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="-6dp"
+                                android:layout_marginTop="@dimen/base_space_4"
+                                android:checked="@={vm.confirmed}"
+                                android:text="@string/account_cancel_confirm_check" />
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/account_cancel_sms"
+                                style="@style/account_style_field"
+                                android:layout_marginTop="@dimen/base_space_3"
+                                android:hint="@string/account_field_sms_code">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    style="@style/account_style_edit"
+                                    android:autofillHints="smsOTPCode"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="number"
+                                    android:text="@={vm.smsCode}" />
+                            </com.google.android.material.textfield.TextInputLayout>
+                        </LinearLayout>
+
+                        <TextView
+                            style="@style/account_style_note"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            android:text="@string/account_cancel_footnote" />
+                    </LinearLayout>
+                </com.zhimu.slmp.base.widget.StateLayout>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/account_cancel_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:barLoading="@{vm.submitting}"
+            app:barPrimaryDanger="true"
+            app:barPrimaryEnabled="@{vm.canSubmit}"
+            app:barPrimaryIcon="@drawable/account_ic_delete_forever"
+            app:barPrimaryText="@string/account_cancel_submit" />
+    </LinearLayout>
+</layout>

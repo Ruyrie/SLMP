@@ -1,0 +1,21 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "access_token": "mock-staff",
+    "token_type": "Bearer",
+    "expires_in": 7200,
+    "refresh_expires_in": 2592000,
+    "refresh_token": "mock-staff-refresh",
+    "next_step": "NONE",
+    "next_step_text": "无需操作",
+    "user": {
+      "user_id": 10003,
+      "name": "李明",
+      "name_initial": "李",
+      "phone_masked": "137****5678"
+    },
+    "last_farm_id": 1001
+  },
+  "trace_id": "mock-account-a04-staff"
+}

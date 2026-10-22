@@ -1,0 +1,36 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 9007,
+        "request_no": "CR2610170003",
+        "biz_type": "INBOUND",
+        "biz_type_text": "饲料入库",
+        "biz_id": 5201,
+        "record_locator": "肉鸡料 · 10月10日",
+        "change_type": "UPDATE",
+        "field_code": "quantity",
+        "field_name": "入库数量",
+        "before_display": "1,000 千克",
+        "after_display": "1,200 千克",
+        "after_value": "1200",
+        "reason": "入库单据填错，实际入库 1,200 千克。",
+        "status": "REJECTED",
+        "status_text": "已驳回",
+        "submitted_at": "2026-10-17 16:00:00",
+        "reviewed_at": "2026-10-18 15:20:00",
+        "reject_reason": "与入库单据上的数量不一致，请核对单据后重新提交。",
+        "farm_id": 1002,
+        "farm_name": "西岭鸡场"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {"ALL": 4, "PENDING": 1, "APPROVED": 2, "REJECTED": 1}
+  },
+  "trace_id": "mock-u03-rejected"
+}

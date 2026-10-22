@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- U02 我的修改申请：二级页顶部栏；筛选 Chip 行（全部 / 待审核 N / 已通过 N / 已驳回 N）；下拉刷新的分组列表；空状态、加载失败 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/common_change_list_top_bar"
+        layout="@layout/base_include_top_app_bar" />
+
+    <HorizontalScrollView
+        android:id="@+id/common_change_filter_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/common_change_filters"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/base_page_margin"
+            android:paddingTop="@dimen/base_space_1"
+            android:paddingEnd="@dimen/base_page_margin"
+            android:paddingBottom="@dimen/base_space_1"
+            app:checkedChip="@id/common_change_filter_all"
+            app:chipSpacingHorizontal="@dimen/base_space_2"
+            app:selectionRequired="true"
+            app:singleLine="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/common_change_filter_all"
+                style="@style/Widget.Zmt.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/common_change_filter_all" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/common_change_filter_pending"
+                style="@style/Widget.Zmt.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/common_change_filter_pending" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/common_change_filter_approved"
+                style="@style/Widget.Zmt.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/common_change_filter_approved" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/common_change_filter_rejected"
+                style="@style/Widget.Zmt.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/common_change_filter_rejected" />
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/common_change_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/common_change_list_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:stateEmptyActionIcon="@drawable/ic_fence"
+            app:stateEmptyActionText="@string/common_change_empty_action"
+            app:stateEmptyIcon="@drawable/ic_edit_note"
+            app:stateEmptyMessage="@string/common_change_empty_message"
+            app:stateEmptyTitle="@string/common_change_empty_title"
+            app:stateErrorTitle="@string/common_change_list_error_title">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/common_change_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingStart="@dimen/base_page_margin"
+                android:paddingTop="@dimen/base_space_3"
+                android:paddingEnd="@dimen/base_page_margin"
+                android:paddingBottom="@dimen/base_space_6" />
+        </com.zhimu.slmp.base.widget.StateLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+</LinearLayout>

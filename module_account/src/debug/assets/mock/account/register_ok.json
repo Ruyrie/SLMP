@@ -1,0 +1,29 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "access_token": "mock-owner",
+    "token_type": "Bearer",
+    "expires_in": 7200,
+    "refresh_expires_in": 2592000,
+    "refresh_token": "mock-owner-refresh",
+    "next_step": "SAVE_RECOVERY_CODE",
+    "next_step_text": "请保存恢复码",
+    "user": {
+      "user_id": 10001,
+      "name": "王建国",
+      "name_initial": "王",
+      "phone_masked": "138****6620"
+    },
+    "recovery_code": {
+      "recovery_code_id": 501,
+      "code": "8KQ4T2MW7HXN3PDR",
+      "generated_at": "2026-10-19 09:30:00",
+      "phone_masked": "138****6620",
+      "scene": "REGISTER",
+      "scene_text": "注册",
+      "is_regenerated": false
+    }
+  },
+  "trace_id": "mock-a03-register"
+}

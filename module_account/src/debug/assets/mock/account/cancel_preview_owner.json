@@ -1,0 +1,52 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "phone_masked": "138****6620",
+    "personal_data_desc": "消息、AI 问答、待办设置、恢复码",
+    "phone_release_date": "2026-11-18",
+    "checklist_version": "a1b2c3d4e5f60718",
+    "can_cancel": false,
+    "block_reasons": ["OWNED_FARM_ACTIVE"],
+    "cancel_available_date": null,
+    "farm_cleanup_date": null,
+    "owned_farms": [
+      {
+        "farm_id": 1001,
+        "name": "东山猪场",
+        "farm_status": "NORMAL",
+        "farm_status_text": "正常",
+        "disposal": "TRANSFER_OR_DISABLE",
+        "disposal_text": "仍在使用，须先转让或停用",
+        "current_stock": 870,
+        "count_unit_text": "头",
+        "member_count": 3,
+        "transferable": true,
+        "transfer_pending_to_name": null
+      },
+      {
+        "farm_id": 1003,
+        "name": "北湾牛场",
+        "farm_status": "PENDING",
+        "farm_status_text": "待审核",
+        "disposal": "DELETE_NOW",
+        "disposal_text": "未通过审核，随注销一起删除",
+        "current_stock": null,
+        "count_unit_text": null,
+        "member_count": 0,
+        "transferable": false,
+        "transfer_pending_to_name": null
+      }
+    ],
+    "transferable_farm_count": 1,
+    "exit_farms": [
+      {
+        "farm_id": 1002,
+        "name": "西岭鸡场",
+        "role": "MANAGER",
+        "role_text": "场长"
+      }
+    ]
+  },
+  "trace_id": "mock-a19-owner"
+}

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- U02 申请卡片：前置图标块；第 1 行“记录类型 · 修改项”+ 状态标签；第 2 行养殖场标签 + 定位；第 3 行修改前后对比；
+     驳回原因块；末行时间与结果 +“重新提交” -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/base_space_4">
+
+        <ImageView
+            android:id="@+id/common_change_item_icon"
+            android:layout_width="@dimen/base_list_leading_size"
+            android:layout_height="@dimen/base_list_leading_size"
+            android:contentDescription="@null"
+            android:padding="8dp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_4"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/common_change_item_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <com.zhimu.slmp.base.widget.StatusTagView
+                    android:id="@+id/common_change_item_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/base_space_2" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_1"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.zhimu.slmp.base.widget.StatusTagView
+                    android:id="@+id/common_change_item_farm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/base_space_2"
+                    app:tagType="farm" />
+
+                <TextView
+                    android:id="@+id/common_change_item_locator"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_2"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.zhimu.slmp.base.widget.StatusTagView
+                    android:id="@+id/common_change_item_void_tag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/base_space_2"
+                    android:text="@string/common_change_tag_void"
+                    android:visibility="gone"
+                    app:tagIcon="@drawable/ic_block"
+                    app:tagType="error" />
+
+                <TextView
+                    android:id="@+id/common_change_item_before"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_marginStart="@dimen/base_space_2"
+                    android:layout_marginEnd="@dimen/base_space_2"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_arrow_forward"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/common_change_item_after"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                    android:textColor="?attr/colorOnSurface" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/common_change_item_reject"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_1"
+                android:background="@drawable/common_change_bg_reject"
+                android:padding="@dimen/base_space_3"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="?attr/colorOnErrorContainer"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="32dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/common_change_item_footer"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingTop="@dimen/base_space_1"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/common_change_item_resubmit"
+                    style="@style/Widget.Zmt.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/common_change_resubmit"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

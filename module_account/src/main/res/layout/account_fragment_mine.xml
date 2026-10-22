@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A07 我的（一级页）：一级页顶部栏；大标题“我的”；个人信息卡；我的养殖场、我的修改申请（员工不渲染）；提醒设置、账号与安全；关于；退出登录 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.account.ui.mine.MineViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <com.zhimu.slmp.common.widget.FirstLevelTopBar
+            android:id="@+id/account_mine_top_bar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/base_top_bar_height" />
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/account_mine_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:refreshing="@{vm.refreshing}">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/account_mine_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <TextView
+                        style="@style/Widget.Zmt.TextView.PageTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:text="@string/account_mine_title" />
+
+                    <com.zhimu.slmp.base.widget.StateLayout
+                        android:id="@+id/account_mine_state"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:minHeight="480dp"
+                        app:stateErrorTitle="@string/account_mine_error_title"
+                        app:uiState="@{vm.uiState}">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/account_mine_profile"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:clickable="true"
+                                android:focusable="true"
+                                app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                                app:cardCornerRadius="@dimen/base_radius_lg_plus"
+                                app:cardElevation="0dp"
+                                app:strokeWidth="0dp">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="88dp"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingStart="@dimen/base_page_margin"
+                                    android:paddingEnd="@dimen/base_space_3">
+
+                                    <com.zhimu.slmp.base.widget.AvatarView
+                                        android:layout_width="56dp"
+                                        android:layout_height="56dp"
+                                        app:avatarName="@{vm.overview.user.name}" />
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="@dimen/base_space_4"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:maxLines="1"
+                                            android:text="@{vm.overview.user.name}"
+                                            android:textAppearance="@style/TextAppearance.Zmt.TitleLarge"
+                                            android:textColor="?attr/colorOnSurface" />
+
+                                        <TextView
+                                            style="@style/account_style_desc"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@{@string/account_mine_profile_suffix(vm.overview.user.phoneMasked ?? ``)}" />
+                                    </LinearLayout>
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:contentDescription="@null"
+                                        android:src="@drawable/ic_chevron_right"
+                                        app:tint="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <com.zhimu.slmp.base.widget.GroupedListLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_4">
+
+                                <com.zhimu.slmp.base.widget.ListRowView
+                                    android:id="@+id/account_mine_farms"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    app:rowLeadingIcon="@drawable/ic_domain"
+                                    app:rowShowChevron="true"
+                                    app:rowTitle="@string/account_mine_farms">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center_vertical"
+                                        android:orientation="horizontal">
+
+                                        <TextView
+                                            style="@style/account_style_desc"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@{vm.farmSubtitle}" />
+
+                                        <LinearLayout
+                                            android:id="@+id/account_mine_farm_tags"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:orientation="horizontal" />
+                                    </LinearLayout>
+                                </com.zhimu.slmp.base.widget.ListRowView>
+
+                                <com.zhimu.slmp.base.widget.ListRowView
+                                    android:id="@+id/account_mine_change_requests"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    app:rowLeadingIcon="@drawable/ic_edit_note"
+                                    app:rowShowChevron="true"
+                                    app:rowTitle="@string/account_mine_change_requests"
+                                    app:visibleIf="@{vm.showChangeRequest}">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center_vertical"
+                                        android:orientation="horizontal">
+
+                                        <TextView
+                                            style="@style/account_style_desc"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/account_mine_change_requests_desc" />
+
+                                        <com.zhimu.slmp.base.widget.StatusTagView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="@dimen/base_space_2"
+                                            android:text="@{vm.changeRequestTag}"
+                                            app:goneIfNull="@{vm.changeRequestTag}"
+                                            app:tagType="warning" />
+                                    </LinearLayout>
+                                </com.zhimu.slmp.base.widget.ListRowView>
+                            </com.zhimu.slmp.base.widget.GroupedListLayout>
+
+                            <com.zhimu.slmp.base.widget.GroupedListLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_4">
+
+                                <com.zhimu.slmp.base.widget.ListRowView
+                                    android:id="@+id/account_mine_reminder"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    app:rowLeadingIcon="@drawable/ic_notifications"
+                                    app:rowShowChevron="true"
+                                    app:rowSubtitle="@{vm.reminderSubtitle}"
+                                    app:rowTitle="@string/account_mine_reminder" />
+
+                                <com.zhimu.slmp.base.widget.ListRowView
+                                    android:id="@+id/account_mine_security"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    app:rowLeadingIcon="@drawable/account_ic_shield_person"
+                                    app:rowShowChevron="true"
+                                    app:rowSubtitle="@string/account_mine_security_desc"
+                                    app:rowTitle="@string/account_mine_security" />
+                            </com.zhimu.slmp.base.widget.GroupedListLayout>
+
+                            <com.zhimu.slmp.base.widget.ListRowView
+                                android:id="@+id/account_mine_about"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_4"
+                                app:leadingTone="neutral"
+                                app:rowLeadingIcon="@drawable/ic_info"
+                                app:rowShowChevron="true"
+                                app:rowSubtitle="@{vm.versionText}"
+                                app:rowTitle="@string/account_mine_about" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/account_mine_logout"
+                                style="@style/Widget.Zmt.Button.Outlined"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_6"
+                                android:text="@string/account_mine_logout"
+                                app:icon="@drawable/ic_logout"
+                                app:iconSize="20dp"
+                                app:loading="@{vm.submitting}" />
+                        </LinearLayout>
+                    </com.zhimu.slmp.base.widget.StateLayout>
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </LinearLayout>
+</layout>

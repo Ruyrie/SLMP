@@ -1,0 +1,12 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "recovery_id": 3021,
+    "new_phone_masked": "151****2288",
+    "status": "PENDING",
+    "status_text": "待核实",
+    "submitted_at": "2026-10-19 09:40:00"
+  },
+  "trace_id": "mock-a10-ok"
+}

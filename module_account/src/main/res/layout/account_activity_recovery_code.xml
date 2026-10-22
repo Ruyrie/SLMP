@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A04 保存恢复码：顶部栏只有标题（强制步骤，无返回）；恢复码内容区；底部固定“进入智牧通 / 完成” -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/account_code_top_bar"
+        layout="@layout/base_include_top_app_bar" />
+
+    <com.zhimu.slmp.base.widget.StateLayout
+        android:id="@+id/account_code_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:stateErrorTitle="@string/account_code_error_title"
+        app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/account_code_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <include
+                android:id="@+id/account_code_body"
+                layout="@layout/account_include_recovery_code" />
+        </androidx.core.widget.NestedScrollView>
+    </com.zhimu.slmp.base.widget.StateLayout>
+
+    <com.zhimu.slmp.base.widget.BottomActionBar
+        android:id="@+id/account_code_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:barPrimaryText="@string/account_enter_app" />
+</LinearLayout>

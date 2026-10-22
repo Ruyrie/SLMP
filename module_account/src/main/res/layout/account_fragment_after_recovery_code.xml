@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A06 第 2 步：复用 A04 的恢复码内容区 -->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include
+        android:id="@+id/account_after_code_body"
+        layout="@layout/account_include_recovery_code" />
+</androidx.core.widget.NestedScrollView>

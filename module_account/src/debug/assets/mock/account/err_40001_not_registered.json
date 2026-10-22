@@ -1,0 +1,11 @@
+{
+  "code": 40001,
+  "message": "这个手机号还没有注册",
+  "data": {
+    "reason": "PHONE_NOT_REGISTERED",
+    "field_errors": [
+      {"field": "phone", "message": "这个手机号还没有注册"}
+    ]
+  },
+  "trace_id": "mock-a01-40001"
+}

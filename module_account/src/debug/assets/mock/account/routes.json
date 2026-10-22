@@ -1,0 +1,81 @@
+[
+  {"method": "POST", "path": "/api/v1/sms-codes", "when": {"body": ["REGISTER", "13800006620"]}, "file": "err_40904_registered.json"},
+  {"method": "POST", "path": "/api/v1/sms-codes", "when": {"body": ["RECOVERY_NEW_PHONE", "\"phone\":\"13700005678\""]}, "file": "err_40904_new_phone_taken.json"},
+  {"method": "POST", "path": "/api/v1/sms-codes", "when": {"body": "13900009999"}, "file": "err_40001_not_registered.json"},
+  {"method": "POST", "path": "/api/v1/sms-codes", "when": {"body": "\"phone\":\"15147602288\""}, "file": "sms_sent_151.json"},
+  {"method": "POST", "path": "/api/v1/sms-codes", "when": {"body": "\"phone\":\"13700005678\""}, "file": "sms_sent_137.json"},
+  {"method": "POST", "path": "/api/v1/sms-codes", "file": "sms_sent_138.json"},
+
+  {"method": "POST", "path": "/api/v1/account/sms-codes", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "sms_sent_137.json"},
+  {"method": "POST", "path": "/api/v1/account/sms-codes", "when": {"header": {"Authorization": "Bearer mock-recovery"}}, "file": "sms_sent_151.json"},
+  {"method": "POST", "path": "/api/v1/account/sms-codes", "file": "sms_sent_138.json"},
+
+  {"method": "POST", "path": "/api/v1/auth/register", "when": {"body": "13800006620"}, "file": "err_40904_registered.json"},
+  {"method": "POST", "path": "/api/v1/auth/register", "when": {"body": "\"sms_code\":\"123456\""}, "file": "register_ok.json", "delay": 600},
+  {"method": "POST", "path": "/api/v1/auth/register", "file": "err_40103_sms_wrong.json"},
+
+  {"method": "POST", "path": "/api/v1/auth/login/password", "when": {"body": ["13800006620", "\"password\":\"Zmt12345\""]}, "file": "login_owner.json", "delay": 500},
+  {"method": "POST", "path": "/api/v1/auth/login/password", "when": {"body": ["13700005678", "\"password\":\"Zmt12345\""]}, "file": "login_staff.json", "delay": 500},
+  {"method": "POST", "path": "/api/v1/auth/login/password", "when": {"body": ["15147602288", "\"password\":\"Tmp12345\""]}, "file": "login_recovery.json", "delay": 500},
+  {"method": "POST", "path": "/api/v1/auth/login/password", "when": {"body": "13900009999"}, "file": "err_40001_not_registered.json"},
+  {"method": "POST", "path": "/api/v1/auth/login/password", "file": "err_40102_password_wrong.json", "delay": 500},
+
+  {"method": "POST", "path": "/api/v1/auth/login/sms", "when": {"body": ["13700005678", "\"sms_code\":\"123456\""]}, "file": "login_staff.json", "delay": 500},
+  {"method": "POST", "path": "/api/v1/auth/login/sms", "when": {"body": ["15147602288", "\"sms_code\":\"123456\""]}, "file": "login_recovery.json", "delay": 500},
+  {"method": "POST", "path": "/api/v1/auth/login/sms", "when": {"body": "13900009999"}, "file": "err_40001_not_registered.json"},
+  {"method": "POST", "path": "/api/v1/auth/login/sms", "when": {"body": "\"sms_code\":\"123456\""}, "file": "login_owner.json", "delay": 500},
+  {"method": "POST", "path": "/api/v1/auth/login/sms", "file": "err_40103_sms_wrong.json"},
+
+  {"method": "POST", "path": "/api/v1/auth/logout", "file": "ok_empty.json"},
+
+  {"method": "GET", "path": "/api/v1/auth/session", "when": {"header": {"Authorization": "Bearer mock-recovery"}}, "file": "session_recovery.json"},
+  {"method": "GET", "path": "/api/v1/auth/session", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "session_staff.json"},
+  {"method": "GET", "path": "/api/v1/auth/session", "file": "session_owner.json"},
+
+  {"method": "POST", "path": "/api/v1/auth/password-resets", "when": {"body": "13900009999"}, "file": "err_40001_not_registered.json"},
+  {"method": "POST", "path": "/api/v1/auth/password-resets", "when": {"body": "\"sms_code\":\"123456\""}, "file": "ok_empty.json", "delay": 500},
+  {"method": "POST", "path": "/api/v1/auth/password-resets", "file": "err_40103_sms_wrong.json"},
+
+  {"method": "POST", "path": "/api/v1/account-recoveries", "when": {"body": "\"recovery_code\":\"0000000000000000\""}, "file": "err_42903_recovery_locked.json"},
+  {"method": "POST", "path": "/api/v1/account-recoveries", "when": {"body": ["\"recovery_code\":\"8KQ4T2MW7HXN3PDR\"", "\"new_phone_sms_code\":\"123456\""]}, "file": "recovery_submit_ok.json", "delay": 600},
+  {"method": "POST", "path": "/api/v1/account-recoveries", "when": {"body": "\"recovery_code\":\"8KQ4T2MW7HXN3PDR\""}, "file": "err_40103_new_phone_sms.json"},
+  {"method": "POST", "path": "/api/v1/account-recoveries", "file": "err_40105_recovery_code_wrong.json", "delay": 600},
+
+  {"method": "PUT", "path": "/api/v1/account/password/after-recovery", "when": {"body": "\"new_password\":\"Tmp12345\""}, "file": "err_40001_temp_password.json"},
+  {"method": "PUT", "path": "/api/v1/account/password/after-recovery", "file": "after_recovery_ok.json", "delay": 600},
+
+  {"method": "POST", "path": "/api/v1/account/recovery-codes/pending", "file": "recovery_code_pending.json"},
+  {"method": "POST", "path": "/api/v1/account/recovery-codes", "when": {"body": "\"sms_code\":\"123456\""}, "file": "recovery_code_regenerate.json", "delay": 500},
+  {"method": "POST", "path": "/api/v1/account/recovery-codes", "file": "err_40103_sms_wrong.json"},
+  {"method": "POST", "path": "/api/v1/account/recovery-codes/{id}/confirm", "file": "recovery_code_confirm_ok.json"},
+
+  {"method": "GET", "path": "/api/v1/account/overview", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "overview_staff.json"},
+  {"method": "GET", "path": "/api/v1/account/overview", "file": "overview_owner.json"},
+
+  {"method": "PATCH", "path": "/api/v1/account/profile", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "profile_staff_ok.json"},
+  {"method": "PATCH", "path": "/api/v1/account/profile", "file": "profile_owner_ok.json"},
+
+  {"method": "PUT", "path": "/api/v1/account/password", "when": {"body": "\"current_password\":\"Zmt12345\",\"new_password\":\"Zmt12345\""}, "file": "err_40001_same_password.json"},
+  {"method": "PUT", "path": "/api/v1/account/password", "when": {"body": "\"current_password\":\"Zmt12345\""}, "file": "login_owner.json", "delay": 500},
+  {"method": "PUT", "path": "/api/v1/account/password", "file": "err_40001_current_password.json", "delay": 500},
+
+  {"method": "GET", "path": "/api/v1/account/cancellation-preview", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "cancel_preview_staff.json"},
+  {"method": "GET", "path": "/api/v1/account/cancellation-preview", "file": "cancel_preview_owner.json"},
+  {"method": "POST", "path": "/api/v1/account/cancellation", "when": {"header": {"Authorization": "Bearer mock-owner"}}, "file": "err_40310_cancel_blocked.json"},
+  {"method": "POST", "path": "/api/v1/account/cancellation", "when": {"body": "\"sms_code\":\"123456\""}, "file": "ok_empty.json", "delay": 600},
+  {"method": "POST", "path": "/api/v1/account/cancellation", "file": "err_40103_sms_wrong.json"},
+
+  {"method": "GET", "path": "/api/v1/agreements/current", "file": "agreement.json"},
+
+  {"method": "GET", "path": "/api/v1/change-requests/form", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "err_40303_change_forbidden.json"},
+  {"method": "GET", "path": "/api/v1/change-requests/form", "when": {"query": {"biz_type": "INBOUND"}}, "file": "change_form_inbound.json"},
+  {"method": "GET", "path": "/api/v1/change-requests/form", "file": "change_form_feed_record.json"},
+  {"method": "POST", "path": "/api/v1/change-requests", "file": "change_submit_ok.json", "delay": 600},
+  {"method": "GET", "path": "/api/v1/change-requests", "when": {"header": {"Authorization": "Bearer mock-staff"}}, "file": "err_40303_change_forbidden.json"},
+  {"method": "GET", "path": "/api/v1/change-requests", "when": {"query": {"status": "PENDING"}}, "file": "change_list_pending.json"},
+  {"method": "GET", "path": "/api/v1/change-requests", "when": {"query": {"status": "APPROVED"}}, "file": "change_list_approved.json"},
+  {"method": "GET", "path": "/api/v1/change-requests", "when": {"query": {"status": "REJECTED"}}, "file": "change_list_rejected.json"},
+  {"method": "GET", "path": "/api/v1/change-requests", "file": "change_list_all.json"},
+  {"method": "GET", "path": "/api/v1/change-requests/{id}", "when": {"path": {"id": "9007"}}, "file": "change_detail_9007.json"},
+  {"method": "GET", "path": "/api/v1/change-requests/{id}", "file": "change_detail_9008.json"}
+]

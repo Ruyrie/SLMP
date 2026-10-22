@@ -1,0 +1,10 @@
+{
+  "code": 40904,
+  "message": "这个手机号已注册其他账号，请换一个手机号",
+  "data": {
+    "field_errors": [
+      {"field": "new_phone", "message": "这个手机号已注册其他账号，请换一个手机号"}
+    ]
+  },
+  "trace_id": "mock-a01-40904-new-phone"
+}
