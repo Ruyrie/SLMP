@@ -62,7 +62,8 @@
           "name": "白羽肉鸡",
           "has_std_weight": true,
           "has_feed_std": true,
-          "has_immune_template": true
+          "has_immune_template": true,
+          "incubation_days": 21
         }
       ]
     },

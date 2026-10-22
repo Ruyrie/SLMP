@@ -332,6 +332,27 @@ public final class RouterPath {
      */
     public static final String MODE_LOGIN_FOR_RESULT = "push";
 
+    /** 记录编号（long，投喂、接种、用药、消毒、繁育等记录的修改与查看，模块05–08 共用） */
+    public static final String EXTRA_RECORD_ID = "record_id";
+    /** 计划编号（long，免疫计划、消毒计划） */
+    public static final String EXTRA_PLAN_ID = "plan_id";
+    /** 种畜编号（long，B06） */
+    public static final String EXTRA_ANIMAL_ID = "animal_id";
+    /** 孵化编号（long，B07） */
+    public static final String EXTRA_INCUBATION_ID = "incubation_id";
+    /** 巡检记录编号（long，I02 修改与查看） */
+    public static final String EXTRA_INSPECTION_ID = "inspection_id";
+    /** 异常上报编号（long，I06；D04 关联上报） */
+    public static final String EXTRA_REPORT_ID = "report_id";
+    /** 诊断编号（long，I06、I07；D04 关联诊断） */
+    public static final String EXTRA_DIAGNOSIS_ID = "diagnosis_id";
+    /** 称重记录编号（long，G05） */
+    public static final String EXTRA_WEIGH_RECORD_ID = "weigh_record_id";
+    /** 饲料编号（long，打开 M03 时预填饲料） */
+    public static final String EXTRA_FEED_ID = "feed_id";
+    /** 页内分段（String，例如 B02 的 FARROW / HATCH） */
+    public static final String EXTRA_TAB = "tab";
+
     /** EXTRA_MODE 取值：E13 经营报表只统计本人创建的养殖场（A09 注销前导出） */
     public static final String MODE_OWNED_FARMS = "OWNED_FARMS";
 
