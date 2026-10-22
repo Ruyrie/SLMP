@@ -1,0 +1,44 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "animal_id": 4155,
+    "breed_id": 1201,
+    "pen_id": 2006,
+    "ear_tag": "0155",
+    "breed_name": "长大二元",
+    "pen_name": "母猪舍",
+    "status": "MATED",
+    "status_text": "已配种",
+    "parity": 3,
+    "version": 4,
+    "next_action": "PREG_CHECK",
+    "next_action_text": "登记妊检",
+    "animal_label": "母猪",
+    "filing_date": "2025-03-21",
+    "source": "PURCHASED",
+    "source_text": "外购",
+    "initial_parity": 1,
+    "birth_date": "2024-12-21",
+    "stats": {
+      "farrowing_count": 2,
+      "last_wean_date": "2026-09-18",
+      "last_weaned_count": 11,
+      "avg_live_born": 11.0
+    },
+    "current_cycle": {
+      "cycle_id": 5155,
+      "status": "MATED",
+      "first_mating_date": "2026-09-24",
+      "mating_count": 1,
+      "days_since_mating": 25,
+      "check_due_date": "2026-10-15",
+      "pending_check": true,
+      "expected_due_date": "2027-01-16",
+      "days_to_due": 89
+    },
+    "can_edit": true,
+    "can_exit": true
+  },
+  "trace_id": "mock-breed-animal_0155"
+}

@@ -1,0 +1,36 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "animal_id": 4161,
+        "breed_id": 1201,
+        "pen_id": 2006,
+        "ear_tag": "0161",
+        "breed_name": "长大二元",
+        "pen_name": "母猪舍",
+        "status": "EMPTY",
+        "status_text": "空怀",
+        "parity": 2,
+        "version": 3,
+        "last_wean_date": "2026-10-12",
+        "next_action": "MATING",
+        "next_action_text": "登记配种"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "ALL": 1,
+      "EMPTY": 1,
+      "MATED": 0,
+      "PREGNANT": 0,
+      "LACTATING": 0,
+      "EXITED": 0
+    }
+  },
+  "trace_id": "mock-breed-animals_kw_0161"
+}

@@ -1,0 +1,62 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "group": "TODAY",
+        "group_text": "今天",
+        "animal_id": 4131,
+        "ear_tag": "0131",
+        "breed_name": "长大二元",
+        "pen_id": 2007,
+        "pen_name": "产房",
+        "parity": 3,
+        "first_mating_date": "2026-06-27",
+        "expected_due_date": "2026-10-19",
+        "days_to_due": 0,
+        "remind_before_date": "2026-10-16",
+        "remind_before_sent_at": "2026-10-16 08:00:00",
+        "remind_due_sent_at": "2026-10-19 08:00:00",
+        "reminder_text": "已提醒 10月16日、今天",
+        "staff_names": [
+          "李明"
+        ],
+        "can_register": false,
+        "can_open_archive": false
+      },
+      {
+        "group": "WITHIN_7",
+        "group_text": "7 天内",
+        "animal_id": 4136,
+        "ear_tag": "0136",
+        "breed_name": "长大二元",
+        "pen_id": 2007,
+        "pen_name": "产房",
+        "parity": 2,
+        "first_mating_date": "2026-06-30",
+        "expected_due_date": "2026-10-22",
+        "days_to_due": 3,
+        "remind_before_date": "2026-10-19",
+        "remind_before_sent_at": "2026-10-19 08:00:00",
+        "remind_due_sent_at": null,
+        "reminder_text": "今天已发提前 3 天提醒",
+        "staff_names": [
+          "李明"
+        ],
+        "can_register": false,
+        "can_open_archive": false
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "TODAY": 1,
+      "WITHIN_7": 1,
+      "LATER": 0
+    }
+  },
+  "trace_id": "mock-breed-farrow_due_staff"
+}

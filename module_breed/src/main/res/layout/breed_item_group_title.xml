@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 待产 / 待出雏分组标题：title-s 14 sp primary，“今天 · 1 头” -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/breed_group_title"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/base_space_1"
+    android:paddingTop="@dimen/base_space_4"
+    android:paddingBottom="@dimen/base_space_2"
+    android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+    android:textColor="?attr/colorPrimary" />

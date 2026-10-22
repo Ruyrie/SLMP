@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    B07 第 3 步“出雏登记”（图 5-7）：出雏日期、出雏数（不能多于受精蛋数 · 孵化率）、健雏数 / 弱雏数（只读，自动计算）、
+    “健雏转为新批次”卡与入栏鸡舍、超容量提示与确认。
+-->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.breed.ui.incubation.IncubationViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            style="@style/breed_section_title"
+            android:text="@string/breed_section_hatch" />
+
+        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+            android:id="@+id/breed_hatch_date_layout"
+            style="@style/Widget.Zmt.TextInputLayout.Picker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/breed_field_hatch_date"
+            app:breedError="@{vm.fieldErrors[`hatch_date`]}">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/breed_hatch_date_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dateText="@{vm.hatchDate}"
+                app:dateWithWeek="@{true}" />
+        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+            android:id="@+id/breed_hatched_layout"
+            style="@style/Widget.Zmt.TextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:hint="@string/breed_field_hatched"
+            app:breedError="@{vm.fieldErrors[`hatched_count`]}"
+            app:helperText="@{vm.hatchedHelper}"
+            app:helperTextEnabled="true"
+            app:suffixText="@string/breed_unit_bird">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/breed_hatched_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:maxLength="6"
+                android:text="@={vm.hatchedCount}"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                android:id="@+id/breed_healthy_layout"
+                style="@style/Widget.Zmt.TextInputLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/breed_field_healthy"
+                app:breedError="@{vm.fieldErrors[`healthy_count`]}"
+                app:suffixText="@string/breed_unit_bird">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/breed_healthy_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:maxLength="6"
+                    android:text="@={vm.healthyCount}"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+            </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+            <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                style="@style/Widget.Zmt.TextInputLayout.ReadOnly"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:hint="@string/breed_field_weak"
+                app:helperText="@string/breed_weak_helper"
+                app:helperTextEnabled="true"
+                app:suffixText="@string/breed_unit_bird">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:inputType="none"
+                    android:text="@{vm.weakCount}"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+            </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+        </LinearLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/breed_transfer_card"
+            style="@style/Widget.Zmt.Card.Summary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_4">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:animateLayoutChanges="true"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:id="@+id/breed_transfer_icon_box"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/breed_bg_leading">
+
+                        <ImageView
+                            android:id="@+id/breed_transfer_icon"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_add_box" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/base_space_4"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/breed_hatch_transfer_title"
+                            android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@{vm.transferDesc}"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/breed_transfer_switch"
+                        style="@style/Widget.Zmt.Switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="@{vm.transferToBatch}" />
+                </LinearLayout>
+
+                <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                    android:id="@+id/breed_pen_layout"
+                    style="@style/Widget.Zmt.TextInputLayout.Dropdown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/base_space_4"
+                    android:hint="@string/breed_field_target_pen"
+                    app:breedError="@{vm.fieldErrors[`target_pen_id`]}"
+                    app:helperText="@{vm.detail.breedName + ` · 批次号提交后由系统生成`}"
+                    app:helperTextEnabled="true"
+                    app:visibleIf="@{vm.transferToBatch}">
+
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/breed_pen_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none" />
+                </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_4"
+            android:layout_marginTop="@dimen/base_space_1"
+            android:text="@{vm.fieldErrors[`transfer_to_batch`]}"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+            android:textColor="?attr/colorError"
+            app:goneIfNull="@{vm.fieldErrors[`transfer_to_batch`]}" />
+
+        <com.zhimu.slmp.base.widget.NoticeView
+            android:id="@+id/breed_capacity_notice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:visibility="gone"
+            app:noticeCheckText="@string/breed_capacity_check"
+            app:noticeLevel="warning" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_4"
+            android:layout_marginTop="@dimen/base_space_1"
+            android:text="@{vm.fieldErrors[`capacity_confirmed`]}"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+            android:textColor="?attr/colorError"
+            app:goneIfNull="@{vm.fieldErrors[`capacity_confirmed`]}" />
+    </LinearLayout>
+</layout>

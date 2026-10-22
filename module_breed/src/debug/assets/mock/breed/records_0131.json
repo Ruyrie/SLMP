@@ -1,0 +1,260 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "record_type": "PREG_CHECK",
+        "record_type_text": "妊检",
+        "record_id": 71001,
+        "record_date": "2026-07-22",
+        "check_result": "POSITIVE",
+        "check_result_text": "阳性",
+        "check_method": "ULTRASOUND",
+        "check_method_text": "B 超",
+        "registrant": {
+          "user_id": 10002,
+          "name": "刘芳",
+          "avatar_url": null,
+          "role": "MANAGER",
+          "role_text": "场长"
+        },
+        "created_at": "2026-07-22 10:05:00",
+        "change_state": {
+          "can_edit": true,
+          "pending_request_id": null
+        },
+        "can_request_change": false,
+        "has_change_log": false,
+        "version": 1
+      },
+      {
+        "record_type": "MATING",
+        "record_type_text": "配种",
+        "record_id": 71002,
+        "record_date": "2026-06-27",
+        "mating_method": "ARTIFICIAL",
+        "mating_method_text": "人工授精",
+        "boar_info": null,
+        "registrant": {
+          "user_id": 10001,
+          "name": "王建国",
+          "avatar_url": null,
+          "role": "OWNER",
+          "role_text": "所有者"
+        },
+        "created_at": "2026-06-27 10:05:00",
+        "change_state": {
+          "can_edit": true,
+          "pending_request_id": null
+        },
+        "can_request_change": false,
+        "has_change_log": false,
+        "version": 1
+      },
+      {
+        "record_type": "WEANING",
+        "record_type_text": "断奶",
+        "record_id": 71003,
+        "record_date": "2026-06-21",
+        "weaned_count": 11,
+        "litter_weight": null,
+        "registrant": {
+          "user_id": 10002,
+          "name": "刘芳",
+          "avatar_url": null,
+          "role": "MANAGER",
+          "role_text": "场长"
+        },
+        "created_at": "2026-06-21 10:05:00",
+        "change_state": {
+          "can_edit": true,
+          "pending_request_id": null
+        },
+        "can_request_change": false,
+        "has_change_log": false,
+        "version": 1
+      },
+      {
+        "record_type": "FARROWING",
+        "record_type_text": "产仔",
+        "record_id": 71004,
+        "record_date": "2026-05-27",
+        "parity_no": 3,
+        "total_born": 13,
+        "live_born": 12,
+        "stillborn": 1,
+        "batch_id": 3041,
+        "batch_no": "ZM2605-081",
+        "registrant": {
+          "user_id": 10002,
+          "name": "刘芳",
+          "avatar_url": null,
+          "role": "MANAGER",
+          "role_text": "场长"
+        },
+        "created_at": "2026-05-27 10:05:00",
+        "change_state": {
+          "can_edit": false,
+          "pending_request_id": null
+        },
+        "can_request_change": true,
+        "has_change_log": false,
+        "version": 1
+      },
+      {
+        "record_type": "PREG_CHECK",
+        "record_type_text": "妊检",
+        "record_id": 71005,
+        "record_date": "2026-02-27",
+        "check_result": "POSITIVE",
+        "check_result_text": "阳性",
+        "check_method": "ULTRASOUND",
+        "check_method_text": "B 超",
+        "registrant": {
+          "user_id": 10002,
+          "name": "刘芳",
+          "avatar_url": null,
+          "role": "MANAGER",
+          "role_text": "场长"
+        },
+        "created_at": "2026-02-27 10:05:00",
+        "change_state": {
+          "can_edit": false,
+          "pending_request_id": null
+        },
+        "can_request_change": false,
+        "has_change_log": false,
+        "version": 1
+      },
+      {
+        "record_type": "MATING",
+        "record_type_text": "配种",
+        "record_id": 71006,
+        "record_date": "2026-02-02",
+        "mating_method": "ARTIFICIAL",
+        "mating_method_text": "人工授精",
+        "boar_info": null,
+        "registrant": {
+          "user_id": 10001,
+          "name": "王建国",
+          "avatar_url": null,
+          "role": "OWNER",
+          "role_text": "所有者"
+        },
+        "created_at": "2026-02-02 10:05:00",
+        "change_state": {
+          "can_edit": false,
+          "pending_request_id": null
+        },
+        "can_request_change": false,
+        "has_change_log": false,
+        "version": 1
+      },
+      {
+        "record_type": "WEANING",
+        "record_type_text": "断奶",
+        "record_id": 71007,
+        "record_date": "2026-01-27",
+        "weaned_count": 10,
+        "litter_weight": null,
+        "registrant": {
+          "user_id": 10002,
+          "name": "刘芳",
+          "avatar_url": null,
+          "role": "MANAGER",
+          "role_text": "场长"
+        },
+        "created_at": "2026-01-27 10:05:00",
+        "change_state": {
+          "can_edit": true,
+          "pending_request_id": null
+        },
+        "can_request_change": false,
+        "has_change_log": false,
+        "version": 1
+      },
+      {
+        "record_type": "FARROWING",
+        "record_type_text": "产仔",
+        "record_id": 71008,
+        "record_date": "2026-01-02",
+        "parity_no": 2,
+        "total_born": 11,
+        "live_born": 10,
+        "stillborn": 1,
+        "batch_id": 3042,
+        "batch_no": "ZM2601-082",
+        "registrant": {
+          "user_id": 10002,
+          "name": "刘芳",
+          "avatar_url": null,
+          "role": "MANAGER",
+          "role_text": "场长"
+        },
+        "created_at": "2026-01-02 10:05:00",
+        "change_state": {
+          "can_edit": false,
+          "pending_request_id": null
+        },
+        "can_request_change": true,
+        "has_change_log": false,
+        "version": 1
+      },
+      {
+        "record_type": "PREG_CHECK",
+        "record_type_text": "妊检",
+        "record_id": 71009,
+        "record_date": "2025-10-05",
+        "check_result": "POSITIVE",
+        "check_result_text": "阳性",
+        "check_method": "ULTRASOUND",
+        "check_method_text": "B 超",
+        "registrant": {
+          "user_id": 10002,
+          "name": "刘芳",
+          "avatar_url": null,
+          "role": "MANAGER",
+          "role_text": "场长"
+        },
+        "created_at": "2025-10-05 10:05:00",
+        "change_state": {
+          "can_edit": false,
+          "pending_request_id": null
+        },
+        "can_request_change": false,
+        "has_change_log": false,
+        "version": 1
+      },
+      {
+        "record_type": "MATING",
+        "record_type_text": "配种",
+        "record_id": 71010,
+        "record_date": "2025-09-10",
+        "mating_method": "ARTIFICIAL",
+        "mating_method_text": "人工授精",
+        "boar_info": null,
+        "registrant": {
+          "user_id": 10001,
+          "name": "王建国",
+          "avatar_url": null,
+          "role": "OWNER",
+          "role_text": "所有者"
+        },
+        "created_at": "2025-09-10 10:05:00",
+        "change_state": {
+          "can_edit": false,
+          "pending_request_id": null
+        },
+        "can_request_change": false,
+        "has_change_log": false,
+        "version": 1
+      }
+    ],
+    "total": 10,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-breed-records_0131"
+}

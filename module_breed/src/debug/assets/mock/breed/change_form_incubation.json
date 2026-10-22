@@ -1,0 +1,69 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "biz_type": "INCUBATION",
+    "biz_id": 6004,
+    "biz_type_text": "孵化记录",
+    "record_locator": "1 号种鸡舍 · ZM2603-015 · 9月28日入孵",
+    "record_title": "孵化 · 1 号种鸡舍 · ZM2603-015",
+    "record_subtitle": "西岭鸡场 · 9月28日入孵 · 王建国登记",
+    "record_version": "3",
+    "record_card": [
+      {
+        "label": "入孵蛋数",
+        "value": "9,600 枚"
+      },
+      {
+        "label": "受精蛋数",
+        "value": "9,120 枚"
+      },
+      {
+        "label": "出雏数",
+        "value": "8,650 只"
+      },
+      {
+        "label": "健雏数",
+        "value": "8,480 只"
+      },
+      {
+        "label": "新批次",
+        "value": "ZM2610-072"
+      }
+    ],
+    "fields": [
+      {
+        "field_code": "hatched_count",
+        "field_name": "出雏数",
+        "value": "8650",
+        "value_unit": "只",
+        "input_type": "NUMBER",
+        "options": [],
+        "min": 0,
+        "max": 9120
+      },
+      {
+        "field_code": "healthy_count",
+        "field_name": "健雏数",
+        "value": "8480",
+        "value_unit": "只",
+        "input_type": "NUMBER",
+        "options": [],
+        "min": 0,
+        "max": 8650
+      }
+    ],
+    "linked_rules": [],
+    "pending_request_id": null,
+    "void_allowed": false,
+    "review_tip": "健雏已转为新批次，修改会影响存栏和统计，需要管理员审核。审核期间原记录照常有效。",
+    "recalc_tags": {
+      "healthy_count": [
+        "存栏",
+        "孵化统计"
+      ]
+    },
+    "field_hints": {}
+  },
+  "trace_id": "mock-breed-change_form_incubation"
+}

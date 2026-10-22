@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 档案表单（新增母猪 / 编辑档案）：耳号、品种（下拉）、出生日期（选填）、来源 Chip、所在栏舍（下拉）、建档时胎次；底部“保存档案” -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="com.zhimu.slmp.breed.model.BreedCodes" />
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.breed.ui.archive.AnimalFormViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/breed_top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{vm.editMode ? @string/breed_form_edit_title : @string/breed_form_new_title}" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/breed_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/breed_error_title"
+            app:stateNoPermissionTitle="@string/breed_no_permission_title"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/breed_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_5"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                        android:id="@+id/breed_ear_layout"
+                        style="@style/Widget.Zmt.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/breed_field_ear_tag"
+                        app:breedError="@{vm.fieldErrors[`ear_tag`]}"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="20">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/breed_ear_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:digits="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-"
+                            android:inputType="text"
+                            android:maxLength="20"
+                            android:text="@={vm.earTag}"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                        android:id="@+id/breed_breed_layout"
+                        style="@style/Widget.Zmt.TextInputLayout.Dropdown"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:hint="@string/breed_field_breed"
+                        app:breedError="@{vm.fieldErrors[`breed_id`]}">
+
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/breed_breed_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                        android:id="@+id/breed_birth_layout"
+                        style="@style/Widget.Zmt.TextInputLayout.Picker"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:hint="@string/breed_field_birth"
+                        app:breedError="@{vm.fieldErrors[`birth_date`]}">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/breed_birth_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:dateText="@{vm.birthDate}"
+                            app:dateWithWeek="@{false}" />
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                    <TextView
+                        style="@style/Widget.Zmt.TextView.FieldLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:text="@string/breed_field_source" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        style="@style/Widget.Zmt.ChipGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_1"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/breed_source_purchased"
+                            style="@style/Widget.Zmt.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="@{BreedCodes.SOURCE_PURCHASED.equals(vm.source)}"
+                            android:text="@string/breed_source_purchased" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/breed_source_self"
+                            style="@style/Widget.Zmt.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="@{BreedCodes.SOURCE_SELF_BRED.equals(vm.source)}"
+                            android:text="@string/breed_source_self_bred" />
+                    </com.google.android.material.chip.ChipGroup>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/base_space_4"
+                        android:text="@{vm.fieldErrors[`source`]}"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorError"
+                        app:goneIfNull="@{vm.fieldErrors[`source`]}" />
+
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                        android:id="@+id/breed_pen_layout"
+                        style="@style/Widget.Zmt.TextInputLayout.Dropdown"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:hint="@string/breed_field_pen"
+                        app:breedError="@{vm.fieldErrors[`pen_id`]}">
+
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/breed_pen_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                        android:id="@+id/breed_parity_layout"
+                        style="@style/Widget.Zmt.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:hint="@string/breed_field_initial_parity"
+                        app:breedError="@{vm.fieldErrors[`initial_parity`]}"
+                        app:helperText="@string/breed_initial_parity_helper"
+                        app:helperTextEnabled="true"
+                        app:suffixText="@string/breed_unit_parity">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/breed_parity_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:maxLength="2"
+                            android:text="@={vm.initialParity}"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/breed_action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:tag="snackbar_anchor"
+            app:barPrimaryText="@string/breed_action_save_archive" />
+    </LinearLayout>
+</layout>

@@ -1,0 +1,57 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "farm_kind": "LIVESTOCK",
+    "farm_kind_text": "畜类",
+    "animal_label": "母猪",
+    "count_unit": "HEAD",
+    "count_unit_text": "头",
+    "counts": {
+      "all": 24,
+      "empty": 5,
+      "mated": 4,
+      "pregnant": 11,
+      "lactating": 4,
+      "exited": 2
+    },
+    "farrow_due_count": 11,
+    "hatch_due_count": 0,
+    "due_soon": [
+      {
+        "animal_id": 4131,
+        "ear_tag": "0131",
+        "expected_due_date": "2026-10-19",
+        "days_to_due": 0
+      },
+      {
+        "animal_id": 4136,
+        "ear_tag": "0136",
+        "expected_due_date": "2026-10-22",
+        "days_to_due": 3
+      }
+    ],
+    "due_soon_total": 2,
+    "pen_options": [
+      {
+        "pen_id": 2007,
+        "name": "产房",
+        "pen_type_text": "产房"
+      },
+      {
+        "pen_id": 2006,
+        "name": "母猪舍",
+        "pen_type_text": "母猪舍"
+      }
+    ],
+    "has_incubation": false,
+    "switch_farms": [
+      {
+        "farm_id": 1002,
+        "farm_name": "西岭鸡场",
+        "hatch_due_count": 2
+      }
+    ]
+  },
+  "trace_id": "mock-breed-overview_owner"
+}

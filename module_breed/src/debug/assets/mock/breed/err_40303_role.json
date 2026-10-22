@@ -1,0 +1,6 @@
+{
+  "code": 40303,
+  "message": "你没有登记繁育记录的权限",
+  "data": null,
+  "trace_id": "mock-breed-err_40303_role"
+}

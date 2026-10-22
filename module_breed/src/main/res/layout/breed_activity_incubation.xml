@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    B07 禽类孵化（图 5-7）：顶部栏 more_vert；来源行（养殖场标签 + “9月28日入孵 · 1 号种鸡舍 · ZM2603-015”）；
+    进度卡（入孵 · 照蛋 · 出雏三步 + 受精率）；当前步骤的登记表单（Fragment）；底部主按钮（出雏完成后隐藏）。
+-->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="com.zhimu.slmp.breed.ui.incubation.IncubationViewModel" />
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.breed.ui.incubation.IncubationViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/breed_top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{@string/breed_incubation_title}" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/breed_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/breed_error_title"
+            app:stateNoPermissionTitle="@string/breed_no_permission_title"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/breed_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_1"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <com.zhimu.slmp.base.widget.StatusTagView
+                            android:id="@+id/breed_farm_tag"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:tagIcon="@drawable/ic_domain"
+                            app:tagType="farm" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/base_space_2"
+                            android:layout_weight="1"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="@{IncubationViewModel.sourceText(vm.detail)}"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Zmt.Card.Summary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:id="@+id/breed_steps"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                app:visibleIf="@{vm.fertilityText != null}">
+
+                                <com.google.android.material.divider.MaterialDivider
+                                    style="@style/Widget.Zmt.Divider"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="@dimen/base_space_3"
+                                    android:layout_marginBottom="@dimen/base_space_1" />
+
+                                <include
+                                    layout="@layout/breed_include_kv"
+                                    app:label="@{@string/breed_kv_fertility}"
+                                    app:value="@{vm.fertilityText}" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <FrameLayout
+                        android:id="@+id/breed_step_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/breed_action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:tag="snackbar_anchor"
+            app:barPrimaryText="@string/breed_action_register_hatch" />
+    </LinearLayout>
+</layout>

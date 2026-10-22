@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "record_type": "PREG_CHECK",
+    "record_id": {{seq}},
+    "animal_id": 4155,
+    "ear_tag": "0155",
+    "animal_status": "EMPTY",
+    "animal_status_text": "空怀",
+    "cycle_id": 5155,
+    "is_first": null,
+    "expected_due_date": null
+  },
+  "trace_id": "mock-breed-check_0155_negative"
+}

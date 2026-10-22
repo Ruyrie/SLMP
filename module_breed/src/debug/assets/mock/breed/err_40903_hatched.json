@@ -1,0 +1,6 @@
+{
+  "code": 40903,
+  "message": "本次孵化已登记出雏，不能重复登记",
+  "data": null,
+  "trace_id": "mock-breed-err_40903_hatched"
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 分页列表底部：加载下一页 4 dp 线性进度条；“已显示全部”；“加载失败，点按重试” -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:minHeight="48dp"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/base_space_2"
+    android:paddingBottom="@dimen/base_space_2">
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/breed_footer_progress"
+        style="@style/Widget.Zmt.LinearProgressIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true" />
+
+    <TextView
+        android:id="@+id/breed_footer_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+</LinearLayout>

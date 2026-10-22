@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    B06 档案头部（图 5-6）：耳号大标题 + 状态标签 + 头部登记按钮；“长大二元 · 母猪 · 第 2 胎 · 母猪舍”；
+    档案信息（6 行键值）、繁育表现（3 张指标卡）、“繁育记录”分组标题与空状态。
+-->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="com.zhimu.slmp.breed.util.BreedTextFormatter" />
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.breed.ui.archive.AnimalArchiveViewModel" />
+
+        <variable
+            name="recordsEmpty"
+            type="boolean" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{vm.detail.earTag}"
+                android:textAppearance="@style/TextAppearance.Zmt.HeadlineMedium.Number"
+                android:textColor="?attr/colorOnSurface" />
+
+            <com.zhimu.slmp.base.widget.StatusTagView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_2"
+                app:breedStatus="@{vm.detail.status}"
+                app:breedStatusText="@{vm.detail.statusText}" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/breed_header_action"
+                style="@style/Widget.Zmt.Button.Tonal.Small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="80dp"
+                android:text="@{vm.headerAction}"
+                app:goneIfNull="@{vm.headerAction}" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="@{vm.detail == null ? `` : vm.detail.breedName + BreedTextFormatter.DOT + vm.detail.animalLabel + BreedTextFormatter.DOT + BreedTextFormatter.parity(vm.detail.parity) + BreedTextFormatter.DOT + vm.detail.penName}"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_1"
+            android:layout_marginTop="@dimen/base_space_5"
+            android:layout_marginBottom="@dimen/base_space_2"
+            android:text="@string/breed_section_info"
+            android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+            android:textColor="?attr/colorPrimary" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Zmt.Card.Summary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include
+                    layout="@layout/breed_include_kv"
+                    app:label="@{@string/breed_kv_ear_tag}"
+                    app:value="@{vm.detail.earTag}" />
+
+                <include
+                    layout="@layout/breed_include_kv"
+                    app:label="@{@string/breed_kv_breed}"
+                    app:value="@{vm.detail.breedName}" />
+
+                <include
+                    layout="@layout/breed_include_kv"
+                    app:label="@{@string/breed_kv_birth}"
+                    app:value="@{vm.detail.birthDate == null ? @string/breed_no_data : BreedTextFormatter.md(vm.detail.birthDate)}" />
+
+                <include
+                    layout="@layout/breed_include_kv"
+                    app:label="@{@string/breed_kv_source}"
+                    app:value="@{vm.detail.sourceText}" />
+
+                <include
+                    layout="@layout/breed_include_kv"
+                    app:label="@{@string/breed_kv_pen}"
+                    app:value="@{vm.detail.penName}" />
+
+                <include
+                    layout="@layout/breed_include_kv"
+                    app:label="@{@string/breed_kv_filing}"
+                    app:value="@{BreedTextFormatter.md(vm.detail.filingDate)}" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:visibleIf="@{vm.detail.exitType != null}">
+
+                    <include
+                        layout="@layout/breed_include_kv"
+                        app:label="@{@string/breed_kv_exit}"
+                        app:value="@{BreedTextFormatter.md(vm.detail.exitDate) + ` ` + BreedTextFormatter.nz(vm.detail.exitTypeText)}" />
+
+                    <include
+                        layout="@layout/breed_include_kv"
+                        app:label="@{@string/breed_field_reason}"
+                        app:value="@{vm.detail.exitReason}" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_1"
+            android:layout_marginTop="@dimen/base_space_5"
+            android:layout_marginBottom="@dimen/base_space_2"
+            android:text="@string/breed_section_stats"
+            android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+            android:textColor="?attr/colorPrimary" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <com.zhimu.slmp.base.widget.StatCardView
+                android:id="@+id/breed_stat_parity"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:statLabel="@string/breed_stat_parity" />
+
+            <com.zhimu.slmp.base.widget.StatCardView
+                android:id="@+id/breed_stat_avg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:layout_weight="1"
+                app:statLabel="@string/breed_stat_avg_live" />
+
+            <com.zhimu.slmp.base.widget.StatCardView
+                android:id="@+id/breed_stat_wean"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:layout_weight="1"
+                app:statLabel="@string/breed_stat_last_wean" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_1"
+            android:layout_marginTop="@dimen/base_space_5"
+            android:layout_marginBottom="@dimen/base_space_2"
+            android:text="@string/breed_section_records"
+            android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+            android:textColor="?attr/colorPrimary" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_2"
+            android:layout_marginBottom="@dimen/base_space_6"
+            android:gravity="center"
+            android:text="@string/breed_records_empty"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:visibleIf="@{recordsEmpty}" />
+    </LinearLayout>
+</layout>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- B07 更多菜单“修改入孵 / 照蛋记录”：入孵日期、入孵蛋数；已照蛋时另含照蛋日期、受精蛋数（API-B29） -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.breed.ui.incubation.IncubationViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            style="@style/breed_section_title"
+            android:text="@string/breed_menu_edit_incubation" />
+
+        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+            android:id="@+id/breed_set_date_layout"
+            style="@style/Widget.Zmt.TextInputLayout.Picker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/breed_field_set_date"
+            app:breedError="@{vm.fieldErrors[`set_date`]}">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/breed_set_date_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dateText="@{vm.setDate}"
+                app:dateWithWeek="@{true}" />
+        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+            style="@style/Widget.Zmt.TextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:hint="@string/breed_field_set_count"
+            app:breedError="@{vm.fieldErrors[`set_count`]}"
+            app:suffixText="@string/breed_unit_egg">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/breed_set_count_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:maxLength="6"
+                android:text="@={vm.setCount}"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:visibleIf="@{vm.detail.candleDate != null}">
+
+            <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                android:id="@+id/breed_candle_date_layout"
+                style="@style/Widget.Zmt.TextInputLayout.Picker"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_3"
+                android:hint="@string/breed_field_candle_date"
+                app:breedError="@{vm.fieldErrors[`candle_date`]}">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/breed_candle_date_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:dateText="@{vm.candleDate}"
+                    app:dateWithWeek="@{true}" />
+            </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+            <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                style="@style/Widget.Zmt.TextInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_3"
+                android:hint="@string/breed_field_fertile"
+                app:breedError="@{vm.fieldErrors[`fertile_count`]}"
+                app:suffixText="@string/breed_unit_egg">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/breed_fertile_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:maxLength="6"
+                    android:text="@={vm.fertileCount}"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+            </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+        </LinearLayout>
+    </LinearLayout>
+</layout>

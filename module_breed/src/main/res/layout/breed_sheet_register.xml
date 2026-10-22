@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FAB 底部面板“繁育登记”：登记配种 / 妊检、登记产仔、登记断奶；分隔线后新增母猪（每项 56 dp） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/base_space_4">
+
+    <TextView
+        android:id="@+id/breed_register_mating"
+        style="@style/breed_sheet_row"
+        android:drawableStart="@drawable/breed_ic_favorite"
+        android:text="@string/breed_register_mating" />
+
+    <TextView
+        android:id="@+id/breed_register_farrowing"
+        style="@style/breed_sheet_row"
+        android:drawableStart="@drawable/ic_add_box"
+        android:text="@string/breed_register_farrowing" />
+
+    <TextView
+        android:id="@+id/breed_register_weaning"
+        style="@style/breed_sheet_row"
+        android:drawableStart="@drawable/breed_ic_child_care"
+        android:text="@string/breed_register_weaning" />
+
+    <com.google.android.material.divider.MaterialDivider
+        style="@style/Widget.Zmt.Divider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_sheet_padding_horizontal"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:layout_marginEnd="@dimen/base_sheet_padding_horizontal"
+        android:layout_marginBottom="@dimen/base_space_2"
+        app:dividerColor="?attr/colorOutlineVariant" />
+
+    <TextView
+        android:id="@+id/breed_register_new"
+        style="@style/breed_sheet_row"
+        android:drawableStart="@drawable/ic_add"
+        android:text="@string/breed_action_new_animal" />
+</LinearLayout>

@@ -1,0 +1,37 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "type": "FARROWING",
+    "animal": {
+      "animal_id": 4168,
+      "ear_tag": "0168",
+      "breed_name": "长大二元",
+      "parity": 3,
+      "status": "PREGNANT",
+      "status_text": "妊娠",
+      "pen_id": 2006,
+      "pen_name": "母猪舍",
+      "version": 3,
+      "expected_due_date": "2026-12-12",
+      "days_to_due": 54
+    },
+    "cycle_id": 5168,
+    "first_mating_date": "2026-08-20",
+    "days_since_mating": 60,
+    "expected_due_date": "2026-12-12",
+    "days_to_due": 54,
+    "default_pen": {
+      "pen_id": 2006,
+      "pen_name": "母猪舍",
+      "capacity": 60,
+      "current_count": 0,
+      "unit": "头"
+    },
+    "offspring_breed": {
+      "breed_id": 1101,
+      "breed_name": "杜长大"
+    }
+  },
+  "trace_id": "mock-breed-ctx_farrowing_0168"
+}

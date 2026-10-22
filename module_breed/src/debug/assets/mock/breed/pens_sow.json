@@ -1,0 +1,51 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "pen_id": 2006,
+      "pen_code": "ZC-01",
+      "pen_name": "母猪舍",
+      "pen_type": "SOW",
+      "stock_count": 0,
+      "capacity": 60,
+      "disabled": false,
+      "hint": null,
+      "unit_text": "头"
+    },
+    {
+      "pen_id": 2007,
+      "pen_code": "ZC-02",
+      "pen_name": "产房",
+      "pen_type": "FARROWING",
+      "stock_count": 0,
+      "capacity": 40,
+      "disabled": false,
+      "hint": null,
+      "unit_text": "头"
+    },
+    {
+      "pen_id": 2003,
+      "pen_code": "YF-03",
+      "pen_name": "3 号育肥舍",
+      "pen_type": "FATTENING",
+      "stock_count": 200,
+      "capacity": 220,
+      "disabled": true,
+      "hint": "已有其他品类批次在栏",
+      "unit_text": "头"
+    },
+    {
+      "pen_id": 2005,
+      "pen_code": "YF-05",
+      "pen_name": "5 号育肥舍",
+      "pen_type": "FATTENING",
+      "stock_count": 0,
+      "capacity": 400,
+      "disabled": false,
+      "hint": null,
+      "unit_text": "头"
+    }
+  ],
+  "trace_id": "mock-breed-pens_sow"
+}

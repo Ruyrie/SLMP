@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "saved": false,
+    "type": "MATING",
+    "record_id": null,
+    "result": null
+  },
+  "trace_id": "mock-breed-submission_unsaved"
+}

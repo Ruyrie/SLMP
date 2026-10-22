@@ -1,0 +1,26 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "type": "PREG_CHECK",
+    "animal": {
+      "animal_id": 4166,
+      "ear_tag": "0166",
+      "breed_name": "长大二元",
+      "parity": 1,
+      "status": "MATED",
+      "status_text": "已配种",
+      "pen_id": 2006,
+      "pen_name": "母猪舍",
+      "version": 8,
+      "gestation_days": 114,
+      "first_mating_date": "2026-10-08"
+    },
+    "cycle_id": 5166,
+    "first_mating_date": "2026-10-08",
+    "days_since_mating": 11,
+    "expected_due_date": "2027-01-30",
+    "days_to_due": 103
+  },
+  "trace_id": "mock-breed-ctx_check_0166"
+}

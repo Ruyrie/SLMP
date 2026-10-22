@@ -1,0 +1,44 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "animal_id": 4168,
+    "breed_id": 1201,
+    "pen_id": 2006,
+    "ear_tag": "0168",
+    "breed_name": "长大二元",
+    "pen_name": "母猪舍",
+    "status": "PREGNANT",
+    "status_text": "妊娠",
+    "parity": 3,
+    "version": 3,
+    "next_action": "FARROWING",
+    "next_action_text": "登记产仔",
+    "animal_label": "母猪",
+    "filing_date": "2025-03-07",
+    "source": "SELF_BRED",
+    "source_text": "自繁",
+    "initial_parity": 1,
+    "birth_date": "2024-01-07",
+    "stats": {
+      "farrowing_count": 2,
+      "last_wean_date": "2026-08-14",
+      "last_weaned_count": 10,
+      "avg_live_born": 10.5
+    },
+    "current_cycle": {
+      "cycle_id": 5168,
+      "status": "PREGNANT",
+      "first_mating_date": "2026-08-20",
+      "mating_count": 1,
+      "days_since_mating": 60,
+      "check_due_date": "2026-09-10",
+      "pending_check": false,
+      "expected_due_date": "2026-12-12",
+      "days_to_due": 54
+    },
+    "can_edit": true,
+    "can_exit": true
+  },
+  "trace_id": "mock-breed-animal_0168"
+}

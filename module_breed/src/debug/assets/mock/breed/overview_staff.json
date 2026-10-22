@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "farm_kind": "LIVESTOCK",
+    "farm_kind_text": "畜类",
+    "animal_label": "母猪",
+    "count_unit": "HEAD",
+    "count_unit_text": "头",
+    "farrow_due_count": 2,
+    "hatch_due_count": 0,
+    "has_incubation": false,
+    "switch_farms": []
+  },
+  "trace_id": "mock-breed-overview_staff"
+}

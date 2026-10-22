@@ -1,0 +1,95 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "biz_type": "FARROWING",
+    "biz_id": 8161,
+    "biz_type_text": "产仔记录",
+    "record_locator": "产房 · 0161 · 9月17日 产仔",
+    "record_title": "产仔 · 0161",
+    "record_subtitle": "东山猪场 · 9月17日 · 刘芳登记",
+    "record_version": "3",
+    "record_card": [
+      {
+        "label": "母猪",
+        "value": "0161 · 长大二元 · 第 2 胎"
+      },
+      {
+        "label": "总产仔",
+        "value": "12 头"
+      },
+      {
+        "label": "活仔",
+        "value": "11 头"
+      },
+      {
+        "label": "死胎",
+        "value": "1 头"
+      },
+      {
+        "label": "新批次",
+        "value": "ZM2609-052"
+      }
+    ],
+    "fields": [
+      {
+        "field_code": "farrow_date",
+        "field_name": "产仔日期",
+        "value": "2026-09-17",
+        "value_unit": null,
+        "input_type": "DATE",
+        "options": [],
+        "min": null,
+        "max": null
+      },
+      {
+        "field_code": "total_born",
+        "field_name": "总产仔数",
+        "value": "12",
+        "value_unit": "头",
+        "input_type": "NUMBER",
+        "options": [],
+        "min": 1,
+        "max": 50
+      },
+      {
+        "field_code": "live_born",
+        "field_name": "活仔数",
+        "value": "11",
+        "value_unit": "头",
+        "input_type": "NUMBER",
+        "options": [],
+        "min": 0,
+        "max": 50
+      },
+      {
+        "field_code": "stillborn",
+        "field_name": "死胎数",
+        "value": "1",
+        "value_unit": "头",
+        "input_type": "NUMBER",
+        "options": [],
+        "min": 0,
+        "max": 50
+      }
+    ],
+    "linked_rules": [],
+    "pending_request_id": null,
+    "void_allowed": false,
+    "review_tip": "这条产仔记录已转为新批次，修改会影响存栏和统计，需要管理员审核。审核期间原记录照常有效。",
+    "recalc_tags": {
+      "live_born": [
+        "存栏",
+        "繁育统计"
+      ],
+      "farrow_date": [
+        "日龄",
+        "饲喂与免疫计划"
+      ]
+    },
+    "field_hints": {
+      "live_born": "活仔 + 死胎须等于总产仔"
+    }
+  },
+  "trace_id": "mock-breed-change_form_farrowing"
+}

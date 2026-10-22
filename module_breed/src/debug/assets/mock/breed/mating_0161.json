@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "record_type": "MATING",
+    "record_id": {{seq}},
+    "animal_id": 4161,
+    "ear_tag": "0161",
+    "animal_status": "MATED",
+    "animal_status_text": "已配种",
+    "cycle_id": 6061,
+    "is_first": true,
+    "expected_due_date": "2027-02-10"
+  },
+  "trace_id": "mock-breed-mating_0161"
+}

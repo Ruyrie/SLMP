@@ -1,0 +1,38 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "farrowing_id": 8161,
+    "animal_id": 4161,
+    "ear_tag": "0161",
+    "cycle_id": 5061,
+    "parity_no": 2,
+    "farrow_date": "2026-09-17",
+    "total_born": 12,
+    "live_born": 11,
+    "stillborn": 1,
+    "transfer_to_batch": true,
+    "target_pen_id": 2007,
+    "target_pen_name": "产房",
+    "offspring_breed_id": 1101,
+    "offspring_breed_name": "杜长大",
+    "batch_id": 3052,
+    "batch_no": "ZM2609-052",
+    "batch_current_count": 10,
+    "registrant": {
+      "user_id": 10002,
+      "name": "刘芳",
+      "avatar_url": null,
+      "role": "MANAGER",
+      "role_text": "场长"
+    },
+    "created_at": "2026-09-17 10:05:00",
+    "change_state": {
+      "can_edit": false,
+      "pending_request_id": null
+    },
+    "can_request_change": true,
+    "version": 3
+  },
+  "trace_id": "mock-breed-farrowing_8161"
+}

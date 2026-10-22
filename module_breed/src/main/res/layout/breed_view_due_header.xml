@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 待产 / 待出雏列表头部：提醒规则说明行、跨养殖场横幅、“登记入孵”色调按钮、空状态文案 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="@dimen/base_space_3"
+        android:paddingBottom="@dimen/base_space_1">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_notifications"
+            app:tint="?attr/colorOnSurfaceVariant" />
+
+        <TextView
+            android:id="@+id/breed_due_rule"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_2"
+            android:layout_weight="1"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+
+    <com.zhimu.slmp.base.widget.NoticeView
+        android:id="@+id/breed_due_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_3"
+        android:visibility="gone"
+        app:noticeActionText="@string/breed_switch_action"
+        app:noticeIcon="@drawable/ic_egg" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/breed_due_register_set"
+        style="@style/Widget.Zmt.Button.Tonal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_3"
+        android:text="@string/breed_action_register_set"
+        android:visibility="gone"
+        app:icon="@drawable/ic_add" />
+
+    <TextView
+        android:id="@+id/breed_due_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_8"
+        android:layout_marginBottom="@dimen/base_space_8"
+        android:gravity="center"
+        android:paddingStart="@dimen/base_space_6"
+        android:paddingEnd="@dimen/base_space_6"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone" />
+</LinearLayout>

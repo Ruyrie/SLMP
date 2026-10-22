@@ -1,0 +1,57 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "animal_id": 4102,
+        "breed_id": 1201,
+        "pen_id": 2006,
+        "ear_tag": "0102",
+        "breed_name": "长大二元",
+        "pen_name": "母猪舍",
+        "status": "CULLED",
+        "status_text": "已淘汰",
+        "parity": 6,
+        "version": 12,
+        "next_action": null,
+        "next_action_text": null,
+        "exit_type": "CULL",
+        "exit_type_text": "淘汰",
+        "exit_date": "2026-09-15",
+        "exit_reason": "连续两胎产仔少，繁殖性能下降"
+      },
+      {
+        "animal_id": 4115,
+        "breed_id": 1201,
+        "pen_id": 2007,
+        "ear_tag": "0115",
+        "breed_name": "长大二元",
+        "pen_name": "产房",
+        "status": "DEAD",
+        "status_text": "已死亡",
+        "parity": 4,
+        "version": 12,
+        "next_action": null,
+        "next_action_text": null,
+        "exit_type": "DEATH",
+        "exit_type_text": "死亡",
+        "exit_date": "2026-08-30",
+        "exit_reason": "难产"
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "ALL": 24,
+      "EMPTY": 5,
+      "MATED": 4,
+      "PREGNANT": 11,
+      "LACTATING": 4,
+      "EXITED": 2
+    }
+  },
+  "trace_id": "mock-breed-animals_exited"
+}
