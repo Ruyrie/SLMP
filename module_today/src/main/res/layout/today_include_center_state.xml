@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 居中提示页（T07 已撤回、T08）：96 dp 全圆图标底 + 48 dp 图标、22 sp 标题、14 sp 说明、12 sp 时间信息、40 dp 色调按钮 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingStart="38dp"
+    android:paddingEnd="38dp"
+    android:paddingBottom="@dimen/base_space_12">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="@dimen/base_state_icon_circle"
+        android:layout_height="@dimen/base_state_icon_circle"
+        android:background="@drawable/today_bg_state_circle"
+        android:importantForAccessibility="no"
+        android:scaleType="center"
+        app:tint="?attr/colorOnSurfaceVariant" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_6"
+        android:gravity="center"
+        android:maxLines="2"
+        android:textAppearance="@style/TextAppearance.Zmt.TitleLarge"
+        android:textColor="?attr/colorOnSurface" />
+
+    <TextView
+        android:id="@+id/desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:gravity="center"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+
+    <TextView
+        android:id="@+id/meta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:gravity="center"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/action"
+        style="@style/Widget.Zmt.Button.Tonal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_5"
+        android:text="@string/today_back_to_messages" />
+</LinearLayout>
+</layout>

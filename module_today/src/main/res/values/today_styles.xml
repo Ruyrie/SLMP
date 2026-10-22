@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 推送中转页：透明、无动画 -->
+    <style name="today_theme_transparent" parent="Theme.Zmt">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
+    <!-- 月历星期表头 -->
+    <style name="today_calendar_week_label">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodySmall</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- T05 设置行：380 × 72 dp，左右内边距 16 dp；主文字 16 sp、说明 14 sp；尾部开关或值 + chevron_right -->
+    <style name="today_setting_row">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/base_list_item_two_line_min_height</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">@dimen/base_space_4</item>
+        <item name="android:paddingTop">@dimen/base_space_3</item>
+        <item name="android:paddingEnd">@dimen/base_space_4</item>
+        <item name="android:paddingBottom">@dimen/base_space_3</item>
+    </style>
+
+    <style name="today_setting_texts">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <style name="today_setting_title">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyLarge</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="today_setting_desc">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyMedium</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- 开关只显示状态，整行为点击区 -->
+    <style name="today_setting_switch">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">@dimen/base_space_3</item>
+        <item name="android:clickable">false</item>
+        <item name="android:focusable">false</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+
+    <style name="today_setting_value">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">@dimen/base_space_3</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodyLarge.Number</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="today_setting_chevron">
+        <item name="android:layout_width">@dimen/base_icon_size</item>
+        <item name="android:layout_height">@dimen/base_icon_size</item>
+        <item name="android:layout_marginStart">@dimen/base_space_2</item>
+        <item name="android:importantForAccessibility">no</item>
+        <item name="android:src">@drawable/ic_chevron_right</item>
+        <item name="tint">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- 月历图例文字 -->
+    <style name="today_calendar_legend">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">@dimen/base_space_1</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.BodySmall</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+</resources>

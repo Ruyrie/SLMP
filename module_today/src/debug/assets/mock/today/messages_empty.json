@@ -1,0 +1,13 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [],
+    "total": 0,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "filtered_unread": 0
+  },
+  "trace_id": "mock-t12-empty"
+}

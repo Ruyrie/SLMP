@@ -1,0 +1,12 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "total_unread": 3,
+    "filtered_unread": 1,
+    "by_category": {
+      "AI": 1
+    }
+  },
+  "trace_id": "mock-t13-owner-ai"
+}

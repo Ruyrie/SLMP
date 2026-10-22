@@ -1,0 +1,40 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "server_time": "2026-10-19 09:30:00",
+    "greeting": "早上好",
+    "user_name": "王建国",
+    "avatar_text": "王",
+    "role": "MANAGER",
+    "role_text": "你是本场场长",
+    "farm_status": "NORMAL",
+    "farm_status_text": "正常",
+    "farm": {
+      "farm_id": 1002,
+      "name": "西岭鸡场",
+      "species_text": "鸡",
+      "status": "NORMAL",
+      "status_text": "正常",
+      "role": "MANAGER"
+    },
+    "has_pen": true,
+    "unread_count": 3,
+    "owner_metrics": {
+      "stock_count": 12000,
+      "batch_count": 2,
+      "today_todo_count": 2,
+      "overdue_count": 0,
+      "warning_count": 0,
+      "receivable_overdue_count": 0,
+      "receivable_max_overdue_days": 0,
+      "count_unit": "BIRD",
+      "count_unit_text": "只",
+      "pen_occupancy_rate": 0.8,
+      "warning_names": [],
+      "receivable_amount": 0
+    },
+    "ai_hint": null
+  },
+  "trace_id": "mock-t01-1002"
+}

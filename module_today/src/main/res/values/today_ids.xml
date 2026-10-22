@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MoreMenuHelper 菜单项 -->
+    <item name="today_action_ignore" type="id" />
+    <item name="today_action_delete" type="id" />
+    <!-- 单独运行时 T01 宿主页的容器 -->
+    <item name="today_alone_container" type="id" />
+</resources>

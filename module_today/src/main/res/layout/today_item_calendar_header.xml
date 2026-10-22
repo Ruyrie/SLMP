@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T03 头部：养殖场按钮组（只对养殖户）、日 / 周 / 月按钮组 + 周期切换、员工说明横幅、星期表头、MonthCalendarView、图例（月视图） -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="com.zhimu.slmp.today.util.CalendarMode" />
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.today.ui.calendar.CalendarViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingEnd="@dimen/base_page_margin"
+        android:paddingBottom="@dimen/base_space_2">
+
+        <com.zhimu.slmp.base.widget.ConnectedButtonGroup
+            android:id="@+id/scope_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_2"
+            app:selectionRequired="true"
+            app:singleSelection="true"
+            app:visibleIf="@{safeUnbox(vm.showScope)}">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/scope_current"
+                style="@style/Widget.Zmt.Button.Connected"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{vm.farmName}" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/scope_all"
+                style="@style/Widget.Zmt.Button.Connected"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/today_calendar_all_farms" />
+        </com.zhimu.slmp.base.widget.ConnectedButtonGroup>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_2"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.zhimu.slmp.base.widget.ConnectedButtonGroup
+                android:id="@+id/mode_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/mode_day"
+                    style="@style/Widget.Zmt.Button.Connected"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/today_calendar_day" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/mode_week"
+                    style="@style/Widget.Zmt.Button.Connected"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/today_calendar_week" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/mode_month"
+                    style="@style/Widget.Zmt.Button.Connected"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/today_calendar_month" />
+            </com.zhimu.slmp.base.widget.ConnectedButtonGroup>
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/prev"
+                style="@style/Widget.Zmt.Button.Icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/today_cd_prev"
+                app:icon="@drawable/ic_chevron_left"
+                app:onSafeClick="@{v -> vm.prev()}" />
+
+            <TextView
+                android:id="@+id/period"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:accessibilityLiveRegion="polite"
+                android:text="@{vm.periodText}"
+                android:textAppearance="@style/TextAppearance.Zmt.TitleMedium.Number"
+                android:textColor="?attr/colorOnSurface" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/next"
+                style="@style/Widget.Zmt.Button.Icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/today_cd_next"
+                app:icon="@drawable/ic_chevron_right"
+                app:onSafeClick="@{v -> vm.next()}" />
+        </LinearLayout>
+
+        <com.zhimu.slmp.base.widget.NoticeView
+            android:id="@+id/staff_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_2"
+            app:goneIfNull="@{vm.staffBanner}"
+            app:noticeText="@{vm.staffBanner}" />
+
+        <LinearLayout
+            android:id="@+id/week_header"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:importantForAccessibility="noHideDescendants"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/today_calendar_week_label"
+                android:text="一" />
+
+            <TextView
+                style="@style/today_calendar_week_label"
+                android:text="二" />
+
+            <TextView
+                style="@style/today_calendar_week_label"
+                android:text="三" />
+
+            <TextView
+                style="@style/today_calendar_week_label"
+                android:text="四" />
+
+            <TextView
+                style="@style/today_calendar_week_label"
+                android:text="五" />
+
+            <TextView
+                style="@style/today_calendar_week_label"
+                android:text="六" />
+
+            <TextView
+                style="@style/today_calendar_week_label"
+                android:text="日" />
+        </LinearLayout>
+
+        <com.zhimu.slmp.today.ui.calendar.MonthCalendarView
+            android:id="@+id/calendar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:calendarDays="@{vm.gridDays}"
+            app:calendarLoading="@{vm.gridLoading}"
+            app:calendarSelected="@{vm.selectedDate}" />
+
+        <LinearLayout
+            android:id="@+id/legend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:visibleIf="@{vm.mode == CalendarMode.MONTH}">
+
+            <ImageView
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:background="@drawable/today_bg_dot"
+                android:backgroundTint="?attr/colorPrimary"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                style="@style/today_calendar_legend"
+                android:text="@string/today_calendar_legend_pending" />
+
+            <ImageView
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:layout_marginStart="@dimen/base_space_4"
+                android:background="@drawable/today_bg_dot"
+                android:backgroundTint="?attr/colorError"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                style="@style/today_calendar_legend"
+                android:text="@string/today_calendar_legend_overdue" />
+
+            <ImageView
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:layout_marginStart="@dimen/base_space_4"
+                android:background="@drawable/today_bg_dot"
+                android:backgroundTint="?attr/colorOutline"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                style="@style/today_calendar_legend"
+                android:text="@string/today_calendar_legend_closed" />
+        </LinearLayout>
+    </LinearLayout>
+</layout>

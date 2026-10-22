@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T03 养殖日历：二级页顶部栏（today、settings）固定；头部与列表作为一个整体纵向滚动 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.today.ui.calendar.CalendarViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{@string/today_calendar_title}"
+            xmlns:app="http://schemas.android.com/apk/res-auto" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/base_space_8" />
+    </LinearLayout>
+</layout>

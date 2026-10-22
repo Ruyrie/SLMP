@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 消息日期分组标题“今天”“昨天”“更早”：14 sp primary，上方 20 dp、下方 12 dp -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/title"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:accessibilityHeading="true"
+    android:paddingStart="@dimen/base_page_margin"
+    android:paddingTop="@dimen/base_space_5"
+    android:paddingEnd="@dimen/base_page_margin"
+    android:paddingBottom="@dimen/base_space_3"
+    android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+    android:textColor="?attr/colorPrimary" />

@@ -1,0 +1,103 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "todo_id": 90201,
+    "farm_id": 1001,
+    "farm_name": "东山猪场",
+    "todo_type": "WITHDRAWAL_END",
+    "todo_type_text": "休药期到期",
+    "category": "BUSINESS",
+    "category_text": "经营类",
+    "display_status": "PENDING",
+    "display_status_text": "待处理",
+    "title": "ZM2610-031 休药期到期",
+    "sub_text": "3 号育肥舍 · 10月29日可出栏",
+    "tail_text": "待处理",
+    "due_date": "2026-10-29",
+    "due_time": null,
+    "time_type": "ALL_DAY",
+    "time_label": "全天",
+    "overdue_days": null,
+    "pen_id": 2003,
+    "pen_name": "3 号育肥舍",
+    "batch_id": 3001,
+    "batch_no": "ZM2610-031",
+    "assignee_text": null,
+    "amount": null,
+    "completed_text": null,
+    "overdue_done": null,
+    "ignore_reason": null,
+    "ignore_text": null,
+    "action_text": "去登记",
+    "list_link": {
+      "route": "D05",
+      "web_route": null,
+      "farm_id": 1001,
+      "farm_name": "东山猪场",
+      "need_switch": false,
+      "params": {
+        "pen_id": "2003",
+        "batch_id": "3001",
+        "todo_id": "90201"
+      },
+      "page_title": null
+    },
+    "register_link": {
+      "route": "E06",
+      "web_route": null,
+      "farm_id": 1001,
+      "farm_name": "东山猪场",
+      "need_switch": false,
+      "params": {
+        "pen_id": "2003",
+        "batch_id": "3001",
+        "todo_id": "90201"
+      },
+      "page_title": null
+    },
+    "version": 2,
+    "subtitle": "10月29日 周四可出栏 · 还有 10 天",
+    "source_module_name": "用药与休药期管理",
+    "due_text": "10月29日 周四",
+    "due_hint": "可出栏日期变化时随之调整",
+    "receivers_text": "王建国（所有者）、刘芳（场长）",
+    "receivers_hint": null,
+    "status_note": null,
+    "detail_label": null,
+    "detail_value": null,
+    "remind_count": 2,
+    "remind_text": "10月26日、10月29日各一次",
+    "complete_condition": "登记出栏后自动完成",
+    "notice_text": "经营类和预警类待办只能在登记对应记录后自动完成，不能手动标记完成。不需要处理时可以忽略。",
+    "mark_done_tip": null,
+    "complete_way": null,
+    "complete_way_text": null,
+    "completed_at": null,
+    "completed_by": null,
+    "ignored_at": null,
+    "ignored_by": null,
+    "related_batch": {
+      "batch_id": 3001,
+      "batch_no": "ZM2610-031",
+      "pen_name": "3 号育肥舍",
+      "desc": "氟苯尼考粉 · 末次用药 10月9日 · 休药 20 天",
+      "tag_text": "休药中",
+      "link": {
+        "route": "D05",
+        "web_route": null,
+        "farm_id": 1001,
+        "farm_name": "东山猪场",
+        "need_switch": false,
+        "params": {
+          "batch_id": "3001"
+        },
+        "page_title": null
+      }
+    },
+    "can_register": true,
+    "can_complete": false,
+    "can_ignore": true
+  },
+  "trace_id": "mock-t07-90201"
+}

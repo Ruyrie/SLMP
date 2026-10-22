@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T08 关联记录已失效：顶部栏为目标页面名；居中 link_off 图标、标题（最多 2 行）、说明、“返回消息中心” -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.today.ui.invalid.RecordInvalidViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{vm.pageTitle}" />
+
+        <include
+            android:id="@+id/state"
+            layout="@layout/today_include_center_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+</layout>

@@ -1,0 +1,100 @@
+package com.zhimu.slmp.today.util;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.zhimu.slmp.base.event.GlobalEvents;
+import com.zhimu.slmp.common.router.Router;
+import com.zhimu.slmp.common.router.RouterPath;
+import com.zhimu.slmp.common.router.RouterTable;
+
+import java.util.Map;
+import java.util.regex.Pattern;
+
+/**
+ * 页面一侧打开 {@link NavTarget}：页面编号经 RouterTable 转为 action，参数转为 Bundle（_id 结尾的数字参数按 long 传入，
+ * 与 RouterPath 参数键的类型一致）；跨场切换的提示经 GlobalEvents 在目标页显示。目标页面不存在时 Router 提示“该功能正在开发中”。
+ */
+public final class TodayNavigator {
+
+    /** 跨场切换后的提示（目标页可读取；本组件同时用全局提示显示） */
+    public static final String EXTRA_SWITCH_TIP = "switch_tip";
+
+    private static final Pattern LONG = Pattern.compile("-?\\d{1,18}");
+    /** 等上一页暂停后再发全局提示，使提示显示在目标页 */
+    private static final long TIP_DELAY_MS = 350;
+
+    private TodayNavigator() {
+    }
+
+    public static boolean open(@NonNull Context context, @NonNull NavTarget target) {
+        return open(context, target, null);
+    }
+
+    /**
+     * @param launcher 不为空时以 Activity Result 打开（T04、T07 返回后刷新）
+     */
+    public static boolean open(@NonNull Context context, @NonNull NavTarget target,
+                               @Nullable ActivityResultLauncher<Intent> launcher) {
+        if (NavTarget.ROUTE_BACK.equals(target.getRoute())) {
+            if (context instanceof Activity) {
+                ((Activity) context).finish();
+            }
+            return true;
+        }
+        String action = actionOf(context, target.getRoute());
+        if (action == null) {
+            GlobalEvents.postMessage(Router.MSG_NOT_READY);
+            return false;
+        }
+        Bundle extras = toBundle(target.getParams());
+        if (target.getSwitchTip() != null) {
+            extras.putString(EXTRA_SWITCH_TIP, target.getSwitchTip());
+        }
+        boolean opened = launcher != null
+                ? Router.openForResult(context, launcher, action, extras)
+                : Router.open(context, action, extras);
+        if (opened && target.getSwitchTip() != null) {
+            String tip = target.getSwitchTip();
+            new Handler(Looper.getMainLooper()).postDelayed(() -> GlobalEvents.postMessage(tip), TIP_DELAY_MS);
+        }
+        return opened;
+    }
+
+    /** T01 是主页的“今日”标签：壳工程中打开 MAIN，单独运行时打开调试宿主页 */
+    @Nullable
+    public static String actionOf(@NonNull Context context, @NonNull String route) {
+        if ("T01".equals(route) && Router.canOpen(context, RouterPath.MAIN)) {
+            return RouterPath.MAIN;
+        }
+        return RouterTable.actionOf(route);
+    }
+
+    @NonNull
+    public static Bundle toBundle(@NonNull Map<String, String> params) {
+        Bundle b = new Bundle();
+        for (Map.Entry<String, String> e : params.entrySet()) {
+            String key = e.getKey();
+            String value = e.getValue();
+            if (value == null) {
+                continue;
+            }
+            if (key.endsWith("_id") && LONG.matcher(value).matches()) {
+                b.putLong(key, Long.parseLong(value));
+            } else if (RouterPath.EXTRA_ERROR_CODE.equals(key) && LONG.matcher(value).matches()) {
+                b.putInt(key, Integer.parseInt(value));
+            } else {
+                b.putString(key, value);
+            }
+        }
+        return b;
+    }
+}

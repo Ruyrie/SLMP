@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T03 顶部栏：today 回到今天、settings 进入 T05 -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/today_menu_today"
+        android:icon="@drawable/ic_today"
+        android:title="@string/today_cd_today"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/today_menu_settings"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/today_cd_settings"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+</menu>

@@ -1,0 +1,12 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "registration_id": "190e35f7e0a5b1c2d3",
+    "jpush_alias": "u10001",
+    "status": "ACTIVE",
+    "alias_bound": true,
+    "notify_permission": true
+  },
+  "trace_id": "mock-t20"
+}

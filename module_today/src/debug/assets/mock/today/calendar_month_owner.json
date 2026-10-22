@@ -1,0 +1,332 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "days": [
+      {
+        "date": "2026-09-28",
+        "is_today": false,
+        "total": 0,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-09-29",
+        "is_today": false,
+        "total": 0,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-09-30",
+        "is_today": false,
+        "total": 0,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-01",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-02",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-03",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-04",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-05",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-06",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-07",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-08",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-09",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-10",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-11",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-12",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 1,
+        "pending_count": 0,
+        "closed_count": 6,
+        "overdue_titles": [
+          "3 号育肥舍 · 伪狂犬病二免"
+        ]
+      },
+      {
+        "date": "2026-10-13",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-14",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-15",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 1,
+        "pending_count": 0,
+        "closed_count": 6,
+        "overdue_titles": [
+          "ZM2605-018 收款已逾期"
+        ]
+      },
+      {
+        "date": "2026-10-16",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-17",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 7,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-18",
+        "is_today": false,
+        "total": 7,
+        "overdue_count": 1,
+        "pending_count": 0,
+        "closed_count": 6,
+        "overdue_titles": [
+          "2 号保育舍 · 消毒"
+        ]
+      },
+      {
+        "date": "2026-10-19",
+        "is_today": true,
+        "total": 17,
+        "overdue_count": 1,
+        "pending_count": 14,
+        "closed_count": 2,
+        "overdue_titles": [
+          "1 号保育舍 · 早餐饲喂"
+        ]
+      },
+      {
+        "date": "2026-10-20",
+        "is_today": false,
+        "total": 15,
+        "overdue_count": 0,
+        "pending_count": 15,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-21",
+        "is_today": false,
+        "total": 15,
+        "overdue_count": 0,
+        "pending_count": 15,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-22",
+        "is_today": false,
+        "total": 15,
+        "overdue_count": 0,
+        "pending_count": 15,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-23",
+        "is_today": false,
+        "total": 15,
+        "overdue_count": 0,
+        "pending_count": 15,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-24",
+        "is_today": false,
+        "total": 15,
+        "overdue_count": 0,
+        "pending_count": 15,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-25",
+        "is_today": false,
+        "total": 15,
+        "overdue_count": 0,
+        "pending_count": 15,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-26",
+        "is_today": false,
+        "total": 15,
+        "overdue_count": 0,
+        "pending_count": 15,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-27",
+        "is_today": false,
+        "total": 15,
+        "overdue_count": 0,
+        "pending_count": 15,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-28",
+        "is_today": false,
+        "total": 15,
+        "overdue_count": 0,
+        "pending_count": 15,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-29",
+        "is_today": false,
+        "total": 15,
+        "overdue_count": 0,
+        "pending_count": 15,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-30",
+        "is_today": false,
+        "total": 15,
+        "overdue_count": 0,
+        "pending_count": 15,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-31",
+        "is_today": false,
+        "total": 15,
+        "overdue_count": 0,
+        "pending_count": 15,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-11-01",
+        "is_today": false,
+        "total": 0,
+        "overdue_count": 0,
+        "pending_count": 0,
+        "closed_count": 0,
+        "overdue_titles": []
+      }
+    ]
+  },
+  "trace_id": "mock-t03-month-owner"
+}

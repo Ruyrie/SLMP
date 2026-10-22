@@ -1,0 +1,42 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "server_time": "2026-10-19 09:30:00",
+    "greeting": "早上好",
+    "user_name": "王建国",
+    "avatar_text": "王",
+    "role": "OWNER",
+    "role_text": "你是本场所有者",
+    "farm_status": "NORMAL",
+    "farm_status_text": "正常",
+    "farm": {
+      "farm_id": 1001,
+      "name": "东山猪场",
+      "species_text": "猪",
+      "status": "NORMAL",
+      "status_text": "正常",
+      "role": "OWNER"
+    },
+    "has_pen": true,
+    "unread_count": 3,
+    "owner_metrics": {
+      "stock_count": 870,
+      "batch_count": 4,
+      "today_todo_count": 16,
+      "overdue_count": 4,
+      "warning_count": 1,
+      "receivable_overdue_count": 1,
+      "receivable_max_overdue_days": 4,
+      "count_unit": "HEAD",
+      "count_unit_text": "头",
+      "pen_occupancy_rate": 0.544,
+      "warning_names": [
+        "育肥全价料库存不足"
+      ],
+      "receivable_amount": 68448.0
+    },
+    "ai_hint": "3 号育肥舍有猪腹泻，先怎么处理？"
+  },
+  "trace_id": "mock-t01-owner"
+}

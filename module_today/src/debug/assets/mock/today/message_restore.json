@@ -1,0 +1,37 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "message_id": 503,
+    "category": "TODO",
+    "category_text": "待办提醒",
+    "msg_type": "TODO_REMIND",
+    "level": "NORMAL",
+    "level_text": "一般",
+    "title": "3 号育肥舍 · 猪瘟免疫",
+    "summary": "已合并 2 次提醒",
+    "tag_text": null,
+    "tag_code": null,
+    "farm": {
+      "farm_id": 1001,
+      "name": "东山猪场",
+      "status": "NORMAL",
+      "status_text": "正常",
+      "role": "OWNER"
+    },
+    "biz_type": "IMMUNE_PLAN",
+    "biz_id": 8117,
+    "todo_id": 90117,
+    "route": "D03",
+    "web_route": null,
+    "read": true,
+    "revoked": false,
+    "created_at": "2026-10-19 08:00:00",
+    "sort_time": "2026-10-19 08:00:00",
+    "date_group": "TODAY",
+    "icon_state": "PENDING",
+    "merge_count": 2,
+    "action": null
+  },
+  "trace_id": "mock-t18"
+}

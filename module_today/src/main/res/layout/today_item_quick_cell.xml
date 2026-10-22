@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 快捷登记一格：56 × 56 dp 图标块（圆角 20）+ 下方 9 dp 名称 12 sp，整格为一个点击区 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/base_space_2"
+    android:paddingBottom="@dimen/base_space_2">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="@drawable/today_bg_quick_icon"
+        android:importantForAccessibility="no"
+        android:scaleType="center"
+        app:tint="?attr/colorOnSecondaryContainer" />
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="9dp"
+        android:textAppearance="@style/TextAppearance.Zmt.LabelMedium"
+        android:textColor="?attr/colorOnSurface" />
+</LinearLayout>

@@ -1,0 +1,25 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "server_time": "2026-10-19 09:30:00",
+    "greeting": "早上好",
+    "user_name": "王建国",
+    "avatar_text": "王",
+    "role": "OWNER",
+    "role_text": "你是本场所有者",
+    "farm_status": "PENDING",
+    "farm_status_text": "待审核",
+    "farm": {
+      "farm_id": 1003,
+      "name": "北湾牛场",
+      "species_text": "牛",
+      "status": "PENDING",
+      "status_text": "待审核",
+      "role": "OWNER"
+    },
+    "has_pen": false,
+    "unread_count": 3
+  },
+  "trace_id": "mock-t01-1003"
+}

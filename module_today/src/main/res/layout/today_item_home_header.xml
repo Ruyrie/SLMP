@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T01 头部：问候区、审核横幅、指标卡行（养殖户：存栏 / 今日待办 / 预警；员工：负责栏舍 / 今日待办 / 已逾期）、AI 入口横幅、
+     我负责的栏舍（员工）、“今天和已逾期 · N 项”分组标题 + “日历” -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="com.zhimu.slmp.today.util.TodayBindingAdapters" />
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.today.ui.home.TodayViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingEnd="@dimen/base_page_margin">
+
+        <TextView
+            android:id="@+id/greeting"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_2"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@{vm.greetingText}"
+            android:textAppearance="@style/TextAppearance.Zmt.HeadlineLarge"
+            android:textColor="?attr/colorOnSurface" />
+
+        <TextView
+            android:id="@+id/role_line"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_1"
+            android:text="@{vm.roleLine}"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <com.zhimu.slmp.base.widget.NoticeView
+            android:id="@+id/farm_notice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_4"
+            app:noticeLevel="warning"
+            app:visibleIf="@{safeUnbox(vm.farmBlocked)}" />
+
+        <LinearLayout
+            android:id="@+id/metrics"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/base_stat_card_compact_height"
+            android:layout_marginTop="@dimen/base_space_4"
+            android:orientation="horizontal"
+            app:visibleIf="@{!safeUnbox(vm.farmBlocked)}">
+
+            <com.zhimu.slmp.base.widget.StatCardView
+                android:id="@+id/card_stock"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="143"
+                app:statEmphasis="true"
+                app:statIcon="@drawable/ic_fence"
+                app:statLabel="@string/today_home_metric_stock"
+                app:statUnit="@{vm.ownerMetrics.countUnitText}"
+                app:statValue="@{TodayBindingAdapters.count(vm.ownerMetrics.stockCount)}"
+                app:visibleIf="@{safeUnbox(vm.managerView)}" />
+
+            <com.zhimu.slmp.base.widget.StatCardView
+                android:id="@+id/card_pens"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="143"
+                app:statEmphasis="true"
+                app:statIcon="@drawable/ic_fence"
+                app:statLabel="@string/today_home_metric_pens"
+                app:statUnit="@string/today_unit_pen"
+                app:statValue="@{TodayBindingAdapters.count(vm.staffMetrics.penCount)}"
+                app:visibleIf="@{!safeUnbox(vm.managerView)}" />
+
+            <com.zhimu.slmp.base.widget.StatCardView
+                android:id="@+id/card_today"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:layout_weight="111"
+                app:statLabel="@string/today_home_metric_today"
+                app:statUnit="@string/today_unit_item"
+                app:statValue="@{TodayBindingAdapters.count(safeUnbox(vm.managerView) ? vm.ownerMetrics.todayTodoCount : vm.staffMetrics.todayTodoCount)}" />
+
+            <com.zhimu.slmp.base.widget.StatCardView
+                android:id="@+id/card_warning"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:layout_weight="110"
+                app:statLabel="@string/today_home_metric_warning"
+                app:statUnit="@string/today_unit_item"
+                app:statValue="@{TodayBindingAdapters.count(vm.ownerMetrics.warningCount)}"
+                app:visibleIf="@{safeUnbox(vm.managerView)}" />
+
+            <com.zhimu.slmp.base.widget.StatCardView
+                android:id="@+id/card_overdue"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:layout_weight="110"
+                app:statLabel="@string/today_home_metric_overdue"
+                app:statUnit="@string/today_unit_item"
+                app:statValue="@{TodayBindingAdapters.count(vm.staffMetrics.overdueCount)}"
+                app:visibleIf="@{!safeUnbox(vm.managerView)}" />
+        </LinearLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/ai_banner"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="?attr/colorTertiaryContainer"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:onSafeClick="@{v -> vm.onAiBannerClick()}"
+            app:strokeWidth="0dp"
+            app:visibleIf="@{safeUnbox(vm.managerView) &amp;&amp; !safeUnbox(vm.farmBlocked)}">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/base_space_4"
+                android:paddingEnd="@dimen/base_space_4">
+
+                <ImageView
+                    android:layout_width="@dimen/base_icon_size"
+                    android:layout_height="@dimen/base_icon_size"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_auto_awesome"
+                    app:tint="?attr/colorTertiary" />
+
+                <TextView
+                    android:id="@+id/ai_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/base_space_3"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:text="@{TodayBindingAdapters.aiText(context, vm.aiHint)}"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                    android:textColor="?attr/colorOnTertiaryContainer" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="@dimen/base_space_3"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_arrow_forward"
+                    app:tint="?attr/colorOnTertiaryContainer" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:id="@+id/my_pens_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:visibleIf="@{!safeUnbox(vm.managerView) &amp;&amp; !safeUnbox(vm.farmBlocked)}">
+
+            <com.zhimu.slmp.base.widget.SectionHeaderView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_5"
+                app:sectionTitle="@string/today_home_section_my_pens" />
+
+            <com.zhimu.slmp.base.widget.GroupedListLayout
+                android:id="@+id/pens_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_2" />
+
+            <TextView
+                android:id="@+id/no_pen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_2"
+                android:text="@string/today_home_no_my_pen"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <com.zhimu.slmp.base.widget.SectionHeaderView
+            android:id="@+id/todo_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_4"
+            app:sectionActionIcon="@drawable/ic_calendar_month"
+            app:sectionActionText="@string/today_home_calendar"
+            app:sectionTitle="@{@string/today_home_section_todos(safeUnbox(vm.todoTotal))}"
+            app:visibleIf="@{!safeUnbox(vm.farmBlocked) &amp;&amp; safeUnbox(vm.hasPen)}" />
+    </LinearLayout>
+</layout>

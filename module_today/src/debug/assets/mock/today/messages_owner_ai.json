@@ -1,0 +1,78 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "message_id": 501,
+        "category": "AI",
+        "category_text": "AI 诊断",
+        "msg_type": "AI_DIAGNOSIS",
+        "level": "NORMAL",
+        "level_text": "一般",
+        "title": "AI 诊断：疑似猪流行性腹泻",
+        "summary": "3 号育肥舍",
+        "tag_text": "关注",
+        "tag_code": "ATTENTION",
+        "farm": {
+          "farm_id": 1001,
+          "name": "东山猪场",
+          "status": "NORMAL",
+          "status_text": "正常",
+          "role": "OWNER"
+        },
+        "biz_type": "ABNORMAL_REPORT",
+        "biz_id": 6001,
+        "todo_id": null,
+        "route": "I06",
+        "web_route": null,
+        "read": false,
+        "revoked": false,
+        "created_at": "2026-10-19 09:21:00",
+        "sort_time": "2026-10-19 09:21:00",
+        "date_group": "TODAY",
+        "icon_state": "DEFAULT",
+        "merge_count": 1,
+        "action": null
+      },
+      {
+        "message_id": 516,
+        "category": "AI",
+        "category_text": "AI 诊断",
+        "msg_type": "AI_DIAGNOSIS",
+        "level": "NORMAL",
+        "level_text": "一般",
+        "title": "AI 诊断：疑似仔猪白痢",
+        "summary": "1 号保育舍",
+        "tag_text": "一般",
+        "tag_code": "GENERAL",
+        "farm": {
+          "farm_id": 1001,
+          "name": "东山猪场",
+          "status": "NORMAL",
+          "status_text": "正常",
+          "role": "OWNER"
+        },
+        "biz_type": "ABNORMAL_REPORT",
+        "biz_id": 5988,
+        "todo_id": null,
+        "route": "I06",
+        "web_route": null,
+        "read": true,
+        "revoked": false,
+        "created_at": "2026-10-08 15:12:00",
+        "sort_time": "2026-10-08 15:12:00",
+        "date_group": "EARLIER",
+        "icon_state": "DEFAULT",
+        "merge_count": 1,
+        "action": null
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "filtered_unread": 1
+  },
+  "trace_id": "mock-t12-owner-ai"
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 日视图时间轴项：48 dp 时间列（同一时间的后续项不显示时间）+ 待办卡片（x 64 起） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/base_page_margin"
+    android:paddingEnd="@dimen/base_page_margin">
+
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/base_space_3"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall.Number"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+
+    <include
+        android:id="@+id/item"
+        layout="@layout/today_item_todo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+</LinearLayout>
