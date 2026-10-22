@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- L03 存栏总览：顶部栏（search、add，点 search 变为搜索框）+ 栏舍 / 品类 / 批次连接按钮组 + 列表 + 扩展型 FAB“批次入栏” -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/herd_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/base_top_bar_height">
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/herd_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:navigationContentDescription="@string/base_cd_back"
+                app:navigationIcon="@drawable/ic_arrow_back"
+                app:title="@string/herd_stock_title" />
+
+            <LinearLayout
+                android:id="@+id/herd_search_bar"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:layout_marginEnd="@dimen/base_space_2"
+                android:background="@drawable/herd_bg_scan_bar"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/base_space_4"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_search"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <EditText
+                    android:id="@+id/herd_search_input"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="@dimen/base_space_3"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:hint="@string/herd_stock_search_hint"
+                    android:imeOptions="actionSearch"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:maxLength="20"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textColorHint="?attr/colorOnSurfaceVariant" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/herd_search_close"
+                    style="@style/Widget.Zmt.Button.Icon"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:contentDescription="@string/base_cd_close"
+                    app:icon="@drawable/ic_close" />
+            </LinearLayout>
+        </FrameLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <com.zhimu.slmp.base.widget.ConnectedButtonGroup
+        android:id="@+id/herd_view_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_page_margin"
+        android:layout_marginTop="@dimen/base_space_1"
+        android:layout_marginEnd="@dimen/base_page_margin"
+        app:checkedButton="@id/herd_view_pen">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/herd_view_pen"
+            style="@style/Widget.Zmt.Button.Connected"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/herd_stock_view_pen" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/herd_view_category"
+            style="@style/Widget.Zmt.Button.Connected"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/herd_stock_view_category" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/herd_view_batch"
+            style="@style/Widget.Zmt.Button.Connected"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/herd_stock_view_batch" />
+    </com.zhimu.slmp.base.widget.ConnectedButtonGroup>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/herd_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:stateErrorTitle="@string/herd_stock_error_title">
+
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/herd_refresh"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/herd_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_4"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_fab_list_bottom_space" />
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/herd_fab"
+            style="@style/Widget.Zmt.ExtendedFloatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="@dimen/base_space_4"
+            android:text="@string/herd_stock_fab"
+            app:icon="@drawable/ic_add" />
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</LinearLayout>

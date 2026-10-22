@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- L06 批次档案：顶部栏“批次 ZM2610-031”+ qr_code_2、more_vert；列表头信息卡 + 生产记录时间线；员工版 FAB“登记死淘” -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/herd_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/herd_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/base_top_bar_height"
+            app:navigationContentDescription="@string/base_cd_back"
+            app:navigationIcon="@drawable/ic_arrow_back" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/herd_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:stateErrorTitle="@string/herd_archive_error_title"
+            app:stateNoPermissionTitle="@string/herd_archive_no_permission"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/herd_refresh"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/herd_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingBottom="@dimen/base_fab_list_bottom_space" />
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/herd_fab"
+            style="@style/Widget.Zmt.ExtendedFloatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="@dimen/base_space_4"
+            android:text="@string/herd_archive_fab"
+            android:visibility="gone"
+            app:icon="@drawable/ic_heart_minus" />
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</LinearLayout>

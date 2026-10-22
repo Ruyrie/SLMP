@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- L01 功能入口图标底：56 dp，secondary-container，圆角 20 dp -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="?attr/colorSecondaryContainer" />
+    <corners android:radius="20dp" />
+</shape>

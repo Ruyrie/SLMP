@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 模块04：L06 批次档案、L07 扫码查看档案、L08 批次入栏、L09 入栏成功、L10 转栏、L11 死淘文案 -->
+<resources>
+
+    <!-- ===== L06 ===== -->
+    <string name="herd_archive_error_title">批次档案加载失败</string>
+    <string name="herd_archive_no_permission">你没有这个批次的查看权限</string>
+    <string name="herd_archive_qr">批次二维码</string>
+    <string name="herd_archive_records">生产记录</string>
+    <string name="herd_archive_fab">登记死淘</string>
+    <string name="herd_archive_pending">有 %1$d 条修改申请待审核，审核期间原记录照常有效。</string>
+    <string name="herd_archive_pending_action">查看</string>
+    <string name="herd_archive_delete_title">删除批次 %1$s？</string>
+    <string name="herd_archive_delete_message">删除后入栏记录一并删除，不能恢复。</string>
+    <string name="herd_archive_delete_action">删除</string>
+    <string name="herd_label_save">保存图片</string>
+    <string name="herd_label_print">打印标签</string>
+
+    <!-- ===== L07 ===== -->
+    <string name="herd_scan_title">扫码查看档案</string>
+    <string name="herd_scan_hint">将批次二维码放入框内，即可自动识别</string>
+    <string name="herd_scan_sub_hint">识别后直接打开批次档案</string>
+    <string name="herd_scan_manual_hint">二维码模糊或破损时，也可以输入批次号</string>
+    <string name="herd_scan_manual">输入批次号</string>
+    <string name="herd_scan_paused">识别已暂停</string>
+    <string name="herd_scan_resume">继续扫码</string>
+    <string name="herd_scan_opening">正在打开批次档案…</string>
+    <string name="herd_scan_no_permission_title">无权查看</string>
+    <string name="herd_scan_no_permission_message">你没有这个批次的查看权限。这个批次不属于你加入的养殖场，或不在你负责的栏舍内。\n\n扫描你加入的其他养殖场的批次时，会自动切换到该养殖场并打开档案。</string>
+    <string name="herd_scan_back">返回</string>
+    <string name="herd_scan_input_label">批次号</string>
+    <string name="herd_scan_input_placeholder">例如 ZM2610-031</string>
+    <string name="herd_scan_open">打开档案</string>
+
+    <!-- ===== L08 / L09 ===== -->
+    <string name="herd_entry_title">批次入栏</string>
+    <string name="herd_entry_title_edit">修改入栏记录</string>
+    <string name="herd_entry_error_title">入栏表单加载失败</string>
+    <string name="herd_entry_notice">提交后系统生成批次号和二维码，批次号不能修改。</string>
+    <string name="herd_entry_notice_edit">这条入栏记录还没有后续记录，可以直接修改；有了投喂、称重等记录后，需要提交修改申请。</string>
+    <string name="herd_entry_pen">栏舍</string>
+    <string name="herd_entry_breed">品种</string>
+    <string name="herd_entry_purpose">用途</string>
+    <string name="herd_entry_purpose_commercial">商品</string>
+    <string name="herd_entry_purpose_breeding">种用</string>
+    <string name="herd_entry_source">来源</string>
+    <string name="herd_entry_source_purchased">外购</string>
+    <string name="herd_entry_source_self">自繁</string>
+    <string name="herd_entry_date">入栏日期</string>
+    <string name="herd_entry_age">入栏日龄</string>
+    <string name="herd_entry_count">数量</string>
+    <string name="herd_entry_capacity_title">入栏后超过栏舍容量。</string>
+    <string name="herd_entry_capacity_check">我已确认，仍要入栏</string>
+    <string name="herd_entry_weight">入栏平均体重</string>
+    <string name="herd_entry_weight_helper">选填</string>
+    <string name="herd_entry_price">引种单价</string>
+    <string name="herd_entry_price_helper">计入批次成本</string>
+    <string name="herd_entry_unit_kg">千克</string>
+    <string name="herd_entry_change_request">提交修改申请</string>
+    <string name="herd_success_title">入栏成功</string>
+    <string name="herd_success_view">查看档案</string>
+    <string name="herd_success_done">批次已生成</string>
+    <string name="herd_success_batch_no">批次号</string>
+    <string name="herd_success_entry">入栏</string>
+    <string name="herd_success_pen_now">%1$s现有</string>
+    <string name="herd_success_notice">批次号全平台唯一，生成后不能修改，二维码与批次号一一对应。</string>
+
+    <!-- ===== L10 ===== -->
+    <string name="herd_transfer_title">转栏登记</string>
+    <string name="herd_transfer_title_edit">修改转栏记录</string>
+    <string name="herd_transfer_error_title">转栏表单加载失败</string>
+    <string name="herd_transfer_batch">批次</string>
+    <string name="herd_transfer_from">转出栏舍</string>
+    <string name="herd_transfer_to">转入栏舍</string>
+    <string name="herd_transfer_quantity">数量</string>
+    <string name="herd_transfer_capacity_title">转入后超过栏舍容量。</string>
+    <string name="herd_transfer_capacity_check">我已确认，仍要转入</string>
+    <string name="herd_transfer_date">转栏日期</string>
+    <string name="herd_transfer_date_helper">登记后 3 天内可以自行修改</string>
+    <string name="herd_transfer_remark">备注</string>
+    <string name="herd_transfer_remark_hint">选填，例如转栏原因</string>
+
+    <!-- ===== L11 ===== -->
+    <string name="herd_death_title">死淘登记</string>
+    <string name="herd_death_title_edit">修改死淘记录</string>
+    <string name="herd_death_error_title">死淘表单加载失败</string>
+    <string name="herd_death_batch">批次</string>
+    <string name="herd_death_pen">栏舍</string>
+    <string name="herd_death_quantity">数量</string>
+    <string name="herd_death_reason">原因</string>
+    <string name="herd_death_date">日期</string>
+    <string name="herd_death_executor">实际执行人</string>
+    <string name="herd_death_executor_helper">代员工登记时选择</string>
+    <string name="herd_death_remark">说明</string>
+    <string name="herd_death_remark_hint">选填，例如症状、处理方式</string>
+    <string name="herd_death_remark_required">选择“其他”时请写明原因</string>
+    <string name="herd_death_photos">照片</string>
+    <string name="herd_death_photos_hint">选填 · JPG 或 PNG，单张不超过 5MB</string>
+    <string name="herd_death_draft_title">恢复上次未提交的内容？</string>
+    <string name="herd_death_draft_message">上次填写的死淘登记还没有保存，可以继续填写。</string>
+    <string name="herd_death_draft_restore">恢复</string>
+    <string name="herd_death_draft_discard">不用了</string>
+</resources>

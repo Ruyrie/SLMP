@@ -1,0 +1,106 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 8307,
+        "record_type": "INSPECT",
+        "biz_type": "INSPECTION",
+        "biz_id": 7307,
+        "biz_date": "2026-10-19",
+        "occurred_at": "2026-10-19 08:30:00",
+        "title": "巡检 · 3 项正常",
+        "subtitle": "精神状态、采食、粪便 · 王建国 · 现场",
+        "operator_name": "王建国",
+        "is_today": true,
+        "expandable": false,
+        "action": "NONE",
+        "route": "I04"
+      },
+      {
+        "id": 8306,
+        "record_type": "FEED",
+        "biz_type": "FEED_RECORD",
+        "biz_id": 7306,
+        "biz_date": "2026-10-19",
+        "occurred_at": "2026-10-19 07:10:00",
+        "title": "投喂 · 早餐 252 千克",
+        "subtitle": "计划 250 千克 · 王建国",
+        "operator_name": "王建国",
+        "is_today": true,
+        "expandable": true,
+        "action": "NONE",
+        "detail": [
+          {
+            "key": "登记人",
+            "value": "王建国"
+          },
+          {
+            "key": "登记时间",
+            "value": "今天 07:10"
+          }
+        ]
+      },
+      {
+        "id": 8305,
+        "record_type": "WEIGH",
+        "biz_type": "WEIGH_RECORD",
+        "biz_id": 7305,
+        "biz_date": "2026-10-15",
+        "occurred_at": "2026-10-15 09:00:00",
+        "title": "称重 · 平均 0.72 千克",
+        "subtitle": "抽样 50 只 · 王建国",
+        "operator_name": "王建国",
+        "is_today": false,
+        "expandable": false,
+        "action": "NONE",
+        "route": "G06"
+      },
+      {
+        "id": 8304,
+        "record_type": "IMMUNE",
+        "biz_type": "IMMUNE_RECORD",
+        "biz_id": 7304,
+        "biz_date": "2026-10-07",
+        "occurred_at": "2026-10-07 10:00:00",
+        "title": "免疫 · 新城疫疫苗",
+        "subtitle": "7 日龄免疫 · 王建国",
+        "operator_name": "王建国",
+        "is_today": false,
+        "expandable": false,
+        "action": "NONE",
+        "route": "D01"
+      },
+      {
+        "id": 8300,
+        "record_type": "ENTRY",
+        "biz_type": "BATCH_ENTRY",
+        "biz_id": 931,
+        "biz_date": "2026-10-01",
+        "occurred_at": "2026-10-01 08:00:00",
+        "title": "入栏 9,500 只",
+        "subtitle": "外购 · 入栏日龄 1 天 · 王建国",
+        "operator_name": "王建国",
+        "is_today": false,
+        "expandable": true,
+        "action": "CHANGE_REQUEST",
+        "detail": [
+          {
+            "key": "登记人",
+            "value": "王建国"
+          },
+          {
+            "key": "登记时间",
+            "value": "10月1日 08:00"
+          }
+        ]
+      }
+    ],
+    "total": 5,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-herd-timeline_3201"
+}

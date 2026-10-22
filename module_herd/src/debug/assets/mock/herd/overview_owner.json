@@ -1,0 +1,44 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "farm_id": 1001,
+    "farm_name": "东山猪场",
+    "farm_status": "NORMAL",
+    "today": "2026-10-19",
+    "has_pen": true,
+    "stock_total": 870,
+    "today_todo_count": 6,
+    "warning_count": 1,
+    "reminder_total": 2,
+    "reminders": [
+      {
+        "reminder_type": "WITHDRAWAL",
+        "is_warning": true,
+        "title": "ZM2610-031 休药中",
+        "subtitle": "3 号育肥舍 · 10月29日可出栏",
+        "tag_text": "剩 10 天",
+        "batch_id": 3001,
+        "todo_id": null,
+        "route": "D05"
+      },
+      {
+        "reminder_type": "FEED_LOW_STOCK",
+        "is_warning": true,
+        "title": "育肥全价料库存不足",
+        "subtitle": "结存 500 千克 · 剩余可用 1 天",
+        "tag_text": "库存不足",
+        "batch_id": null,
+        "todo_id": 7101,
+        "route": "M01"
+      }
+    ],
+    "badges": {
+      "withdrawal": true,
+      "feed_low_stock": true
+    },
+    "unit": "HEAD",
+    "unit_text": "头"
+  },
+  "trace_id": "mock-herd-overview_owner"
+}

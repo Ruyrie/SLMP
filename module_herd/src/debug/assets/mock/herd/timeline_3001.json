@@ -1,0 +1,185 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 8107,
+        "record_type": "INSPECT",
+        "biz_type": "INSPECTION",
+        "biz_id": 7107,
+        "biz_date": "2026-10-19",
+        "occurred_at": "2026-10-19 08:40:00",
+        "title": "巡检 · 3 项正常",
+        "subtitle": "精神状态、采食、粪便 · 李明 · 现场",
+        "operator_name": "李明",
+        "is_today": true,
+        "expandable": false,
+        "action": "NONE",
+        "route": "I04"
+      },
+      {
+        "id": 8106,
+        "record_type": "FEED",
+        "biz_type": "FEED_RECORD",
+        "biz_id": 7106,
+        "biz_date": "2026-10-19",
+        "occurred_at": "2026-10-19 07:32:00",
+        "title": "投喂 · 早餐 158 千克",
+        "subtitle": "育肥全价料 · 计划 160 千克 · 李明",
+        "operator_name": "李明",
+        "is_today": true,
+        "expandable": true,
+        "action": "NONE",
+        "detail": [
+          {
+            "key": "登记人",
+            "value": "李明"
+          },
+          {
+            "key": "登记时间",
+            "value": "今天 07:32"
+          },
+          {
+            "key": "备注",
+            "value": "采食正常"
+          }
+        ]
+      },
+      {
+        "id": 8105,
+        "record_type": "DEATH",
+        "biz_type": "BATCH_DEATH",
+        "biz_id": 905,
+        "biz_date": "2026-10-17",
+        "occurred_at": "2026-10-17 16:20:00",
+        "title": "死淘 · 2 头 · 病死",
+        "subtitle": "3 号育肥舍 · 实际执行人 李明",
+        "operator_name": "王建国",
+        "is_today": false,
+        "expandable": true,
+        "action": "EDIT",
+        "detail": [
+          {
+            "key": "登记人",
+            "value": "王建国"
+          },
+          {
+            "key": "实际执行人",
+            "value": "李明"
+          },
+          {
+            "key": "登记时间",
+            "value": "10月17日 16:20"
+          },
+          {
+            "key": "说明",
+            "value": "精神沉郁，已隔离观察"
+          }
+        ]
+      },
+      {
+        "id": 8104,
+        "record_type": "WEIGH",
+        "biz_type": "WEIGH_RECORD",
+        "biz_id": 7104,
+        "biz_date": "2026-10-16",
+        "occurred_at": "2026-10-16 09:00:00",
+        "title": "称重 · 平均 60.0 千克",
+        "subtitle": "抽样 20 头 · 李明",
+        "operator_name": "李明",
+        "is_today": false,
+        "expandable": false,
+        "action": "NONE",
+        "route": "G06"
+      },
+      {
+        "id": 8103,
+        "record_type": "IMMUNE",
+        "biz_type": "IMMUNE_RECORD",
+        "biz_id": 7103,
+        "biz_date": "2026-10-12",
+        "occurred_at": "2026-10-12 10:00:00",
+        "title": "免疫 · 口蹄疫灭活疫苗",
+        "subtitle": "全群接种 · 李明",
+        "operator_name": "李明",
+        "is_today": false,
+        "expandable": false,
+        "action": "NONE",
+        "route": "D01"
+      },
+      {
+        "id": 8102,
+        "record_type": "DRUG",
+        "biz_type": "DRUG_RECORD",
+        "biz_id": 7102,
+        "biz_date": "2026-10-09",
+        "occurred_at": "2026-10-09 15:00:00",
+        "title": "用药 · 氟苯尼考粉",
+        "subtitle": "末次用药 · 休药期 20 天 · 刘芳",
+        "operator_name": "刘芳",
+        "is_today": false,
+        "expandable": false,
+        "action": "NONE",
+        "route": "D05"
+      },
+      {
+        "id": 8101,
+        "record_type": "DEATH",
+        "biz_type": "BATCH_DEATH",
+        "biz_id": 903,
+        "biz_date": "2026-10-08",
+        "occurred_at": "2026-10-08 17:30:00",
+        "title": "死淘 · 3 头 · 病死",
+        "subtitle": "3 号育肥舍 · 李明",
+        "operator_name": "李明",
+        "is_today": false,
+        "expandable": true,
+        "action": "CHANGE_REQUEST",
+        "detail": [
+          {
+            "key": "登记人",
+            "value": "李明"
+          },
+          {
+            "key": "登记时间",
+            "value": "10月8日 17:30"
+          }
+        ]
+      },
+      {
+        "id": 8100,
+        "record_type": "ENTRY",
+        "biz_type": "BATCH_ENTRY",
+        "biz_id": 901,
+        "biz_date": "2026-10-01",
+        "occurred_at": "2026-10-01 09:12:00",
+        "title": "入栏 205 头",
+        "subtitle": "外购 · 入栏日龄 78 天 · 王建国",
+        "operator_name": "王建国",
+        "is_today": false,
+        "expandable": true,
+        "action": "CHANGE_REQUEST",
+        "detail": [
+          {
+            "key": "登记人",
+            "value": "王建国"
+          },
+          {
+            "key": "登记时间",
+            "value": "10月1日 09:12"
+          },
+          {
+            "key": "入栏平均体重",
+            "value": "45 千克"
+          }
+        ]
+      }
+    ],
+    "total": 8,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-herd-timeline_3001"
+}

@@ -1,0 +1,46 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "pen_id": 2001,
+    "category_id": 101,
+    "pen_code": "BY-01",
+    "pen_name": "1 号保育舍",
+    "pen_type": "NURSERY",
+    "pen_type_text": "保育舍",
+    "category_name": "育肥猪",
+    "capacity": 360,
+    "stock_count": 320,
+    "remaining_capacity": 40,
+    "over_capacity_count": 0,
+    "version": 4,
+    "occupancy_rate": 0.8889,
+    "status": "ENABLED",
+    "display_status": "IN_USE",
+    "display_status_text": "在用",
+    "is_breeding_pen": false,
+    "can_disable": false,
+    "can_enable": false,
+    "staff": [
+      {
+        "user_id": 10004,
+        "name": "张伟",
+        "role": "STAFF",
+        "role_text": "员工"
+      }
+    ],
+    "batches": [
+      {
+        "batch_id": 3003,
+        "batch_no": "ZM2610-045",
+        "breed_title": "杜长大保育猪",
+        "day_age": 35,
+        "qty_in_pen": 320,
+        "in_withdrawal": false
+      }
+    ],
+    "unit_text": "头",
+    "disable_block_reason": "栏舍里还有 1 个在栏批次，全部转出或出栏后才能停用"
+  },
+  "trace_id": "mock-herd-pen_2001"
+}

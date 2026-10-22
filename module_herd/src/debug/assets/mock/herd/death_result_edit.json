@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "event_id": 905,
+    "batch_id": 3001,
+    "quantity": 2,
+    "current_count": 200,
+    "death_count": 5,
+    "mortality_rate": 0.0244,
+    "batch_status": "ACTIVE",
+    "message": "已登记死淘 2 头，存栏已更新",
+    "batch_ended": false
+  },
+  "trace_id": "mock-herd-death_result_edit"
+}

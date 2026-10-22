@@ -1,0 +1,6 @@
+{
+  "code": 40303,
+  "message": "我的栏舍只对员工开放",
+  "data": null,
+  "trace_id": "mock-herd-err_40303_staff_only"
+}

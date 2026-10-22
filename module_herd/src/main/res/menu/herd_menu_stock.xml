@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/herd_menu_search"
+        android:icon="@drawable/ic_search"
+        android:title="@string/herd_stock_search"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/herd_menu_add"
+        android:icon="@drawable/ic_add"
+        android:title="@string/herd_stock_add"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+</menu>

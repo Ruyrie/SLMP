@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- L10 转栏登记：批次摘要卡（或批次下拉）、转出栏舍、转入栏舍、数量、超容量警示、转栏日期、备注；底部“保存” -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.herd.ui.transfer.BatchTransferViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/herd_top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{vm.editMode ? @string/herd_transfer_title_edit : @string/herd_transfer_title}" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/herd_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/herd_transfer_error_title"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/herd_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_5"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <com.zhimu.slmp.base.widget.ListRowView
+                        android:id="@+id/herd_batch_card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:groupPosition="single"
+                        app:leadingTone="secondary"
+                        app:rowLeadingIcon="@drawable/ic_folder_open"
+                        app:visibleIf="@{vm.batchFixed}" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Zmt.TextInputLayout.Dropdown"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/herd_transfer_batch"
+                        app:helperTextEnabled="true"
+                        app:herdError="@{vm.fieldErrors[`batch_id`]}"
+                        app:visibleIf="@{!vm.batchFixed}">
+
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/herd_batch_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Zmt.TextInputLayout.Dropdown"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:hint="@string/herd_transfer_from"
+                        app:helperText="@{vm.fromHelper}"
+                        app:helperTextEnabled="true"
+                        app:herdError="@{vm.fieldErrors[`from_pen_id`]}">
+
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/herd_from_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Zmt.TextInputLayout.Dropdown"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:hint="@string/herd_transfer_to"
+                        app:helperText="@{vm.toHelper}"
+                        app:helperTextEnabled="true"
+                        app:herdError="@{vm.fieldErrors[`to_pen_id`]}">
+
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/herd_to_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/herd_quantity_layout"
+                        style="@style/Widget.Zmt.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:hint="@string/herd_transfer_quantity"
+                        app:helperTextEnabled="true"
+                        app:herdError="@{vm.fieldErrors[`quantity`]}">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/herd_quantity_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:maxLength="7"
+                            android:text="@={vm.quantityText}"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/herd_capacity_banner"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:visibility="gone"
+                        app:noticeCheckText="@string/herd_transfer_capacity_check"
+                        app:noticeLevel="warning"
+                        app:noticeTitle="@string/herd_transfer_capacity_title" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/herd_date_layout"
+                        style="@style/Widget.Zmt.TextInputLayout.Picker"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:hint="@string/herd_transfer_date"
+                        app:helperText="@string/herd_transfer_date_helper"
+                        app:helperTextEnabled="true"
+                        app:herdError="@{vm.fieldErrors[`event_date`]}">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/herd_date_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:dateText="@{vm.eventDate}"
+                            app:dateWithWeek="@{false}" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Zmt.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:hint="@string/herd_transfer_remark"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="100"
+                        app:herdError="@{vm.fieldErrors[`remark`]}"
+                        app:placeholderText="@string/herd_transfer_remark_hint">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textMultiLine"
+                            android:maxLength="100"
+                            android:text="@={vm.remark}" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/herd_action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:barPrimaryText="@string/herd_action_save" />
+    </LinearLayout>
+</layout>

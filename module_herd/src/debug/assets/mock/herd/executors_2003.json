@@ -1,0 +1,21 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "user_id": 10001,
+      "name": "王建国",
+      "display_name": "王建国（我）",
+      "role": "OWNER",
+      "is_me": true
+    },
+    {
+      "user_id": 10003,
+      "name": "李明",
+      "display_name": "李明",
+      "role": "STAFF",
+      "is_me": false
+    }
+  ],
+  "trace_id": "mock-herd-executors_2003"
+}

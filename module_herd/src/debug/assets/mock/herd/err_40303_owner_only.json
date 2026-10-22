@@ -1,0 +1,6 @@
+{
+  "code": 40303,
+  "message": "这个页面只对所有者和场长开放",
+  "data": null,
+  "trace_id": "mock-herd-err_40303_owner_only"
+}

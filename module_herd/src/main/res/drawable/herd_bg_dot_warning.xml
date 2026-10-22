@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 入口预警小圆点：6 dp 全圆 warning -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="?attr/colorWarning" />
+    <size
+        android:width="6dp"
+        android:height="6dp" />
+</shape>

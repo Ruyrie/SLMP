@@ -1,0 +1,28 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 8102,
+        "record_type": "DRUG",
+        "biz_type": "DRUG_RECORD",
+        "biz_id": 7102,
+        "biz_date": "2026-10-09",
+        "occurred_at": "2026-10-09 15:00:00",
+        "title": "用药 · 氟苯尼考粉",
+        "subtitle": "末次用药 · 休药期 20 天 · 刘芳",
+        "operator_name": "刘芳",
+        "is_today": false,
+        "expandable": false,
+        "action": "NONE",
+        "route": "D05"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-herd-timeline_3001_drug"
+}

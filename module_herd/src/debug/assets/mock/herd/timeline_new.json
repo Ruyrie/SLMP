@@ -1,0 +1,37 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 8580,
+        "record_type": "ENTRY",
+        "biz_type": "BATCH_ENTRY",
+        "biz_id": 958,
+        "biz_date": "2026-10-19",
+        "occurred_at": "2026-10-19 10:05:00",
+        "title": "入栏 90 头",
+        "subtitle": "外购 · 入栏日龄 70 天 · 王建国",
+        "operator_name": "王建国",
+        "is_today": true,
+        "expandable": true,
+        "action": "EDIT",
+        "detail": [
+          {
+            "key": "登记人",
+            "value": "王建国"
+          },
+          {
+            "key": "登记时间",
+            "value": "今天 10:05"
+          }
+        ]
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-herd-timeline_new"
+}

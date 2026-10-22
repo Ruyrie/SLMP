@@ -1,0 +1,47 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "event_id": 907,
+    "batch_id": 3001,
+    "event_type": "TRANSFER",
+    "status": "EFFECTIVE",
+    "batch_no": "ZM2610-031",
+    "breed_title": "杜长大育肥猪",
+    "event_date": "2026-10-18",
+    "created_at": "2026-10-18 15:00:00",
+    "quantity": 20,
+    "over_capacity_count": 0,
+    "version": 1,
+    "capacity_confirmed": false,
+    "pen": {
+      "pen_id": 2003,
+      "name": "3 号育肥舍",
+      "pen_type_text": "育肥舍"
+    },
+    "to_pen": {
+      "pen_id": 2004,
+      "name": "4 号育肥舍",
+      "pen_type_text": "育肥舍"
+    },
+    "remark": "密度调整",
+    "executor": {
+      "user_id": 10001,
+      "name": "王建国",
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "registrant": {
+      "user_id": 10001,
+      "name": "王建国",
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "photos": [],
+    "change_state": {
+      "can_edit": true,
+      "edit_deadline": "2026-10-20 23:59:59"
+    }
+  },
+  "trace_id": "mock-herd-event_transfer_907"
+}

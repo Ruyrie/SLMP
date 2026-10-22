@@ -1,0 +1,29 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "pen_id": 2005,
+    "category_id": 101,
+    "pen_code": "YF-05",
+    "pen_name": "5 号育肥舍",
+    "pen_type": "FATTENING",
+    "pen_type_text": "育肥舍",
+    "category_name": "育肥猪",
+    "capacity": 400,
+    "stock_count": 0,
+    "remaining_capacity": 400,
+    "over_capacity_count": 0,
+    "version": 4,
+    "occupancy_rate": 0.0,
+    "status": "ENABLED",
+    "display_status": "EMPTY",
+    "display_status_text": "空栏",
+    "is_breeding_pen": false,
+    "can_disable": true,
+    "can_enable": false,
+    "staff": [],
+    "batches": [],
+    "unit_text": "头"
+  },
+  "trace_id": "mock-herd-pen_2005"
+}

@@ -1,4 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 模块04 栏舍与存栏：L03–L11 二级页（L01、L02 为底部导航一级页 Fragment，经 TabRegistry 注册） -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+
+        <!-- L03 存栏总览 -->
+        <activity
+            android:name=".ui.stock.StockOverviewActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.L03" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- L04 栏舍详情 -->
+        <activity
+            android:name=".ui.pendetail.PenDetailActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.L04" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- L05 新增 / 编辑栏舍 -->
+        <activity
+            android:name=".ui.penedit.PenEditActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.L05" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- L06 批次档案 -->
+        <activity
+            android:name=".ui.archive.BatchArchiveActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.L06" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- L07 扫码查看档案（取景由 lib_media 相机页扫码模式提供） -->
+        <activity
+            android:name=".ui.scan.BatchScanActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Zmt.Media"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.L07" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- L08 批次入栏 / 修改入栏记录 -->
+        <activity
+            android:name=".ui.entry.BatchEntryActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.L08" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- L09 入栏成功 -->
+        <activity
+            android:name=".ui.entry.BatchEntrySuccessActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.L09" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- L10 转栏登记 -->
+        <activity
+            android:name=".ui.transfer.BatchTransferActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.L10" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- L11 死淘登记 -->
+        <activity
+            android:name=".ui.death.BatchDeathActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.L11" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
 
 </manifest>

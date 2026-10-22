@@ -1,0 +1,13 @@
+{
+  "code": 42206,
+  "message": "入栏后超过栏舍容量。4 号育肥舍容量 220 头，现有 180 头，入栏后共 240 头，超出 20 头。",
+  "data": {
+    "need_confirm": true,
+    "pen_id": 2004,
+    "capacity": 220,
+    "current": 180,
+    "after": 240,
+    "over": 20
+  },
+  "trace_id": "mock-herd-err_42206_entry"
+}

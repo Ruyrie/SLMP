@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- debug 包：托管 L01 / L02 一级页的调试页（单独运行时 debug 清单被 src/alone 替换，那里也声明了本页） -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+
+        <activity
+            android:name="com.zhimu.slmp.herd.debug.HerdTabHostActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.herd.debug.TAB" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

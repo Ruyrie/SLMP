@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 模块04 栏舍与存栏：通用与 L01、L02 文案（UI 设计文档 2.5 节） -->
+<resources>
+
+    <!-- ===== 通用 ===== -->
+    <string name="herd_list_no_more">没有更多了</string>
+    <string name="herd_list_load_failed">加载失败，点按重试</string>
+    <string name="herd_unit_item">项</string>
+    <string name="herd_unit_day">天</string>
+    <string name="herd_cd_more">更多操作</string>
+    <string name="herd_discard_title">放弃这次登记？</string>
+    <string name="herd_discard_message">已填写的内容不会保存。</string>
+    <string name="herd_action_keep_editing">继续填写</string>
+    <string name="herd_action_discard">放弃</string>
+    <string name="herd_action_save">保存</string>
+    <string name="herd_action_submit">提交</string>
+    <string name="herd_tag_withdrawal">休药中</string>
+    <string name="herd_tag_breeding">种用</string>
+    <string name="herd_tag_empty">空栏</string>
+    <string name="herd_tag_disabled">已停用</string>
+
+    <!-- ===== L01 生产页 ===== -->
+    <string name="herd_production_error_title">生产概况加载失败</string>
+    <string name="herd_production_overview_title">今日生产概况</string>
+    <string name="herd_production_stock">存栏</string>
+    <string name="herd_production_todo">今日待办</string>
+    <string name="herd_production_warning">预警</string>
+    <string name="herd_production_view_all_reminders">查看全部 %1$d 条预警</string>
+    <string name="herd_production_audit_notice">这个养殖场还没有通过审核，审核通过后才能使用栏舍和批次功能。</string>
+    <string name="herd_production_audit_action">查看审核结果</string>
+    <string name="herd_production_no_pen_notice">还没有栏舍。先新增栏舍，再登记批次入栏。</string>
+    <string name="herd_production_add_pen">新增栏舍</string>
+    <string name="herd_production_fab">登记</string>
+    <string name="herd_entry_group_production">生产</string>
+    <string name="herd_entry_group_health">防疫</string>
+    <string name="herd_entry_group_supply">物资</string>
+    <string name="herd_entry_stock">存栏总览</string>
+    <string name="herd_entry_batch">批次档案</string>
+    <string name="herd_entry_breeding">繁育</string>
+    <string name="herd_entry_feed">饲喂</string>
+    <string name="herd_entry_weigh">称重</string>
+    <string name="herd_entry_inspect">巡检</string>
+    <string name="herd_entry_abnormal">异常上报与诊断</string>
+    <string name="herd_entry_immune">免疫</string>
+    <string name="herd_entry_drug">用药与休药</string>
+    <string name="herd_entry_disinfect">消毒</string>
+    <string name="herd_entry_feed_stock">饲料库存</string>
+    <string name="herd_entry_drug_stock">兽药与疫苗</string>
+
+    <!-- ===== L02 我的栏舍 ===== -->
+    <string name="herd_my_pens_title">我的栏舍</string>
+    <string name="herd_my_pens_error_title">我的栏舍加载失败</string>
+    <string name="herd_my_pens_scan">扫码查看批次档案</string>
+    <string name="herd_my_pens_breeding_entry">待产与待出雏</string>
+    <string name="herd_my_pens_empty_title">你还没有负责的栏舍</string>
+    <string name="herd_my_pens_empty_message">请联系所有者或场长在成员管理中为你分配栏舍。</string>
+    <string name="herd_my_pens_today_tasks">今日任务</string>
+    <string name="herd_my_pens_task_progress">%1$d / %2$d 已完成</string>
+    <string name="herd_my_pens_tasks_done">今天的任务都完成了</string>
+    <string name="herd_my_pens_metric_stock">存栏</string>
+    <string name="herd_my_pens_metric_day_age">日龄</string>
+    <string name="herd_my_pens_metric_stage">生长阶段</string>
+    <string name="herd_my_pens_pick_batch">选择批次</string>
+</resources>

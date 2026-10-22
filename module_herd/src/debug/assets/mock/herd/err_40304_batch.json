@@ -1,0 +1,6 @@
+{
+  "code": 40304,
+  "message": "你没有这个批次的查看权限",
+  "data": null,
+  "trace_id": "mock-herd-err_40304_batch"
+}

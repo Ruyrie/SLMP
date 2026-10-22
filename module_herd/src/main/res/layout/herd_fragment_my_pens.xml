@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- L02 我的栏舍（员工）：一级页顶部栏 + 大标题 + 扫码条 + 待产与待出雏入口 + 负责栏舍卡 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.herd.ui.mypens.MyPensViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <com.zhimu.slmp.common.widget.FirstLevelTopBar
+            android:id="@+id/herd_top_bar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/base_top_bar_height" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/herd_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/herd_my_pens_error_title">
+
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/herd_refresh"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.core.widget.NestedScrollView
+                    android:id="@+id/herd_scroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="@dimen/base_page_margin"
+                        android:paddingEnd="@dimen/base_page_margin"
+                        android:paddingBottom="@dimen/base_space_6">
+
+                        <TextView
+                            style="@style/Widget.Zmt.TextView.PageTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_3"
+                            android:text="@string/herd_my_pens_title" />
+
+                        <TextView
+                            style="@style/Widget.Zmt.TextView.PageSubtitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_1"
+                            android:text="@{vm.subtitle}" />
+
+                        <LinearLayout
+                            android:id="@+id/herd_scan_bar"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            android:background="@drawable/herd_bg_scan_bar"
+                            android:foreground="?attr/selectableItemBackground"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="@dimen/base_space_4"
+                            android:paddingEnd="@dimen/base_space_4">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_qr_code_scanner"
+                                app:tint="?attr/colorPrimary" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/base_space_4"
+                                android:layout_weight="1"
+                                android:text="@string/herd_my_pens_scan"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_chevron_right"
+                                app:tint="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+
+                        <com.zhimu.slmp.base.widget.ListRowView
+                            android:id="@+id/herd_breeding_entry"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            app:groupPosition="single"
+                            app:leadingTone="secondary"
+                            app:rowLeadingIcon="@drawable/ic_pregnant_woman"
+                            app:rowShowChevron="true"
+                            app:rowTitle="@string/herd_my_pens_breeding_entry"
+                            app:visibleIf="@{vm.showBreedingEntry}" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_12"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical"
+                            app:visibleIf="@{vm.showEmpty}">
+
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_fence"
+                                app:tint="?attr/colorOnSurfaceVariant" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_4"
+                                android:text="@string/herd_my_pens_empty_title"
+                                android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_2"
+                                android:gravity="center"
+                                android:text="@string/herd_my_pens_empty_message"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/herd_pens"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:nestedScrollingEnabled="false"
+                            android:overScrollMode="never" />
+                    </LinearLayout>
+                </androidx.core.widget.NestedScrollView>
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </com.zhimu.slmp.base.widget.StateLayout>
+    </LinearLayout>
+</layout>
