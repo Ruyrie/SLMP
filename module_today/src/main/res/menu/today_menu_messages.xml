@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T06 顶部栏：done_all 全部标为已读、settings 进入 T05 -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/today_menu_read_all"
+        android:icon="@drawable/ic_done_all"
+        android:title="@string/today_cd_read_all"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/today_menu_settings"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/today_cd_settings"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+</menu>

@@ -1,0 +1,15 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "todo_remind_enabled": false,
+    "digest_enabled": true,
+    "digest_time": "07:00",
+    "quiet_enabled": true,
+    "quiet_start": "22:00",
+    "quiet_end": "07:00",
+    "quiet_end_next_day": true,
+    "summary_text": "待办提醒开 · 每日汇总 07:00 · 免打扰 22:00–次日 07:00"
+  },
+  "trace_id": "mock-t11-todo-off"
+}

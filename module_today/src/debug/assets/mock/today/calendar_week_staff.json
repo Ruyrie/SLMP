@@ -1,0 +1,72 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "days": [
+      {
+        "date": "2026-10-19",
+        "is_today": true,
+        "total": 8,
+        "overdue_count": 0,
+        "pending_count": 6,
+        "closed_count": 2,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-20",
+        "is_today": false,
+        "total": 6,
+        "overdue_count": 0,
+        "pending_count": 6,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-21",
+        "is_today": false,
+        "total": 6,
+        "overdue_count": 0,
+        "pending_count": 6,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-22",
+        "is_today": false,
+        "total": 6,
+        "overdue_count": 0,
+        "pending_count": 6,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-23",
+        "is_today": false,
+        "total": 6,
+        "overdue_count": 0,
+        "pending_count": 6,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-24",
+        "is_today": false,
+        "total": 6,
+        "overdue_count": 0,
+        "pending_count": 6,
+        "closed_count": 0,
+        "overdue_titles": []
+      },
+      {
+        "date": "2026-10-25",
+        "is_today": false,
+        "total": 6,
+        "overdue_count": 0,
+        "pending_count": 6,
+        "closed_count": 0,
+        "overdue_titles": []
+      }
+    ]
+  },
+  "trace_id": "mock-t03-week-staff"
+}

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T01 今日首页：一级页顶部栏 + 骨架 / 内容（下拉刷新，头部与待办分页由 ConcatAdapter 拼接）+ 扩展 FAB“登记” -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.today.ui.home.TodayViewModel" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <com.zhimu.slmp.common.widget.FirstLevelTopBar
+                android:id="@+id/top_bar"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/base_top_bar_height" />
+
+            <com.zhimu.slmp.base.widget.StateLayout
+                android:id="@+id/state_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:stateErrorTitle="@string/today_home_error_title"
+                app:stateSkeletonLayout="@layout/today_skeleton_home"
+                app:uiState="@{vm.uiState}">
+
+                <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                    android:id="@+id/refresh"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:refreshing="@{safeUnbox(vm.refreshing)}">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/list"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clipToPadding="false"
+                        android:paddingBottom="@dimen/base_fab_list_bottom_space" />
+                </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+            </com.zhimu.slmp.base.widget.StateLayout>
+        </LinearLayout>
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="@dimen/base_space_4"
+            android:tag="snackbar_anchor"
+            android:text="@string/today_home_fab"
+            app:icon="@drawable/ic_add"
+            app:onSafeClick="@{v -> vm.onFabClick()}"
+            app:visibleIf="@{!safeUnbox(vm.farmBlocked) &amp;&amp; safeUnbox(vm.hasPen)}" />
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

@@ -1,0 +1,78 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "message_id": 510,
+        "category": "OTHER",
+        "category_text": "其他",
+        "msg_type": "REPORT_READY",
+        "level": "NORMAL",
+        "level_text": "一般",
+        "title": "东山猪场 9 月月报已生成",
+        "summary": "9月1日–30日 · 经营报表",
+        "tag_text": null,
+        "tag_code": null,
+        "farm": {
+          "farm_id": 1001,
+          "name": "东山猪场",
+          "status": "NORMAL",
+          "status_text": "正常",
+          "role": "OWNER"
+        },
+        "biz_type": "BIZ_REPORT",
+        "biz_id": 1209,
+        "todo_id": null,
+        "route": "E13",
+        "web_route": null,
+        "read": true,
+        "revoked": false,
+        "created_at": "2026-10-17 08:00:00",
+        "sort_time": "2026-10-17 08:00:00",
+        "date_group": "EARLIER",
+        "icon_state": "DEFAULT",
+        "merge_count": 1,
+        "action": null
+      },
+      {
+        "message_id": 523,
+        "category": "OTHER",
+        "category_text": "其他",
+        "msg_type": "REPORT_READY",
+        "level": "NORMAL",
+        "level_text": "一般",
+        "title": "东山猪场 8 月月报已生成",
+        "summary": "8月1日–31日 · 经营报表",
+        "tag_text": null,
+        "tag_code": null,
+        "farm": {
+          "farm_id": 1001,
+          "name": "东山猪场",
+          "status": "NORMAL",
+          "status_text": "正常",
+          "role": "OWNER"
+        },
+        "biz_type": "BIZ_REPORT",
+        "biz_id": 1208,
+        "todo_id": null,
+        "route": "E13",
+        "web_route": null,
+        "read": true,
+        "revoked": false,
+        "created_at": "2026-09-17 08:00:00",
+        "sort_time": "2026-09-17 08:00:00",
+        "date_group": "EARLIER",
+        "icon_state": "DEFAULT",
+        "merge_count": 1,
+        "action": null
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "filtered_unread": 0
+  },
+  "trace_id": "mock-t12-owner-other"
+}

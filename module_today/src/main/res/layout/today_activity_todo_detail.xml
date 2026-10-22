@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T04 待办详情：状态与类别标签、28 sp 标题与副标题、信息分组、关联批次、说明横幅；底部操作栏按类别与角色显示 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.today.ui.detail.TodoDetailViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{@string/today_detail_title}" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/state_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/today_detail_error_title"
+            app:stateNoPermissionActionText="@string/base_action_back"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail"
+            app:uiState="@{vm.uiState}">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_2"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <com.zhimu.slmp.base.widget.StatusTagView
+                            android:id="@+id/status_tag"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <com.zhimu.slmp.base.widget.StatusTagView
+                            android:id="@+id/category_tag"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/base_space_2"
+                            android:text="@{vm.detail.categoryText}"
+                            app:goneIfNull="@{vm.detail.categoryText}"
+                            app:tagType="neutral" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/title"
+                        style="@style/Widget.Zmt.TextView.DetailTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:text="@{vm.detail.title}" />
+
+                    <TextView
+                        android:id="@+id/subtitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_1"
+                        android:text="@{vm.detail.subtitle}"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        app:goneIfNull="@{vm.detail.subtitle}" />
+
+                    <com.zhimu.slmp.base.widget.GroupedListLayout
+                        android:id="@+id/info_rows"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5" />
+
+                    <LinearLayout
+                        android:id="@+id/related_section"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:goneIfNull="@{vm.detail.relatedBatch}">
+
+                        <com.zhimu.slmp.base.widget.SectionHeaderView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_6"
+                            app:sectionTitle="@string/today_detail_related_batch" />
+
+                        <com.zhimu.slmp.base.widget.ListRowView
+                            android:id="@+id/related_batch"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_3"
+                            app:rowSubtitleMaxLines="2" />
+                    </LinearLayout>
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/notice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_6"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+    </LinearLayout>
+</layout>

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T07 通知详情：级别标签 + “平台通知” + 养殖场标签、28 sp 标题、发送信息、16:9 配图、正文；转让信息与底部“拒绝 / 接受”；
+     冻结说明；已撤回时切换为居中提示版式 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.today.ui.notice.NoticeDetailViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{@string/today_notice_title}" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/state_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/today_notice_error_title"
+            app:stateNoPermissionActionText="@string/today_back_to_messages"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail"
+            app:uiState="@{vm.uiState}">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.core.widget.NestedScrollView
+                    android:id="@+id/scroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:invisibleIf="@{vm.revokedLine != null}">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="@dimen/base_page_margin"
+                        android:paddingTop="@dimen/base_space_2"
+                        android:paddingEnd="@dimen/base_page_margin"
+                        android:paddingBottom="@dimen/base_space_8">
+
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/tags"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:chipSpacingHorizontal="@dimen/base_space_2"
+                            app:chipSpacingVertical="@dimen/base_space_1" />
+
+                        <TextView
+                            android:id="@+id/title"
+                            style="@style/Widget.Zmt.TextView.DetailTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_3"
+                            android:text="@{vm.notice != null ? vm.notice.title : vm.detail.title}" />
+
+                        <TextView
+                            android:id="@+id/sender"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_1"
+                            android:text="@{vm.senderLine}"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            app:goneIfNull="@{vm.senderLine}" />
+
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:id="@+id/image"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_6"
+                            android:adjustViewBounds="false"
+                            android:background="?attr/colorSurfaceContainerHighest"
+                            android:contentDescription="@{vm.notice.title}"
+                            android:scaleType="centerCrop"
+                            app:goneIfNull="@{vm.notice.image}"
+                            app:imageCacheKey="@{vm.notice.image.fileId}"
+                            app:imageUrl="@{vm.notice.image.url}"
+                            app:onSafeClick="@{v -> vm.onImageClick()}"
+                            app:shapeAppearance="@style/ShapeAppearance.Zmt.Corner.Large" />
+
+                        <TextView
+                            android:id="@+id/content"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            android:lineSpacingExtra="4sp"
+                            android:text="@{vm.notice.content}"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textIsSelectable="true"
+                            app:goneIfNull="@{vm.notice.content}" />
+
+                        <com.zhimu.slmp.base.widget.GroupedListLayout
+                            android:id="@+id/transfer_rows"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            app:goneIfNull="@{vm.transfer}">
+
+                            <com.zhimu.slmp.base.widget.KeyValueRowView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:kvKey="@string/today_notice_label_farm"
+                                app:kvValue="@{vm.transfer.farmName}" />
+
+                            <com.zhimu.slmp.base.widget.KeyValueRowView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:kvKey="@string/today_notice_label_from"
+                                app:kvValue="@{vm.transfer.fromUserName}" />
+
+                            <com.zhimu.slmp.base.widget.KeyValueRowView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:kvKey="@string/today_notice_label_to"
+                                app:kvValue="@{vm.transfer.toUserName}" />
+
+                            <com.zhimu.slmp.base.widget.KeyValueRowView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:kvKey="@string/today_notice_label_expire"
+                                app:kvValue="@{vm.transfer.expireAt}" />
+                        </com.zhimu.slmp.base.widget.GroupedListLayout>
+
+                        <com.zhimu.slmp.base.widget.NoticeView
+                            android:id="@+id/frozen"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            app:goneIfNull="@{vm.frozenText}"
+                            app:noticeLevel="error"
+                            app:noticeText="@{vm.frozenText}" />
+                    </LinearLayout>
+                </androidx.core.widget.NestedScrollView>
+
+                <include
+                    android:id="@+id/revoked"
+                    layout="@layout/today_include_center_state"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone" />
+            </FrameLayout>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:barPrimaryText="@string/today_notice_accept"
+            app:barSecondaryText="@string/today_notice_reject"
+            app:barLoading="@{safeUnbox(vm.acting)}"
+            app:visibleIf="@{safeUnbox(vm.canAccept) &amp;&amp; vm.revokedLine == null}" />
+    </LinearLayout>
+</layout>

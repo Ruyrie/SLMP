@@ -1,0 +1,62 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "message_id": 513,
+    "category": "MEMBER",
+    "category_text": "成员与养殖场",
+    "msg_type": "OWNER_TRANSFER",
+    "level": "NORMAL",
+    "level_text": "一般",
+    "title": "孙立军向你转让西岭鸡场的所有权",
+    "summary": "待你确认 · 3 天内有效",
+    "tag_text": null,
+    "tag_code": null,
+    "farm": {
+      "farm_id": 1002,
+      "name": "西岭鸡场",
+      "status": "NORMAL",
+      "status_text": "正常",
+      "role": "MANAGER"
+    },
+    "biz_type": "FARM_TRANSFER",
+    "biz_id": 8001,
+    "todo_id": null,
+    "route": "T07",
+    "web_route": null,
+    "read": true,
+    "revoked": false,
+    "created_at": "2026-10-16 18:30:00",
+    "sort_time": "2026-10-16 18:30:00",
+    "date_group": "EARLIER",
+    "icon_state": "DEFAULT",
+    "merge_count": 1,
+    "action": {
+      "action_type": "TRANSFER",
+      "action_id": 8001,
+      "status": "PENDING",
+      "status_text": "待你确认",
+      "role_text": "所有者",
+      "expire_at": "2026-10-19 18:30:00",
+      "can_accept": true
+    },
+    "target_status": "OK",
+    "target_status_text": "可以打开",
+    "link": null,
+    "deleted_record_type": null,
+    "page_title": null,
+    "deleted_title": null,
+    "deleted_desc": null,
+    "deny_title": null,
+    "deny_desc": null,
+    "total_unread": 3,
+    "payload": {
+      "farm_name": "西岭鸡场",
+      "from_user_name": "孙立军",
+      "to_user_name": "王建国",
+      "status": "PENDING",
+      "expire_at": "2026-10-19 18:30:00"
+    }
+  },
+  "trace_id": "mock-t16-513"
+}

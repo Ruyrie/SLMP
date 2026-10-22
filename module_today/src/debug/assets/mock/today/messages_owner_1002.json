@@ -1,0 +1,86 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "message_id": 508,
+        "category": "AUDIT",
+        "category_text": "审核结果",
+        "msg_type": "CHANGE_REQ_RESULT",
+        "level": "NORMAL",
+        "level_text": "一般",
+        "title": "修改申请已驳回",
+        "summary": "饲料入库数量",
+        "tag_text": "已驳回",
+        "tag_code": "REJECTED",
+        "farm": {
+          "farm_id": 1002,
+          "name": "西岭鸡场",
+          "status": "NORMAL",
+          "status_text": "正常",
+          "role": "MANAGER"
+        },
+        "biz_type": "CHANGE_REQUEST",
+        "biz_id": 11008,
+        "todo_id": null,
+        "route": "U02",
+        "web_route": null,
+        "read": true,
+        "revoked": false,
+        "created_at": "2026-10-18 15:20:00",
+        "sort_time": "2026-10-18 15:20:00",
+        "date_group": "YESTERDAY",
+        "icon_state": "DEFAULT",
+        "merge_count": 1,
+        "action": null
+      },
+      {
+        "message_id": 513,
+        "category": "MEMBER",
+        "category_text": "成员与养殖场",
+        "msg_type": "OWNER_TRANSFER",
+        "level": "NORMAL",
+        "level_text": "一般",
+        "title": "孙立军向你转让西岭鸡场的所有权",
+        "summary": "待你确认 · 3 天内有效",
+        "tag_text": null,
+        "tag_code": null,
+        "farm": {
+          "farm_id": 1002,
+          "name": "西岭鸡场",
+          "status": "NORMAL",
+          "status_text": "正常",
+          "role": "MANAGER"
+        },
+        "biz_type": "FARM_TRANSFER",
+        "biz_id": 8001,
+        "todo_id": null,
+        "route": "T07",
+        "web_route": null,
+        "read": true,
+        "revoked": false,
+        "created_at": "2026-10-16 18:30:00",
+        "sort_time": "2026-10-16 18:30:00",
+        "date_group": "EARLIER",
+        "icon_state": "DEFAULT",
+        "merge_count": 1,
+        "action": {
+          "action_type": "TRANSFER",
+          "action_id": 8001,
+          "status": "PENDING",
+          "status_text": "待你确认",
+          "role_text": "所有者",
+          "expire_at": "2026-10-19 18:30:00",
+          "can_accept": true
+        }
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "filtered_unread": 0
+  },
+  "trace_id": "mock-t12-owner-1002"
+}

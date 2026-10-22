@@ -1,0 +1,17 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "target_status": "DELETED",
+    "target_status_text": "记录已删除",
+    "link": null,
+    "deleted_record_type": "BATCH",
+    "page_title": "批次档案",
+    "deleted_title": "该批次记录已被删除，无法查看",
+    "deleted_desc": "这条消息关联的批次已被删除，相关的待办和记录不再显示。消息本身仍保留在消息中心。",
+    "deny_title": null,
+    "deny_desc": null,
+    "total_unread": 3
+  },
+  "trace_id": "mock-t15-515"
+}

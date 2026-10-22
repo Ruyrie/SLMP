@@ -22,6 +22,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 单独运行时承载 T01 今日首页（壳工程中为 MainActivity 的“今日”标签） -->
+        <activity
+            android:name="com.zhimu.slmp.today.alone.TodayHostActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.T01" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

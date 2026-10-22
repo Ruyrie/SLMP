@@ -1,0 +1,797 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/home",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "home_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/home",
+    "when": {
+      "header": {
+        "X-Farm-Id": "1002"
+      }
+    },
+    "file": "home_1002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/home",
+    "when": {
+      "header": {
+        "X-Farm-Id": "1003"
+      }
+    },
+    "file": "home_1003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/home",
+    "file": "home_owner.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/today",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "today_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/today",
+    "when": {
+      "header": {
+        "X-Farm-Id": "1002"
+      }
+    },
+    "file": "today_1002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/today",
+    "when": {
+      "header": {
+        "X-Farm-Id": "1003"
+      }
+    },
+    "file": "error_40305.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/today",
+    "file": "today_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/calendar",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "query": {
+        "start_date": "2026-09-28"
+      }
+    },
+    "file": "calendar_month_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/calendar",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "query": {
+        "start_date": "2026-10-19"
+      }
+    },
+    "file": "calendar_week_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/calendar",
+    "when": {
+      "query": {
+        "start_date": "2026-09-28"
+      }
+    },
+    "file": "calendar_month_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/calendar",
+    "when": {
+      "query": {
+        "start_date": "2026-10-19"
+      }
+    },
+    "file": "calendar_week_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/calendar",
+    "file": "calendar_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/weekly",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "query": {
+        "week_start": "2026-10-19"
+      }
+    },
+    "file": "weekly_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/weekly",
+    "when": {
+      "query": {
+        "week_start": "2026-10-19",
+        "scope": "ALL"
+      }
+    },
+    "file": "weekly_all.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/weekly",
+    "when": {
+      "query": {
+        "week_start": "2026-10-19"
+      }
+    },
+    "file": "weekly_current.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/weekly",
+    "file": "calendar_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/overdue",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "overdue_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/overdue",
+    "file": "overdue_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "query": {
+        "date": "2026-10-19"
+      }
+    },
+    "file": "day_1019_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "day_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos",
+    "when": {
+      "query": {
+        "date": "2026-10-19",
+        "scope": "ALL"
+      }
+    },
+    "file": "day_1019_all.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos",
+    "when": {
+      "query": {
+        "date": "2026-10-19"
+      }
+    },
+    "file": "day_1019_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos",
+    "when": {
+      "query": {
+        "date": "2026-10-20"
+      }
+    },
+    "file": "day_1020.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos",
+    "file": "day_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/{id}",
+    "when": {
+      "path": {
+        "id": "90999"
+      }
+    },
+    "file": "error_41001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/{id}",
+    "when": {
+      "path": {
+        "id": "90107"
+      }
+    },
+    "file": "todo_90107.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "todo_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/{id}",
+    "when": {
+      "path": {
+        "id": "90201"
+      }
+    },
+    "file": "todo_90201.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/todos/{id}",
+    "file": "todo_90112.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/todos/{id}/complete",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "error_40303.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/todos/{id}/complete",
+    "file": "todo_90112_done.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/todos/{id}/ignore",
+    "when": {
+      "path": {
+        "id": "90201"
+      }
+    },
+    "file": "todo_90201_ignored.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/todos/{id}/ignore",
+    "file": "todo_90112_ignored.json",
+    "delay": 600
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reminder-settings",
+    "file": "reminder_setting.json"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/reminder-settings",
+    "when": {
+      "body": "\"todo_remind_enabled\":false"
+    },
+    "file": "reminder_todo_off.json"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/reminder-settings",
+    "when": {
+      "body": "\"digest_enabled\":false"
+    },
+    "file": "reminder_digest_off.json"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/reminder-settings",
+    "when": {
+      "body": "\"quiet_enabled\":false"
+    },
+    "file": "reminder_quiet_off.json"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/reminder-settings",
+    "file": "reminder_setting.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      },
+      "query": {
+        "unread_only": "true"
+      }
+    },
+    "file": "messages_staff_unread.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "messages_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages",
+    "when": {
+      "query": {
+        "unread_only": "true"
+      }
+    },
+    "file": "messages_owner_unread.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages",
+    "when": {
+      "query": {
+        "category": "TODO"
+      }
+    },
+    "file": "messages_owner_todo.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages",
+    "when": {
+      "query": {
+        "category": "AI"
+      }
+    },
+    "file": "messages_owner_ai.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages",
+    "when": {
+      "query": {
+        "category": "AUDIT"
+      }
+    },
+    "file": "messages_owner_audit.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages",
+    "when": {
+      "query": {
+        "category": "MEMBER"
+      }
+    },
+    "file": "messages_owner_member.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages",
+    "when": {
+      "query": {
+        "category": "LOT"
+      }
+    },
+    "file": "messages_owner_lot.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages",
+    "when": {
+      "query": {
+        "category": "NOTICE"
+      }
+    },
+    "file": "messages_owner_notice.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages",
+    "when": {
+      "query": {
+        "category": "OTHER"
+      }
+    },
+    "file": "messages_owner_other.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages",
+    "when": {
+      "query": {
+        "farm_id": "1002"
+      }
+    },
+    "file": "messages_owner_1002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages",
+    "when": {
+      "query": {
+        "farm_id": "1003"
+      }
+    },
+    "file": "messages_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages",
+    "when": {
+      "query": {
+        "page": "2"
+      }
+    },
+    "file": "messages_owner_p2.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages",
+    "file": "messages_owner_p1.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages/unread-count",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "unread_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages/unread-count",
+    "when": {
+      "query": {
+        "category": "AI"
+      }
+    },
+    "file": "unread_owner_ai.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages/unread-count",
+    "file": "unread_owner.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/read-all",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "read_all_staff.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/read-all",
+    "file": "read_all_owner.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "501"
+      }
+    },
+    "file": "open_501.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "502"
+      }
+    },
+    "file": "open_502.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "503"
+      }
+    },
+    "file": "open_503.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "505"
+      }
+    },
+    "file": "open_505.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "506"
+      }
+    },
+    "file": "open_506.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "508"
+      }
+    },
+    "file": "open_508.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "509"
+      }
+    },
+    "file": "open_509.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "510"
+      }
+    },
+    "file": "open_510.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "511"
+      }
+    },
+    "file": "open_511.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "514"
+      }
+    },
+    "file": "open_514.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "515"
+      }
+    },
+    "file": "open_515.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "518"
+      }
+    },
+    "file": "open_518.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "601"
+      }
+    },
+    "file": "open_601.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "602"
+      }
+    },
+    "file": "open_602.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "603"
+      }
+    },
+    "file": "open_603.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "604"
+      }
+    },
+    "file": "open_604.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "605"
+      }
+    },
+    "file": "open_605.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "when": {
+      "path": {
+        "id": "999"
+      }
+    },
+    "file": "error_40401.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/open",
+    "file": "open_default.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages/{id}",
+    "when": {
+      "path": {
+        "id": "507"
+      }
+    },
+    "file": "message_507.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages/{id}",
+    "when": {
+      "path": {
+        "id": "512"
+      }
+    },
+    "file": "message_512.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages/{id}",
+    "when": {
+      "path": {
+        "id": "513"
+      }
+    },
+    "file": "message_513.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages/{id}",
+    "when": {
+      "path": {
+        "id": "515"
+      }
+    },
+    "file": "message_515.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages/{id}",
+    "when": {
+      "path": {
+        "id": "522"
+      }
+    },
+    "file": "message_522.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages/{id}",
+    "when": {
+      "path": {
+        "id": "606"
+      }
+    },
+    "file": "message_606.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/messages/{id}",
+    "file": "message_507.json"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/messages/{id}",
+    "file": "message_delete.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/messages/{id}/restore",
+    "file": "message_restore.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/push-devices",
+    "file": "push_device.json"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/push-devices/{registration_id}",
+    "file": "ok.json"
+  }
+]

@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T05 提醒设置：系统通知关闭横幅、“推送”分组、“免打扰”分组、“不受免打扰限制”说明；修改即时保存 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="com.zhimu.slmp.today.model.request.ReminderSettingPatchRequest" />
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.today.ui.setting.ReminderSettingViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{@string/today_setting_title}" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/state_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:stateErrorTitle="@string/today_setting_error_title"
+            app:uiState="@{vm.uiState}">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:animateLayoutChanges="true"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_8">
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/blocked"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_2"
+                        app:noticeActionText="@string/today_setting_open"
+                        app:noticeLevel="warning"
+                        app:noticeText="@string/today_setting_blocked"
+                        app:visibleIf="@{safeUnbox(vm.notifyBlocked)}" />
+
+                    <com.zhimu.slmp.base.widget.SectionHeaderView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        app:sectionTitle="@string/today_setting_group_push" />
+
+                    <com.zhimu.slmp.base.widget.GroupedListLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/row_todo_remind"
+                            style="@style/Widget.Zmt.Card.ListItem"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                            app:cardElevation="0dp"
+                            app:onSafeClick="@{v -> vm.toggle(ReminderSettingPatchRequest.FIELD_TODO_REMIND, !safeUnbox(vm.todoRemindEnabled))}"
+                            app:strokeWidth="0dp">
+
+                            <LinearLayout style="@style/today_setting_row">
+
+                                <LinearLayout style="@style/today_setting_texts">
+
+                                    <TextView
+                                        style="@style/today_setting_title"
+                                        android:text="@string/today_setting_todo_remind" />
+
+                                    <TextView
+                                        style="@style/today_setting_desc"
+                                        android:text="@string/today_setting_todo_remind_desc" />
+                                </LinearLayout>
+
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    style="@style/today_setting_switch"
+                                    android:checked="@{safeUnbox(vm.todoRemindEnabled)}" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/row_digest"
+                            style="@style/Widget.Zmt.Card.ListItem"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                            app:cardElevation="0dp"
+                            app:onSafeClick="@{v -> vm.toggle(ReminderSettingPatchRequest.FIELD_DIGEST, !safeUnbox(vm.digestEnabled))}"
+                            app:strokeWidth="0dp">
+
+                            <LinearLayout style="@style/today_setting_row">
+
+                                <LinearLayout style="@style/today_setting_texts">
+
+                                    <TextView
+                                        style="@style/today_setting_title"
+                                        android:text="@string/today_setting_digest" />
+
+                                    <TextView
+                                        style="@style/today_setting_desc"
+                                        android:text="@string/today_setting_digest_desc" />
+                                </LinearLayout>
+
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    style="@style/today_setting_switch"
+                                    android:checked="@{safeUnbox(vm.digestEnabled)}" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/row_digest_time"
+                            style="@style/Widget.Zmt.Card.ListItem"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                            app:cardElevation="0dp"
+                            app:onSafeClick="@{v -> vm.onTimeClick(ReminderSettingPatchRequest.FIELD_DIGEST_TIME)}"
+                            app:strokeWidth="0dp"
+                            app:visibleIf="@{safeUnbox(vm.digestEnabled)}">
+
+                            <LinearLayout style="@style/today_setting_row">
+
+                                <LinearLayout style="@style/today_setting_texts">
+
+                                    <TextView
+                                        style="@style/today_setting_title"
+                                        android:text="@string/today_setting_digest_time" />
+
+                                    <TextView
+                                        style="@style/today_setting_desc"
+                                        android:text="@string/today_setting_digest_time_desc" />
+                                </LinearLayout>
+
+                                <TextView
+                                    style="@style/today_setting_value"
+                                    android:text="@{vm.digestTime}" />
+
+                                <ImageView style="@style/today_setting_chevron" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+                    </com.zhimu.slmp.base.widget.GroupedListLayout>
+
+                    <com.zhimu.slmp.base.widget.SectionHeaderView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_6"
+                        app:sectionTitle="@string/today_setting_group_quiet" />
+
+                    <com.zhimu.slmp.base.widget.GroupedListLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/row_quiet"
+                            style="@style/Widget.Zmt.Card.ListItem"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                            app:cardElevation="0dp"
+                            app:onSafeClick="@{v -> vm.toggle(ReminderSettingPatchRequest.FIELD_QUIET, !safeUnbox(vm.quietEnabled))}"
+                            app:strokeWidth="0dp">
+
+                            <LinearLayout style="@style/today_setting_row">
+
+                                <LinearLayout style="@style/today_setting_texts">
+
+                                    <TextView
+                                        style="@style/today_setting_title"
+                                        android:text="@string/today_setting_quiet" />
+
+                                    <TextView
+                                        style="@style/today_setting_desc"
+                                        android:text="@string/today_setting_quiet_desc" />
+                                </LinearLayout>
+
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    style="@style/today_setting_switch"
+                                    android:checked="@{safeUnbox(vm.quietEnabled)}" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/row_quiet_start"
+                            style="@style/Widget.Zmt.Card.ListItem"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                            app:cardElevation="0dp"
+                            app:onSafeClick="@{v -> vm.onTimeClick(ReminderSettingPatchRequest.FIELD_QUIET_START)}"
+                            app:strokeWidth="0dp"
+                            app:visibleIf="@{safeUnbox(vm.quietEnabled)}">
+
+                            <LinearLayout style="@style/today_setting_row">
+
+                                <TextView
+                                    style="@style/today_setting_title"
+                                    android:layout_width="0dp"
+                                    android:layout_weight="1"
+                                    android:text="@string/today_setting_quiet_start" />
+
+                                <TextView
+                                    style="@style/today_setting_value"
+                                    android:text="@{vm.quietStart}" />
+
+                                <ImageView style="@style/today_setting_chevron" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/row_quiet_end"
+                            style="@style/Widget.Zmt.Card.ListItem"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                            app:cardElevation="0dp"
+                            app:onSafeClick="@{v -> vm.onTimeClick(ReminderSettingPatchRequest.FIELD_QUIET_END)}"
+                            app:strokeWidth="0dp"
+                            app:visibleIf="@{safeUnbox(vm.quietEnabled)}">
+
+                            <LinearLayout style="@style/today_setting_row">
+
+                                <TextView
+                                    style="@style/today_setting_title"
+                                    android:layout_width="0dp"
+                                    android:layout_weight="1"
+                                    android:text="@string/today_setting_quiet_end" />
+
+                                <TextView
+                                    style="@style/today_setting_value"
+                                    android:text="@{safeUnbox(vm.quietEndNextDay) ? @string/today_setting_next_day(vm.quietEnd) : vm.quietEnd}" />
+
+                                <ImageView style="@style/today_setting_chevron" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+                    </com.zhimu.slmp.base.widget.GroupedListLayout>
+
+                    <com.zhimu.slmp.base.widget.SectionHeaderView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_6"
+                        app:sectionTitle="@string/today_setting_group_always" />
+
+                    <com.zhimu.slmp.base.widget.GroupedListLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3">
+
+                        <com.zhimu.slmp.base.widget.ListRowView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:leadingTone="neutral"
+                            app:rowLeadingIcon="@drawable/ic_campaign"
+                            app:rowSubtitle="@string/today_setting_important_desc"
+                            app:rowTitle="@string/today_setting_important"
+                            app:rowTrailingText="@string/today_setting_always_push" />
+
+                        <com.zhimu.slmp.base.widget.ListRowView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:leadingTone="tertiary"
+                            app:rowLeadingIcon="@drawable/ic_auto_awesome"
+                            app:rowSubtitle="@string/today_setting_urgent_ai_desc"
+                            app:rowTitle="@string/today_setting_urgent_ai"
+                            app:rowTrailingText="@string/today_setting_instant_push" />
+                    </com.zhimu.slmp.base.widget.GroupedListLayout>
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+    </LinearLayout>
+</layout>

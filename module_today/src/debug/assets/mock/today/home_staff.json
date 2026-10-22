@@ -1,0 +1,108 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "server_time": "2026-10-19 09:30:00",
+    "greeting": "早上好",
+    "user_name": "李明",
+    "avatar_text": "李",
+    "role": "STAFF",
+    "role_text": "东山猪场员工",
+    "farm_status": "NORMAL",
+    "farm_status_text": "正常",
+    "farm": {
+      "farm_id": 1001,
+      "name": "东山猪场",
+      "species_text": "猪",
+      "status": "NORMAL",
+      "status_text": "正常",
+      "role": "STAFF"
+    },
+    "has_pen": true,
+    "unread_count": 2,
+    "staff_metrics": {
+      "pen_count": 2,
+      "today_todo_count": 7,
+      "overdue_count": 1,
+      "today_done_count": 1,
+      "pen_names": [
+        "3 号育肥舍",
+        "4 号育肥舍"
+      ],
+      "today_done_names": [
+        "3 号育肥舍 · 早餐饲喂"
+      ],
+      "overdue_first_text": "3 号育肥舍 · 伪狂犬病二免"
+    },
+    "my_pens": [
+      {
+        "pen_id": 2003,
+        "pen_name": "3 号育肥舍",
+        "pen_type_text": "育肥舍",
+        "capacity": 300,
+        "todo_count": 5,
+        "today_task_done": 1,
+        "today_task_total": 6,
+        "batches": [
+          {
+            "batch_id": 3001,
+            "batch_no": "ZM2610-031",
+            "breed_text": "杜长大",
+            "day_age": 96,
+            "head_count": 200,
+            "pen_name": "3 号育肥舍",
+            "stage_text": "育肥期"
+          }
+        ],
+        "todo_names": [
+          "伪狂犬病二免",
+          "午餐饲喂",
+          "晚餐饲喂",
+          "消毒",
+          "猪瘟免疫"
+        ],
+        "in_withdrawal": true,
+        "withdrawal_days_left": 10,
+        "link": {
+          "route": "L06",
+          "web_route": null,
+          "farm_id": 1001,
+          "farm_name": "东山猪场",
+          "need_switch": false,
+          "params": {
+            "batch_id": "3001"
+          },
+          "page_title": null
+        }
+      },
+      {
+        "pen_id": 2004,
+        "pen_name": "4 号育肥舍",
+        "pen_type_text": "育肥舍",
+        "capacity": 300,
+        "todo_count": 2,
+        "today_task_done": 0,
+        "today_task_total": 2,
+        "batches": [],
+        "todo_names": [
+          "消毒",
+          "巡检"
+        ],
+        "in_withdrawal": false,
+        "withdrawal_days_left": null,
+        "link": {
+          "route": "L02",
+          "web_route": null,
+          "farm_id": 1001,
+          "farm_name": "东山猪场",
+          "need_switch": false,
+          "params": {
+            "pen_id": "2004"
+          },
+          "page_title": null
+        }
+      }
+    ]
+  },
+  "trace_id": "mock-t01-staff"
+}

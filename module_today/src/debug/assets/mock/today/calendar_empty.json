@@ -1,0 +1,8 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "days": []
+  },
+  "trace_id": "mock-t03-empty"
+}

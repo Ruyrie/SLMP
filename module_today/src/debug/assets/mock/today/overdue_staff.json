@@ -1,0 +1,72 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "todo_id": 90121,
+        "farm_id": 1001,
+        "farm_name": "东山猪场",
+        "todo_type": "IMMUNIZATION",
+        "todo_type_text": "免疫",
+        "category": "WORK",
+        "category_text": "作业类",
+        "display_status": "OVERDUE",
+        "display_status_text": "已逾期",
+        "title": "3 号育肥舍 · 伪狂犬病二免",
+        "sub_text": "漏免 · 计划 10月12日",
+        "tail_text": "已逾期",
+        "due_date": "2026-10-12",
+        "due_time": null,
+        "time_type": "ALL_DAY",
+        "time_label": "全天",
+        "overdue_days": 7,
+        "pen_id": 2003,
+        "pen_name": "3 号育肥舍",
+        "batch_id": 3001,
+        "batch_no": "ZM2610-031",
+        "assignee_text": null,
+        "amount": null,
+        "completed_text": null,
+        "overdue_done": null,
+        "ignore_reason": null,
+        "ignore_text": null,
+        "action_text": "去登记",
+        "list_link": {
+          "route": "D03",
+          "web_route": null,
+          "farm_id": 1001,
+          "farm_name": "东山猪场",
+          "need_switch": false,
+          "params": {
+            "pen_id": "2003",
+            "batch_id": "3001",
+            "todo_id": "90121",
+            "plan_item_id": "8121"
+          },
+          "page_title": null
+        },
+        "register_link": {
+          "route": "D03",
+          "web_route": null,
+          "farm_id": 1001,
+          "farm_name": "东山猪场",
+          "need_switch": false,
+          "params": {
+            "pen_id": "2003",
+            "batch_id": "3001",
+            "todo_id": "90121",
+            "plan_item_id": "8121"
+          },
+          "page_title": null
+        },
+        "version": 1
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-t06-staff"
+}

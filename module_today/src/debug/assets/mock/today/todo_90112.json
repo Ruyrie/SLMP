@@ -1,0 +1,103 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "todo_id": 90112,
+    "farm_id": 1001,
+    "farm_name": "东山猪场",
+    "todo_type": "DISINFECTION",
+    "todo_type_text": "消毒",
+    "category": "WORK",
+    "category_text": "作业类",
+    "display_status": "OVERDUE",
+    "display_status_text": "已逾期",
+    "title": "2 号保育舍 · 消毒",
+    "sub_text": "计划 10月18日 · 无负责员工",
+    "tail_text": "已逾期",
+    "due_date": "2026-10-18",
+    "due_time": null,
+    "time_type": "ALL_DAY",
+    "time_label": "全天",
+    "overdue_days": 1,
+    "pen_id": 2002,
+    "pen_name": "2 号保育舍",
+    "batch_id": null,
+    "batch_no": null,
+    "assignee_text": null,
+    "amount": null,
+    "completed_text": null,
+    "overdue_done": null,
+    "ignore_reason": null,
+    "ignore_text": null,
+    "action_text": "去登记",
+    "list_link": {
+      "route": "D08",
+      "web_route": null,
+      "farm_id": 1001,
+      "farm_name": "东山猪场",
+      "need_switch": false,
+      "params": {
+        "pen_id": "2002",
+        "todo_id": "90112",
+        "task_id": "70112"
+      },
+      "page_title": null
+    },
+    "register_link": {
+      "route": "D08",
+      "web_route": null,
+      "farm_id": 1001,
+      "farm_name": "东山猪场",
+      "need_switch": false,
+      "params": {
+        "pen_id": "2002",
+        "todo_id": "90112",
+        "task_id": "70112"
+      },
+      "page_title": null
+    },
+    "version": 3,
+    "subtitle": "计划 10月18日 · 已逾期 1 天",
+    "source_module_name": "消毒记录",
+    "due_text": "10月18日 周日",
+    "due_hint": null,
+    "receivers_text": "王建国（所有者）、刘芳（场长）",
+    "receivers_hint": "栏舍没有负责员工，由所有者和场长执行",
+    "status_note": null,
+    "detail_label": "消毒要求",
+    "detail_value": "聚维酮碘溶液 1:500 · 喷雾",
+    "remind_count": 3,
+    "remind_text": "10月17日、10月18日各一次，逾期后又提醒一次",
+    "complete_condition": "登记消毒后自动完成",
+    "notice_text": "现在登记消毒，这条待办算作逾期完成。",
+    "mark_done_tip": "手动标记完成不会自动生成消毒记录，消毒剂库存也不会扣减。建议去登记消毒。",
+    "complete_way": null,
+    "complete_way_text": null,
+    "completed_at": null,
+    "completed_by": null,
+    "ignored_at": null,
+    "ignored_by": null,
+    "related_batch": {
+      "batch_id": 3004,
+      "batch_no": "ZM2609-038",
+      "pen_name": "2 号保育舍",
+      "desc": "保育猪 · 存栏 200 头",
+      "tag_text": null,
+      "link": {
+        "route": "L06",
+        "web_route": null,
+        "farm_id": 1001,
+        "farm_name": "东山猪场",
+        "need_switch": false,
+        "params": {
+          "batch_id": "3004"
+        },
+        "page_title": null
+      }
+    },
+    "can_register": true,
+    "can_complete": true,
+    "can_ignore": true
+  },
+  "trace_id": "mock-t07-90112"
+}

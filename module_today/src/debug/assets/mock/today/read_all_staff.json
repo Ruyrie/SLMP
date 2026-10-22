@@ -1,0 +1,9 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "updated_count": 2,
+    "total_unread": 0
+  },
+  "trace_id": "mock-t14-staff"
+}

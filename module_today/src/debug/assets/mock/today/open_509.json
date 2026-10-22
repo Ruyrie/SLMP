@@ -1,0 +1,27 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "target_status": "OK",
+    "target_status_text": "可以打开",
+    "link": {
+      "route": "T04",
+      "web_route": null,
+      "farm_id": 1001,
+      "farm_name": "东山猪场",
+      "need_switch": false,
+      "params": {
+        "todo_id": "90107"
+      },
+      "page_title": null
+    },
+    "deleted_record_type": null,
+    "page_title": null,
+    "deleted_title": null,
+    "deleted_desc": null,
+    "deny_title": null,
+    "deny_desc": null,
+    "total_unread": 3
+  },
+  "trace_id": "mock-t15-509"
+}
