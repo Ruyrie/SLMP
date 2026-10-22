@@ -5,6 +5,7 @@ import androidx.databinding.BindingAdapter;
 import androidx.databinding.BindingMethod;
 import androidx.databinding.BindingMethods;
 
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.zhimu.slmp.base.mvvm.UiState;
 
@@ -46,6 +47,17 @@ import com.zhimu.slmp.base.mvvm.UiState;
 public final class WidgetBindingAdapters {
 
     private WidgetBindingAdapters() {
+    }
+
+    /**
+     * 顶部栏标题：只在绑定值非空时设置，避免 include 未传 title 时把代码中
+     * TopAppBarHelper.setupBack 设置的标题清空。
+     */
+    @BindingAdapter("topBarTitle")
+    public static void setTopBarTitle(MaterialToolbar toolbar, @Nullable CharSequence title) {
+        if (title != null) {
+            toolbar.setTitle(title);
+        }
     }
 
     @BindingAdapter("uiState")

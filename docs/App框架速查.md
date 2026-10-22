@@ -119,6 +119,8 @@ public interface HerdApi {
 | AppGlideModule | 全应用只有 lib_base 的 ZmtGlideModule，组件不要再定义 |
 | 系统栏 insets | 二级页保持 BaseActivity 默认（根视图加状态栏、导航栏、软键盘内边距并消费，base_include_top_app_bar 与 BottomActionBar 不会重复加）；只有内容要延伸到状态栏下的页面（相机、全屏预览、地图选点）重写 `applyWindowInsetsToRoot()` 返回 false 并自行用 InsetsHelper 处理 |
 | RecyclerView 头部 | 以 RecyclerView 为 parent 调用 `XxxBinding.inflate(inflater, list, false)` 前必须先 `setLayoutManager`，否则运行时崩溃“RecyclerView has no LayoutManager”（编译期发现不了） |
+| Paging 分组标题 | insertSeparators 的顶部标题在首屏数据之后插入，列表会停在第一项而不是标题；注册 AdapterDataObserver，顶部插入且原本在顶部时 scrollToPosition(0)（见 MessageCenterActivity） |
+| 顶部栏标题 | base_include_top_app_bar 的 title 绑定为空时不覆盖，代码中用 TopAppBarHelper.setupBack 设置标题即可 |
 | 菜单图标颜色 | 图标默认黑色，顶部栏菜单在 menu xml 写 `app:iconTint="?attr/colorOnSurfaceVariant"`，或调用 `TopAppBarHelper.tintMenu` |
 
 ## 九、UI 套件速查（lib_base 的 res、base.widget、base.dialog）

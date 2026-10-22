@@ -94,6 +94,15 @@ public class MessageCenterActivity extends BaseActivity implements MessagePaging
         binding.list.setAdapter(new ConcatAdapter(adapter, footer));
         binding.refresh.setOnRefreshListener(vm::refresh);
         adapter.addLoadStateListener(this::onLoadStates);
+        // 分组标题（insertSeparators）在首屏数据之后才插入到顶部；原本在顶部时保持停在顶部
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                if (positionStart == 0 && !binding.list.canScrollVertically(-1)) {
+                    binding.list.scrollToPosition(0);
+                }
+            }
+        });
         attachSwipeToDelete();
 
         binding.chipType.setOnClickListener(v -> vm.onCategoryChipClick());

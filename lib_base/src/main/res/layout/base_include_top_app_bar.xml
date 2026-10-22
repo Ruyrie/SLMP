@@ -25,7 +25,7 @@
             android:id="@+id/base_toolbar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/base_top_bar_height"
-            android:title="@{title}"
+            app:topBarTitle="@{title}"
             app:navigationContentDescription="@string/base_cd_back"
             app:navigationIcon="@drawable/ic_arrow_back" />
     </com.google.android.material.appbar.AppBarLayout>
