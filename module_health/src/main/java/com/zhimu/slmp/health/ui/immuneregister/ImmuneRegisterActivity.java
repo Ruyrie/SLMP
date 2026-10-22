@@ -35,6 +35,8 @@ import com.zhimu.slmp.health.ui.common.LotSheet;
 import com.zhimu.slmp.health.ui.common.OptionAdapter;
 import com.zhimu.slmp.health.ui.common.RecordLogBottomSheet;
 import com.zhimu.slmp.health.util.HealthFormat;
+import com.zhimu.slmp.common.di.CoreInjector;
+import com.zhimu.slmp.common.model.vo.AccountUserVO;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -208,7 +210,7 @@ public class ImmuneRegisterActivity extends BaseActivity {
                 : View.GONE);
         boolean staff = vm.isStaff();
         binding.healthExecutorLayout.setVisibility(!staff && !view ? View.VISIBLE : View.GONE);
-        binding.healthExecutorLayout.setHelperText(getString(R.string.health_creator_owner, vm.creatorName()));
+        binding.healthExecutorLayout.setHelperText(getString(R.string.health_creator_owner, creatorOrMe()));
         renderCreator();
         renderActions();
         renderLot();
@@ -226,7 +228,18 @@ public class ImmuneRegisterActivity extends BaseActivity {
         }
         boolean staff = vm.isStaff();
         binding.healthCreator.setVisibility(staff ? View.VISIBLE : View.GONE);
-        binding.healthCreator.setText(getString(R.string.health_creator_staff, vm.creatorName()));
+        binding.healthCreator.setText(getString(R.string.health_creator_staff, creatorOrMe()));
+    }
+
+    /** 表单上下文没有登记人时用当前登录用户（与登记用药页一致） */
+    @NonNull
+    private String creatorOrMe() {
+        String name = vm.creatorName();
+        if (!name.isEmpty()) {
+            return name;
+        }
+        AccountUserVO me = CoreInjector.get(this).sessionManager().currentUser();
+        return me == null || me.getName() == null ? "" : me.getName();
     }
 
     /** 底部操作栏：登记 / 补录为“登记接种”；查看状态按 actions（EDIT“修改记录”，CHANGE_REQUEST“提交修改申请”，VIEW_REQUEST） */
@@ -327,7 +340,7 @@ public class ImmuneRegisterActivity extends BaseActivity {
         renderPlanField();
         renderVaccineField();
         renderCreator();
-        binding.healthExecutorLayout.setHelperText(getString(R.string.health_creator_owner, vm.creatorName()));
+        binding.healthExecutorLayout.setHelperText(getString(R.string.health_creator_owner, creatorOrMe()));
     }
 
     private void renderVaccines(@Nullable List<VaccineOptionVO> list) {

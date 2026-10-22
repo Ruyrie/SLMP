@@ -588,7 +588,12 @@ public class MedicationRegisterViewModel extends BaseViewModel {
             pendingLotId = null;
             pendingLotNo = null;
             DrugLotOptionVO lot = keep != null ? keep : LotPicker.defaultLot(options);
+            // 默认批号在快照之后异步填入：表单尚未被用户改动时同步更新快照，避免没填写就按返回也提示放弃
+            boolean untouched = initialSnapshot != null && initialSnapshot.equals(snapshot());
             drugLotId.setValue(lot == null ? null : lot.getLotId());
+            if (untouched) {
+                initialSnapshot = snapshot();
+            }
             if (lot == null) {
                 putError(F_LOT, LotPicker.noLotText(drugName(), isStaff()));
             } else {
