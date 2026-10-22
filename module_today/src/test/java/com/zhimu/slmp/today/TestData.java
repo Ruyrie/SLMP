@@ -12,6 +12,13 @@ public final class TestData {
     private TestData() {
     }
 
+    /** 东山猪场的当前养殖场上下文（首页有养殖场时才加载） */
+    @NonNull
+    public static com.zhimu.slmp.common.model.vo.FarmContextVO farm1001() {
+        return parse("{'farm_id':1001,'name':'东山猪场','role':'OWNER','role_text':'所有者','status':'NORMAL'}",
+                com.zhimu.slmp.common.model.vo.FarmContextVO.class);
+    }
+
     @NonNull
     public static <T> T parse(@NonNull String json, @NonNull Class<T> cls) {
         return GsonFactory.get().fromJson(json.replace('\'', '"'), cls);

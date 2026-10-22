@@ -66,7 +66,8 @@ public class MineFragment extends BaseFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        vm = obtainViewModel(AccountInjector.factory(), MineViewModel.class);
+        // Activity 范围：切换或退出养殖场后 MainActivity 会按新角色重建标签页，ViewModel 与未消费的事件要保留下来
+        vm = obtainActivityViewModel(AccountInjector.factory(), MineViewModel.class);
         binding.setLifecycleOwner(getViewLifecycleOwner());
         binding.setVm(vm);
         observeBase(vm);

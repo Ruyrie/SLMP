@@ -73,7 +73,7 @@ public class TodayViewModelTest {
     public void ownerHome_showsManagerViewAndOwnerGroup() {
         when(homeRepository.getHome()).thenReturn(Single.just(TestData.parse(TestData.OWNER_HOME, HomeVO.class)));
 
-        vm.onFarmSwitched(null);
+        vm.onFarmSwitched(TestData.farm1001());
 
         assertEquals(UiState.Status.CONTENT, vm.getUiState().getValue().getStatus());
         assertEquals("早上好，王建国", vm.getGreetingText().getValue());
@@ -90,7 +90,7 @@ public class TodayViewModelTest {
     public void staffHome_hidesOwnerGroupAndShowsPens() {
         when(homeRepository.getHome()).thenReturn(Single.just(TestData.parse(TestData.STAFF_HOME, HomeVO.class)));
 
-        vm.onFarmSwitched(null);
+        vm.onFarmSwitched(TestData.farm1001());
 
         assertFalse(vm.getManagerView().getValue());
         assertEquals("10月19日 周一 · 东山猪场员工", vm.getRoleLine().getValue());
@@ -106,7 +106,7 @@ public class TodayViewModelTest {
     public void pendingFarm_isBlocked() {
         when(homeRepository.getHome()).thenReturn(Single.just(TestData.parse(TestData.PENDING_HOME, HomeVO.class)));
 
-        vm.onFarmSwitched(null);
+        vm.onFarmSwitched(TestData.farm1001());
 
         assertTrue(vm.getFarmBlocked().getValue());
         assertFalse(vm.getHasPen().getValue());
@@ -115,7 +115,7 @@ public class TodayViewModelTest {
     @Test
     public void todoChanged_decrementsMetricsAndFadesItem() {
         when(homeRepository.getHome()).thenReturn(Single.just(TestData.parse(TestData.OWNER_HOME, HomeVO.class)));
-        vm.onFarmSwitched(null);
+        vm.onFarmSwitched(TestData.farm1001());
 
         vm.onTodoChanged(new TodoChange(90101L, "FEED_TASK", 70101L, 1001));
 
@@ -146,7 +146,7 @@ public class TodayViewModelTest {
     @Test
     public void metricCards_routeByCard() {
         when(homeRepository.getHome()).thenReturn(Single.just(TestData.parse(TestData.OWNER_HOME, HomeVO.class)));
-        vm.onFarmSwitched(null);
+        vm.onFarmSwitched(TestData.farm1001());
 
         vm.onMetricClick(TodayViewModel.CARD_TODAY);
         NavTarget t = vm.getNavEvent().getValue();
@@ -164,7 +164,7 @@ public class TodayViewModelTest {
     @Test
     public void refreshFailure_keepsContentAndShowsMessage() {
         when(homeRepository.getHome()).thenReturn(Single.just(TestData.parse(TestData.OWNER_HOME, HomeVO.class)));
-        vm.onFarmSwitched(null);
+        vm.onFarmSwitched(TestData.farm1001());
         when(homeRepository.getHome()).thenReturn(Single.error(new ApiException(ErrorCodes.NETWORK, "网络不可用")));
 
         vm.refresh();
@@ -193,8 +193,18 @@ public class TodayViewModelTest {
         when(homeRepository.getHome()).thenReturn(Single.error(new ApiException(ErrorCodes.NETWORK, "网络不可用")));
         when(homeRepository.getCached(anyLong())).thenReturn(null);
 
-        vm.onFarmSwitched(null);
+        vm.onFarmSwitched(TestData.farm1001());
 
         assertEquals(UiState.Status.ERROR, vm.getUiState().getValue().getStatus());
+    }
+
+    @Test
+    public void noFarm_showsEmptyWithoutRequest() {
+        vm.onFarmSwitched(null);
+
+        UiState state = vm.getUiState().getValue();
+        assertNotNull(state);
+        assertEquals(UiState.Status.EMPTY, state.getStatus());
+        assertEquals(TodayViewModel.NO_FARM_TITLE, state.getTitle());
     }
 }

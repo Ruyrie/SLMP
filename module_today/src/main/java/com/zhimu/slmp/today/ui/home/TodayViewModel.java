@@ -70,6 +70,10 @@ import android.os.Bundle;
  */
 public class TodayViewModel extends BaseViewModel {
 
+    /** 没有任何养殖场（模块02 UI 文档 F01 空状态的文案） */
+    public static final String NO_FARM_TITLE = "你还没有养殖场";
+    public static final String NO_FARM_MESSAGE = "新建一个养殖场，或在消息中心同意别人的邀请。";
+
     private static final String TAG = "TodayViewModel";
 
     public static final String CARD_STOCK = "stock";
@@ -107,6 +111,8 @@ public class TodayViewModel extends BaseViewModel {
     private final MutableLiveData<PagingData<TodoItemVO>> todoPaging = new MutableLiveData<>();
     private final MutableLiveData<Integer> todoTotal = new MutableLiveData<>(0);
     private final MutableLiveData<FarmBriefVO> currentFarm = new MutableLiveData<>();
+    /** 当前是否有养殖场（退出或删除最后一个养殖场后为 false） */
+    private boolean hasFarm = true;
     private final MutableLiveData<List<QuickRegisterItem>> quickItems =
             new MutableLiveData<>(QuickRegisterItem.forRole(false));
 
@@ -242,8 +248,12 @@ public class TodayViewModel extends BaseViewModel {
 
     // ===================== 加载 =====================
 
-    /** 首次加载（骨架屏）；已有内容时为刷新 */
+    /** 首次加载（骨架屏）；已有内容时为刷新。没有任何养殖场时不请求接口，显示“你还没有养殖场”（模块02 2.6.1） */
     public void load() {
+        if (!hasFarm) {
+            setUiState(UiState.empty(NO_FARM_TITLE, NO_FARM_MESSAGE));
+            return;
+        }
         Single<HomeVO> source = homeRepository.getHome()
                 .timeout(HOME_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .onErrorResumeNext(this::fallbackToCache);
@@ -265,6 +275,7 @@ public class TodayViewModel extends BaseViewModel {
 
     /** 当前养殖场变化（F01 切换、跨场跳转）：显示骨架屏并重新加载全部数据 */
     public void onFarmSwitched(@Nullable FarmContextVO farm) {
+        hasFarm = farm != null;
         long id = farm == null ? 0 : farm.getFarmId();
         if (id == loadedFarmId) {
             return;

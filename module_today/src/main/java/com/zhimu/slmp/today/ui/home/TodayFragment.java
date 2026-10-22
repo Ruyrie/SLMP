@@ -49,6 +49,8 @@ import com.zhimu.slmp.today.ui.detail.TodoDetailActivity;
 import com.zhimu.slmp.today.util.NavTarget;
 import com.zhimu.slmp.today.util.Texts;
 import com.zhimu.slmp.today.util.TodayNavigator;
+import com.zhimu.slmp.base.widget.StateLayout;
+import com.zhimu.slmp.common.router.RouterPath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -148,6 +150,10 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
         });
         b.refresh.setOnRefreshListener(vm::refresh);
         b.stateLayout.setOnRetryListener(v -> vm.retry());
+        // 没有任何养殖场时的空状态：新建养殖场（F02）
+        b.stateLayout.setEmpty(com.zhimu.slmp.base.R.drawable.ic_domain, TodayViewModel.NO_FARM_TITLE,
+                TodayViewModel.NO_FARM_MESSAGE, getString(R.string.today_new_farm), com.zhimu.slmp.base.R.drawable.ic_add,
+                StateLayout.EMPTY_ACTION_TONAL, v -> Router.open(requireContext(), RouterPath.F02));
 
         todoAdapter.addLoadStateListener(states -> {
             updateFooter(states);
@@ -175,6 +181,14 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
         vm.getUiState().observe(owner, state -> {
             if (state != null && state.is(UiState.Status.CONTENT)) {
                 vm.checkNotifyGuide(needNotifyPermission());
+            }
+            // 没有养殖场时不能登记，隐藏“登记”按钮
+            boolean noFarm = state != null && state.is(UiState.Status.EMPTY)
+                    && TodayViewModel.NO_FARM_TITLE.equals(state.getTitle());
+            if (noFarm) {
+                b.fab.hide();
+            } else {
+                b.fab.show();
             }
         });
         getChildFragmentManager().setFragmentResultListener(REQ_NOTIFY, owner, (key, result) -> {

@@ -116,6 +116,11 @@ public class MyPensFragment extends BaseFragment {
     }
 
     private void scrollToPendingPen() {
+        scrollToPendingPen(0);
+    }
+
+    /** 列表提交后 RecyclerView 可能还没布局，取不到目标项时下一帧重试（最多 10 次） */
+    private void scrollToPendingPen(int attempt) {
         if (binding == null || pendingPenId == 0L) {
             return;
         }
@@ -133,17 +138,21 @@ public class MyPensFragment extends BaseFragment {
         if (index < 0) {
             return;
         }
-        pendingPenId = 0L;
         final int position = index;
         binding.herdPens.post(() -> {
-            if (binding == null) {
+            if (binding == null || pendingPenId == 0L) {
                 return;
             }
             View child = binding.herdPens.getLayoutManager() == null ? null
                     : binding.herdPens.getLayoutManager().findViewByPosition(position);
-            if (child != null) {
-                binding.herdScroll.smoothScrollTo(0, binding.herdPens.getTop() + child.getTop());
+            if (child == null || binding.herdPens.isLayoutRequested()) {
+                if (attempt < 10) {
+                    binding.herdPens.postDelayed(() -> scrollToPendingPen(attempt + 1), 50);
+                }
+                return;
             }
+            pendingPenId = 0L;
+            binding.herdScroll.smoothScrollTo(0, binding.herdPens.getTop() + child.getTop());
         });
     }
 }

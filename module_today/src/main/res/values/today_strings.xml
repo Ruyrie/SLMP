@@ -219,4 +219,5 @@
     <!-- T08 关联记录已失效 -->
     <string name="today_invalid_default_title">该记录已被删除，无法查看</string>
     <string name="today_invalid_default_desc">这条消息关联的记录已被删除，相关的待办和记录不再显示。消息本身仍保留在消息中心。</string>
+    <string name="today_new_farm">新建养殖场</string>
 </resources>

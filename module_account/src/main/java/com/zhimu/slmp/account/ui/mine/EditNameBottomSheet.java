@@ -46,7 +46,7 @@ public class EditNameBottomSheet extends BaseBottomSheetDialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        MineViewModel vm = new ViewModelProvider(requireParentFragment(), AccountInjector.factory())
+        MineViewModel vm = new ViewModelProvider(requireActivity(), AccountInjector.factory())
                 .get(MineViewModel.class);
         binding.setLifecycleOwner(getViewLifecycleOwner());
         binding.setVm(vm);
