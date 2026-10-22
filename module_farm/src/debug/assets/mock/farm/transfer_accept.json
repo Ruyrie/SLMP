@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "你已成为东山猪场的所有者",
+  "data": {
+    "farm_id": 1001,
+    "farm_name": "东山猪场",
+    "role": "OWNER"
+  },
+  "trace_id": "mock-f30"
+}

@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "member_total": 4,
+    "owner_count": 1,
+    "manager_count": 1,
+    "staff_count": 2,
+    "invite_count": 2,
+    "invite_pending_count": 1,
+    "avatars": ["王", "刘", "李", "张"],
+    "unassigned_pens": [],
+    "show_unassigned_banner": false
+  },
+  "trace_id": "mock-f15-1001"
+}

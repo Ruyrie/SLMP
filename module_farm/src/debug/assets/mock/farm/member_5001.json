@@ -1,0 +1,29 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "member_id": 5001,
+    "user_id": 10001,
+    "name": "王建国",
+    "name_initial": "王",
+    "phone_masked": "138****6620",
+    "phone": "13800006620",
+    "farm_name": "东山猪场",
+    "role": "OWNER",
+    "role_text": "所有者",
+    "join_type": "CREATE",
+    "join_type_text": "创建",
+    "joined_at": "2026-03-02 09:00:00",
+    "is_me": true,
+    "all_pens": true,
+    "can_adjust_pens": false,
+    "version": 1,
+    "actions": {
+      "can_change_role": false,
+      "can_adjust_pens": false,
+      "can_remove": false,
+      "can_quit": false
+    }
+  },
+  "trace_id": "mock-f17-5001"
+}

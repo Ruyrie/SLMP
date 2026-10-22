@@ -1,0 +1,33 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "farm_id": 1001,
+        "name": "东山猪场",
+        "status": "NORMAL",
+        "status_text": "正常",
+        "role": "STAFF",
+        "role_text": "员工",
+        "join_type": "INVITE",
+        "my_pen_count": 1,
+        "is_current": true,
+        "can_switch": true,
+        "can_quit": true,
+        "last_switch_at": "2026-10-19 06:50:00"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "all": 1,
+      "created": 0,
+      "joined": 1,
+      "pending_audit": 0
+    }
+  },
+  "trace_id": "mock-f01-staff"
+}

@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "farm_id": 1001,
+    "name": "东山猪场",
+    "status": "NORMAL",
+    "status_text": "已通过"
+  },
+  "trace_id": "mock-f06-approved"
+}

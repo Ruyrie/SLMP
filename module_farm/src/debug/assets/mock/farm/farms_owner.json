@@ -1,0 +1,73 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "farm_id": 1001,
+        "name": "东山猪场",
+        "status": "NORMAL",
+        "status_text": "正常",
+        "role": "OWNER",
+        "role_text": "所有者",
+        "join_type": "CREATE",
+        "species_text": "猪",
+        "main_category_name": "育肥猪",
+        "count_unit": "HEAD",
+        "count_unit_text": "头",
+        "current_stock": 870,
+        "is_current": true,
+        "can_switch": true,
+        "can_quit": false,
+        "last_switch_at": "2026-10-19 07:30:00"
+      },
+      {
+        "farm_id": 1002,
+        "name": "西岭鸡场",
+        "status": "NORMAL",
+        "status_text": "正常",
+        "role": "MANAGER",
+        "role_text": "场长",
+        "join_type": "INVITE",
+        "species_text": "禽",
+        "main_category_name": "肉鸡",
+        "count_unit": "BIRD",
+        "count_unit_text": "只",
+        "current_stock": 18600,
+        "is_current": false,
+        "can_switch": true,
+        "can_quit": true,
+        "last_switch_at": "2026-10-16 18:10:00"
+      },
+      {
+        "farm_id": 1003,
+        "name": "北湾牛场",
+        "status": "PENDING",
+        "status_text": "待审核",
+        "role": "OWNER",
+        "role_text": "所有者",
+        "join_type": "CREATE",
+        "species_text": "牛",
+        "main_category_name": "肉牛",
+        "count_unit": "HEAD",
+        "count_unit_text": "头",
+        "scale": 120,
+        "is_current": false,
+        "can_switch": false,
+        "can_quit": false,
+        "last_switch_at": null
+      }
+    ],
+    "total": 3,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "all": 3,
+      "created": 2,
+      "joined": 1,
+      "pending_audit": 1
+    }
+  },
+  "trace_id": "mock-f01-owner"
+}

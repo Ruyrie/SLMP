@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F09 调整栏舍面板内容：说明“可多选，已选 2 个……”、多选 Chip、取消后无人负责的 warning 提示 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/base_sheet_padding_horizontal"
+    android:paddingEnd="@dimen/base_sheet_padding_horizontal"
+    android:paddingBottom="@dimen/base_space_2">
+
+    <TextView
+        android:id="@+id/pen_hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/pen_chips"
+        style="@style/Widget.Zmt.ChipGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_3" />
+
+    <TextView
+        android:id="@+id/pen_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/pen_warning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+        android:textColor="?attr/colorWarning"
+        android:visibility="gone" />
+</LinearLayout>

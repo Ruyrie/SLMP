@@ -1,0 +1,34 @@
+{
+  "code": 0,
+  "message": "已把李明改为场长",
+  "data": {
+    "member": {
+      "member_id": 5003,
+      "user_id": 10003,
+      "name": "李明",
+      "name_initial": "李",
+      "phone_masked": "137****5678",
+      "phone": "13700005678",
+      "farm_name": "东山猪场",
+      "role": "MANAGER",
+      "role_text": "场长",
+      "join_type": "INVITE",
+      "join_type_text": "邀请加入",
+      "joined_at": "2026-05-06 10:00:00",
+      "is_me": false,
+      "all_pens": true,
+      "can_adjust_pens": false,
+      "version": 4,
+      "actions": {
+        "can_change_role": true,
+        "can_adjust_pens": false,
+        "can_remove": true,
+        "can_quit": false
+      }
+    },
+    "newly_unassigned_pens": [
+      {"pen_id": 2003, "name": "3 号育肥舍", "pen_type_text": "育肥舍"}
+    ]
+  },
+  "trace_id": "mock-f23-5003"
+}

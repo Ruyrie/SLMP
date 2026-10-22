@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F05 养殖场信息（UI 文档 F05）：页头、停用横幅、基本信息（可直接修改）、注册信息（修改需重新审核）、说明横幅、操作分组 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/top_bar"
+            layout="@layout/base_include_top_app_bar" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="养殖场信息加载失败"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/refresh"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.core.widget.NestedScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="@dimen/base_page_margin"
+                        android:paddingEnd="@dimen/base_page_margin"
+                        android:paddingBottom="@dimen/base_space_6">
+
+                        <!-- 页头 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingTop="@dimen/base_space_1"
+                            android:paddingBottom="@dimen/base_space_2">
+
+                            <FrameLayout
+                                android:layout_width="56dp"
+                                android:layout_height="56dp"
+                                android:background="@drawable/farm_bg_rounded_16"
+                                android:backgroundTint="?attr/colorSecondaryContainer">
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_gravity="center"
+                                    android:importantForAccessibility="no"
+                                    android:src="@drawable/ic_domain"
+                                    app:tint="?attr/colorOnSecondaryContainer" />
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/base_space_4"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/farm_name"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:ellipsize="end"
+                                    android:singleLine="true"
+                                    android:textAppearance="@style/TextAppearance.Zmt.HeadlineSmall"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="@dimen/base_space_1"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal">
+
+                                    <com.zhimu.slmp.base.widget.StatusTagView
+                                        android:id="@+id/status_tag"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content" />
+
+                                    <TextView
+                                        android:id="@+id/role_line"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="@dimen/base_space_2"
+                                        android:layout_weight="1"
+                                        android:ellipsize="end"
+                                        android:singleLine="true"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- 已停用横幅 -->
+                        <com.zhimu.slmp.base.widget.NoticeView
+                            android:id="@+id/disabled_banner"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_2"
+                            android:visibility="gone"
+                            app:noticeIcon="@drawable/ic_block"
+                            app:noticeLevel="error" />
+
+                        <!-- 基本信息 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/farm_info_basic"
+                                android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+                                android:textColor="?attr/colorPrimary" />
+
+                            <TextView
+                                android:id="@+id/basic_note"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/farm_info_basic_note"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+
+                        <com.zhimu.slmp.base.widget.GroupedListLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_2">
+
+                            <com.zhimu.slmp.base.widget.ListRowView
+                                android:id="@+id/row_contact_name"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:rowTitle="@string/farm_field_contact_name" />
+
+                            <com.zhimu.slmp.base.widget.ListRowView
+                                android:id="@+id/row_contact_phone"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:rowTitle="@string/farm_info_contact_phone" />
+
+                            <com.zhimu.slmp.base.widget.ListRowView
+                                android:id="@+id/row_scale"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:rowTitle="@string/farm_row_scale" />
+
+                            <com.zhimu.slmp.base.widget.ListRowView
+                                android:id="@+id/row_intro"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:rowTitle="@string/farm_info_intro" />
+                        </com.zhimu.slmp.base.widget.GroupedListLayout>
+
+                        <!-- 注册信息 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/farm_info_registration"
+                                android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+                                android:textColor="?attr/colorPrimary" />
+
+                            <TextView
+                                android:id="@+id/registration_note"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <com.zhimu.slmp.base.widget.StatusTagView
+                                android:id="@+id/registration_tag"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:visibility="gone"
+                                app:tagType="warning" />
+                        </LinearLayout>
+
+                        <com.zhimu.slmp.base.widget.GroupedListLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_2">
+
+                            <com.zhimu.slmp.base.widget.ListRowView
+                                android:id="@+id/row_reg_name"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:rowTitle="@string/farm_row_name" />
+
+                            <com.zhimu.slmp.base.widget.ListRowView
+                                android:id="@+id/row_reg_address"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:rowTitle="@string/farm_row_address" />
+
+                            <com.zhimu.slmp.base.widget.ListRowView
+                                android:id="@+id/row_reg_qual"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:rowTitle="@string/farm_row_qual" />
+                        </com.zhimu.slmp.base.widget.GroupedListLayout>
+
+                        <com.zhimu.slmp.base.widget.NoticeView
+                            android:id="@+id/change_notice"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            app:noticeIcon="@drawable/ic_info"
+                            app:noticeText="@string/farm_info_notice" />
+
+                        <!-- 操作分组：成员管理、转让所有权、停用 / 重新启用、退出（危险项最后） -->
+                        <com.zhimu.slmp.base.widget.GroupedListLayout
+                            android:id="@+id/actions"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/action_members"
+                                style="@style/Widget.Zmt.Card.ListItem"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="56dp"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingStart="@dimen/base_space_4"
+                                    android:paddingEnd="@dimen/base_space_4">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:importantForAccessibility="no"
+                                        android:src="@drawable/ic_group"
+                                        app:tint="?attr/colorOnSurfaceVariant" />
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="@dimen/base_space_4"
+                                        android:layout_weight="1"
+                                        android:text="@string/farm_info_members"
+                                        android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                                        android:textColor="?attr/colorOnSurface" />
+
+                                    <TextView
+                                        android:id="@+id/members_count"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                    <ImageView
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:layout_marginStart="@dimen/base_space_2"
+                                        android:importantForAccessibility="no"
+                                        android:src="@drawable/ic_chevron_right"
+                                        app:tint="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/action_transfer"
+                                style="@style/Widget.Zmt.Card.ListItem"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="56dp"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingStart="@dimen/base_space_4"
+                                    android:paddingEnd="@dimen/base_space_4">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:importantForAccessibility="no"
+                                        android:src="@drawable/ic_swap_horiz"
+                                        app:tint="?attr/colorOnSurfaceVariant" />
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="@dimen/base_space_4"
+                                        android:layout_weight="1"
+                                        android:text="@string/farm_info_transfer"
+                                        android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                                        android:textColor="?attr/colorOnSurface" />
+
+                                    <TextView
+                                        android:id="@+id/transfer_text"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                    <ImageView
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:layout_marginStart="@dimen/base_space_2"
+                                        android:importantForAccessibility="no"
+                                        android:src="@drawable/ic_chevron_right"
+                                        app:tint="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/action_disable"
+                                style="@style/Widget.Zmt.Card.ListItem"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="56dp"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingStart="@dimen/base_space_4"
+                                    android:paddingEnd="@dimen/base_space_4">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:importantForAccessibility="no"
+                                        android:src="@drawable/ic_block"
+                                        app:tint="?attr/colorError" />
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="@dimen/base_space_4"
+                                        android:layout_weight="1"
+                                        android:text="@string/farm_info_disable"
+                                        android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                                        android:textColor="?attr/colorError" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/farm_info_disable_note"
+                                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/action_enable"
+                                style="@style/Widget.Zmt.Card.ListItem"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="56dp"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingStart="@dimen/base_space_4"
+                                    android:paddingEnd="@dimen/base_space_4">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:importantForAccessibility="no"
+                                        android:src="@drawable/ic_restart_alt"
+                                        app:tint="?attr/colorPrimary" />
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="@dimen/base_space_4"
+                                        android:layout_weight="1"
+                                        android:text="@string/farm_info_enable"
+                                        android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                                        android:textColor="?attr/colorPrimary" />
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/action_quit"
+                                style="@style/Widget.Zmt.Card.ListItem"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="56dp"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingStart="@dimen/base_space_4"
+                                    android:paddingEnd="@dimen/base_space_4">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:importantForAccessibility="no"
+                                        android:src="@drawable/ic_logout"
+                                        app:tint="?attr/colorError" />
+
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="@dimen/base_space_4"
+                                        android:layout_weight="1"
+                                        android:text="@string/farm_info_quit"
+                                        android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                                        android:textColor="?attr/colorError" />
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+                        </com.zhimu.slmp.base.widget.GroupedListLayout>
+                    </LinearLayout>
+                </androidx.core.widget.NestedScrollView>
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </com.zhimu.slmp.base.widget.StateLayout>
+    </LinearLayout>
+</layout>

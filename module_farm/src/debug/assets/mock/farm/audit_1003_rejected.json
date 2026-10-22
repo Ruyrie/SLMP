@@ -1,0 +1,80 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "farm_id": 1003,
+    "name": "北湾牛场",
+    "status": "REJECTED",
+    "status_text": "已驳回",
+    "audit_status": "REJECTED",
+    "first_submitted_at": "2026-10-17 18:32:00",
+    "submitted_at": "2026-10-17 18:32:00",
+    "restrict_tip": "审核通过前只能修改注册信息。栏舍、批次、库存和邀请成员等功能，要等审核通过后才能使用。",
+    "submit_no": 1,
+    "audit_version": 2,
+    "reshoot_count": 1,
+    "audited_at": "2026-10-18 16:20:00",
+    "reject_reason": "资质图中的《动物防疫条件合格证》照片模糊，看不清证书编号和有效期。请拍摄原件的清晰照片后重新提交。",
+    "registration": {
+      "name": "北湾牛场",
+      "main_category_id": 301,
+      "main_category_name": "肉牛",
+      "count_unit": "HEAD",
+      "count_unit_text": "头",
+      "scale": 120,
+      "contact_name": "王建国",
+      "contact_phone": "13800006620",
+      "contact_phone_masked": "138****6620",
+      "address": "赤峰市松山区太平地镇 英金河北岸",
+      "province": "内蒙古自治区",
+      "city": "赤峰市",
+      "district": "松山区",
+      "township": "太平地镇",
+      "adcode": "150404",
+      "longitude": 118.9123456,
+      "latitude": 42.3412345,
+      "loc_accuracy": null,
+      "qualification_files": [
+        {
+          "file_id": 9001,
+          "url": "file:///android_asset/mock/media/qual_license.jpg",
+          "thumb_url": "file:///android_asset/mock/media/qual_license.jpg",
+          "media_type": "IMAGE",
+          "width": 640,
+          "height": 480,
+          "sort_no": 1,
+          "reshoot": false
+        },
+        {
+          "file_id": 9002,
+          "url": "file:///android_asset/mock/media/qual_epidemic.jpg",
+          "thumb_url": "file:///android_asset/mock/media/qual_epidemic.jpg",
+          "media_type": "IMAGE",
+          "width": 640,
+          "height": 480,
+          "sort_no": 2,
+          "reshoot": true
+        }
+      ]
+    },
+    "records": [
+      {
+        "type": "REJECT",
+        "type_text": "审核未通过",
+        "time": "2026-10-18 16:20:00",
+        "status_tag": "已驳回",
+        "desc": "资质图中的《动物防疫条件合格证》照片模糊，看不清证书编号和有效期。",
+        "submit_no": 1
+      },
+      {
+        "type": "SUBMIT",
+        "type_text": "提交审核",
+        "time": "2026-10-17 18:32:00",
+        "status_tag": "已提交",
+        "desc": "首次提交",
+        "submit_no": 1
+      }
+    ]
+  },
+  "trace_id": "mock-f06-1003"
+}

@@ -1,0 +1,18 @@
+{
+  "code": 0,
+  "message": "已发送邀请，对方同意后加入",
+  "data": {
+    "invite_id": 6003,
+    "invitee_phone_masked": "158****3306",
+    "invitee_phone": "15804763306",
+    "role": "STAFF",
+    "role_text": "员工",
+    "status": "PENDING",
+    "status_text": "待接受",
+    "invited_at": "2026-10-19 10:20:00",
+    "expires_at": "2026-10-26 10:20:00",
+    "can_reinvite": false,
+    "pens": []
+  },
+  "trace_id": "mock-f20"
+}

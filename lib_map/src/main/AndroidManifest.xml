@@ -1,4 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- 高德地图、定位、搜索（03 号文档 8.8、9.1 节）：只申请使用期间的位置，不申请后台定位 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <application>
+
+        <!-- 高德 Key：local.properties 的 amap.key 经清单占位符注入（为空时 F04 只能手动填写地址） -->
+        <meta-data
+            android:name="com.amap.api.v2.apikey"
+            android:value="${AMAP_KEY}" />
+
+        <!-- 高德定位服务 -->
+        <service
+            android:name="com.amap.api.location.APSService"
+            android:exported="false" />
+
+        <!-- F04 养殖场位置选点 -->
+        <activity
+            android:name=".ui.pick.MapPickActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.F04" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
 </manifest>

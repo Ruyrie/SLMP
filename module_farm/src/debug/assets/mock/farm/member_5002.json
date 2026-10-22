@@ -1,0 +1,29 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "member_id": 5002,
+    "user_id": 10002,
+    "name": "刘芳",
+    "name_initial": "刘",
+    "phone_masked": "139****1234",
+    "phone": "13900001234",
+    "farm_name": "东山猪场",
+    "role": "MANAGER",
+    "role_text": "场长",
+    "join_type": "INVITE",
+    "join_type_text": "邀请加入",
+    "joined_at": "2026-03-12 10:00:00",
+    "is_me": false,
+    "all_pens": true,
+    "can_adjust_pens": false,
+    "version": 2,
+    "actions": {
+      "can_change_role": true,
+      "can_adjust_pens": false,
+      "can_remove": true,
+      "can_quit": false
+    }
+  },
+  "trace_id": "mock-f17-5002"
+}

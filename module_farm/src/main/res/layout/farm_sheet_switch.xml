@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F01 切换养殖场面板内容：“全部养殖场”项 → 分隔线 → 养殖场单选列表（加载中 / 空 / 加载失败）。标题与底部“新建养殖场”由基类提供 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/farm_switch_all"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:minHeight="64dp"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_space_3"
+        android:paddingEnd="@dimen/base_sheet_padding_horizontal">
+
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/farm_switch_all_radio"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:clickable="false"
+            android:focusable="false"
+            android:importantForAccessibility="no" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/farm_switch_all_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/farm_switch_all"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                android:textColor="?attr/colorOnSurface" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/farm_switch_all_desc"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <com.google.android.material.divider.MaterialDivider
+        style="@style/Widget.Zmt.Divider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_sheet_padding_horizontal"
+        android:layout_marginTop="@dimen/base_space_1"
+        android:layout_marginEnd="@dimen/base_sheet_padding_horizontal"
+        android:layout_marginBottom="@dimen/base_space_1" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/farm_switch_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:overScrollMode="never" />
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/farm_switch_loading"
+            style="@style/Widget.Zmt.CircularProgressIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/base_space_6"
+            android:indeterminate="true"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/farm_switch_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/base_sheet_padding_horizontal"
+            android:paddingTop="@dimen/base_space_4"
+            android:paddingEnd="@dimen/base_sheet_padding_horizontal"
+            android:paddingBottom="@dimen/base_space_4"
+            android:text="@string/farm_switch_empty"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/farm_switch_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/base_sheet_padding_horizontal"
+            android:paddingTop="@dimen/base_space_2"
+            android:paddingEnd="@dimen/base_space_3"
+            android:paddingBottom="@dimen/base_space_2"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/farm_switch_load_failed"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/farm_switch_retry"
+                style="@style/Widget.Zmt.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/farm_action_reload" />
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

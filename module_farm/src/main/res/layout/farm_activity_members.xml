@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F07 成员管理（UI 文档 F07）：顶部栏（search）/ 搜索态、筛选 Chip、栏舍无负责员工横幅、成员与邀请分组、扩展 FAB“邀请成员” -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <include
+                android:id="@+id/top_bar"
+                layout="@layout/base_include_top_app_bar" />
+
+            <!-- 搜索态：返回 + 搜索框（surface-container-high 全圆角） -->
+            <LinearLayout
+                android:id="@+id/search_bar"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/base_top_bar_height"
+                android:background="?attr/colorSurface"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/base_space_1"
+                android:paddingEnd="@dimen/base_page_margin"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/search_back"
+                    style="@style/Widget.Zmt.Button.Icon"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:contentDescription="@string/base_cd_back"
+                    app:icon="@drawable/ic_arrow_back" />
+
+                <EditText
+                    android:id="@+id/search_input"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="@dimen/base_space_1"
+                    android:layout_weight="1"
+                    android:background="@drawable/farm_bg_rounded_16"
+                    android:backgroundTint="?attr/colorSurfaceContainerHigh"
+                    android:hint="@string/farm_members_search_hint"
+                    android:imeOptions="actionSearch"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:maxLength="20"
+                    android:paddingStart="@dimen/base_space_4"
+                    android:paddingEnd="@dimen/base_space_4"
+                    android:singleLine="true"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textColorHint="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/filter_group"
+                style="@style/Widget.Zmt.ChipGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="@dimen/base_page_margin"
+                android:paddingEnd="@dimen/base_page_margin"
+                app:selectionRequired="true"
+                app:singleLine="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_all"
+                    style="@style/Widget.Zmt.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/farm_members_filter_all" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_manager"
+                    style="@style/Widget.Zmt.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/farm_members_filter_manager" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_staff"
+                    style="@style/Widget.Zmt.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/farm_members_filter_staff" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_invite"
+                    style="@style/Widget.Zmt.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/farm_members_filter_invite" />
+            </com.google.android.material.chip.ChipGroup>
+        </HorizontalScrollView>
+
+        <com.zhimu.slmp.base.widget.NoticeView
+            android:id="@+id/unassigned_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_page_margin"
+            android:layout_marginTop="@dimen/base_space_2"
+            android:layout_marginEnd="@dimen/base_page_margin"
+            android:visibility="gone"
+            app:noticeIcon="@drawable/ic_warning"
+            app:noticeLevel="warning" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/farm_members_load_failed">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                    android:id="@+id/refresh"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/list"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clipToPadding="false"
+                        android:paddingBottom="@dimen/base_fab_list_bottom_space" />
+                </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+                <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                    android:id="@+id/fab_invite"
+                    style="@style/Widget.Zmt.ExtendedFloatingActionButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="@dimen/base_page_margin"
+                    android:tag="snackbar_anchor"
+                    android:text="@string/farm_members_invite_fab"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_person_add" />
+            </FrameLayout>
+        </com.zhimu.slmp.base.widget.StateLayout>
+    </LinearLayout>
+</layout>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F04 大头针：primary 色水滴形，中心白色圆点，针尖在底部中点（02 号 7.17 节） -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/zm_primary"
+        android:pathData="M12,1.5C7.86,1.5 4.5,4.86 4.5,9c0,5.62 7.5,13.5 7.5,13.5s7.5,-7.88 7.5,-13.5C19.5,4.86 16.14,1.5 12,1.5z" />
+    <path
+        android:fillColor="@color/zm_on_primary"
+        android:pathData="M12,9m-2.6,0a2.6,2.6 0,1 1,5.2 0a2.6,2.6 0,1 1,-5.2 0" />
+</vector>

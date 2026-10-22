@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F07 分组标题（“成员 · 4 人”“邀请 · 2 条”14 sp primary）+ 可选说明（空状态、只有所有者一人） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/base_page_margin"
+    android:paddingTop="@dimen/base_space_4"
+    android:paddingEnd="@dimen/base_page_margin"
+    android:paddingBottom="@dimen/base_space_2">
+
+    <TextView
+        android:id="@+id/section_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+        android:textColor="?attr/colorPrimary" />
+
+    <TextView
+        android:id="@+id/section_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone" />
+</LinearLayout>

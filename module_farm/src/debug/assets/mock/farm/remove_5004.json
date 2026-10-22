@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "已把张伟移出东山猪场",
+  "data": {
+    "unassigned_pens": [
+      {"pen_id": 2001, "name": "1 号保育舍", "pen_type_text": "保育舍"}
+    ]
+  },
+  "trace_id": "mock-f26-5004"
+}

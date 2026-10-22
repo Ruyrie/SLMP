@@ -1,0 +1,9 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "available": false,
+    "message": "你已经有一个叫“东山猪场”的养殖场，请换一个名称"
+  },
+  "trace_id": "mock-f04-dup-1001"
+}

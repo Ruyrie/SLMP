@@ -1,0 +1,83 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "member_id": 5001,
+        "user_id": 10001,
+        "name": "王建国",
+        "name_initial": "王",
+        "phone_masked": "138****6620",
+        "role": "OWNER",
+        "role_text": "所有者",
+        "join_type": "CREATE",
+        "join_type_text": "创建",
+        "joined_at": "2026-03-02 09:00:00",
+        "is_me": true,
+        "all_pens": true,
+        "can_adjust_pens": false,
+        "version": 1
+      },
+      {
+        "member_id": 5002,
+        "user_id": 10002,
+        "name": "刘芳",
+        "name_initial": "刘",
+        "phone_masked": "139****1234",
+        "role": "MANAGER",
+        "role_text": "场长",
+        "join_type": "INVITE",
+        "join_type_text": "邀请加入",
+        "joined_at": "2026-03-12 10:00:00",
+        "is_me": false,
+        "all_pens": true,
+        "can_adjust_pens": false,
+        "version": 2
+      },
+      {
+        "member_id": 5003,
+        "user_id": 10003,
+        "name": "李明",
+        "name_initial": "李",
+        "phone_masked": "137****5678",
+        "role": "STAFF",
+        "role_text": "员工",
+        "join_type": "INVITE",
+        "join_type_text": "邀请加入",
+        "joined_at": "2026-05-06 10:00:00",
+        "is_me": false,
+        "all_pens": false,
+        "can_adjust_pens": true,
+        "pens": [
+          {"pen_id": 2003, "name": "3 号育肥舍", "pen_type_text": "育肥舍"}
+        ],
+        "version": 3
+      },
+      {
+        "member_id": 5004,
+        "user_id": 10004,
+        "name": "张伟",
+        "name_initial": "张",
+        "phone_masked": "186****4402",
+        "role": "STAFF",
+        "role_text": "员工",
+        "join_type": "INVITE",
+        "join_type_text": "邀请加入",
+        "joined_at": "2026-08-21 10:00:00",
+        "is_me": false,
+        "all_pens": false,
+        "can_adjust_pens": true,
+        "pens": [
+          {"pen_id": 2001, "name": "1 号保育舍", "pen_type_text": "保育舍"}
+        ],
+        "version": 1
+      }
+    ],
+    "total": 4,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-f16-1001"
+}

@@ -1,4 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- 模块02 养殖场与成员管理：F01 为底部面板（IFarmContextService.showSwitcher），F04 在 lib_map，其余为二级页 -->
+    <application>
+
+        <!-- F02 新建养殖场 / 修改注册信息 -->
+        <activity
+            android:name=".ui.create.FarmCreateActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.F02" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- F03 审核结果 -->
+        <activity
+            android:name=".ui.audit.FarmAuditActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.F03" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- F05 养殖场信息 -->
+        <activity
+            android:name=".ui.info.FarmInfoActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.F05" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- F06 资料变更 -->
+        <activity
+            android:name=".ui.change.FarmChangeActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.F06" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- F07 成员管理 -->
+        <activity
+            android:name=".ui.member.MemberListActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.F07" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- F08 邀请成员 -->
+        <activity
+            android:name=".ui.invite.InviteMemberActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.F08" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- F09 成员详情 -->
+        <activity
+            android:name=".ui.detail.MemberDetailActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.F09" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- F10 转让所有权 -->
+        <activity
+            android:name=".ui.transfer.TransferActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.F10" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
 </manifest>

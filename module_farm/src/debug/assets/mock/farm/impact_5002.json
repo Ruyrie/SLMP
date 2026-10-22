@@ -1,0 +1,12 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "member_id": 5002,
+    "member_name": "刘芳",
+    "role": "MANAGER",
+    "pending_work_todo_count": 0,
+    "orphan_pens": null
+  },
+  "trace_id": "mock-f25-5002"
+}

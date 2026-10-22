@@ -1,0 +1,33 @@
+{
+  "code": 0,
+  "message": "已把刘芳改为员工",
+  "data": {
+    "member": {
+      "member_id": 5002,
+      "user_id": 10002,
+      "name": "刘芳",
+      "name_initial": "刘",
+      "phone_masked": "139****1234",
+      "phone": "13900001234",
+      "farm_name": "东山猪场",
+      "role": "STAFF",
+      "role_text": "员工",
+      "join_type": "INVITE",
+      "join_type_text": "邀请加入",
+      "joined_at": "2026-03-12 10:00:00",
+      "is_me": false,
+      "all_pens": false,
+      "can_adjust_pens": true,
+      "pens": [],
+      "version": 3,
+      "actions": {
+        "can_change_role": true,
+        "can_adjust_pens": true,
+        "can_remove": true,
+        "can_quit": false
+      }
+    },
+    "newly_unassigned_pens": []
+  },
+  "trace_id": "mock-f23-5002"
+}

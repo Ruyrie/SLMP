@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    F04 养殖场位置选点（模块02 UI 文档 F04、02 号 7.17 节）：顶部栏 → 地图区（浮动搜索框与结果卡片、居中大头针、
+    定位按钮）→ 底部地址卡（名称、地址、提示行、定位说明 Notice、“确认位置”）。
+    未配置高德 Key 时地图区显示占位说明，地址卡改为省、市、区县与详细地址的手动填写。
+-->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="com.zhimu.slmp.map.ui.pick.MapPickViewModel" />
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.map.ui.pick.MapPickViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/top_bar"
+            layout="@layout/base_include_top_app_bar"
+            app:title="@{@string/map_pick_title}" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="?attr/colorSurfaceContainer">
+
+            <!-- TextureMapView 在代码中创建（需已同意隐私政策并配置 Key） -->
+            <FrameLayout
+                android:id="@+id/map_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <!-- 占位：未配置 Key / 地图没有加载出来 -->
+            <LinearLayout
+                android:id="@+id/map_placeholder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:layout_marginTop="96dp"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/base_space_6"
+                android:paddingEnd="@dimen/base_space_6"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_location_on"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/map_placeholder_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/base_space_3"
+                    android:gravity="center"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/map_reload"
+                    style="@style/Widget.Zmt.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/base_space_2"
+                    android:text="@string/map_reload"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- 大头针：针尖对准地图中心（marginBottom 等于自身高度） -->
+            <ImageView
+                android:id="@+id/map_pin"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:layout_marginBottom="48dp"
+                android:elevation="2dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/map_ic_pin"
+                app:invisibleIf="@{vm.manualMode}" />
+
+            <!-- 浮动搜索框 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/map_search_card"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginStart="@dimen/base_page_margin"
+                android:layout_marginTop="@dimen/base_space_3"
+                android:layout_marginEnd="@dimen/base_page_margin"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="@dimen/base_elevation_2"
+                app:strokeWidth="0dp"
+                app:visibleIf="@{!vm.manualMode}">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="@dimen/base_space_4"
+                    android:paddingEnd="@dimen/base_space_4">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_search"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+
+                    <EditText
+                        android:id="@+id/map_search_input"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="@dimen/base_space_3"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:hint="@string/map_search_hint"
+                        android:imeOptions="actionSearch"
+                        android:importantForAutofill="no"
+                        android:inputType="text"
+                        android:maxLength="50"
+                        android:singleLine="true"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textColorHint="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 搜索联想结果卡片 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/map_tips_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_page_margin"
+                android:layout_marginTop="68dp"
+                android:layout_marginEnd="@dimen/base_page_margin"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                app:cardCornerRadius="@dimen/base_radius_lg_plus"
+                app:cardElevation="@dimen/base_elevation_2"
+                app:strokeWidth="0dp"
+                app:visibleIf="@{vm.tipsVisible}">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="@dimen/base_space_2"
+                    android:paddingBottom="@dimen/base_space_2">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/map_tips_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:overScrollMode="never" />
+
+                    <TextView
+                        android:id="@+id/map_tips_empty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="@dimen/base_space_4"
+                        android:text="@string/map_tips_empty"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:visibility="gone" />
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 定位按钮 + 底部地址卡（覆盖在地图上，被覆盖的部分照常渲染） -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="end"
+                    android:layout_marginEnd="@dimen/base_page_margin"
+                    android:layout_marginBottom="@dimen/base_space_4"
+                    app:visibleIf="@{!vm.manualMode}">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/map_locate"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clickable="true"
+                        android:contentDescription="@string/map_cd_locate"
+                        android:focusable="true"
+                        app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+                        app:cardCornerRadius="@dimen/base_radius_md"
+                        app:cardElevation="@dimen/base_elevation_2"
+                        app:strokeWidth="0dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_my_location"
+                            app:invisibleIf="@{vm.locating}"
+                            app:tint="?attr/colorPrimary" />
+
+                        <com.google.android.material.progressindicator.CircularProgressIndicator
+                            style="@style/Widget.Zmt.CircularProgressIndicator"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:indeterminate="true"
+                            app:indicatorSize="24dp"
+                            app:visibleIf="@{vm.locating}" />
+                    </com.google.android.material.card.MaterialCardView>
+                </FrameLayout>
+
+                <LinearLayout
+                    android:id="@+id/map_address_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/map_bg_address_card"
+                    android:clickable="true"
+                    android:elevation="@dimen/base_elevation_1"
+                    android:focusable="false"
+                    android:orientation="vertical"
+                    android:padding="@dimen/base_space_4">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:text="@{vm.titleName}"
+                        android:textAppearance="@style/TextAppearance.Zmt.TitleLarge"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <!-- 地址行：逆地理编码结果，点按可手动补充 -->
+                    <TextView
+                        android:id="@+id/map_address_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_1"
+                        android:background="?attr/selectableItemBackground"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        app:visibleIf="@{!vm.manualMode &amp;&amp; !vm.manualEditing}" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/map_address_edit_layout"
+                        style="@style/Widget.Zmt.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_2"
+                        android:hint="@string/map_manual_edit_hint"
+                        app:boxBackgroundColor="?attr/colorSurfaceContainerLow"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="200"
+                        app:visibleIf="@{!vm.manualMode &amp;&amp; vm.manualEditing}">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/map_address_edit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:maxLength="200"
+                            android:text="@={vm.manualAddress}" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:id="@+id/map_hint_line"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_1"
+                        android:text="@{vm.hintLine}"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        app:visibleIf="@{!vm.manualMode &amp;&amp; !MapPickViewModel.STATE_LOADING.equals(vm.addressState)}" />
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/map_permission_notice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        app:noticeActionText="@string/map_permission_action"
+                        app:noticeIcon="@drawable/ic_my_location"
+                        app:noticeText="@string/map_permission_notice"
+                        app:visibleIf="@{!vm.manualMode &amp;&amp; vm.showPermissionNotice}" />
+
+                    <!-- 手动填写（未配置高德 Key） -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:visibleIf="@{vm.manualMode}">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_1"
+                            android:text="@string/map_manual_helper"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_3"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.Zmt.TextInputLayout"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:hint="@string/map_manual_province"
+                                app:boxBackgroundColor="?attr/colorSurfaceContainerLow">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/map_manual_province"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="text"
+                                    android:maxLength="30"
+                                    android:singleLine="true"
+                                    android:text="@={vm.manualProvince}" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.Zmt.TextInputLayout"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/base_space_2"
+                                android:layout_weight="1"
+                                android:hint="@string/map_manual_city"
+                                app:boxBackgroundColor="?attr/colorSurfaceContainerLow">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="text"
+                                    android:maxLength="30"
+                                    android:singleLine="true"
+                                    android:text="@={vm.manualCity}" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.Zmt.TextInputLayout"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/base_space_2"
+                                android:layout_weight="1"
+                                android:hint="@string/map_manual_district"
+                                app:boxBackgroundColor="?attr/colorSurfaceContainerLow">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="text"
+                                    android:maxLength="30"
+                                    android:singleLine="true"
+                                    android:text="@={vm.manualDistrict}" />
+                            </com.google.android.material.textfield.TextInputLayout>
+                        </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Zmt.TextInputLayout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_3"
+                            android:hint="@string/map_manual_address"
+                            app:boxBackgroundColor="?attr/colorSurfaceContainerLow">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="text"
+                                android:maxLength="200"
+                                android:text="@={vm.manualAddress}" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/map_confirm"
+                        style="@style/Widget.Zmt.Button.Large"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:enabled="@{vm.canConfirm}"
+                        android:text="@string/map_confirm" />
+                </LinearLayout>
+            </LinearLayout>
+        </FrameLayout>
+    </LinearLayout>
+</layout>

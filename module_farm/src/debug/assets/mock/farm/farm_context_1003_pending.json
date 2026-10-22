@@ -1,0 +1,35 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "farm_id": 1003,
+    "name": "北湾牛场",
+    "status": "PENDING",
+    "status_text": "待审核",
+    "species_text": "牛",
+    "main_category_name": "肉牛",
+    "main_category_id": 301,
+    "count_unit": "HEAD",
+    "role": "OWNER",
+    "role_text": "所有者",
+    "restrict_tip": "审核通过前只能修改注册信息。栏舍、批次、库存和邀请成员等功能，要等审核通过后才能使用。",
+    "permissions": {
+      "can_view_farm_info": false,
+      "can_view_members": false,
+      "can_edit_basic": false,
+      "can_adjust_pens": false,
+      "can_submit_change": false,
+      "can_disable": false,
+      "can_invite": false,
+      "can_change_role": false,
+      "can_enable": false,
+      "can_transfer": false,
+      "can_remove_member": false,
+      "can_quit": false,
+      "can_view_finance": false,
+      "can_submit_change_request": false,
+      "writable": false
+    }
+  },
+  "trace_id": "mock-f02-1003-pending"
+}

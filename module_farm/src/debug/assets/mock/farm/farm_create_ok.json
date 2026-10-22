@@ -1,0 +1,28 @@
+{
+  "code": 0,
+  "message": "已提交审核，结果会发到消息中心",
+  "data": {
+    "farm_id": 1003,
+    "name": "北湾牛场",
+    "status": "PENDING",
+    "status_text": "待审核",
+    "audit_status": "PENDING",
+    "first_submitted_at": "2026-10-17 18:32:00",
+    "submitted_at": "2026-10-17 18:32:00",
+    "restrict_tip": "审核通过前只能修改注册信息。栏舍、批次、库存和邀请成员等功能，要等审核通过后才能使用。",
+    "submit_no": 1,
+    "audit_version": 1,
+    "reshoot_count": 0,
+    "records": [
+      {
+        "type": "SUBMIT",
+        "type_text": "提交审核",
+        "time": "2026-10-17 18:32:00",
+        "status_tag": "待审核",
+        "desc": "首次提交",
+        "submit_no": 1
+      }
+    ]
+  },
+  "trace_id": "mock-f05-create"
+}
