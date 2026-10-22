@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- D09 顶部栏：event_note（进入 D06 消毒计划，只对所有者和场长显示） -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/health_menu_plans"
+        android:icon="@drawable/health_ic_event_note"
+        android:title="@string/health_d06_title"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+</menu>

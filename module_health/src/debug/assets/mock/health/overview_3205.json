@@ -1,0 +1,30 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "batch_id": 3205,
+    "batch_no": "ZM2610-052",
+    "pen_id": 2103,
+    "pen_name": "3 号鸡舍",
+    "breed_name": "817 肉杂鸡",
+    "category_id": 201,
+    "entry_date": "2026-10-15",
+    "entry_age_days": 1,
+    "day_age": 5,
+    "current_count": 3000,
+    "batch_ended": false,
+    "has_template": false,
+    "can_manage": true,
+    "counts": {
+      "all": 0,
+      "pending": 0,
+      "missed": 0,
+      "postponed": 0,
+      "done": 0,
+      "cancelled": 0
+    },
+    "pre_entry_items": [],
+    "pre_entry_pending_count": 0
+  },
+  "trace_id": "mock-health-d01-3205"
+}

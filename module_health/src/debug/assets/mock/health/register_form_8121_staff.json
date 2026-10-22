@@ -1,0 +1,46 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "plan": {
+      "plan_id": 8121,
+      "target_type": "BATCH",
+      "batch_id": 3001,
+      "batch_no": "ZM2610-031",
+      "pen_name": "3 号育肥舍",
+      "vaccine_name": "猪伪狂犬病活疫苗",
+      "immune_round": "二免",
+      "current_count": 200,
+      "plan_date": "2026-10-12",
+      "plan_date_text": "10月12日",
+      "status": "MISSED",
+      "status_text": "漏免"
+    },
+    "drug_id": 5002,
+    "vaccine_name": "猪伪狂犬病活疫苗",
+    "default_lot": {
+      "lot_id": 6011,
+      "lot_no": "2025066",
+      "expire_date": "2026-11-30",
+      "lot_status": "NEAR_EXPIRY",
+      "days_to_expire": 42,
+      "stock": 150,
+      "priority_out": true,
+      "insufficient": true,
+      "can_go_scrap": false
+    },
+    "no_lot_text": null,
+    "template_dose": 1,
+    "dose": 1,
+    "dose_unit": "头份 / 头",
+    "quantity_default": 200,
+    "current_count": 200,
+    "method_code": "IM",
+    "backfill": true,
+    "date_default": "2026-10-19",
+    "date_min": "2026-10-12",
+    "date_max": "2026-10-19",
+    "creator_name": "李明"
+  },
+  "trace_id": "mock-health-d12-8121-staff"
+}

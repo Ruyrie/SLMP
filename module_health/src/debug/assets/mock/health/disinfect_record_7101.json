@@ -1,0 +1,77 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 7101,
+    "version": 1,
+    "record_type": "PLAN_TASK",
+    "record_type_text": "计划任务",
+    "task_id": 70411,
+    "task_date": "2026-10-18",
+    "plan_text": "计划：聚维酮碘溶液 1:500 · 喷雾 · 每 2 天",
+    "plan_concentration": "1:500",
+    "pen_id": 2001,
+    "pen_name": "1 号保育舍",
+    "actual_time": "2026-10-18 16:20:00",
+    "executor_name": "张伟",
+    "creator_name": "王建国",
+    "drug_lot_id": 6301,
+    "lot_no": "2025033",
+    "disinfectant_name": "聚维酮碘溶液",
+    "usage_qty": 0.5,
+    "usage_unit": "升",
+    "concentration": "1:500",
+    "concentration_confirmed": false,
+    "method_code": "SPRAY",
+    "method_name": "喷雾",
+    "photos": [
+      {
+        "file_id": 9003,
+        "url": "file:///android_asset/mock/media/farm_env.jpg",
+        "thumb_url": "file:///android_asset/mock/media/farm_env.jpg",
+        "media_type": "IMAGE",
+        "mime_type": "image/jpeg",
+        "size": 200000,
+        "width": 1280,
+        "height": 960,
+        "status": "READY",
+        "sort_no": 1,
+        "source_text": "消毒",
+        "shot_by": "张伟",
+        "shot_at": "2026-10-18 16:22:00"
+      },
+      {
+        "file_id": 9005,
+        "url": "file:///android_asset/mock/media/inspection.jpg",
+        "thumb_url": "file:///android_asset/mock/media/inspection.jpg",
+        "media_type": "IMAGE",
+        "mime_type": "image/jpeg",
+        "size": 200000,
+        "width": 1280,
+        "height": 960,
+        "status": "READY",
+        "sort_no": 2,
+        "source_text": "消毒",
+        "shot_by": "张伟",
+        "shot_at": "2026-10-18 16:22:00"
+      }
+    ],
+    "in_batch_cost": true,
+    "in_exec_rate": true,
+    "backfill": false,
+    "change_state": {
+      "can_edit": true,
+      "edit_deadline": "2026-10-21 23:59:59",
+      "pending_request_id": null
+    },
+    "actions": [
+      "EDIT",
+      "VIEW_LOG"
+    ],
+    "unit_price": 36.0,
+    "cost_amount": 18.0,
+    "drug_id": 5301,
+    "executor_id": 10004
+  },
+  "trace_id": "mock-health-d39-7101"
+}

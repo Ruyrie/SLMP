@@ -1,0 +1,41 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "batch_id": 3004,
+    "batch_no": "ZM2609-038",
+    "pen_name": "2 号保育舍",
+    "current_count": 200,
+    "status": "ENDED",
+    "status_text": "已到期",
+    "release_date": "2026-10-14",
+    "days_left": 0,
+    "decisive_drug_name": "氟苯尼考粉",
+    "last_med_date": "2026-09-24",
+    "withdrawal_days": 20,
+    "progress": 1.0,
+    "remind_dates": null,
+    "remind_text": null,
+    "drugs": [
+      {
+        "catalog_id": 7202,
+        "drug_name": "氟苯尼考粉",
+        "last_date": "2026-09-24",
+        "withdrawal_days": 20,
+        "end_date": "2026-10-14",
+        "tag": "ENDED",
+        "tag_text": "已到期"
+      },
+      {
+        "catalog_id": 7201,
+        "drug_name": "阿莫西林可溶性粉",
+        "last_date": "2026-09-29",
+        "withdrawal_days": 14,
+        "end_date": "2026-10-13",
+        "tag": "ENDED",
+        "tag_text": "已到期"
+      }
+    ]
+  },
+  "trace_id": "mock-health-d17-3004"
+}

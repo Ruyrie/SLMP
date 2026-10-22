@@ -1,0 +1,48 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "catalog_id": 7301,
+      "drug_id": 5301,
+      "name": "聚维酮碘溶液",
+      "recommended_concentration": "1:500",
+      "method_codes": [
+        "SPRAY",
+        "WIPE",
+        "SOAK"
+      ],
+      "stock_hint_type": "NEAR_EXPIRY",
+      "stock_hint_text": "库存批号 2025033 临期，剩 20 天",
+      "stock_unit": "升"
+    },
+    {
+      "catalog_id": 7302,
+      "drug_id": 5302,
+      "name": "戊二醛溶液",
+      "recommended_concentration": "1:1000",
+      "method_codes": [
+        "SPRAY",
+        "FUMIGATE"
+      ],
+      "stock_hint_type": "NORMAL",
+      "stock_hint_text": "结存 12 升",
+      "stock_unit": "升"
+    },
+    {
+      "catalog_id": 7303,
+      "drug_id": null,
+      "name": "过氧乙酸溶液",
+      "recommended_concentration": "1:200",
+      "method_codes": [
+        "SPRAY",
+        "FUMIGATE",
+        "SOAK"
+      ],
+      "stock_hint_type": "NO_STOCK",
+      "stock_hint_text": "过氧乙酸溶液暂无可用库存，登记消毒前需要先入库",
+      "stock_unit": "升"
+    }
+  ],
+  "trace_id": "mock-health-d35"
+}

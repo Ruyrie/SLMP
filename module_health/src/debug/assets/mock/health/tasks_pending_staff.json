@@ -1,0 +1,58 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 70113,
+        "plan_id": 62,
+        "pen_id": 2003,
+        "pen_name": "3 号育肥舍",
+        "task_date": "2026-10-19",
+        "date_text": "今天",
+        "due_time": "17:00",
+        "disinfectant_name": "聚维酮碘溶液",
+        "concentration": "1:300",
+        "method_name": "喷雾",
+        "cycle_days": 3,
+        "executor_text": "李明",
+        "no_staff": false,
+        "status": "PENDING",
+        "status_text": "待执行",
+        "actions": [
+          "REGISTER"
+        ]
+      },
+      {
+        "id": 70114,
+        "plan_id": 62,
+        "pen_id": 2004,
+        "pen_name": "4 号育肥舍",
+        "task_date": "2026-10-19",
+        "date_text": "今天",
+        "due_time": "17:00",
+        "disinfectant_name": "聚维酮碘溶液",
+        "concentration": "1:300",
+        "method_name": "喷雾",
+        "cycle_days": 3,
+        "executor_text": "李明",
+        "no_staff": false,
+        "status": "PENDING",
+        "status_text": "待执行",
+        "actions": [
+          "REGISTER"
+        ]
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "pending": 2,
+      "done": 1,
+      "overdue": 0
+    }
+  },
+  "trace_id": "mock-health-d36-PENDING-staff"
+}

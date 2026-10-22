@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "notified_names": [
+      "刘芳"
+    ]
+  },
+  "trace_id": "mock-health-d27"
+}

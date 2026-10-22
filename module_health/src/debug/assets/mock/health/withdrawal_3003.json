@@ -1,0 +1,22 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "batch_id": 3003,
+    "batch_no": "ZM2610-045",
+    "pen_name": "1 号保育舍",
+    "current_count": 320,
+    "status": "NONE",
+    "status_text": "无休药",
+    "release_date": null,
+    "days_left": null,
+    "decisive_drug_name": null,
+    "last_med_date": null,
+    "withdrawal_days": null,
+    "progress": null,
+    "remind_dates": null,
+    "remind_text": null,
+    "drugs": []
+  },
+  "trace_id": "mock-health-d17-3003"
+}

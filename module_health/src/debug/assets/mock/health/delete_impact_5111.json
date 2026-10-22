@@ -1,0 +1,13 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "impact": "NO_CHANGE_TODAY",
+    "record_title": "阿莫西林可溶性粉 · 10月19日–10月19日",
+    "release_date_before": "2026-11-05",
+    "release_date_after": "2026-11-05",
+    "notify_name": "刘芳",
+    "notify_role": "MANAGER"
+  },
+  "trace_id": "mock-health-d25-5111"
+}

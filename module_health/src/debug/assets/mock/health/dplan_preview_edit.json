@@ -1,0 +1,15 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "ready": true,
+    "times": 25,
+    "task_count": 50,
+    "generate_now_count": 50,
+    "ready_text": null,
+    "pen_text": "已选 2 个栏舍，系统为每个栏舍各生成一条任务。3 号育肥舍、4 号育肥舍由李明执行。",
+    "remind_text": "任务日期前 1 天和当天提醒李明。",
+    "regenerate_from": "2026-10-20"
+  },
+  "trace_id": "mock-health-d30-edit"
+}

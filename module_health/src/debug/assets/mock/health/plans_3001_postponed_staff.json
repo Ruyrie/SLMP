@@ -1,0 +1,36 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 8122,
+        "version": 2,
+        "vaccine_name": "口蹄疫灭活疫苗",
+        "immune_round": "三免",
+        "plan_mode": "BY_DAY_AGE",
+        "plan_date": "2026-11-02",
+        "is_today": false,
+        "due_time": "18:00",
+        "overdue": false,
+        "age_at_plan": 110,
+        "responsible_text": "李明负责",
+        "status": "POSTPONED",
+        "status_text": "已延期",
+        "dose": 2,
+        "dose_unit": "毫升 / 头",
+        "method_code": "IM",
+        "method_name": "肌肉注射",
+        "actions": [],
+        "postponed": true,
+        "postpone_from_date": "2026-10-26",
+        "postponed_by_name": "刘芳"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-health-d02-3001-POSTPONED-staff"
+}

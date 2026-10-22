@@ -1,0 +1,6 @@
+{
+  "code": 42201,
+  "message": "库存已变化，批号 2025113 结存不足。请刷新后重试。",
+  "data": null,
+  "trace_id": "mock-health-42201-d14"
+}

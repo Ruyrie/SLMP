@@ -1,0 +1,39 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "batch_id": 3001,
+    "batch_no": "ZM2610-031",
+    "pen_name": "3 号育肥舍",
+    "current_count": 200,
+    "status": "IN_WITHDRAWAL",
+    "status_text": "休药中",
+    "release_date": "2026-10-29",
+    "days_left": 10,
+    "decisive_drug_name": "氟苯尼考粉",
+    "last_med_date": "2026-10-09",
+    "withdrawal_days": 20,
+    "progress": 0.5,
+    "drugs": [
+      {
+        "catalog_id": 7202,
+        "drug_name": "氟苯尼考粉",
+        "last_date": "2026-10-09",
+        "withdrawal_days": 20,
+        "end_date": "2026-10-29",
+        "tag": "LATEST",
+        "tag_text": "最晚"
+      },
+      {
+        "catalog_id": 7201,
+        "drug_name": "阿莫西林可溶性粉",
+        "last_date": "2026-10-05",
+        "withdrawal_days": 14,
+        "end_date": "2026-10-19",
+        "tag": "ENDED",
+        "tag_text": "已到期"
+      }
+    ]
+  },
+  "trace_id": "mock-health-d17-3001-staff"
+}

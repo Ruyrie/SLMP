@@ -1,0 +1,35 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "batch_id": 3001,
+      "batch_no": "ZM2610-031",
+      "pen_name": "3 号育肥舍",
+      "current_count": 200,
+      "category_id": 101
+    },
+    {
+      "batch_id": 3002,
+      "batch_no": "ZM2610-019",
+      "pen_name": "4 号育肥舍",
+      "current_count": 150,
+      "category_id": 101
+    },
+    {
+      "batch_id": 3003,
+      "batch_no": "ZM2610-045",
+      "pen_name": "1 号保育舍",
+      "current_count": 320,
+      "category_id": 101
+    },
+    {
+      "batch_id": 3004,
+      "batch_no": "ZM2609-038",
+      "pen_name": "2 号保育舍",
+      "current_count": 200,
+      "category_id": 101
+    }
+  ],
+  "trace_id": "mock-health-d19-batch"
+}

@@ -1,0 +1,28 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "batch_id": 3001,
+    "batch_no": "ZM2610-031",
+    "pen_id": 2003,
+    "pen_name": "3 号育肥舍",
+    "breed_name": "杜长大",
+    "category_id": 101,
+    "entry_date": "2026-10-01",
+    "entry_age_days": 78,
+    "day_age": 96,
+    "current_count": 200,
+    "batch_ended": false,
+    "has_template": true,
+    "can_manage": false,
+    "counts": {
+      "all": 5,
+      "pending": 1,
+      "missed": 1,
+      "postponed": 1,
+      "done": 1,
+      "cancelled": 1
+    }
+  },
+  "trace_id": "mock-health-d01-3001-staff"
+}

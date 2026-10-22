@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- D06 消毒计划：顶部栏 task_alt（进入 D09）；筛选 Chip（全部 / 启用中 / 已暂停）；计划卡片 + 页面说明；FAB“新建计划” -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/health_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/health_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/base_top_bar_height"
+            app:navigationContentDescription="@string/base_cd_back"
+            app:navigationIcon="@drawable/ic_arrow_back" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/health_chip_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingTop="@dimen/base_space_1"
+        android:paddingEnd="@dimen/base_page_margin"
+        android:paddingBottom="@dimen/base_space_3"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/health_filter_chips"
+            style="@style/Widget.Zmt.ChipGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleLine="true"
+            app:singleSelection="true" />
+    </HorizontalScrollView>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/health_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:stateErrorTitle="@string/health_d06_error"
+            app:stateNoPermissionTitle="@string/health_d06_no_permission"
+            app:stateSkeletonLayout="@layout/base_skeleton_list">
+
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/health_refresh"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/health_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingBottom="@dimen/base_fab_list_bottom_space" />
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/health_fab"
+            android:tag="snackbar_anchor"
+            style="@style/Widget.Zmt.ExtendedFloatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="@dimen/base_space_4"
+            android:text="@string/health_new_plan"
+            app:icon="@drawable/ic_add" />
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</LinearLayout>

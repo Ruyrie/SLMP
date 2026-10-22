@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- D06 计划卡片：sanitizer 图标底 + 覆盖栏舍、状态标签、三行正文、按钮行（暂停计划 / 启用计划 + 修改计划） -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/base_page_margin"
+    android:paddingEnd="@dimen/base_page_margin">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/health_card"
+        style="@style/Widget.Zmt.Card.ListItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/base_space_4">
+
+            <ImageView
+                android:id="@+id/health_icon"
+                android:layout_width="@dimen/base_list_leading_size"
+                android:layout_height="@dimen/base_list_leading_size"
+                android:importantForAccessibility="no"
+                android:scaleType="center"
+                android:src="@drawable/ic_sanitizer" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_4"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/health_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <com.zhimu.slmp.base.widget.StatusTagView
+                        android:id="@+id/health_tag"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/base_space_2" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/health_line1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/health_line2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/health_line3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/base_space_3"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/health_pause"
+                        style="@style/Widget.Zmt.Button.Outlined.Small"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/base_space_4"
+                        android:text="@string/health_pause_plan"
+                        android:visibility="gone"
+                        app:icon="@drawable/ic_pause" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/health_resume"
+                        style="@style/Widget.Zmt.Button.Tonal.Small"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/base_space_4"
+                        android:text="@string/health_resume_plan"
+                        android:visibility="gone"
+                        app:icon="@drawable/ic_play_arrow" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/health_edit"
+                        style="@style/Widget.Zmt.Button.Text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/health_edit_plan"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</FrameLayout>

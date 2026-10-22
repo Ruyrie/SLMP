@@ -1,0 +1,18 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "record_ids": [
+      {{seq}}
+    ],
+    "group_no": "MG2610190005",
+    "per_batch": [
+      {
+        "batch_no": "ZM2610-045",
+        "release_date": "2026-11-06"
+      }
+    ],
+    "toast": "已登记用药，可出栏日期为 11月6日 周五"
+  },
+  "trace_id": "mock-health-d22"
+}

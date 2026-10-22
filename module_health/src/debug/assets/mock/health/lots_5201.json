@@ -1,0 +1,48 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "selectable": [
+      {
+        "lot_id": 6101,
+        "lot_no": "2025091",
+        "expire_date": "2027-08-31",
+        "lot_status": "NORMAL",
+        "days_to_expire": 316,
+        "stock": 3000,
+        "avg_price": 0.08,
+        "priority_out": true,
+        "insufficient": false,
+        "can_go_scrap": false
+      },
+      {
+        "lot_id": 6104,
+        "lot_no": "2024201",
+        "expire_date": "2026-10-19",
+        "lot_status": "NEAR_EXPIRY",
+        "days_to_expire": 0,
+        "stock": 500,
+        "avg_price": 0.07,
+        "priority_out": false,
+        "insufficient": false,
+        "can_go_scrap": false
+      }
+    ],
+    "unselectable": [
+      {
+        "lot_id": 6103,
+        "lot_no": "2024188",
+        "expire_date": "2026-09-01",
+        "lot_status": "EXPIRED",
+        "days_to_expire": -48,
+        "stock": 200,
+        "avg_price": 0.07,
+        "priority_out": false,
+        "insufficient": false,
+        "can_go_scrap": true
+      }
+    ],
+    "default_lot_id": 6101
+  },
+  "trace_id": "mock-health-m27-5201"
+}

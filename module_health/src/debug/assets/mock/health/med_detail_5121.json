@@ -1,0 +1,50 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 5121,
+    "group_no": "MG26105121",
+    "version": 2,
+    "target_type": "BATCH",
+    "batch_id": 3004,
+    "batch_no": "ZM2609-038",
+    "pen_id": 2002,
+    "pen_name": "2 号保育舍",
+    "drug_id": 5202,
+    "drug_name": "氟苯尼考粉",
+    "route_code": "MIX_FEED",
+    "route_name": "混饲",
+    "lot_no": "2025062",
+    "lot_expire_date": "2027-05-31",
+    "dose": 100,
+    "dose_unit": "克 / 吨料",
+    "recommended_dose": 100,
+    "over_dose": false,
+    "course_days": 5,
+    "first_date": "2026-09-20",
+    "last_date": "2026-09-24",
+    "withdrawal_days": 20,
+    "withdrawal_end_date": "2026-10-14",
+    "estimated_qty": null,
+    "used_qty": 500,
+    "used_unit": "克",
+    "reason": "咳嗽",
+    "creator_name": "张伟",
+    "executor_name": "张伟",
+    "is_mine": false,
+    "locked": false,
+    "change_state": {
+      "can_edit": false,
+      "edit_deadline": null,
+      "pending_request_id": 9010
+    },
+    "actions": [
+      "VIEW_REQUEST",
+      "VIEW_LOG"
+    ],
+    "unit_price": 0.12,
+    "cost_amount": 96.0,
+    "drug_lot_id": 6111
+  },
+  "trace_id": "mock-health-d23-5121"
+}

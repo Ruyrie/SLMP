@@ -1,0 +1,39 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 711,
+      "code": "EYE_NASAL",
+      "name": "滴鼻点眼",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 1
+    },
+    {
+      "id": 712,
+      "code": "WATER",
+      "name": "饮水",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 2
+    },
+    {
+      "id": 713,
+      "code": "SPRAY",
+      "name": "喷雾",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 3
+    },
+    {
+      "id": 714,
+      "code": "SC",
+      "name": "皮下注射",
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 4
+    }
+  ],
+  "trace_id": "mock-health-u10-vaccinate-201"
+}

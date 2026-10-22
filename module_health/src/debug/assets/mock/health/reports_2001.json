@@ -1,0 +1,14 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "report_id": 8101,
+      "diagnosis_id": 8201,
+      "label": "10月18日 AI 诊断 · 1 号保育舍",
+      "pen_id": 2001,
+      "batch_id": 3003
+    }
+  ],
+  "trace_id": "mock-health-i24"
+}

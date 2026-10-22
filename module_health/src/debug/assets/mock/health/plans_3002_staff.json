@@ -1,0 +1,35 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 8131,
+        "version": 2,
+        "vaccine_name": "猪瘟活疫苗",
+        "immune_round": "加强免疫",
+        "plan_mode": "BY_DAY_AGE",
+        "plan_date": "2026-10-19",
+        "is_today": true,
+        "due_time": "18:00",
+        "overdue": false,
+        "age_at_plan": 82,
+        "responsible_text": "李明负责",
+        "status": "PENDING",
+        "status_text": "待接种",
+        "dose": 1,
+        "dose_unit": "头份 / 头",
+        "method_code": "IM",
+        "method_name": "肌肉注射",
+        "actions": [
+          "REGISTER"
+        ]
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-health-d02-3002-staff"
+}

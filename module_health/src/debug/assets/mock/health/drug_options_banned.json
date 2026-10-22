@@ -1,0 +1,9 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [],
+    "banned_hint": "盐酸克仑特罗为禁用药，不能使用"
+  },
+  "trace_id": "mock-health-d20-banned"
+}

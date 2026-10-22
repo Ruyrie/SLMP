@@ -1,0 +1,23 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "selectable": [],
+    "unselectable": [
+      {
+        "lot_id": 6021,
+        "lot_no": "2025018",
+        "expire_date": "2026-09-30",
+        "lot_status": "EXPIRED",
+        "days_to_expire": -19,
+        "stock": 80,
+        "avg_price": 1.8,
+        "priority_out": false,
+        "insufficient": false,
+        "can_go_scrap": true
+      }
+    ],
+    "default_lot_id": null
+  },
+  "trace_id": "mock-health-m27-5003"
+}

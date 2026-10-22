@@ -1,0 +1,42 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 70112,
+        "plan_id": 63,
+        "pen_id": 2002,
+        "pen_name": "2 号保育舍",
+        "task_date": "2026-10-18",
+        "date_text": "10月18日",
+        "due_time": "17:00",
+        "disinfectant_name": "聚维酮碘溶液",
+        "concentration": "1:500",
+        "method_name": "喷雾",
+        "cycle_days": 2,
+        "executor_text": "你和刘芳",
+        "no_staff": true,
+        "status": "OVERDUE",
+        "status_text": "已逾期",
+        "actions": [
+          "BACKFILL"
+        ]
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "pending": 4,
+      "done": 2,
+      "overdue": 1
+    },
+    "overdue_banner": {
+      "show": true,
+      "text": "任务逾期后，系统会再提醒所有者和场长一次。已提醒你和刘芳。"
+    }
+  },
+  "trace_id": "mock-health-d36-OVERDUE"
+}

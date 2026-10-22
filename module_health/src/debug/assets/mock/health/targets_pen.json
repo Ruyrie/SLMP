@@ -1,0 +1,61 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "pen_id": 2001,
+      "pen_name": "1 号保育舍",
+      "has_batch": true,
+      "batches": [
+        {
+          "batch_id": 3003,
+          "batch_no": "ZM2610-045",
+          "stock_count": 320
+        }
+      ]
+    },
+    {
+      "pen_id": 2002,
+      "pen_name": "2 号保育舍",
+      "has_batch": true,
+      "batches": [
+        {
+          "batch_id": 3004,
+          "batch_no": "ZM2609-038",
+          "stock_count": 200
+        }
+      ]
+    },
+    {
+      "pen_id": 2003,
+      "pen_name": "3 号育肥舍",
+      "has_batch": true,
+      "batches": [
+        {
+          "batch_id": 3001,
+          "batch_no": "ZM2610-031",
+          "stock_count": 200
+        }
+      ]
+    },
+    {
+      "pen_id": 2004,
+      "pen_name": "4 号育肥舍",
+      "has_batch": true,
+      "batches": [
+        {
+          "batch_id": 3002,
+          "batch_no": "ZM2610-019",
+          "stock_count": 150
+        }
+      ]
+    },
+    {
+      "pen_id": 2005,
+      "pen_name": "5 号育肥舍",
+      "has_batch": false,
+      "batches": []
+    }
+  ],
+  "trace_id": "mock-health-d19-pen"
+}

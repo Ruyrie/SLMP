@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- D09 分组标题（“已逾期 · 1”）；逾期分组之后的标题上方带逾期提醒横幅（notifications_active，信息级） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/base_page_margin"
+    android:paddingEnd="@dimen/base_page_margin">
+
+    <com.zhimu.slmp.base.widget.NoticeView
+        android:id="@+id/health_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:visibility="gone"
+        app:noticeIcon="@drawable/health_ic_notifications_active" />
+
+    <com.zhimu.slmp.base.widget.SectionHeaderView
+        android:id="@+id/health_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/base_space_4"
+        android:paddingBottom="@dimen/base_space_2" />
+</LinearLayout>

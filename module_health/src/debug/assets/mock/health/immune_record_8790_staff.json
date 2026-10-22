@@ -1,0 +1,40 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 8790,
+    "plan_id": 8110,
+    "version": 1,
+    "batch_id": 3001,
+    "batch_no": "ZM2610-031",
+    "pen_name": "3 号育肥舍",
+    "vaccine_name": "口蹄疫灭活疫苗",
+    "immune_round": "二免",
+    "drug_lot_id": 6005,
+    "lot_no": "2025030",
+    "lot_expire_date": "2027-01-10",
+    "dose": 2,
+    "dose_unit": "毫升 / 头",
+    "quantity": 200,
+    "total_dose": 400,
+    "method_code": "IM",
+    "method_name": "肌肉注射",
+    "vaccinate_date": "2026-10-08",
+    "executor_name": "李明",
+    "creator_name": "李明",
+    "created_at": "2026-10-08 09:30:00",
+    "backfill": false,
+    "change_state": {
+      "can_edit": false,
+      "edit_deadline": null,
+      "pending_request_id": null
+    },
+    "actions": [
+      "VIEW_LOG"
+    ],
+    "drug_id": 5003,
+    "executor_id": 10003,
+    "edit_hint": "接种记录只能在登记当天修改"
+  },
+  "trace_id": "mock-health-d15-8790-staff"
+}

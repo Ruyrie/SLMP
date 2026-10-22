@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 模块08 免疫、用药与消毒的文案（UI 设计文档 2.2–2.5 节） -->
+<resources>
+
+    <!-- ===== 通用 ===== -->
+    <string name="health_list_load_failed">加载失败，点按重试</string>
+    <string name="health_refresh_failed">刷新失败，请稍后重试</string>
+    <string name="health_discard_title">放弃这次登记？</string>
+    <string name="health_discard_message">已填写的内容不会保存。</string>
+    <string name="health_action_keep_editing">继续填写</string>
+    <string name="health_action_discard">放弃</string>
+    <string name="health_action_delete">删除</string>
+    <string name="health_draft_title">恢复上次未提交的内容？</string>
+    <string name="health_draft_message">上次离开时填写的内容已保存为草稿（保留 7 天）。</string>
+    <string name="health_draft_restore">恢复</string>
+    <string name="health_draft_discard">不恢复</string>
+    <string name="health_cd_more">更多操作</string>
+    <string name="health_no_permission_title">你没有这个栏舍的查看权限</string>
+    <string name="health_pick_batch">选择批次</string>
+    <string name="health_log_title">修改记录</string>
+    <string name="health_log_empty">还没有修改记录</string>
+    <string name="health_view_log">查看修改记录</string>
+    <string name="health_save_changes">保存修改</string>
+    <string name="health_edit_record">修改记录</string>
+    <string name="health_submit_change_request">提交修改申请</string>
+    <string name="health_change_request_review">提交修改申请（需审核）</string>
+    <string name="health_view_change_request">查看修改申请</string>
+    <string name="health_change_request_title">提交修改申请？</string>
+    <string name="health_got_it">知道了</string>
+    <string name="health_notify_manager">通知场长</string>
+    <string name="health_notify_who">通知%1$s</string>
+    <string name="health_executor">实际执行人</string>
+    <string name="health_creator_owner">登记人：%1$s</string>
+    <string name="health_creator_staff">登记人：%1$s（系统自动记录）</string>
+    <string name="health_record_people">执行人：%1$s · 登记人：%2$s</string>
+    <string name="health_stock_lot">库存批号</string>
+    <string name="health_go_stock_in">去入库</string>
+    <string name="health_no_stock">暂无库存</string>
+    <string name="health_dose">剂量</string>
+    <string name="health_batch">批次</string>
+    <string name="health_pen">栏舍</string>
+    <string name="health_unit_day">天</string>
+    <string name="health_unit_day_age">日龄</string>
+    <string name="health_overdue">已逾期</string>
+    <string name="health_backfill">补录</string>
+    <string name="health_confirm">确认</string>
+
+    <!-- ===== D01 免疫计划 ===== -->
+    <string name="health_d01_title">免疫计划</string>
+    <string name="health_d01_error">免疫计划加载失败</string>
+    <string name="health_d01_fab">添加项目</string>
+    <string name="health_batch_ended">批次已结束，未执行的计划已自动取消。</string>
+    <string name="health_pre_entry_section">入栏前项目 · %1$d 项待确认</string>
+    <string name="health_pre_entry_hint">批次入栏时已超过这些项目的日龄，请确认入栏前是否已接种。</string>
+    <string name="health_pre_entry_join">加入计划</string>
+    <string name="health_pre_entry_confirm">确认已接种</string>
+    <string name="health_plan_section">免疫计划 · %1$d 项</string>
+    <string name="health_add_item">添加免疫项目</string>
+    <string name="health_register_vaccine">登记接种</string>
+    <string name="health_postpone">调整日期</string>
+    <string name="health_plan_menu_edit">修改剂量和方式</string>
+    <string name="health_plan_menu_delete">删除项目</string>
+    <string name="health_plan_delete_title">删除这个免疫项目？</string>
+    <string name="health_plan_delete_message">删除后项目标为已取消，不再提醒，相关待办同时取消。</string>
+    <string name="health_postpone_title">调整计划日期</string>
+    <string name="health_postpone_confirm">确认延期</string>
+    <string name="health_postpone_new_date">新日期</string>
+    <string name="health_postpone_reason">延期原因</string>
+    <string name="health_postpone_reason_helper">必填，会记入修改记录</string>
+    <string name="health_postpone_permission">只有所有者和场长可以调整计划日期</string>
+
+    <!-- ===== D02 添加免疫项目 ===== -->
+    <string name="health_d02_title">添加免疫项目</string>
+    <string name="health_d02_title_edit">修改免疫项目</string>
+    <string name="health_d02_error">免疫项目加载失败</string>
+    <string name="health_d02_submit">添加项目</string>
+    <string name="health_d02_continue">保存并继续添加</string>
+    <string name="health_d02_added">已添加免疫项目</string>
+    <string name="health_d02_saved">已保存修改</string>
+    <string name="health_no_template_title">该品种没有免疫模板，请手工添加。</string>
+    <string name="health_no_template_text">平台暂无该品种的免疫程序模板，系统没有自动生成计划。</string>
+    <string name="health_no_template_detail">平台暂无 %1$s 的免疫程序模板，系统没有自动生成计划。</string>
+    <string name="health_vaccine">疫苗</string>
+    <string name="health_plan_time">计划时间</string>
+    <string name="health_mode_age">按日龄</string>
+    <string name="health_mode_date">按日期</string>
+    <string name="health_plan_age">接种日龄</string>
+    <string name="health_plan_date">计划日期</string>
+    <string name="health_age_at_plan">届时日龄</string>
+    <string name="health_by_age_auto">按日龄自动计算</string>
+    <string name="health_by_date_auto">按日期自动计算</string>
+    <string name="health_dose_helper">按疫苗说明书填写</string>
+    <string name="health_vaccinate_method">接种方式</string>
+
+    <!-- ===== D03 登记接种 ===== -->
+    <string name="health_d03_title">登记接种</string>
+    <string name="health_d03_title_view">接种记录</string>
+    <string name="health_d03_title_edit">修改接种记录</string>
+    <string name="health_d03_error">登记表单加载失败</string>
+    <string name="health_immune_plan">免疫计划</string>
+    <string name="health_backfill_tag">补免</string>
+    <string name="health_priority_out">先到期先出</string>
+    <string name="health_vaccinate_quantity">接种数量</string>
+    <string name="health_vaccinate_date">接种日期</string>
+    <string name="health_template_dose">模板剂量 %1$s</string>
+    <string name="health_quantity_limit">不能超过存栏 %1$s</string>
+    <string name="health_pick_vaccine_lot">选择疫苗批号</string>
+    <string name="health_purpose_vaccinate">登记接种</string>
+
+    <!-- ===== D04 登记用药 ===== -->
+    <string name="health_d04_title">登记用药</string>
+    <string name="health_d04_title_edit">修改用药记录</string>
+    <string name="health_d04_error">用药表单加载失败</string>
+    <string name="health_target">用药对象</string>
+    <string name="health_drug">药品（兽药目录）</string>
+    <string name="health_course">疗程</string>
+    <string name="health_over_dose_title">超过推荐剂量。</string>
+    <string name="health_over_dose_text">请填写超量说明后再提交。</string>
+    <string name="health_over_dose_note">超量说明（必填）</string>
+    <string name="health_mismatch_title">该药品不适用于%1$s。</string>
+    <string name="health_mismatch_text">请填写用药说明后再提交。</string>
+    <string name="health_usage_note">用药说明（必填）</string>
+    <string name="health_used_qty">实际用量</string>
+    <string name="health_first_date">首次用药日期</string>
+    <string name="health_medication_reason">用药原因</string>
+    <string name="health_report_link">关联异常上报或诊断</string>
+    <string name="health_report_linked">已关联 %1$s</string>
+    <string name="health_release_after_submit">提交后可出栏日期</string>
+    <string name="health_register_medication">登记用药</string>
+    <string name="health_medication_saved">已登记用药</string>
+    <string name="health_pen_no_batch">没有在栏批次</string>
+    <string name="health_pick_drug_lot">选择药品批号</string>
+    <string name="health_purpose_medicate">登记用药</string>
+    <string name="health_change_submit_title">提交这项修改？</string>
+    <string name="health_staff_cannot_edit">不能直接修改</string>
+
+    <!-- ===== D05 用药档案 ===== -->
+    <string name="health_d05_title">用药档案</string>
+    <string name="health_d05_error">用药档案加载失败</string>
+    <string name="health_tip_withdrawal_title">休药期</string>
+    <string name="health_tip_withdrawal">最后一次用药到可以出栏之间必须间隔的天数，按兽药目录中各药品对该畜种的规定计算。休药期内的批次不能登记出栏。</string>
+    <string name="health_withdrawal_in">休药中 · 剩 %1$d 天</string>
+    <string name="health_withdrawal_ended">已到期</string>
+    <string name="health_withdrawal_none">暂无用药记录</string>
+    <string name="health_withdrawal_none_text">这个批次没有休药限制，可以登记出栏。</string>
+    <string name="health_release_on">可出栏 %1$s</string>
+    <string name="health_last_med">末次用药 %1$s</string>
+    <string name="health_withdrawal_days">休药 %1$d 天</string>
+    <string name="health_withdrawal_note_in">休药期内不能登记出栏。</string>
+    <string name="health_withdrawal_note_ended">休药期已结束，可以登记出栏。</string>
+    <string name="health_by_drug">按药品计算</string>
+    <string name="health_take_latest">取最晚的一天</string>
+    <string name="health_release_rule">可出栏日期 = 各药品末次用药日 + 休药天数，取最晚的一天；用药记录变动后立即重新计算。</string>
+    <string name="health_record_section">用药记录 · %1$d 条</string>
+    <string name="health_record_empty">还没有用药记录。批次用药后点“登记用药”记录，系统会算出可出栏日期。</string>
+    <string name="health_edit_medication">修改用药记录</string>
+    <string name="health_delete_record_title">删除这条用药记录？</string>
+    <string name="health_change_reason">申请原因</string>
+    <string name="health_change_reason_helper">必填，审核结果会通过消息通知你</string>
+    <string name="health_staff_cannot_delete">不能直接删除</string>
+
+    <!-- ===== D06 消毒计划 ===== -->
+    <string name="health_d06_title">消毒计划</string>
+    <string name="health_d06_error">消毒计划加载失败</string>
+    <string name="health_d06_no_permission">只有所有者和场长可以管理消毒计划</string>
+    <string name="health_d06_note">系统按周期为每个栏舍各生成一条任务；计划暂停期间不生成任务。</string>
+    <string name="health_d06_empty">还没有消毒计划。新建一个计划，系统会按周期为每个栏舍生成消毒任务。</string>
+    <string name="health_d06_empty_filter">没有%1$s的计划。</string>
+    <string name="health_new_plan">新建计划</string>
+    <string name="health_pause_plan">暂停计划</string>
+    <string name="health_resume_plan">启用计划</string>
+    <string name="health_edit_plan">修改计划</string>
+    <string name="health_pause_reason">暂停原因</string>
+    <string name="health_pause_reason_helper">选填，会显示在计划卡片上</string>
+    <string name="health_pause_note">暂停期间不生成新的消毒任务，已生成的任务不变。</string>
+
+    <!-- ===== D07 新建消毒计划 ===== -->
+    <string name="health_d07_title">新建消毒计划</string>
+    <string name="health_d07_title_edit">修改消毒计划</string>
+    <string name="health_d07_error">消毒计划加载失败</string>
+    <string name="health_pens_multi">栏舍（可多选）</string>
+    <string name="health_cycle_days">周期天数</string>
+    <string name="health_start_date">开始日期</string>
+    <string name="health_end_date">结束日期</string>
+    <string name="health_disinfectant_dict">消毒剂（字典）</string>
+    <string name="health_concentration">浓度</string>
+    <string name="health_disinfect_method_dict">消毒方式（字典）</string>
+    <string name="health_save_and_enable">保存并启用</string>
+
+    <!-- ===== D08 登记消毒 ===== -->
+    <string name="health_d08_title">登记消毒</string>
+    <string name="health_d08_title_view">消毒记录</string>
+    <string name="health_d08_title_edit">修改消毒记录</string>
+    <string name="health_d08_error">登记表单加载失败</string>
+    <string name="health_type_plan">计划任务</string>
+    <string name="health_type_empty">空栏消毒</string>
+    <string name="health_type_emergency">紧急消毒</string>
+    <string name="health_type_hint">空栏消毒和紧急消毒可以不依据计划，临时登记</string>
+    <string name="health_disinfect_task">消毒任务</string>
+    <string name="health_no_task_today">今天没有待执行的消毒任务。可以切换到空栏消毒或紧急消毒临时登记。</string>
+    <string name="health_empty_pen_hint">空栏消毒不计入批次成本</string>
+    <string name="health_emergency_hint">紧急消毒单独统计次数，不计入执行率</string>
+    <string name="health_pen_empty">空栏</string>
+    <string name="health_disinfectant">消毒剂</string>
+    <string name="health_actual_time">实际时间</string>
+    <string name="health_disinfectant_lot">消毒剂批号</string>
+    <string name="health_usage">用量</string>
+    <string name="health_usage_helper">按原液计，登记后扣减库存</string>
+    <string name="health_planned_concentration">计划浓度 %1$s</string>
+    <string name="health_concentration_mismatch_title">浓度与计划不一致。</string>
+    <string name="health_concentration_mismatch_text">请确认本次按 %1$s 配制后再登记。</string>
+    <string name="health_concentration_confirmed">已确认本次按 %1$s 配制。</string>
+    <string name="health_disinfect_method">消毒方式</string>
+    <string name="health_photos">现场照片</string>
+    <string name="health_photos_hint">可选 · JPG 或 PNG，单张不超过 5MB</string>
+    <string name="health_register_disinfect">登记消毒</string>
+    <string name="health_wait_photos">等待照片上传</string>
+    <string name="health_pick_disinfectant_lot">选择消毒剂批号</string>
+    <string name="health_purpose_disinfect">登记消毒</string>
+
+    <!-- ===== D09 消毒任务 ===== -->
+    <string name="health_d09_title">消毒任务</string>
+    <string name="health_d09_error">消毒任务加载失败</string>
+    <string name="health_temp_disinfect">登记临时消毒</string>
+    <string name="health_overdue_staff">已逾期，需所有者或场长补录</string>
+</resources>

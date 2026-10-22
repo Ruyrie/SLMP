@@ -1,0 +1,6 @@
+{
+  "code": 40303,
+  "message": "只有所有者和场长可以管理消毒计划",
+  "data": null,
+  "trace_id": "mock-health-40303-plans"
+}

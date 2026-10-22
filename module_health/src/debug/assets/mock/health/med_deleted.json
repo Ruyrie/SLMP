@@ -1,0 +1,8 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "toast": "已删除用药记录"
+  },
+  "trace_id": "mock-health-d26"
+}
