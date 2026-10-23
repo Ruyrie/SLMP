@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 网络安全配置（03 号文档 6.1 节）：禁止明文 HTTP；debug 版额外信任用户安装的证书以便抓包 -->
+<!-- 网络安全配置（03 号文档 6.1 节）：debug 版额外信任用户安装的证书以便抓包 -->
+<!-- 临时：暂无域名/HTTPS，全局允许明文 HTTP，便于公网 IP 变更后直连；上线 HTTPS 后改回 false -->
 <network-security-config>
-    <base-config cleartextTrafficPermitted="false">
+    <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>
