@@ -457,7 +457,6 @@ public class DisinfectServiceImpl implements DisinfectService {
             }
             visible.add(task);
         }
-        String effective = effectiveStatus(visible);
         int pendingCount = 0;
         int doneCount = 0;
         int overdueCount = 0;
@@ -515,10 +514,6 @@ public class DisinfectServiceImpl implements DisinfectService {
             vo.setOverdueBanner(banner);
         }
         return vo;
-    }
-
-    private String effectiveStatus(List<DisinfectTask> tasks) {
-        return "ALL";
     }
 
     private Comparator<DisinfectTask> taskComparator() {
