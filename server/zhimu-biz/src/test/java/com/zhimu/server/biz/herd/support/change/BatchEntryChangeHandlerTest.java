@@ -135,7 +135,7 @@ class BatchEntryChangeHandlerTest {
         assertThat(form.recordCard()).extracting(ChangeCardItem::label)
                 .containsExactly("入栏数量", "入栏日龄", "平均体重");
         assertThat(form.recordCard()).extracting(ChangeCardItem::value)
-                .containsExactly("205 头", "78 天", "45 千克");
+                .containsExactly("205 头", "78 天", "45.0 千克");
         ChangeField field = form.fieldOf("head_count");
         assertThat(field).isNotNull();
         assertThat(field.fieldName()).isEqualTo("入栏数量");

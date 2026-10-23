@@ -109,7 +109,8 @@ public class BatchEntryChangeHandler implements ChangeRequestHandler {
         int count = batch == null || batch.getEntryCount() == null ? 0 : batch.getEntryCount();
         int age = batch == null || batch.getEntryAgeDays() == null ? 0 : batch.getEntryAgeDays();
         BigDecimal weight = batch == null ? null : batch.getEntryAvgWeight();
-        String weightText = weight == null ? "" : weight.stripTrailingZeros().toPlainString() + " 千克";
+        String weightText = weight == null ? ""
+                : weight.setScale(1, java.math.RoundingMode.HALF_UP).toPlainString() + " 千克";
         ChangeField field = new ChangeField(FIELD_HEAD_COUNT, FIELD_NAME, String.valueOf(count), UNIT,
                 ChangeField.NUMBER, List.of(), BigDecimal.valueOf(MIN), BigDecimal.valueOf(MAX),
                 List.of("存栏", "成本"), null);
