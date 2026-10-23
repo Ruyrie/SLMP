@@ -432,6 +432,11 @@
   },
   {
     "method": "GET",
+    "path": "/api/v1/courses",
+    "file": "courses_all.json"
+  },
+  {
+    "method": "GET",
     "path": "/api/v1/courses/continue",
     "file": "continue.json"
   },
