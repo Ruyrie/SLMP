@@ -5,6 +5,7 @@ import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -22,8 +23,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * 启动冒烟：Spring 上下文能启动，Flyway 在 zhimu_test 库执行 V1_00，5 张公共表存在且字符集、注释符合约定。
- * 每次先 clean 再 migrate，保证脚本从空库可重复执行。
+ * 启动冒烟：Spring 上下文能启动，Flyway 在测试库执行全部结构脚本，公共表存在且字符集、注释符合约定。
+ * 每次先 clean 再 migrate，保证脚本从空库可重复执行。测试库名可用 TEST_DB_NAME 覆盖。
  */
 @SpringBootTest(classes = ZhimuServerApplication.class)
 @ActiveProfiles("it")
@@ -54,15 +55,17 @@ class ZhimuServerApplicationIT {
     private TaskScheduler taskScheduler;
     @Autowired
     private FarmTableRegistry farmTableRegistry;
+    @Value("${TEST_DB_NAME:zhimu_test}")
+    private String expectedDatabase;
 
     @Test
     void flywayCreatesCommonTables() {
-        assertThat(jdbc.queryForObject("SELECT DATABASE()", String.class)).isEqualTo("zhimu_test");
+        assertThat(jdbc.queryForObject("SELECT DATABASE()", String.class)).isEqualTo(expectedDatabase);
 
         MigrationInfo[] applied = flyway.info().applied();
         assertThat(Arrays.stream(applied).map(info -> info.getVersion().getVersion()))
-                .containsExactly("1.00");
-        assertThat(applied[0].getState().isFailed()).isFalse();
+                .contains("1.00");
+        assertThat(Arrays.stream(applied).allMatch(info -> !info.getState().isFailed())).isTrue();
 
         List<String> tables = jdbc.queryForList(
                 "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE()", String.class);

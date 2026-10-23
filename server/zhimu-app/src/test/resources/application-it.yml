@@ -1,8 +1,9 @@
 # 集成测试（@ActiveProfiles("it")）：本机 MySQL 的 zhimu_test 库（不存在时自动创建）、本机 Redis database 15。
+# 并行开发时用 TEST_DB_NAME / TEST_REDIS_DATABASE 覆盖，各 worktree 使用独立库与 database，避免互相清库。
 # 数据库账号密码取 server/.env.local 的 DB_USER、DB_PASSWORD（application.yml 已导入），这里不写密码。
 spring:
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/zhimu_test?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    url: jdbc:mysql://127.0.0.1:3306/${TEST_DB_NAME:zhimu_test}?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
     username: ${DB_USER:root}
     password: ${DB_PASSWORD:}
   data:
@@ -10,7 +11,7 @@ spring:
       host: 127.0.0.1
       port: 6379
       password:
-      database: 15
+      database: ${TEST_REDIS_DATABASE:15}
   flyway:
     # 只执行结构脚本，不导入示例数据；测试库允许 clean（集成测试每次清空后重新迁移）
     locations: classpath:db/migration
