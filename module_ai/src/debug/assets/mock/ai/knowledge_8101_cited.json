@@ -1,0 +1,82 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 8101,
+    "title": "休药期计算与出栏",
+    "category_name": "用药规范",
+    "source_type": "PLATFORM",
+    "source_type_text": "平台知识库",
+    "version_no": 3,
+    "updated_at": "2026-10-12 10:00:00",
+    "share_url": "https://web.zhimutong.example.com/knowledge/8101",
+    "embedded_video": {
+      "course_id": 6301,
+      "title": "兽药休药期怎么查",
+      "duration_sec": 266,
+      "cover_url": "file:///android_asset/mock/media/inspection.jpg"
+    },
+    "blocks": [
+      {
+        "para_key": "p1",
+        "para_type": "TEXT",
+        "text": "休药期是畜禽最后一次用药到允许屠宰出栏的最短间隔天数。不同兽药、不同品类的休药天数不同，以平台兽药目录与休药期标准为准。",
+        "content_html": null,
+        "image_url": null
+      },
+      {
+        "para_key": "p2",
+        "para_type": "HEADING",
+        "text": "怎么计算可出栏日期",
+        "content_html": null,
+        "image_url": null
+      },
+      {
+        "para_key": "p3",
+        "para_type": "TEXT",
+        "text": "最早可出栏日期 = 末次用药日期 + 休药天数。例如末次用药为 10月9日、休药期 20 天，最早 10月29日 可以出栏。",
+        "content_html": null,
+        "image_url": null
+      },
+      {
+        "para_key": "p4",
+        "para_type": "TEXT",
+        "text": "同一批次在休药期内用过多种兽药时，按休药期最晚结束的一种计算。休药期内不能登记出栏，出栏单会提示原因。",
+        "content_html": null,
+        "image_url": null
+      },
+      {
+        "para_key": "p5",
+        "para_type": "LIST",
+        "text": "用药登记时选择兽药，系统自动带出休药天数；批次档案显示休药中与可出栏日期。",
+        "content_html": "<ul><li>用药登记时选择兽药，系统自动带出休药天数</li><li>批次档案显示<strong>休药中</strong>与可出栏日期</li></ul>",
+        "image_url": null
+      }
+    ],
+    "related_items": [
+      {
+        "id": 8102,
+        "title": "兽药休药期标准 · 氟苯尼考粉",
+        "category_name": "用药规范",
+        "source_type": "DRUG_CATALOG",
+        "source_type_text": "兽药目录",
+        "version_no": 4,
+        "icon_type": "STANDARD"
+      },
+      {
+        "id": 8103,
+        "title": "禁用兽药与禁用物质清单",
+        "category_name": "用药规范",
+        "source_type": "PLATFORM",
+        "source_type_text": null,
+        "version_no": 5,
+        "icon_type": "STANDARD"
+      }
+    ],
+    "highlight_para_key": "p3",
+    "cited_version_no": 3,
+    "updated_after_answer": false,
+    "citing_answer": null
+  },
+  "trace_id": "mock-ai-0029"
+}

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- K05 视频播放 · 竖屏 / K06 全屏：media-backdrop 视频区（16:9，全屏时铺满）叠控制层；下方标题、元信息、
+     “问 AI / 图文原文 / 倍速”、本专题标题行与课程列表（全屏时隐藏） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ai_play_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/ai_play_status_bg"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/zm_media_backdrop" />
+
+    <FrameLayout
+        android:id="@+id/ai_play_video"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/zm_media_backdrop">
+
+        <androidx.media3.ui.PlayerView
+            android:id="@+id/ai_play_player"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:resize_mode="fit"
+            app:shutter_background_color="@color/zm_media_backdrop"
+            app:surface_type="surface_view"
+            app:use_controller="false" />
+
+        <include
+            android:id="@+id/ai_play_controls"
+            layout="@layout/ai_view_player_controls" />
+    </FrameLayout>
+
+    <com.zhimu.slmp.base.widget.StateLayout
+        android:id="@+id/ai_play_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:stateErrorTitle="@string/ai_play_error_title"
+        app:stateEmptyIcon="@drawable/ic_smart_display"
+        app:stateEmptyTitle="@string/ai_play_offline">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/ai_play_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="24dp"
+            tools:listitem="@layout/ai_item_topic_course" />
+    </com.zhimu.slmp.base.widget.StateLayout>
+</LinearLayout>

@@ -1,0 +1,97 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 1021,
+        "title": "氟苯尼考粉用于猪多久可以出栏",
+        "topic": "MEDICATION",
+        "topic_text": null,
+        "batch_no": "ZM2610-031",
+        "round_count": 1,
+        "last_asked_at": "2026-10-19 09:12:00",
+        "date_group": "TODAY",
+        "date_group_text": "今天",
+        "has_correction": true,
+        "context_truncated": false,
+        "has_epidemic_alert": false
+      },
+      {
+        "id": 1018,
+        "title": "3 号育肥舍采食量下降的原因",
+        "topic": "FEEDING",
+        "topic_text": null,
+        "batch_no": "ZM2610-031",
+        "round_count": 14,
+        "last_asked_at": "2026-10-18 17:26:00",
+        "date_group": "YESTERDAY",
+        "date_group_text": "昨天",
+        "has_correction": false,
+        "context_truncated": true,
+        "has_epidemic_alert": false
+      },
+      {
+        "id": 1015,
+        "title": "保育猪换料后怎么减少腹泻",
+        "topic": "DISEASE",
+        "topic_text": null,
+        "batch_no": "ZM2610-045",
+        "round_count": 3,
+        "last_asked_at": "2026-10-18 10:05:00",
+        "date_group": "YESTERDAY",
+        "date_group_text": "昨天",
+        "has_correction": false,
+        "context_truncated": false,
+        "has_epidemic_alert": false
+      },
+      {
+        "id": 1012,
+        "title": "猪瘟活疫苗两次免疫间隔多久",
+        "topic": "IMMUNE",
+        "topic_text": null,
+        "batch_no": "ZM2610-045",
+        "round_count": 2,
+        "last_asked_at": "2026-10-15 09:22:00",
+        "date_group": "LAST_7_DAYS",
+        "date_group_text": "近 7 天",
+        "has_correction": false,
+        "context_truncated": false,
+        "has_epidemic_alert": false
+      },
+      {
+        "id": 1009,
+        "title": "育肥全价料每天喂多少合适",
+        "topic": "FEEDING",
+        "topic_text": null,
+        "batch_no": null,
+        "round_count": 4,
+        "last_asked_at": "2026-10-13 15:40:00",
+        "date_group": "LAST_7_DAYS",
+        "date_group_text": "近 7 天",
+        "has_correction": false,
+        "context_truncated": false,
+        "has_epidemic_alert": false
+      },
+      {
+        "id": 1006,
+        "title": "带猪消毒用聚维酮碘怎么稀释",
+        "topic": "DISINFECT",
+        "topic_text": null,
+        "batch_no": null,
+        "round_count": 2,
+        "last_asked_at": "2026-09-28 08:50:00",
+        "date_group": "EARLIER",
+        "date_group_text": "更早",
+        "has_correction": false,
+        "context_truncated": false,
+        "has_epidemic_alert": false
+      }
+    ],
+    "total": 6,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-ai-0016"
+}

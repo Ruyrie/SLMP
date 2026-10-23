@@ -1,0 +1,8 @@
+event: meta
+data: {"message_id": {{seq}}, "session_id": 0, "round_no": 1, "session_created": false, "batch_link_state": "VALID"}
+
+: ping
+
+event: error
+data: {"code": 50401, "message": "回答超时，点按重新生成", "status": "TIMEOUT"}
+

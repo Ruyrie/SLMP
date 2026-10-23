@@ -1,0 +1,58 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 5440,
+        "session_id": 1012,
+        "round_no": 1,
+        "asked_at": "2026-10-15 09:20:00",
+        "question_text": "猪瘟活疫苗两次免疫间隔多久？",
+        "images": null,
+        "batch_id": null,
+        "batch_no": null,
+        "context_course_title": null,
+        "status": "ANSWERED",
+        "answer_type": "NORMAL",
+        "answer_text": "一般首免后间隔 3 至 4 周加强免疫一次，具体以疫苗说明书和本场免疫程序为准。",
+        "citations": [],
+        "rating": null,
+        "rated_at": null,
+        "can_rate": true,
+        "can_copy": true,
+        "in_context": true,
+        "correction": null,
+        "error_code": null,
+        "error_message": null,
+        "answered_at": "2026-10-15 09:20:15"
+      },
+      {
+        "id": 5441,
+        "session_id": 1012,
+        "round_no": 2,
+        "asked_at": "2026-10-15 09:22:00",
+        "question_text": "免疫前后能用抗生素吗？",
+        "images": null,
+        "batch_id": null,
+        "batch_no": null,
+        "context_course_title": null,
+        "status": "ANSWERED",
+        "answer_type": "NORMAL",
+        "answer_text": "活疫苗免疫前后 3 天内尽量避免使用抗菌药物，以免影响免疫效果。",
+        "citations": [],
+        "rating": null,
+        "rated_at": null,
+        "can_rate": true,
+        "can_copy": true,
+        "in_context": true,
+        "correction": null,
+        "error_code": null,
+        "error_message": null,
+        "answered_at": "2026-10-15 09:22:12"
+      }
+    ],
+    "has_more": false
+  },
+  "trace_id": "mock-ai-0010"
+}

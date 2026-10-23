@@ -1,0 +1,27 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 6303,
+        "title": "母猪预产期前的准备",
+        "cover_url": "file:///android_asset/mock/media/qual_license.jpg",
+        "duration_sec": 195,
+        "published_at": "2026-10-17 10:00:00",
+        "category_name": "繁育",
+        "learn_status": "NOT_STARTED",
+        "position_sec": 0,
+        "progress_ratio": 0.0,
+        "topic_id": null,
+        "topic_name": null,
+        "section_no": null
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-ai-0040"
+}

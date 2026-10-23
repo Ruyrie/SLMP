@@ -1,0 +1,33 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 7001,
+        "name": "仔猪腹泻防控",
+        "category_name": "疾病防治",
+        "cover_url": "file:///android_asset/mock/media/farm_env.jpg",
+        "course_count": 6,
+        "total_duration_sec": 1318,
+        "learned_count": 2,
+        "last_learned_at": "2026-10-18 20:15:00"
+      },
+      {
+        "id": 7002,
+        "name": "育肥猪精细化饲喂",
+        "category_name": "饲养管理",
+        "cover_url": "file:///android_asset/mock/media/inspection.jpg",
+        "course_count": 4,
+        "total_duration_sec": 1085,
+        "learned_count": 0,
+        "last_learned_at": null
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-ai-0046"
+}

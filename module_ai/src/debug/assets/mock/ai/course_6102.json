@@ -1,0 +1,42 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 6102,
+    "title": "仔猪腹泻的日常防控",
+    "category_name": "疾病防治",
+    "duration_sec": 222,
+    "source_label": "平台知识库",
+    "updated_at": "2026-10-12 10:00:00",
+    "cover_url": "file:///android_asset/mock/media/farm_env.jpg",
+    "share_url": "https://web.zhimutong.example.com/course/6102",
+    "sources": [
+      {
+        "quality": "P720",
+        "hls_url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+        "size_bytes": 29360128
+      },
+      {
+        "quality": "P480",
+        "hls_url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+        "size_bytes": 15728640
+      }
+    ],
+    "knowledge_id": 8101,
+    "section_no": 2,
+    "next_course_id": 6103,
+    "topic": {
+      "id": 7001,
+      "name": "仔猪腹泻防控",
+      "learned_count": 2,
+      "course_count": 6
+    },
+    "progress": {
+      "position_sec": 84,
+      "completed": false,
+      "resume_position_sec": 84
+    },
+    "related_courses": null
+  },
+  "trace_id": "mock-ai-0051"
+}

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- K04 视频卡：16:9 封面（圆角 12dp）+ 右下时长徽标 + 底部 4dp 学习进度条（看过才显示）；标题单行；“分类 · 学习状态” -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="vertical"
+    android:paddingBottom="16dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ai_card_cover"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/ai_bg_cover"
+            android:importantForAccessibility="no"
+            android:scaleType="centerCrop"
+            app:layout_constraintDimensionRatio="16:9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Zmt.Corner.Medium" />
+
+        <TextView
+            android:id="@+id/ai_card_duration"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_margin="6dp"
+            android:background="@drawable/ai_bg_badge"
+            android:drawablePadding="4dp"
+            android:fontFeatureSettings="tnum"
+            android:gravity="center_vertical"
+            android:paddingStart="6dp"
+            android:paddingEnd="8dp"
+            android:textAppearance="@style/TextAppearance.Zmt.LabelSmall"
+            android:textColor="@color/zm_on_media"
+            app:drawableStartCompat="@drawable/ic_smart_display"
+            app:drawableTint="@color/zm_on_media"
+            app:layout_constraintBottom_toBottomOf="@id/ai_card_cover"
+            app:layout_constraintEnd_toEndOf="@id/ai_card_cover" />
+
+        <ProgressBar
+            android:id="@+id/ai_card_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="4dp"
+            android:max="100"
+            android:progressDrawable="@drawable/ai_bg_progress_track"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/ai_card_cover"
+            app:layout_constraintEnd_toEndOf="@id/ai_card_cover"
+            app:layout_constraintStart_toStartOf="@id/ai_card_cover" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/ai_card_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+        android:textColor="?attr/colorOnSurface" />
+
+    <TextView
+        android:id="@+id/ai_card_sub"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+</LinearLayout>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- “关联批次”底部面板内容：批次单选列表（按批次号倒序，当前项“当前”标签）、空状态说明、分隔线与“不关联批次”；
+     加载中转圈，失败“批次加载失败”+“重新加载” -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="8dp"
+    android:paddingBottom="16dp">
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/ai_link_loading"
+        style="@style/Widget.Zmt.CircularProgressIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="24dp"
+        android:indeterminate="true" />
+
+    <LinearLayout
+        android:id="@+id/ai_link_error"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_sheet_padding_horizontal"
+        android:paddingEnd="@dimen/base_sheet_padding_horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/ai_link_error"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/ai_link_reload"
+            style="@style/Widget.Zmt.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/ai_link_reload" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/ai_link_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/base_sheet_padding_horizontal"
+        android:paddingTop="8dp"
+        android:paddingEnd="@dimen/base_sheet_padding_horizontal"
+        android:paddingBottom="8dp"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/ai_link_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+    <View
+        android:id="@+id/ai_link_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="@dimen/base_sheet_padding_horizontal"
+        android:layout_marginEnd="@dimen/base_sheet_padding_horizontal"
+        android:background="?attr/colorOutlineVariant"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/ai_link_none"
+        layout="@layout/ai_item_link_batch"
+        android:visibility="gone" />
+</LinearLayout>

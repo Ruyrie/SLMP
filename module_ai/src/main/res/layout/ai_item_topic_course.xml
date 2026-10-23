@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- K05 本专题课程行（70dp）：96 × 54 缩略图（正在播放加 1dp primary 描边）+ 标题“2. 仔猪腹泻的日常防控”+
+     “2:58 · 已学完”或 graphic_eq + “正在播放”；看过的课程文字下方 4dp 进度条；正在播放整行 surface-container-low -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:background="@drawable/ai_bg_playing_row"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/base_page_margin"
+    android:paddingTop="8dp"
+    android:paddingEnd="@dimen/base_page_margin">
+
+    <FrameLayout
+        android:layout_width="96dp"
+        android:layout_height="54dp">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ai_tc_thumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/ai_bg_cover"
+            android:importantForAccessibility="no"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Zmt.Corner.Medium" />
+
+        <View
+            android:id="@+id/ai_tc_playing_border"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/ai_bg_thumb_playing"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/ai_tc_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+            android:textColor="?attr/colorOnSurface" />
+
+        <TextView
+            android:id="@+id/ai_tc_sub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:drawablePadding="4dp"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/ai_tc_progress"
+            style="@style/Widget.Zmt.LinearProgressIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:max="100"
+            android:visibility="gone"
+            app:trackCornerRadius="2dp"
+            app:trackThickness="4dp" />
+    </LinearLayout>
+</LinearLayout>

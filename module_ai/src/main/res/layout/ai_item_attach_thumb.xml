@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 输入栏附图缩略图：64dp、圆角 12dp；上传中进度环、等待上传遮罩；失败为 error-container 覆盖层 + refresh（点按重试）；
+     右上角 24dp 删除按钮（距顶边、右边各 4dp） -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="64dp"
+    android:layout_height="64dp"
+    android:layout_marginEnd="8dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/ai_thumb_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurfaceContainerHighest"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Zmt.Corner.Medium" />
+
+    <FrameLayout
+        android:id="@+id/ai_thumb_mask"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#66000000"
+        android:visibility="gone">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/ai_thumb_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            app:indicatorColor="@color/zm_on_media"
+            app:indicatorSize="28dp"
+            app:trackColor="#4DFFFFFF"
+            app:trackThickness="3dp" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/ai_thumb_failed"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/ai_bg_failed_overlay"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_refresh"
+            app:tint="?attr/colorOnErrorContainer" />
+    </FrameLayout>
+
+    <ImageButton
+        android:id="@+id/ai_thumb_remove"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:background="@drawable/ai_bg_remove"
+        android:contentDescription="@string/ai_chat_remove_image"
+        android:padding="4dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_close"
+        app:tint="?attr/colorOnSurfaceInverse" />
+</FrameLayout>

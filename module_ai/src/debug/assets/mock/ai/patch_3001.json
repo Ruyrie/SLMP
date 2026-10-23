@@ -1,0 +1,28 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 1021,
+    "title": "氟苯尼考粉用于猪多久可以出栏",
+    "round_count": 1,
+    "has_correction": true,
+    "context_truncated": false,
+    "has_epidemic_alert": false,
+    "batch_link_state": "VALID",
+    "last_round_no": 1,
+    "batch": {
+      "batch_id": 3001,
+      "batch_no": "ZM2610-031",
+      "category_name": "生猪",
+      "stage_name": "育肥猪",
+      "breed_name": "杜长大",
+      "pen_id": 2003,
+      "pen_name": "3 号育肥舍",
+      "day_age": 96,
+      "current_count": 200,
+      "count_unit_text": "头"
+    },
+    "invalid_batch_no": null
+  },
+  "trace_id": "mock-ai-0011"
+}

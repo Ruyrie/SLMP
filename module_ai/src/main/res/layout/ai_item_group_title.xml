@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 分组标题：14sp Medium primary，上 20dp、下 8dp（K02 日期分组、K03 相关条目） -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ai_group_title"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="20dp"
+    android:paddingBottom="8dp"
+    android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+    android:textColor="?attr/colorPrimary" />

@@ -1,0 +1,42 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 6104,
+    "title": "保育舍的温度与通风",
+    "category_name": "饲养管理",
+    "duration_sec": 210,
+    "source_label": "平台知识库",
+    "updated_at": "2026-10-12 10:00:00",
+    "cover_url": "file:///android_asset/mock/media/death_photo.jpg",
+    "share_url": "https://web.zhimutong.example.com/course/6104",
+    "sources": [
+      {
+        "quality": "P720",
+        "hls_url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+        "size_bytes": 29360128
+      },
+      {
+        "quality": "P480",
+        "hls_url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+        "size_bytes": 15728640
+      }
+    ],
+    "knowledge_id": null,
+    "section_no": 4,
+    "next_course_id": 6105,
+    "topic": {
+      "id": 7001,
+      "name": "仔猪腹泻防控",
+      "learned_count": 2,
+      "course_count": 6
+    },
+    "progress": {
+      "position_sec": 210,
+      "completed": true,
+      "resume_position_sec": 0
+    },
+    "related_courses": null
+  },
+  "trace_id": "mock-ai-0053"
+}

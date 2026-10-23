@@ -1,0 +1,642 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/linkable-batches",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "linkable_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/linkable-batches",
+    "file": "linkable_owner.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/sessions/{id}/messages",
+    "when": {
+      "path": {
+        "id": "1021"
+      }
+    },
+    "file": "messages_1021.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/sessions/{id}/messages",
+    "when": {
+      "path": {
+        "id": "1018"
+      }
+    },
+    "file": "messages_1018.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/sessions/{id}/messages",
+    "when": {
+      "path": {
+        "id": "1015"
+      }
+    },
+    "file": "messages_1015.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/sessions/{id}/messages",
+    "file": "messages_generic.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/sessions/{id}",
+    "when": {
+      "path": {
+        "id": "1021"
+      }
+    },
+    "file": "session_1021.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/sessions/{id}",
+    "when": {
+      "path": {
+        "id": "1018"
+      }
+    },
+    "file": "session_1018.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/sessions/{id}",
+    "when": {
+      "path": {
+        "id": "1015"
+      }
+    },
+    "file": "session_1015.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/sessions/{id}",
+    "file": "session_generic.json"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/ai/sessions/{id}",
+    "when": {
+      "body": "\"batch_id\":3001"
+    },
+    "file": "patch_3001.json"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/ai/sessions/{id}",
+    "when": {
+      "body": "\"batch_id\":3002"
+    },
+    "file": "patch_3002.json"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/ai/sessions/{id}",
+    "when": {
+      "body": "\"batch_id\":3003"
+    },
+    "file": "patch_3003.json"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/ai/sessions/{id}",
+    "when": {
+      "body": "\"batch_id\":3004"
+    },
+    "file": "patch_3004.json"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/ai/sessions/{id}",
+    "file": "patch_none.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/sessions",
+    "when": {
+      "query": {
+        "keyword": "氟苯尼考"
+      }
+    },
+    "file": "sessions_search.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/sessions",
+    "when": {
+      "query": {
+        "keyword": "休药"
+      }
+    },
+    "file": "sessions_search.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/sessions",
+    "when": {
+      "query": {
+        "keyword": "没有"
+      }
+    },
+    "file": "page_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/sessions",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "sessions_staff.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/sessions",
+    "file": "sessions_owner.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/ai/messages",
+    "when": {
+      "body": "另一台"
+    },
+    "file": "err_42901_busy.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/ai/messages",
+    "when": {
+      "body": "已停用"
+    },
+    "file": "err_40305.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/ai/messages",
+    "when": {
+      "body": "克伦特罗"
+    },
+    "file": "ask_banned.sse"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/ai/messages",
+    "when": {
+      "body": "年终总结"
+    },
+    "file": "ask_offtopic.sse"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/ai/messages",
+    "when": {
+      "body": "高烧"
+    },
+    "file": "ask_epidemic.sse"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/ai/messages",
+    "when": {
+      "body": "熏"
+    },
+    "file": "ask_nobasis.sse"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/ai/messages",
+    "when": {
+      "body": "换料后拉稀"
+    },
+    "file": "ask_timeout.sse"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/ai/messages",
+    "when": {
+      "body": "疫苗"
+    },
+    "file": "ask_interrupted.sse"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/ai/messages",
+    "file": "ask_normal.sse",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/ai/messages/{id}/retry",
+    "file": "ask_normal.sse",
+    "delay": 600
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/messages/{id}",
+    "when": {
+      "path": {
+        "id": "5501"
+      }
+    },
+    "file": "message_5501.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/ai/messages/{id}",
+    "file": "message_interrupted.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/ai/messages/{id}/rating",
+    "when": {
+      "body": "USEFUL"
+    },
+    "file": "rating_useful.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/ai/messages/{id}/rating",
+    "when": {
+      "body": "USELESS"
+    },
+    "file": "rating_useless.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/ai/messages/{id}/rating",
+    "file": "rating_null.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/ai/speech-recognitions",
+    "file": "speech_ok.json",
+    "delay": 800
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/knowledge-items/{id}",
+    "when": {
+      "path": {
+        "id": "8101"
+      },
+      "query": {
+        "citation_id": "9902"
+      }
+    },
+    "file": "knowledge_8101_cited.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/knowledge-items/{id}",
+    "when": {
+      "path": {
+        "id": "8102"
+      },
+      "query": {
+        "citation_id": "9901"
+      }
+    },
+    "file": "knowledge_8102_cited.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/knowledge-items/{id}",
+    "when": {
+      "path": {
+        "id": "8102"
+      }
+    },
+    "file": "knowledge_8102.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/knowledge-items/{id}",
+    "when": {
+      "path": {
+        "id": "8103"
+      }
+    },
+    "file": "knowledge_8103.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/knowledge-items/{id}",
+    "when": {
+      "path": {
+        "id": "8104"
+      }
+    },
+    "file": "knowledge_8104.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/knowledge-items/{id}",
+    "when": {
+      "path": {
+        "id": "8199"
+      }
+    },
+    "file": "err_41001_knowledge.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/knowledge-items/{id}",
+    "file": "knowledge_8101.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/course-categories",
+    "file": "categories.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses",
+    "when": {
+      "query": {
+        "category_id": "5101"
+      }
+    },
+    "file": "courses_cat_5101.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses",
+    "when": {
+      "query": {
+        "category_id": "5102"
+      }
+    },
+    "file": "courses_cat_5102.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses",
+    "when": {
+      "query": {
+        "category_id": "5103"
+      }
+    },
+    "file": "courses_cat_5103.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses",
+    "when": {
+      "query": {
+        "category_id": "5104"
+      }
+    },
+    "file": "courses_cat_5104.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses",
+    "when": {
+      "query": {
+        "category_id": "5105"
+      }
+    },
+    "file": "page_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses",
+    "when": {
+      "query": {
+        "keyword": "腹泻"
+      }
+    },
+    "file": "courses_search.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses",
+    "when": {
+      "query": {
+        "keyword": "没有"
+      }
+    },
+    "file": "page_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/continue",
+    "file": "continue.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/course-topics/{id}",
+    "when": {
+      "path": {
+        "id": "7001"
+      }
+    },
+    "file": "topic_7001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/course-topics/{id}",
+    "when": {
+      "path": {
+        "id": "7002"
+      }
+    },
+    "file": "topic_7002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/course-topics/{id}",
+    "when": {
+      "path": {
+        "id": "7099"
+      }
+    },
+    "file": "err_41001_topic.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/course-topics/{id}",
+    "file": "topic_7001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/course-topics",
+    "file": "topics.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "when": {
+      "path": {
+        "id": "6201"
+      }
+    },
+    "file": "course_6201.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "when": {
+      "path": {
+        "id": "6301"
+      }
+    },
+    "file": "course_6301.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "when": {
+      "path": {
+        "id": "6302"
+      }
+    },
+    "file": "course_6302.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "when": {
+      "path": {
+        "id": "6303"
+      }
+    },
+    "file": "course_6303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "when": {
+      "path": {
+        "id": "6102"
+      }
+    },
+    "file": "course_6102.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "when": {
+      "path": {
+        "id": "6101"
+      }
+    },
+    "file": "course_6101.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "when": {
+      "path": {
+        "id": "6104"
+      }
+    },
+    "file": "course_6104.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "when": {
+      "path": {
+        "id": "6103"
+      }
+    },
+    "file": "course_6103.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "when": {
+      "path": {
+        "id": "6105"
+      }
+    },
+    "file": "course_6105.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "when": {
+      "path": {
+        "id": "6106"
+      }
+    },
+    "file": "course_6106.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "when": {
+      "path": {
+        "id": "6202"
+      }
+    },
+    "file": "course_6202.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "when": {
+      "path": {
+        "id": "6203"
+      }
+    },
+    "file": "course_6203.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "when": {
+      "path": {
+        "id": "6204"
+      }
+    },
+    "file": "course_6204.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "when": {
+      "path": {
+        "id": "6199"
+      }
+    },
+    "file": "err_41001_course.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/courses/{id}",
+    "file": "course_6102.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/courses/{id}/progress",
+    "when": {
+      "body": "\"event\":\"END\""
+    },
+    "file": "progress_end.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/courses/{id}/progress",
+    "file": "progress_ok.json",
+    "delay": 150
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/course-progress",
+    "file": "history.json"
+  }
+]

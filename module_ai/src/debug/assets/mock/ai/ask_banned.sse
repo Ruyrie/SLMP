@@ -1,0 +1,17 @@
+event: meta
+data: {"message_id": {{seq}}, "session_id": 0, "round_no": 1, "session_created": false, "batch_link_state": "VALID"}
+
+: ping
+
+event: delta
+data: {"text": "克伦特罗是食品动物禁用药物[^1]，"}
+
+event: delta
+data: {"text": "任何阶段都不能添加到饲料或饮水中。"}
+
+event: citation
+data: {"citations": [{"id": 9903, "seq_no": 1, "knowledge_id": 8103, "title": "禁用兽药与禁用物质清单", "category_name": "用药规范", "source_type": "PLATFORM", "icon_type": "STANDARD"}]}
+
+event: done
+data: {"answer_type": "BANNED_DRUG", "finish_reason": "STOP", "message": {"id": {{seq}}, "session_id": 0, "round_no": 1, "asked_at": "2026-10-19 09:30:00", "question_text": null, "images": null, "batch_id": null, "batch_no": null, "context_course_title": null, "status": "ANSWERED", "answer_type": "BANNED_DRUG", "answer_text": "克伦特罗是食品动物禁用药物[^1]，任何阶段都不能添加到饲料或饮水中。", "citations": [{"id": 9903, "seq_no": 1, "knowledge_id": 8103, "title": "禁用兽药与禁用物质清单", "category_name": "用药规范", "source_type": "PLATFORM", "icon_type": "STANDARD"}], "rating": null, "rated_at": null, "can_rate": true, "can_copy": true, "in_context": true, "correction": null, "error_code": null, "error_message": null, "answered_at": "2026-10-19 09:30:20"}}
+

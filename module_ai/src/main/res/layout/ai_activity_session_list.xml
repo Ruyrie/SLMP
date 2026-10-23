@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- K02 历史会话：二级页顶部栏（search）↔ 搜索栏；说明横幅；按日期分组的会话列表（下拉刷新、滚到底加载）；右下扩展 FAB“新对话” -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/ai_session_top_bar"
+            layout="@layout/base_include_top_app_bar" />
+
+        <LinearLayout
+            android:id="@+id/ai_session_search_bar"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginStart="@dimen/base_page_margin"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="@dimen/base_page_margin"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/ai_bg_composer_tall"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="4dp"
+            android:paddingEnd="8dp"
+            android:visibility="gone">
+
+            <ImageButton
+                android:id="@+id/ai_session_search_back"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/ai_back"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="?attr/colorOnSurfaceVariant" />
+
+            <EditText
+                android:id="@+id/ai_session_search_input"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="@string/ai_session_search_hint"
+                android:imeOptions="actionSearch"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                android:textColor="?attr/colorOnSurface"
+                android:textColorHint="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/ai_session_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <com.zhimu.slmp.base.widget.StateLayout
+                android:id="@+id/ai_session_state"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:stateEmptyActionIcon="@drawable/ic_add_comment"
+                app:stateEmptyActionText="@string/ai_session_empty_action"
+                app:stateEmptyIcon="@drawable/ic_history"
+                app:stateEmptyMessage="@string/ai_session_empty_message"
+                app:stateEmptyTitle="@string/ai_session_empty_title"
+                app:stateErrorTitle="@string/ai_session_error_title">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/ai_session_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="88dp" />
+            </com.zhimu.slmp.base.widget.StateLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/ai_session_fab"
+        style="@style/Widget.Zmt.ExtendedFloatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:text="@string/ai_action_new_chat"
+        app:icon="@drawable/ic_add_comment" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

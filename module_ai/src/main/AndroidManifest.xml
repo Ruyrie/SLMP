@@ -1,4 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- K01 语音输入（首次点麦克风时申请） -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- K01 发送前判断联网、K05 判断 Wi-Fi / 移动网络 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application>
+
+        <!-- K01 AI 问答 / K04 养殖课堂：主页“助手”标签的内容；本页只转交参数（单独运行时直接承载助手页） -->
+        <activity
+            android:name=".ui.AiEntryActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.K01" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.K04" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- K02 历史会话 -->
+        <activity
+            android:name=".ui.session.AiSessionListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.K02" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- K03 知识原文（内嵌视频，自行处理方向变化） -->
+        <activity
+            android:name=".ui.knowledge.KnowledgeDetailActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.K03" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- K05 视频播放 · 竖屏 / K06 全屏播放 · 横屏：画中画、单任务启动、自行处理方向等配置变化 -->
+        <activity
+            android:name=".ui.play.CoursePlayActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.K05" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.K06" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- K07 专题详情 -->
+        <activity
+            android:name=".ui.topic.TopicDetailActivity"
+            android:exported="false"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.K07" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- K04 观看记录（模块内页面，无编号） -->
+        <activity
+            android:name=".ui.history.WatchHistoryActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+    </application>
+
 </manifest>

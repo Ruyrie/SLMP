@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- “按住 说话”：40dp 高，圆角 20dp，底色 + 按下状态层 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/ai_talk_container" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/ai_talk_state" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+</layer-list>

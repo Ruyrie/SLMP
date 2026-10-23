@@ -52,4 +52,26 @@ public final class AiDirectConfig {
     public static boolean isEnabled() {
         return !enabledProviders().isEmpty();
     }
+
+    /**
+     * 语音识别模型：local.properties 的 ai.dashscopeAsrModel（生成到 BuildConfig.DASHSCOPE_ASR_MODEL），
+     * 为空时用 {@link AiSpeechClient#DEFAULT_MODEL}。
+     */
+    @NonNull
+    public static String speechModel() {
+        String m = BuildConfig.DASHSCOPE_ASR_MODEL;
+        return m == null || m.trim().isEmpty() ? AiSpeechClient.DEFAULT_MODEL : m.trim();
+    }
+
+    /** 语音识别（模块11 K01）：阿里云百炼 OpenAI 兼容接口，Key 与对话直连相同 */
+    @NonNull
+    public static AiProvider dashscopeSpeech() {
+        return new AiProvider(AiProvider.DASHSCOPE, "百炼语音识别", AiProvider.DASHSCOPE_BASE_URL,
+                speechModel(), BuildConfig.DASHSCOPE_API_KEY);
+    }
+
+    /** 语音识别直连开启（只在 debug 包且配置了百炼 Key 时为真） */
+    public static boolean isSpeechEnabled() {
+        return dashscopeSpeech().isEnabled();
+    }
 }

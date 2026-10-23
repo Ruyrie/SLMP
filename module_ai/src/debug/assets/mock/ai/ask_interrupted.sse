@@ -1,0 +1,12 @@
+event: meta
+data: {"message_id": {{seq}}, "session_id": 0, "round_no": 1, "session_created": false, "batch_link_state": "VALID"}
+
+event: delta
+data: {"text": "一般首免后间隔 3 至 4 周"}
+
+event: delta
+data: {"text": "加强免疫一次，"}
+
+event: error
+data: {"code": 50201, "message": "回答中断，点按重新生成", "status": "INTERRUPTED"}
+

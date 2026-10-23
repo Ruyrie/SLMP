@@ -1,0 +1,17 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 1012,
+    "title": "猪瘟活疫苗两次免疫间隔多久",
+    "round_count": 2,
+    "has_correction": false,
+    "context_truncated": false,
+    "has_epidemic_alert": false,
+    "batch_link_state": "NONE",
+    "last_round_no": 2,
+    "batch": null,
+    "invalid_batch_no": null
+  },
+  "trace_id": "mock-ai-0009"
+}

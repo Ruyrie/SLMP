@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- K04 观看记录：二级页顶部栏；按最近观看时间排序的视频列表（下拉刷新、滚到底加载） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/ai_history_top_bar"
+        layout="@layout/base_include_top_app_bar" />
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/ai_history_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/ai_history_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:stateEmptyIcon="@drawable/ic_history"
+            app:stateEmptyMessage="@string/ai_history_empty_message"
+            app:stateEmptyTitle="@string/ai_history_empty_title"
+            app:stateErrorTitle="@string/ai_history_error_title">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/ai_history_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingTop="8dp"
+                android:paddingBottom="24dp" />
+        </com.zhimu.slmp.base.widget.StateLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+</LinearLayout>

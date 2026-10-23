@@ -7,6 +7,10 @@ android {
 dependencies {
     implementation project(':lib_common')
     implementation project(':lib_media')
+    // K05/K06、K03 内嵌视频：HLS 播放（lib_media 只以 implementation 引用 media3，未对外暴露；版本与 lib_media 同为 1.9.0）
+    implementation libs.media3.exoplayer
+    implementation libs.media3.exoplayer.hls
+    implementation libs.media3.ui
     annotationProcessor libs.dagger.compiler
 
     testImplementation libs.junit

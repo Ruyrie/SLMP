@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- K06 胶囊按钮（倍速 / 清晰度 / 选集）、视频区提示按钮：1dp on-media 描边、全圆、12sp Medium on-media -->
+    <style name="ai_MediaPill">
+        <item name="android:background">@drawable/ai_bg_media_pill</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.Zmt.LabelMedium</item>
+        <item name="android:textColor">@color/zm_on_media</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+</resources>

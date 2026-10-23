@@ -1,0 +1,14 @@
+event: meta
+data: {"message_id": {{seq}}, "session_id": 0, "round_no": 1, "session_created": false, "batch_link_state": "VALID"}
+
+: ping
+
+event: delta
+data: {"text": "熏蒸时先把猪"}
+
+event: delta
+data: {"text": "赶出舍外，熏完通风后再进猪。"}
+
+event: done
+data: {"answer_type": "NO_BASIS", "finish_reason": "STOP", "message": {"id": {{seq}}, "session_id": 0, "round_no": 1, "asked_at": "2026-10-19 09:30:00", "question_text": null, "images": null, "batch_id": null, "batch_no": null, "context_course_title": null, "status": "ANSWERED", "answer_type": "NO_BASIS", "answer_text": "未找到平台知识依据，仅供参考。熏蒸时先把猪赶出舍外，熏完通风后再进猪。", "citations": [], "rating": null, "rated_at": null, "can_rate": true, "can_copy": true, "in_context": true, "correction": null, "error_code": null, "error_message": null, "answered_at": "2026-10-19 09:30:20"}}
+

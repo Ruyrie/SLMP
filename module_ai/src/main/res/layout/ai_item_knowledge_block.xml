@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- K03 正文段落：TEXT / HEADING / QUOTE / LIST（content_html 白名单清洗）/ IMAGE；被 AI 引用的段落换成引用块
+     （左侧 2dp tertiary 竖线 + surface-container-low 底 + “AI 回答引用了这一段”标签） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ai_block_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    android:orientation="vertical">
+
+    <com.zhimu.slmp.base.widget.StatusTagView
+        android:id="@+id/ai_block_cited"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="@string/ai_knowledge_cited"
+        android:visibility="gone"
+        app:tagIcon="@drawable/ic_auto_awesome"
+        app:tagType="tertiary" />
+
+    <TextView
+        android:id="@+id/ai_block_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:lineSpacingExtra="6sp"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+        android:textColor="?attr/colorOnSurface"
+        android:textIsSelectable="true" />
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/ai_block_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter"
+        android:visibility="gone"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Zmt.Corner.Medium" />
+</LinearLayout>

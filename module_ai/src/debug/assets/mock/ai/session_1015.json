@@ -1,0 +1,28 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 1015,
+    "title": "保育猪换料后怎么减少腹泻",
+    "round_count": 3,
+    "has_correction": false,
+    "context_truncated": false,
+    "has_epidemic_alert": false,
+    "batch_link_state": "VALID",
+    "last_round_no": 3,
+    "batch": {
+      "batch_id": 3003,
+      "batch_no": "ZM2610-045",
+      "category_name": "生猪",
+      "stage_name": "保育猪",
+      "breed_name": "杜长大",
+      "pen_id": 2001,
+      "pen_name": "1 号保育舍",
+      "day_age": 35,
+      "current_count": 320,
+      "count_unit_text": "头"
+    },
+    "invalid_batch_no": null
+  },
+  "trace_id": "mock-ai-0007"
+}

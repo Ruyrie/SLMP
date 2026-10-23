@@ -18,7 +18,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.FlowableEmitter;
 import io.reactivex.rxjava3.core.Single;
+import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -41,6 +45,17 @@ import okhttp3.ResponseBody;
  *             .subscribeOn(Schedulers.io())
  *             .subscribe(result -&gt; show(result.getContent()), e -&gt; fallbackToServer());
  * }
+ * </pre>
+ * 流式（模块11 K01，stream=true）：{@link #stream(AiChatRequest)} 返回 {@code Flowable<AiStreamChunk>}，
+ * 依次推送 STARTED、THINKING（推理中，不含内容）、CONTENT（正文增量）、DONE（完整正文）；取消订阅即取消请求。
+ * 还没收到任何正文时，网络错误、超时、5xx、429、回答为空会换备用服务商；已输出正文后失败以
+ * {@link AiException.Kind#NETWORK} 结束（由调用方显示“回答中断”），不再重试。
+ * <pre>
+ * disposable = ai.stream(AiChatRequest.builder().system(prompt).history(turns).user(text).build())
+ *         .subscribeOn(Schedulers.io())
+ *         .observeOn(AndroidSchedulers.mainThread())
+ *         .subscribe(chunk -&gt; { if (chunk.getType() == AiStreamChunk.Type.CONTENT) append(chunk.getText()); },
+ *                 e -&gt; showInterrupted());
  * </pre>
  */
 public class AiChatClient {
@@ -162,11 +177,187 @@ public class AiChatClient {
         }
     }
 
+    // ===== 流式（模块11 K01） =====
+
+    /**
+     * 流式对话（在 io 线程订阅）：stream=true，按行读取 SSE，只把 content 作为正文推送，reasoning_content 只发 THINKING。
+     * 全部服务商都失败时以最后一个 {@link AiException} 结束；直连未开启时为 {@link AiException.Kind#DISABLED}。
+     */
+    @NonNull
+    public Flowable<AiStreamChunk> stream(@NonNull AiChatRequest request) {
+        return Flowable.create(emitter -> streamBlocking(request, emitter), BackpressureStrategy.BUFFER);
+    }
+
+    @WorkerThread
+    private void streamBlocking(@NonNull AiChatRequest request, @NonNull FlowableEmitter<AiStreamChunk> emitter) {
+        if (providers.isEmpty()) {
+            emitter.tryOnError(new AiException(AiException.Kind.DISABLED, -1, null, "AI 直连未开启", null));
+            return;
+        }
+        AiException last = null;
+        for (int i = 0; i < providers.size(); i++) {
+            AiProvider p = providers.get(i);
+            boolean[] contentSent = {false};
+            try {
+                streamOne(p, request, i > 0, emitter, contentSent);
+                if (!emitter.isCancelled()) {
+                    emitter.onComplete();
+                }
+                return;
+            } catch (AiException e) {
+                if (emitter.isCancelled()) {
+                    return;
+                }
+                last = e;
+                boolean next = e.isRetryable() && !contentSent[0] && i + 1 < providers.size();
+                Log.w(TAG, "流式直连失败 provider=" + p + " kind=" + e.getKind() + " http=" + e.getHttpCode()
+                        + " contentSent=" + contentSent[0] + (next ? "，改用备用服务商" : ""));
+                if (!next) {
+                    emitter.tryOnError(e);
+                    return;
+                }
+            }
+        }
+        emitter.tryOnError(last);
+    }
+
+    private void streamOne(@NonNull AiProvider p, @NonNull AiChatRequest req, boolean fallback,
+                           @NonNull FlowableEmitter<AiStreamChunk> emitter, @NonNull boolean[] contentSent)
+            throws AiException {
+        String body = buildBody(p.getModel(), req, true).toString();
+        Request httpReq = new Request.Builder()
+                .url(p.chatCompletionsUrl())
+                .header("Authorization", "Bearer " + p.apiKey())
+                .header("Accept", "text/event-stream")
+                .post(RequestBody.create(body, JSON))
+                .build();
+        Call call = http.newCall(httpReq);
+        emitter.setCancellable(call::cancel);
+        long t0 = SystemClock.elapsedRealtime();
+        Log.i(TAG, "流式请求 tag=" + req.getTag() + " provider=" + p + " images=" + req.getImages().size()
+                + " imageBytes=" + req.imageBytes() + " history=" + req.getHistory().size()
+                + " textChars=" + req.getUser().length());
+        try (Response resp = call.execute()) {
+            if (!resp.isSuccessful()) {
+                Log.i(TAG, "流式响应 provider=" + p + " http=" + resp.code());
+                throw new AiException(AiException.kindOf(resp.code()), resp.code(), p.getName(),
+                        "AI 服务返回 " + resp.code(), null);
+            }
+            ResponseBody rb = resp.body();
+            if (rb == null) {
+                throw new AiException(AiException.Kind.BAD_RESPONSE, resp.code(), p.getName(), "AI 响应为空", null);
+            }
+            emitter.onNext(AiStreamChunk.started(p, fallback));
+            AiSseReader reader = new AiSseReader(rb.source());
+            StringBuilder all = new StringBuilder();
+            String finish = null;
+            AiSseEvent ev;
+            while ((ev = reader.next()) != null) {
+                if (emitter.isCancelled()) {
+                    return;
+                }
+                if (ev.isComment()) {
+                    continue;
+                }
+                if (ev.isDoneMarker()) {
+                    break;
+                }
+                StreamDelta d = parseStreamDelta(ev.getData());
+                if (d.error != null) {
+                    throw new AiException(AiException.Kind.SERVER, resp.code(), p.getName(), "AI 服务出错：" + d.error,
+                            null);
+                }
+                if (d.reasoning) {
+                    emitter.onNext(AiStreamChunk.thinking(p, fallback));
+                }
+                if (d.content != null && !d.content.isEmpty()) {
+                    contentSent[0] = true;
+                    all.append(d.content);
+                    emitter.onNext(AiStreamChunk.content(d.content, p, fallback));
+                }
+                if (d.finishReason != null) {
+                    finish = d.finishReason;
+                }
+            }
+            long cost = SystemClock.elapsedRealtime() - t0;
+            Log.i(TAG, "流式结束 provider=" + p + " costMs=" + cost + " chars=" + all.length() + " finish=" + finish);
+            if (all.toString().trim().isEmpty()) {
+                throw new AiException(AiException.Kind.SERVER, resp.code(), p.getName(),
+                        "AI 回答为空（finish_reason=" + finish + "）", null);
+            }
+            emitter.onNext(AiStreamChunk.done(all.toString(), p, fallback, finish, cost));
+        } catch (IOException e) {
+            throw new AiException(AiException.Kind.NETWORK, -1, p.getName(), "网络错误或超时", e);
+        } catch (RuntimeException e) {
+            throw new AiException(AiException.Kind.BAD_RESPONSE, 200, p.getName(), "AI 响应格式无法解析", e);
+        }
+    }
+
+    /** 流式响应中一个 data 块的解析结果 */
+    static final class StreamDelta {
+        @Nullable
+        final String content;
+        /** 本块带有非空 reasoning_content（推理中） */
+        final boolean reasoning;
+        @Nullable
+        final String finishReason;
+        /** 流中途的错误对象（{"error": {...}}）说明 */
+        @Nullable
+        final String error;
+
+        StreamDelta(@Nullable String content, boolean reasoning, @Nullable String finishReason,
+                    @Nullable String error) {
+            this.content = content;
+            this.reasoning = reasoning;
+            this.finishReason = finishReason;
+            this.error = error;
+        }
+    }
+
+    /**
+     * 解析一个 chat.completion.chunk：取 choices[0].delta.content 与 finish_reason，reasoning_content 只记“推理中”；
+     * 最后的 usage 块（choices 为空）返回空结果。
+     */
+    @VisibleForTesting
+    @NonNull
+    static StreamDelta parseStreamDelta(@NonNull String data) {
+        JsonObject root = JsonParser.parseString(data).getAsJsonObject();
+        if (root.has("error") && root.get("error").isJsonObject()) {
+            JsonObject err = root.getAsJsonObject("error");
+            String msg = err.has("code") && !err.get("code").isJsonNull() ? err.get("code").getAsString() : "error";
+            return new StreamDelta(null, false, null, msg);
+        }
+        JsonArray choices = root.has("choices") && root.get("choices").isJsonArray()
+                ? root.getAsJsonArray("choices") : null;
+        if (choices == null || choices.size() == 0) {
+            return new StreamDelta(null, false, null, null);
+        }
+        JsonObject first = choices.get(0).getAsJsonObject();
+        String finish = first.has("finish_reason") && !first.get("finish_reason").isJsonNull()
+                ? first.get("finish_reason").getAsString() : null;
+        JsonObject delta = first.has("delta") && first.get("delta").isJsonObject()
+                ? first.getAsJsonObject("delta") : null;
+        if (delta == null) {
+            return new StreamDelta(null, false, finish, null);
+        }
+        String content = delta.has("content") && delta.get("content").isJsonPrimitive()
+                ? delta.get("content").getAsString() : null;
+        boolean reasoning = delta.has("reasoning_content") && delta.get("reasoning_content").isJsonPrimitive()
+                && !delta.get("reasoning_content").getAsString().isEmpty();
+        return new StreamDelta(content, reasoning, finish, null);
+    }
+
     // ===== 请求体与响应（单元测试） =====
 
     @VisibleForTesting
     @NonNull
     static JsonObject buildBody(@NonNull String model, @NonNull AiChatRequest req) {
+        return buildBody(model, req, false);
+    }
+
+    @VisibleForTesting
+    @NonNull
+    static JsonObject buildBody(@NonNull String model, @NonNull AiChatRequest req, boolean stream) {
         JsonObject root = new JsonObject();
         root.addProperty("model", model);
         JsonArray messages = new JsonArray();
@@ -175,6 +366,12 @@ public class AiChatClient {
             sys.addProperty("role", "system");
             sys.addProperty("content", req.getSystem());
             messages.add(sys);
+        }
+        for (AiTurn turn : req.getHistory()) {
+            JsonObject m = new JsonObject();
+            m.addProperty("role", turn.getRole());
+            m.addProperty("content", turn.getContent());
+            messages.add(m);
         }
         JsonObject user = new JsonObject();
         user.addProperty("role", "user");
@@ -197,7 +394,7 @@ public class AiChatClient {
         messages.add(user);
         root.add("messages", messages);
         root.addProperty("max_tokens", req.getMaxTokens());
-        root.addProperty("stream", false);
+        root.addProperty("stream", stream);
         if (req.getTemperature() != null) {
             root.addProperty("temperature", req.getTemperature());
         }
