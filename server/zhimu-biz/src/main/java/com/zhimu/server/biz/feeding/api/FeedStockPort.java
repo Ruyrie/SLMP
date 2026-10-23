@@ -5,8 +5,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * 饲料库存端口（模块09 实现；模块09 未落地前由本模块的 no-op 实现提供示例饲料与空扣减）。
- * 模块06 只在投喂记录保存/修改/作废时调用扣减与回滚，不直接读写 t_feed / t_stock_flow。
+ * 饲料库存端口（模块06 使用，模块09 落地后由 {@code StockFeedStockAdapter} 转调
+ * {@link com.zhimu.server.biz.stock.api.FeedStockPort}；模块09 未合并时由本模块的 no-op 实现兜底）。
+ * 模块06 只在投喂记录保存 / 修改 / 作废时调用扣减与回滚，不直接写 t_feed / t_stock_flow。
  */
 public interface FeedStockPort {
 
@@ -18,12 +19,17 @@ public interface FeedStockPort {
 
     /**
      * 投喂扣减库存，返回库存流水 ID；结存不足返回 {@link DeductResult#insufficient}。
-     * no-op 实现不扣减、返回成功的空流水。
+     * 实现加入调用方事务（默认传播）：投喂记录保存失败时扣减一并回滚。
      */
     DeductResult deductForFeeding(DeductCommand command);
 
-    /** 按投喂记录回滚库存（作废或修改退回）；no-op 实现不做任何事 */
-    void rollbackForFeeding(Long stockFlowId);
+    /**
+     * 按投喂记录回滚库存（修改退回或作废）：找到该记录对应的有效流水后冲回结存，
+     * 没有有效流水时静默返回（幂等）。no-op 实现不做任何事。
+     *
+     * @param feedRecordId 投喂记录 ID（t_feed_record.id，即库存流水的 biz_id）
+     */
+    void rollbackForFeeding(Long feedRecordId);
 
     /** 饲料简要信息 */
     record FeedBrief(Long feedId, String feedName, String unit, BigDecimal stockQty, Integer remainingDays,

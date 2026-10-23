@@ -8,8 +8,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 模块09 未落地前的 no-op 实现：只提供与 App Mock 对齐的示例饲料（4001 育肥全价料、4002 保育料、4003 乳猪教槽料），
- * 扣减与回滚不做任何事、不写 t_stock_flow。模块09 实现 FeedStockPort 后删除本类。
+ * 模块09 缺失时的兜底实现（模块09 已合并时由 {@link StockFeedStockAdapter}（@Primary）接管）：
+ * 只提供与 App Mock 对齐的示例饲料（4001 育肥全价料、4002 保育料、4003 乳猪教槽料），
+ * 扣减只按示例结存判断是否够用、不写 t_stock_flow，回滚不做任何事。
+ * <p>
+ * 真实实现见 {@link StockFeedStockAdapter}：读模块09 的 t_feed，扣减 / 回滚按投喂记录写库存流水。
  */
 @Service
 public class NoopFeedStockPort implements FeedStockPort {
@@ -31,7 +34,8 @@ public class NoopFeedStockPort implements FeedStockPort {
 
     @Override
     public DeductResult deductForFeeding(DeductCommand command) {
-        FeedBrief feed = getFeed(command == null ? null : command.farmId(), command == null ? null : command.feedId());
+        FeedBrief feed = getFeed(command == null ? null : command.farmId(),
+                command == null ? null : command.feedId());
         if (feed != null && command.quantity() != null && feed.stockQty().compareTo(command.quantity()) < 0) {
             return DeductResult.insufficient(feed.stockQty());
         }
@@ -39,7 +43,7 @@ public class NoopFeedStockPort implements FeedStockPort {
     }
 
     @Override
-    public void rollbackForFeeding(Long stockFlowId) {
-        // 模块09 接入前无库存流水可回滚
+    public void rollbackForFeeding(Long feedRecordId) {
+        // 兜底实现没有库存流水可回滚
     }
 }
