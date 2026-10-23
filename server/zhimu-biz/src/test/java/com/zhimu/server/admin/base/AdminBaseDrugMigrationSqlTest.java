@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * 3B 迁移脚本静态校验（不启动 Spring、不连库）：9 张表、初始化数据 ID 与 App Mock 对齐。
- * 实际迁移可执行性由验收时在 MySQL 空库顺序执行 V1_00→V2_08 验证，见联调报告。
+ * 实际迁移可执行性由验收时在 MySQL 空库顺序执行 V1_00→V2_08_1 验证，见联调报告。
  * U09/U10/U11 的字段口径直接读 App 的 categories.json 与 module_stock/module_inspect mock 比对。
  */
 class AdminBaseDrugMigrationSqlTest {
@@ -221,6 +221,22 @@ class AdminBaseDrugMigrationSqlTest {
         assertThat(sql).contains("(706, 'VACCINATE_METHOD', 'WATER', '饮水'");
         assertThat(sql).contains("(3301, 'PAYMENT_METHOD', 'BANK_TRANSFER', '银行转账'");
         assertThat(sql).contains("(3304, 'PAYMENT_METHOD', 'CASH', '现金'");
+    }
+
+    /** U10：VACCINATE_METHOD / DISINFECT_METHOD 的 is_system 与 App Mock 一致（被模板/目录引用，不能停用）。 */
+    @Test
+    void v2081AlignsDictSystemFlagsWithAppMocks() {
+        String sql = read("V2_08_1__align_dict_system_flags.sql");
+        assertThat(sql).contains("UPDATE t_dict_item").contains("SET is_system = 1")
+                .contains("'VACCINATE_METHOD'").contains("'DISINFECT_METHOD'");
+
+        for (String file : List.of("dict_vaccinate_method.json", "dict_vaccinate_poultry.json",
+                "dict_disinfect_method.json")) {
+            JsonNode data = AdminBaseTestMvc.json(readAppMock("module_health", "health", file)).get("data");
+            assertThat(data.size()).as("%s 应至少有一项", file).isGreaterThan(0);
+            data.forEach(item -> assertThat(item.get("is_system").asBoolean())
+                    .as("%s 的 %s 应为系统项", file, item.get("code").asText()).isTrue());
+        }
     }
 
     private static void assertCatalogMock(Map<Long, CatalogRow> rows, String mockFile, String category) {
