@@ -1,6 +1,7 @@
 package com.zhimu.slmp.stock.model.vo;
 
 import java.math.BigDecimal;
+import com.zhimu.slmp.common.model.vo.QtyVO;
 
 /** 出入库流水（API-M13 / M28，M01 最近出入库）；字段直接公开，由 Gson 按下划线命名读写。 */
 public class StockFlowItemVO {

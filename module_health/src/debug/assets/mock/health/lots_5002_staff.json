@@ -9,7 +9,11 @@
         "expire_date": "2026-11-30",
         "lot_status": "NEAR_EXPIRY",
         "days_to_expire": 42,
-        "stock": 150,
+        "stock": {
+          "value": 150,
+          "unit": "DOSE",
+          "unit_text": "头份"
+        },
         "priority_out": true,
         "insufficient": true,
         "can_go_scrap": false

@@ -2,6 +2,7 @@ package com.zhimu.slmp.stock.model.vo;
 
 import java.math.BigDecimal;
 import java.util.List;
+import com.zhimu.slmp.common.model.vo.QtyVO;
 
 /** API-M36 药品档案详情（M09）；字段直接公开，由 Gson 按下划线命名读写。 */
 public class DrugDetailVO {

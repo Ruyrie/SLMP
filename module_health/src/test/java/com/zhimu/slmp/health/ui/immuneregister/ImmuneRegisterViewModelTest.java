@@ -62,10 +62,10 @@ public class ImmuneRegisterViewModelTest {
             + "'template_dose':1,'dose':1,'dose_unit':'头份 / 头','quantity_default':200,'current_count':200,"
             + "'method_code':'IM','backfill':false,'date_default':'2026-10-19','date_min':'2026-10-01',"
             + "'date_max':'2026-10-19','default_executor_id':10003,'creator_name':'王建国',"
-            + "'default_lot':{'lot_id':6001,'lot_no':'2025081','expire_date':'2026-12-30','stock':400,'priority_out':true}}";
+            + "'default_lot':{'lot_id':6001,'lot_no':'2025081','expire_date':'2026-12-30','stock':{'value':400,'unit':'DOSE','unit_text':'头份'},'priority_out':true}}";
     private static final String LOTS = "{'default_lot_id':6001,'selectable':["
-            + "{'lot_id':6001,'lot_no':'2025081','expire_date':'2026-12-30','lot_status':'NORMAL','stock':400,'priority_out':true},"
-            + "{'lot_id':6002,'lot_no':'2025113','expire_date':'2027-03-15','lot_status':'NORMAL','stock':150}],"
+            + "{'lot_id':6001,'lot_no':'2025081','expire_date':'2026-12-30','lot_status':'NORMAL','stock':{'value':400,'unit':'DOSE','unit_text':'头份'},'priority_out':true},"
+            + "{'lot_id':6002,'lot_no':'2025113','expire_date':'2027-03-15','lot_status':'NORMAL','stock':{'value':150,'unit':'DOSE','unit_text':'头份'}}],"
             + "'unselectable':[{'lot_id':6003,'lot_no':'2025042','expire_date':'2026-10-12','lot_status':'EXPIRED'}]}";
     private static final String VACCINES = "[{'drug_id':5001,'catalog_id':7001,'name':'猪瘟活疫苗','dose_unit':'头份 / 头',"
             + "'stock_unit':'头份','available_qty':1000,'no_stock':false,'default_method_code':'IM'}]";
@@ -91,7 +91,7 @@ public class ImmuneRegisterViewModelTest {
         when(repository.getRegisterForm(8117L, false)).thenReturn(Single.just(TestRules.parse(FORM, ImmuneRegisterFormVO.class)));
         when(shared.getVaccinateMethods(isNull())).thenReturn(Single.just(Collections.<DictItemVO>emptyList()));
         when(shared.getMembers()).thenReturn(Single.just(Collections.<MemberItemVO>emptyList()));
-        when(shared.getLotOptions(eq(5001L), eq(HealthExtras.PURPOSE_VACCINATION), any()))
+        when(shared.getLotOptions(eq(5001L), eq(HealthExtras.PURPOSE_VACCINATE), any()))
                 .thenReturn(Single.just(TestRules.parse(LOTS, DrugLotOptionsVO.class)));
         when(repository.createRecord(any(ImmuneRecordCreateRequest.class), anyString()))
                 .thenReturn(Single.just(TestRules.parse(RECORD, ImmuneRecordVO.class)));

@@ -10,7 +10,11 @@
         "expire_date": "2026-09-30",
         "lot_status": "EXPIRED",
         "days_to_expire": -19,
-        "stock": 80,
+        "stock": {
+          "value": 80,
+          "unit": "ML",
+          "unit_text": "毫升"
+        },
         "avg_price": 1.8,
         "priority_out": false,
         "insufficient": false,

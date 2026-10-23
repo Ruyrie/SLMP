@@ -24,7 +24,11 @@
       "expire_date": "2026-12-30",
       "lot_status": "NORMAL",
       "days_to_expire": 72,
-      "stock": 400,
+      "stock": {
+        "value": 400,
+        "unit": "DOSE",
+        "unit_text": "头份"
+      },
       "avg_price": 2.35,
       "priority_out": true,
       "insufficient": false,

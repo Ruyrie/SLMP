@@ -9,7 +9,11 @@
         "expire_date": "2027-08-31",
         "lot_status": "NORMAL",
         "days_to_expire": 316,
-        "stock": 3000,
+        "stock": {
+          "value": 3000,
+          "unit": "G",
+          "unit_text": "克"
+        },
         "priority_out": true,
         "insufficient": false,
         "can_go_scrap": false
@@ -20,7 +24,11 @@
         "expire_date": "2026-10-19",
         "lot_status": "NEAR_EXPIRY",
         "days_to_expire": 0,
-        "stock": 500,
+        "stock": {
+          "value": 500,
+          "unit": "G",
+          "unit_text": "克"
+        },
         "priority_out": false,
         "insufficient": false,
         "can_go_scrap": false
@@ -33,7 +41,11 @@
         "expire_date": "2026-09-01",
         "lot_status": "EXPIRED",
         "days_to_expire": -48,
-        "stock": 200,
+        "stock": {
+          "value": 200,
+          "unit": "G",
+          "unit_text": "克"
+        },
         "priority_out": false,
         "insufficient": false,
         "can_go_scrap": false

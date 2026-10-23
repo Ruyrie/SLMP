@@ -14,7 +14,7 @@ import com.zhimu.slmp.stock.model.vo.DrugLotItemVO;
 import com.zhimu.slmp.stock.model.vo.DrugStockOverviewVO;
 import com.zhimu.slmp.stock.model.vo.FeedStockItemVO;
 import com.zhimu.slmp.stock.model.vo.FeedStockOverviewVO;
-import com.zhimu.slmp.stock.model.vo.QtyVO;
+import com.zhimu.slmp.common.model.vo.QtyVO;
 import com.zhimu.slmp.stock.model.vo.StockFlowItemVO;
 
 import java.math.BigDecimal;

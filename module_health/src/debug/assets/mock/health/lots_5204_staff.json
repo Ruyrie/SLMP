@@ -9,7 +9,11 @@
         "expire_date": "2027-03-31",
         "lot_status": "NORMAL",
         "days_to_expire": 163,
-        "stock": 500,
+        "stock": {
+          "value": 500,
+          "unit": "ML",
+          "unit_text": "毫升"
+        },
         "priority_out": true,
         "insufficient": false,
         "can_go_scrap": false

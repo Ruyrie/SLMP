@@ -1,6 +1,7 @@
 package com.zhimu.slmp.stock.model.vo;
 
 import java.math.BigDecimal;
+import com.zhimu.slmp.common.model.vo.QtyVO;
 
 /**
  * API-M26 批号详情（M06、M07）：在 DrugLotItemVO 之上加库存金额、均价、首次入库、停用信息与 actions；

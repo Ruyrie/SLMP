@@ -32,7 +32,7 @@ import retrofit2.http.Query;
  */
 public interface HealthSharedApi {
 
-    /** API-M27 批号选项；purpose：VACCINATION / MEDICATION / DISINFECT（待定事项 1）；need_qty 选填 */
+    /** API-M27 批号选项；purpose：VACCINATE / MEDICATE / DISINFECT（按接口所属模块09 统一）；need_qty 选填 */
     @GET("api/v1/drug-lots/options")
     Single<ApiResponse<DrugLotOptionsVO>> getLotOptions(@Query("drug_id") long drugId,
                                                         @Query("purpose") String purpose,

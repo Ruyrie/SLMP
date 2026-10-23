@@ -9,7 +9,11 @@
         "expire_date": "2026-11-08",
         "lot_status": "NEAR_EXPIRY",
         "days_to_expire": 20,
-        "stock": 2.0,
+        "stock": {
+          "value": 2.0,
+          "unit": "L",
+          "unit_text": "升"
+        },
         "avg_price": 36.0,
         "priority_out": true,
         "insufficient": false,
@@ -21,7 +25,11 @@
         "expire_date": "2027-06-30",
         "lot_status": "NORMAL",
         "days_to_expire": 254,
-        "stock": 10,
+        "stock": {
+          "value": 10,
+          "unit": "L",
+          "unit_text": "升"
+        },
         "avg_price": 34.0,
         "priority_out": false,
         "insufficient": false,

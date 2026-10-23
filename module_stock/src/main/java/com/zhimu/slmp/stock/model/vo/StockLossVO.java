@@ -3,6 +3,7 @@ package com.zhimu.slmp.stock.model.vo;
 import com.zhimu.slmp.common.model.vo.UserBriefVO;
 
 import java.math.BigDecimal;
+import com.zhimu.slmp.common.model.vo.QtyVO;
 
 /** 报损 / 报废（API-M18、M31 返回，API-M19 详情）；字段直接公开，由 Gson 按下划线命名读写。 */
 public class StockLossVO {

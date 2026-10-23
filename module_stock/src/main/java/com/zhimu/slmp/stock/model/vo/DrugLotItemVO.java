@@ -1,5 +1,7 @@
 package com.zhimu.slmp.stock.model.vo;
 
+import com.zhimu.slmp.common.model.vo.QtyVO;
+
 /** 批号（API-M25 列表；M05）；days_to_expire 过期时为负；字段直接公开，由 Gson 按下划线命名读写。 */
 public class DrugLotItemVO {
     public long lotId;

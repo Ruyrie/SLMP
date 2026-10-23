@@ -461,7 +461,7 @@ public class ImmuneRegisterViewModel extends BaseViewModel implements RecordLogH
         if (lotRequest != null) {
             lotRequest.dispose();
         }
-        lotRequest = launch(shared.getLotOptions(drug, HealthExtras.PURPOSE_VACCINATION, needQty()), options -> {
+        lotRequest = launch(shared.getLotOptions(drug, HealthExtras.PURPOSE_VACCINATE, needQty()), options -> {
             lotOptions.setValue(options);
             DrugLotOptionVO keep = LotPicker.find(options, keepLotId);
             selectedLot.setValue(keep != null ? keep : LotPicker.defaultLot(options));

@@ -13,7 +13,7 @@ import com.zhimu.slmp.stock.TestRules;
 import com.zhimu.slmp.stock.model.vo.DrugStockOverviewVO;
 import com.zhimu.slmp.stock.model.vo.FeedStockItemVO;
 import com.zhimu.slmp.stock.model.vo.FeedStockOverviewVO;
-import com.zhimu.slmp.stock.model.vo.QtyVO;
+import com.zhimu.slmp.common.model.vo.QtyVO;
 import com.zhimu.slmp.stock.model.vo.StockFlowItemVO;
 
 import org.junit.Rule;

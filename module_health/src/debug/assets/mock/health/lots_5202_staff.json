@@ -9,7 +9,11 @@
         "expire_date": "2027-05-31",
         "lot_status": "NORMAL",
         "days_to_expire": 224,
-        "stock": 2000,
+        "stock": {
+          "value": 2000,
+          "unit": "G",
+          "unit_text": "克"
+        },
         "priority_out": true,
         "insufficient": false,
         "can_go_scrap": false

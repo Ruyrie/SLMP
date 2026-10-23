@@ -21,9 +21,9 @@ public class LotPickerTest {
 
     private static final String OPTIONS = "{'default_lot_id':6001,"
             + "'selectable':[{'lot_id':6001,'lot_no':'2025081','expire_date':'2026-12-30','lot_status':'NORMAL',"
-            + "'days_to_expire':72,'stock':400,'avg_price':2.35,'priority_out':true},"
+            + "'days_to_expire':72,'stock':{'value':400,'unit':'DOSE','unit_text':'头份'},'avg_price':2.35,'priority_out':true},"
             + "{'lot_id':6002,'lot_no':'2025113','expire_date':'2027-03-15','lot_status':'NEAR_EXPIRY',"
-            + "'days_to_expire':20,'stock':150,'avg_price':2.4}],"
+            + "'days_to_expire':20,'stock':{'value':150,'unit':'DOSE','unit_text':'头份'},'avg_price':2.4}],"
             + "'unselectable':[{'lot_id':6003,'lot_no':'2025042','expire_date':'2026-10-12','lot_status':'EXPIRED'},"
             + "{'lot_id':6004,'lot_no':'2025097','expire_date':'2027-01-20','lot_status':'RECALLED'}]}";
 

@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.zhimu.slmp.base.util.NumberFormatter;
 import com.zhimu.slmp.stock.model.StockEnums;
-import com.zhimu.slmp.stock.model.vo.QtyVO;
+import com.zhimu.slmp.common.model.vo.QtyVO;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

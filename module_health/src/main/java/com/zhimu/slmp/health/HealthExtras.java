@@ -48,8 +48,8 @@ public final class HealthExtras {
     public static final String BIZ_DISINFECT_PLAN = "DISINFECT_PLAN";
 
     // ===== API-M27 purpose（待定事项 1：暂按本模块服务端文档） =====
-    public static final String PURPOSE_VACCINATION = "VACCINATION";
-    public static final String PURPOSE_MEDICATION = "MEDICATION";
+    public static final String PURPOSE_VACCINATE = "VACCINATE";
+    public static final String PURPOSE_MEDICATE = "MEDICATE";
     public static final String PURPOSE_DISINFECT = "DISINFECT";
 
     // ===== RECORD_ACTION =====

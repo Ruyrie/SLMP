@@ -579,7 +579,7 @@ public class MedicationRegisterViewModel extends BaseViewModel {
     }
 
     void queryLots(long drug, @Nullable Long keepLotId) {
-        launch(shared.getLotOptions(drug, HealthExtras.PURPOSE_MEDICATION, null), options -> {
+        launch(shared.getLotOptions(drug, HealthExtras.PURPOSE_MEDICATE, null), options -> {
             lotOptions.setValue(options);
             DrugLotOptionVO keep = LotPicker.find(options, keepLotId);
             if (keep == null && pendingLotNo != null) {

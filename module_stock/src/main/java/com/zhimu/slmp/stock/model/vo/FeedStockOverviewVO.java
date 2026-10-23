@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.math.BigDecimal;
 import java.util.List;
+import com.zhimu.slmp.common.model.vo.QtyVO;
 
 /** API-M01 饲料库存概览（M01）；字段直接公开，由 Gson 按下划线命名读写。 */
 public class FeedStockOverviewVO {

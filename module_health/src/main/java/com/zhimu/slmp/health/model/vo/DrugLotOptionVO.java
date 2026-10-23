@@ -3,6 +3,7 @@ package com.zhimu.slmp.health.model.vo;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import java.math.BigDecimal;
+import com.zhimu.slmp.common.model.vo.QtyVO;
 
 /**
  * API-M27 批号选项的一项：lot_status 为 NORMAL / NEAR_EXPIRY / EXPIRED / RECALLED / BANNED；avg_price 员工不输出。
@@ -18,8 +19,9 @@ public class DrugLotOptionVO {
     private String lotStatus;
     @Nullable
     private Integer daysToExpire;
+    /** 结存（QtyVO，按模块09 API-M27） */
     @Nullable
-    private BigDecimal stock;
+    private QtyVO stock;
     @Nullable
     private BigDecimal avgPrice;
     /** 先到期先出（默认项） */
@@ -52,8 +54,14 @@ public class DrugLotOptionVO {
         return daysToExpire;
     }
 
+    /** 结存数量（记账单位） */
     @Nullable
     public BigDecimal getStock() {
+        return stock == null ? null : stock.value;
+    }
+
+    @Nullable
+    public QtyVO getStockQty() {
         return stock;
     }
 

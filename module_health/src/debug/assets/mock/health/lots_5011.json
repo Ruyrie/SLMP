@@ -9,7 +9,11 @@
         "expire_date": "2027-02-28",
         "lot_status": "NORMAL",
         "days_to_expire": 132,
-        "stock": 6000,
+        "stock": {
+          "value": 6000,
+          "unit": "羽份",
+          "unit_text": "羽份"
+        },
         "avg_price": 0.08,
         "priority_out": true,
         "insufficient": false,

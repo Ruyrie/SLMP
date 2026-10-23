@@ -9,7 +9,11 @@
         "expire_date": "2026-12-30",
         "lot_status": "NORMAL",
         "days_to_expire": 72,
-        "stock": 400,
+        "stock": {
+          "value": 400,
+          "unit": "DOSE",
+          "unit_text": "头份"
+        },
         "avg_price": 2.35,
         "priority_out": true,
         "insufficient": false,
@@ -21,7 +25,11 @@
         "expire_date": "2027-03-15",
         "lot_status": "NORMAL",
         "days_to_expire": 147,
-        "stock": 600,
+        "stock": {
+          "value": 600,
+          "unit": "DOSE",
+          "unit_text": "头份"
+        },
         "avg_price": 2.4,
         "priority_out": false,
         "insufficient": false,
@@ -35,7 +43,11 @@
         "expire_date": "2026-10-12",
         "lot_status": "EXPIRED",
         "days_to_expire": -7,
-        "stock": 50,
+        "stock": {
+          "value": 50,
+          "unit": "DOSE",
+          "unit_text": "头份"
+        },
         "avg_price": 2.3,
         "priority_out": false,
         "insufficient": false,
@@ -47,7 +59,11 @@
         "expire_date": "2027-01-20",
         "lot_status": "RECALLED",
         "days_to_expire": 93,
-        "stock": 100,
+        "stock": {
+          "value": 100,
+          "unit": "DOSE",
+          "unit_text": "头份"
+        },
         "avg_price": 2.5,
         "priority_out": false,
         "insufficient": false,

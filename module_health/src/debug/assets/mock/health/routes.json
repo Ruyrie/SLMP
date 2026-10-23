@@ -470,7 +470,7 @@
     "when": {
       "query": {
         "drug_id": "5001",
-        "purpose": "VACCINATION"
+        "purpose": "VACCINATE"
       },
       "header": {
         "Authorization": "Bearer mock-staff"
@@ -484,7 +484,7 @@
     "when": {
       "query": {
         "drug_id": "5001",
-        "purpose": "VACCINATION"
+        "purpose": "VACCINATE"
       }
     },
     "file": "lots_5001.json"
@@ -495,7 +495,7 @@
     "when": {
       "query": {
         "drug_id": "5002",
-        "purpose": "VACCINATION"
+        "purpose": "VACCINATE"
       },
       "header": {
         "Authorization": "Bearer mock-staff"
@@ -509,7 +509,7 @@
     "when": {
       "query": {
         "drug_id": "5002",
-        "purpose": "VACCINATION"
+        "purpose": "VACCINATE"
       }
     },
     "file": "lots_5002.json"
@@ -520,7 +520,7 @@
     "when": {
       "query": {
         "drug_id": "5003",
-        "purpose": "VACCINATION"
+        "purpose": "VACCINATE"
       },
       "header": {
         "Authorization": "Bearer mock-staff"
@@ -534,7 +534,7 @@
     "when": {
       "query": {
         "drug_id": "5003",
-        "purpose": "VACCINATION"
+        "purpose": "VACCINATE"
       }
     },
     "file": "lots_5003.json"
@@ -545,7 +545,7 @@
     "when": {
       "query": {
         "drug_id": "5004",
-        "purpose": "VACCINATION"
+        "purpose": "VACCINATE"
       },
       "header": {
         "Authorization": "Bearer mock-staff"
@@ -559,7 +559,7 @@
     "when": {
       "query": {
         "drug_id": "5004",
-        "purpose": "VACCINATION"
+        "purpose": "VACCINATE"
       }
     },
     "file": "lots_5004.json"
@@ -570,7 +570,7 @@
     "when": {
       "query": {
         "drug_id": "5011",
-        "purpose": "VACCINATION"
+        "purpose": "VACCINATE"
       },
       "header": {
         "Authorization": "Bearer mock-staff"
@@ -584,7 +584,7 @@
     "when": {
       "query": {
         "drug_id": "5011",
-        "purpose": "VACCINATION"
+        "purpose": "VACCINATE"
       }
     },
     "file": "lots_5011.json"
@@ -595,7 +595,7 @@
     "when": {
       "query": {
         "drug_id": "5012",
-        "purpose": "VACCINATION"
+        "purpose": "VACCINATE"
       },
       "header": {
         "Authorization": "Bearer mock-staff"
@@ -609,7 +609,7 @@
     "when": {
       "query": {
         "drug_id": "5012",
-        "purpose": "VACCINATION"
+        "purpose": "VACCINATE"
       }
     },
     "file": "lots_5012.json"
@@ -620,7 +620,7 @@
     "when": {
       "query": {
         "drug_id": "5201",
-        "purpose": "MEDICATION"
+        "purpose": "MEDICATE"
       },
       "header": {
         "Authorization": "Bearer mock-staff"
@@ -634,7 +634,7 @@
     "when": {
       "query": {
         "drug_id": "5201",
-        "purpose": "MEDICATION"
+        "purpose": "MEDICATE"
       }
     },
     "file": "lots_5201.json"
@@ -645,7 +645,7 @@
     "when": {
       "query": {
         "drug_id": "5202",
-        "purpose": "MEDICATION"
+        "purpose": "MEDICATE"
       },
       "header": {
         "Authorization": "Bearer mock-staff"
@@ -659,7 +659,7 @@
     "when": {
       "query": {
         "drug_id": "5202",
-        "purpose": "MEDICATION"
+        "purpose": "MEDICATE"
       }
     },
     "file": "lots_5202.json"
@@ -670,7 +670,7 @@
     "when": {
       "query": {
         "drug_id": "5204",
-        "purpose": "MEDICATION"
+        "purpose": "MEDICATE"
       },
       "header": {
         "Authorization": "Bearer mock-staff"
@@ -684,7 +684,7 @@
     "when": {
       "query": {
         "drug_id": "5204",
-        "purpose": "MEDICATION"
+        "purpose": "MEDICATE"
       }
     },
     "file": "lots_5204.json"
@@ -695,7 +695,7 @@
     "when": {
       "query": {
         "drug_id": "5205",
-        "purpose": "MEDICATION"
+        "purpose": "MEDICATE"
       },
       "header": {
         "Authorization": "Bearer mock-staff"
@@ -709,7 +709,7 @@
     "when": {
       "query": {
         "drug_id": "5205",
-        "purpose": "MEDICATION"
+        "purpose": "MEDICATE"
       }
     },
     "file": "lots_5205.json"

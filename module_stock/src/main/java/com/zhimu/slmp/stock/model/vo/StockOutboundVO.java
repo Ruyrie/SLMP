@@ -6,6 +6,7 @@ import com.zhimu.slmp.common.model.vo.UserBriefVO;
 
 import java.math.BigDecimal;
 import java.util.List;
+import com.zhimu.slmp.common.model.vo.QtyVO;
 
 /** 出库单（M10 其他出库、M11 领用与退货；API-M20 / M32 返回，API-M21 详情）；字段直接公开，由 Gson 按下划线命名读写。 */
 public class StockOutboundVO {

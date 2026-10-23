@@ -3,6 +3,7 @@ package com.zhimu.slmp.stock.model.vo;
 import com.zhimu.slmp.common.model.vo.UserBriefVO;
 
 import java.math.BigDecimal;
+import com.zhimu.slmp.common.model.vo.QtyVO;
 
 /** 入库单（API-M08 / M30 返回，API-M09 详情；M03、M08 只读与修改）；字段直接公开，由 Gson 按下划线命名读写。 */
 public class StockInboundVO {
