@@ -83,19 +83,14 @@ public final class HerdErrors {
     }
 
     /** 42205：数量超过栏舍在栏数；seenStockCount 与最新值不同时用“已变为”文案 */
-    public static BizException countExceeded(String penName, int stockCount, Integer seenStockCount) {
+    public static BizException countExceeded(Long penId, String penName, int stockCount, Integer seenStockCount) {
         String message = seenStockCount != null && seenStockCount != stockCount
                 ? penName + "的在栏数已变为 " + stockCount + " 头，不能超过 " + stockCount + " 头"
                 : "不能超过 " + penName + " 的在栏数 " + stockCount + " 头";
         return new BizException(ErrorCode.COUNT_EXCEEDED, message, Map.of(
-                "pen_id", 0L,
+                "pen_id", penId == null ? 0L : penId,
                 "pen_name", penName,
                 "stock_count", stockCount));
-    }
-
-    public static BizException countExceeded(Long penId, String penName, int stockCount, Integer seenStockCount) {
-        BizException exception = countExceeded(penName, stockCount, seenStockCount);
-        return exception.with("pen_id", penId);
     }
 
     /** 42206：入栏 / 转入超过容量，带 need_confirm 与明细 */

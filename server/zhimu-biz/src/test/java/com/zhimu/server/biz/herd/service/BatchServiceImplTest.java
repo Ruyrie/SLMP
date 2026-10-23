@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.herd.service;
 
+import com.zhimu.server.biz.herd.HerdTableInfo;
 import com.zhimu.server.admin.base.api.BreedQueryService;
 import com.zhimu.server.admin.base.api.CategoryInfo;
 import com.zhimu.server.biz.common.api.BizMediaService;
@@ -77,6 +78,7 @@ class BatchServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        HerdTableInfo.ensure();
         lenient().when(timelineProviders.orderedStream()).thenReturn(java.util.stream.Stream.empty());
         service = new BatchServiceImpl(support, access, batchMapper, eventMapper, timelineMapper, batchPenMapper,
                 penMapper, batchNoGenerator, farmLookup, memberCache, bizMediaService, operationLogRecorder,

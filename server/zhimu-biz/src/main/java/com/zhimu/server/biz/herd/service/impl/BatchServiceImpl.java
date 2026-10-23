@@ -622,7 +622,7 @@ public class BatchServiceImpl implements BatchService {
         int oldEntryCount = batch.getEntryCount() == null ? 0 : batch.getEntryCount();
         int newCurrent = (batch.getCurrentCount() == null ? 0 : batch.getCurrentCount()) + (newCount - oldEntryCount);
         if (newCurrent < 0) {
-            throw HerdErrors.countExceeded(newPen.getPenName(), oldEntryCount, null);
+            throw HerdErrors.countExceeded(newPen.getId(), newPen.getPenName(), oldEntryCount, null);
         }
         if (samePen) {
             int delta = newCount - oldStock;
@@ -1450,9 +1450,8 @@ public class BatchServiceImpl implements BatchService {
             item.setAction(TimelineItemVO.ACTION_EDIT);
         } else {
             item.setAction(TimelineItemVO.ACTION_NONE);
-            if (!member.isStaff()) {
-                item.setActionNote("超过当天的记录由所有者或场长修改");
-            } else if (death || "ENTRY".equals(row.getRecordType()) || "TRANSFER".equals(row.getRecordType())) {
+            // 员工只能改本人当天的死淘；入栏、转栏记录员工无可编辑入口，不显示修改说明
+            if (death) {
                 item.setActionNote("超过当天的记录由所有者或场长修改");
             }
         }
