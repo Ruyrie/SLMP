@@ -1,0 +1,33 @@
+# 集成测试（@ActiveProfiles("it")）：本机 MySQL 的 zhimu_test 库（不存在时自动创建）、本机 Redis database 15。
+# 数据库账号密码取 server/.env.local 的 DB_USER、DB_PASSWORD（application.yml 已导入），这里不写密码。
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/zhimu_test?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:}
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password:
+      database: 15
+  flyway:
+    # 只执行结构脚本，不导入示例数据；测试库允许 clean（集成测试每次清空后重新迁移）
+    locations: classpath:db/migration
+    clean-disabled: false
+
+zhimu:
+  security:
+    # 仅测试用的随机串，不是任何环境的真实密钥
+    jwt-user-secret: it-user-7f3c9a1e5b2d48c6a0e9f17d3b5c2a48e6d1f09b
+    jwt-admin-secret: it-admin-2b8e4d6f0a1c39e7b5d2f8a4c6e0b1d37a9f5c2e
+    cookie-secure: false
+  clock:
+    fixed-date: ""
+  integration:
+    sms:
+      mode: mock
+
+logging:
+  file:
+    path: target/logs
