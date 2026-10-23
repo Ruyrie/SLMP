@@ -1,5 +1,6 @@
 package com.zhimu.server.admin.base.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,5 +25,6 @@ public class BannedDrug extends BaseAdminEntity {
     private Long listedBy;
     private Integer sortNo;
     /** 近 30 天命中次数；BaseStatJob 每小时刷新 */
+    @TableField("hit_count_30d")
     private Integer hitCount30d;
 }
