@@ -284,7 +284,7 @@ public class FarmInfoActivity extends BaseActivity {
         Bundle extras = new Bundle();
         extras.putLong(RouterPath.EXTRA_FARM_ID, vm.getFarmId());
         extras.putString(FarmExtras.EXTRA_REGISTRATION_JSON, json);
-        extras.putString(FarmExtras.EXTRA_SCROLL_TARGET, target);
+        extras.putString(RouterPath.EXTRA_SCROLL_TARGET, target);
         if (mode != null) {
             extras.putString(RouterPath.EXTRA_MODE, mode);
         }

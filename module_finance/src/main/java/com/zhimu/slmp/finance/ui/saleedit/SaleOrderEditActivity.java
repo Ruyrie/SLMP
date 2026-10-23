@@ -38,6 +38,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * E06 登记出栏单（新增 / 编辑，图 10-8、10-9）。
@@ -129,7 +130,7 @@ public class SaleOrderEditActivity extends FinancePageActivity {
         vm.getSubmitting().observe(this, s -> ButtonLoading.setLoading(binding.financeSubmit, Boolean.TRUE.equals(s)));
         vm.getOpenDetail().observe(this, t -> {
             Intent data = new Intent();
-            Object id = t.get(FinanceExtras.SALE_ORDER_ID);
+            Object id = t.get(RouterPath.EXTRA_SALE_ORDER_ID);
             if (id instanceof Long) {
                 data.putExtra(FinanceExtras.RESULT_CREATED_ID, (Long) id);
             }

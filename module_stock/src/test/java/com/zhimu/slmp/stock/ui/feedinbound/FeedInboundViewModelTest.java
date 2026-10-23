@@ -83,10 +83,10 @@ public class FeedInboundViewModelTest {
     private void open(Long feedId, Long recordId) {
         Map<String, Object> args = new HashMap<>();
         if (feedId != null) {
-            args.put(StockExtras.EXTRA_FEED_ID, feedId);
+            args.put(RouterPath.EXTRA_FEED_ID, feedId);
         }
         if (recordId != null) {
-            args.put(StockExtras.EXTRA_RECORD_ID, recordId);
+            args.put(RouterPath.EXTRA_RECORD_ID, recordId);
         }
         vm.attachSavedState(new SavedStateHandle(args));
     }

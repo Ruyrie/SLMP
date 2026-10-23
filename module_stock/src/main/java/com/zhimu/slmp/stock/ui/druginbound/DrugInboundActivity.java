@@ -132,7 +132,7 @@ public class DrugInboundActivity extends BaseActivity implements PickerHost, Rec
         });
         vm.getOpenArchiveNew().observe(this, kw -> {
             Bundle b = new Bundle();
-            b.putString(StockExtras.EXTRA_KEYWORD, kw);
+            b.putString(RouterPath.EXTRA_KEYWORD, kw);
             StockNav.open(this, archiveLauncher, RouterPath.M09, b);
         });
         getSupportFragmentManager().setFragmentResultListener(REQ_DISCARD, this, (k, r) -> {

@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.core.Single;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * E06 休药期拦截、均重与销售金额预估、校验、42202 / 42205、成功提示；E07 菜单与横幅；E08 预计结果与校验；E09 提醒文案。
@@ -86,7 +87,7 @@ public class SaleFlowViewModelTest {
         });
         Map<String, Object> args = new HashMap<>();
         if (batchId != null) {
-            args.put(FinanceExtras.BATCH_ID, batchId);
+            args.put(RouterPath.EXTRA_BATCH_ID, batchId);
         }
         vm.attachSavedState(new SavedStateHandle(args));
         return vm;
@@ -168,7 +169,7 @@ public class SaleFlowViewModelTest {
         NavTarget t = vm.getOpenDetail().getValue();
         assertNotNull(t);
         assertTrue(t.isFinishSelf());
-        assertEquals(9106L, t.get(FinanceExtras.SALE_ORDER_ID));
+        assertEquals(9106L, t.get(RouterPath.EXTRA_SALE_ORDER_ID));
         assertEquals("已登记出栏单，ZM2610-019 存栏剩 90 头", plain(SaleOrderEditViewModel.createdText(
                 TestRules.mock("order_created.json", SaleOrderCreatedVO.class))));
     }
@@ -246,7 +247,7 @@ public class SaleFlowViewModelTest {
         when(base.getDicts(anyString(), any())).thenReturn(Single.just(java.util.Collections.emptyList()));
         SaleOrderDetailViewModel vm = new SaleOrderDetailViewModel(repo, base, farm);
         Map<String, Object> args = new HashMap<>();
-        args.put(FinanceExtras.SALE_ORDER_ID, d.getId());
+        args.put(RouterPath.EXTRA_SALE_ORDER_ID, d.getId());
         vm.attachSavedState(new SavedStateHandle(args));
         return vm.getMenuItems().getValue();
     }
@@ -266,7 +267,7 @@ public class SaleFlowViewModelTest {
         vm.getCanSubmit().observeForever(v -> {
         });
         Map<String, Object> args = new HashMap<>();
-        args.put(FinanceExtras.SALE_ORDER_ID, 9102L);
+        args.put(RouterPath.EXTRA_SALE_ORDER_ID, 9102L);
         vm.attachSavedState(new SavedStateHandle(args));
         vm.newUnitPriceText.setValue("16.00");
         vm.submit();

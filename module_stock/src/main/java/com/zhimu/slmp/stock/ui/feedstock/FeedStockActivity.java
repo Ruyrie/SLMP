@@ -115,9 +115,9 @@ public class FeedStockActivity extends BaseActivity {
         });
 
         vm.getOpenInbound().observe(this, id -> StockNav.open(this, childLauncher, RouterPath.M03,
-                StockNav.idArgs(StockExtras.EXTRA_FEED_ID, id)));
+                StockNav.idArgs(RouterPath.EXTRA_FEED_ID, id)));
         vm.getOpenArchive().observe(this, id -> StockNav.open(this, childLauncher, RouterPath.M02,
-                StockNav.idArgs(StockExtras.EXTRA_FEED_ID, id)));
+                StockNav.idArgs(RouterPath.EXTRA_FEED_ID, id)));
         vm.getOpenFlows().observe(this, this::openFlows);
         vm.getOpenRecord().observe(this, f -> StockNav.openFlow(this, childLauncher, f));
     }

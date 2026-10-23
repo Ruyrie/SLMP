@@ -133,8 +133,8 @@ public class DrugInboundViewModel extends StockFormViewModel {
         super.onSavedStateAttached(handle);
         todoId = StockExtras.readId(handle.get(RouterPath.EXTRA_TODO_ID));
         startInEdit = FormMode.EDIT.equals(handle.get(RouterPath.EXTRA_MODE));
-        init(StockExtras.readId(handle.get(StockExtras.EXTRA_DRUG_ID)),
-                StockExtras.readId(handle.get(StockExtras.EXTRA_RECORD_ID)));
+        init(StockExtras.readId(handle.get(RouterPath.EXTRA_DRUG_ID)),
+                StockExtras.readId(handle.get(RouterPath.EXTRA_RECORD_ID)));
     }
 
     public void init(@Nullable Long drugId, @Nullable Long recordId) {

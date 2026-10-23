@@ -60,7 +60,7 @@ public class FinanceSummaryViewModel extends FinanceViewModel {
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        String m = handle.get(FinanceExtras.MONTH);
+        String m = handle.get(RouterPath.EXTRA_MONTH);
         if (m != null && m.length() == 7) {
             month.setValue(m);
         }
@@ -227,15 +227,15 @@ public class FinanceSummaryViewModel extends FinanceViewModel {
             return;
         }
         CategoryShareVO c = list.get(index);
-        open(NavTarget.of(RouterPath.E04).put(FinanceExtras.MONTH, month.getValue())
-                .put(FinanceExtras.CATEGORY_IDS, String.valueOf(c.getCategoryId()))
-                .put(FinanceExtras.CATEGORY_NAME, c.getName()).forResult());
+        open(NavTarget.of(RouterPath.E04).put(RouterPath.EXTRA_MONTH, month.getValue())
+                .put(RouterPath.EXTRA_CATEGORY_IDS, String.valueOf(c.getCategoryId()))
+                .put(RouterPath.EXTRA_CATEGORY_NAME, c.getName()).forResult());
     }
 
     public void openRecords() {
-        NavTarget t = NavTarget.of(RouterPath.E04).put(FinanceExtras.MONTH, month.getValue()).forResult();
+        NavTarget t = NavTarget.of(RouterPath.E04).put(RouterPath.EXTRA_MONTH, month.getValue()).forResult();
         if (Boolean.TRUE.equals(scopeAll.getValue())) {
-            t.put(FinanceExtras.SCOPE, FinanceConst.SCOPE_ALL);
+            t.put(RouterPath.EXTRA_SCOPE, FinanceConst.SCOPE_ALL);
         }
         open(t);
     }
@@ -245,7 +245,7 @@ public class FinanceSummaryViewModel extends FinanceViewModel {
     }
 
     public void openRecordEdit() {
-        open(NavTarget.of(RouterPath.E03).put(FinanceExtras.RECORD_TYPE, FinanceConst.EXPENSE).forResult());
+        open(NavTarget.of(RouterPath.E03).put(RouterPath.EXTRA_RECORD_TYPE, FinanceConst.EXPENSE).forResult());
     }
 
     /** 合计视角点养殖场卡：切换当前养殖场，视角回到“当前养殖场” */

@@ -11,12 +11,8 @@ public final class FarmExtras {
     private FarmExtras() {
     }
 
-    /** F09 成员 ID（long） */
-    public static final String EXTRA_MEMBER_ID = RouterPath.EXTRA_MEMBER_ID;
     /** F06 比较基准：F05 的 API-F09 data.registration（Gson 字符串） */
     public static final String EXTRA_REGISTRATION_JSON = "registration_json";
-    /** F06 进入后滚动到的字段：NAME / ADDRESS / QUALIFICATION */
-    public static final String EXTRA_SCROLL_TARGET = "scroll_target";
     /** F08 重新邀请的原邀请（InviteItemVO 的 Gson 字符串） */
     public static final String EXTRA_REINVITE_JSON = "reinvite_json";
 

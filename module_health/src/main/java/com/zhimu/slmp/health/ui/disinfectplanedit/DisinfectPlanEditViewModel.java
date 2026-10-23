@@ -43,6 +43,7 @@ import javax.inject.Inject;
 
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.Disposable;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * D07 新建 / 修改消毒计划（所有者、场长）：多选栏舍（本场启用中栏舍，待定事项 2 复用 API-L07）、周期天数、开始与结束日期、
@@ -114,7 +115,7 @@ public class DisinfectPlanEditViewModel extends BaseViewModel {
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         idem.attach(handle);
-        Object p = handle.get(HealthExtras.EXTRA_PLAN_ID);
+        Object p = handle.get(RouterPath.EXTRA_PLAN_ID);
         planId = p instanceof Number ? ((Number) p).longValue() : null;
         editMode.setValue(planId != null);
         if (farmContext.isStaff()) {

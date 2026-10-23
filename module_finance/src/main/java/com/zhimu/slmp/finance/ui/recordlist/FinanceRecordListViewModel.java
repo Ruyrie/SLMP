@@ -74,25 +74,25 @@ public class FinanceRecordListViewModel extends FinanceListViewModel<FinanceReco
         if (denyStaff()) {
             return;
         }
-        String month = handle.get(FinanceExtras.MONTH);
+        String month = handle.get(RouterPath.EXTRA_MONTH);
         FinanceRecordQuery q = FinanceRecordQuery.of(month != null && month.length() == 7 ? month
                 : FinanceFormat.currentMonth());
-        String ids = handle.get(FinanceExtras.CATEGORY_IDS);
+        String ids = handle.get(RouterPath.EXTRA_CATEGORY_IDS);
         if (ids != null) {
-            q = q.withCategories(ids, handle.get(FinanceExtras.CATEGORY_NAME));
+            q = q.withCategories(ids, handle.get(RouterPath.EXTRA_CATEGORY_NAME));
         }
-        Long batch = handle.get(FinanceExtras.BATCH_ID);
+        Long batch = handle.get(RouterPath.EXTRA_BATCH_ID);
         if (batch != null && batch > 0) {
-            q = q.withBatch(batch, handle.get(FinanceExtras.BATCH_NO));
+            q = q.withBatch(batch, handle.get(RouterPath.EXTRA_BATCH_NO));
         }
-        String type = handle.get(FinanceExtras.RECORD_FILTER_TYPE);
+        String type = handle.get(RouterPath.EXTRA_RECORD_FILTER_TYPE);
         if (type != null) {
             q = q.withType(type);
         }
-        if (FinanceConst.SCOPE_ALL.equals(handle.get(FinanceExtras.SCOPE))) {
+        if (FinanceConst.SCOPE_ALL.equals(handle.get(RouterPath.EXTRA_SCOPE))) {
             q = q.withScope(FinanceConst.SCOPE_ALL);
         }
-        Long highlight = handle.get(FinanceExtras.HIGHLIGHT_ID);
+        Long highlight = handle.get(RouterPath.EXTRA_HIGHLIGHT_ID);
         if (highlight != null && highlight > 0) {
             highlightId.setValue(highlight);
         }
@@ -206,15 +206,12 @@ public class FinanceRecordListViewModel extends FinanceListViewModel<FinanceReco
             return;
         }
         if (FinanceConst.BIZ_INBOUND.equals(t.getBizType())) {
-            // 模块09 的参数键未约定：同时带 biz_id、record_id、inbound_id（见交付说明）
-            open(NavTarget.of(RouterPath.M03).put(RouterPath.EXTRA_BIZ_ID, t.getBizId())
-                    .put(RouterPath.EXTRA_RECORD_ID, t.getBizId()).put(FinanceExtras.INBOUND_ID, t.getBizId())
-                    .put(RouterPath.EXTRA_MODE, "VIEW"));
+            // M03 按 record_id 打开入库单（状态决定只读或可改）
+            open(NavTarget.of(RouterPath.M03).put(RouterPath.EXTRA_RECORD_ID, t.getBizId()));
         } else if (FinanceConst.BIZ_DRUG_LOT.equals(t.getBizType())) {
-            open(NavTarget.of(RouterPath.M06).put(RouterPath.EXTRA_BIZ_ID, t.getBizId())
-                    .put(FinanceExtras.LOT_ID, t.getBizId()));
+            open(NavTarget.of(RouterPath.M06).put(RouterPath.EXTRA_LOT_ID, t.getBizId()));
         } else if (FinanceConst.BIZ_SALE_ORDER.equals(t.getBizType())) {
-            open(NavTarget.of(RouterPath.E07).put(FinanceExtras.SALE_ORDER_ID, t.getBizId()).forResult());
+            open(NavTarget.of(RouterPath.E07).put(RouterPath.EXTRA_SALE_ORDER_ID, t.getBizId()).forResult());
         }
     }
 
@@ -223,15 +220,15 @@ public class FinanceRecordListViewModel extends FinanceListViewModel<FinanceReco
         if (FinanceConst.STATUS_VOID.equals(r.getStatus())) {
             showLog(r);
         } else if (FinanceConst.SOURCE_MANUAL.equals(r.getSourceType())) {
-            open(NavTarget.of(RouterPath.E03).put(FinanceExtras.RECORD_ID, r.getId())
-                    .put(FinanceExtras.MODE, "VIEW"));
+            open(NavTarget.of(RouterPath.E03).put(RouterPath.EXTRA_RECORD_ID, r.getId())
+                    .put(RouterPath.EXTRA_MODE, "VIEW"));
         } else {
             openSource(r);
         }
     }
 
     public void edit(@NonNull FinanceRecordVO r) {
-        open(NavTarget.of(RouterPath.E03).put(FinanceExtras.RECORD_ID, r.getId()).forResult());
+        open(NavTarget.of(RouterPath.E03).put(RouterPath.EXTRA_RECORD_ID, r.getId()).forResult());
     }
 
     /** 查看修改记录（U14，FINANCE_RECORD） */

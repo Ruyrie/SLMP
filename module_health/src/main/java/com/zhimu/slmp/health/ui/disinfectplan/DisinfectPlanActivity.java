@@ -151,7 +151,7 @@ public class DisinfectPlanActivity extends BaseActivity {
         vm.getOpenEdit().observe(this, id -> {
             Bundle extras = new Bundle();
             if (id != null) {
-                extras.putLong(HealthExtras.EXTRA_PLAN_ID, id);
+                extras.putLong(RouterPath.EXTRA_PLAN_ID, id);
             }
             HealthNav.open(this, childLauncher, RouterPath.D07, extras);
         });

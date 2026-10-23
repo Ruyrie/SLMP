@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * M10 饲料其他出库（技术准备文档 2.4.12，按需求补充）：
@@ -118,7 +119,7 @@ public class FeedOtherOutViewModel extends StockFormViewModel {
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         super.onSavedStateAttached(handle);
-        init(StockExtras.readId(handle.get(StockExtras.EXTRA_RECORD_ID)));
+        init(StockExtras.readId(handle.get(RouterPath.EXTRA_RECORD_ID)));
     }
 
     public void init(@Nullable Long recordId) {

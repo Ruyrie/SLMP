@@ -117,7 +117,7 @@ public class FarmChangeViewModel extends BaseViewModel {
         Long id = h.get(RouterPath.EXTRA_FARM_ID);
         farmId = id != null && id > 0 ? id : farmContext.farmIdOrZero();
         mode = h.get(RouterPath.EXTRA_MODE);
-        scrollTarget = h.get(FarmExtras.EXTRA_SCROLL_TARGET);
+        scrollTarget = h.get(RouterPath.EXTRA_SCROLL_TARGET);
         name = h.getLiveData(KEY_NAME, "");
         remark = h.getLiveData(KEY_REMARK, "");
         location = h.getLiveData(KEY_LOCATION);

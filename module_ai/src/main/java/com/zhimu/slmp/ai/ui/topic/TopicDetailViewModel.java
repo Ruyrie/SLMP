@@ -22,6 +22,7 @@ import com.zhimu.slmp.base.mvvm.UiState;
 import javax.inject.Inject;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * K07 专题详情（技术文档 2.4.5）：API-K17；“已学 2 / 6”、“上次看到第 2 节 1:24”（START“还没有开始学习”，REVIEW“全部课程已学完”）、
@@ -51,7 +52,7 @@ public class TopicDetailViewModel extends BaseViewModel {
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        Long id = handle.get(AiExtras.EXTRA_TOPIC_ID);
+        Long id = handle.get(RouterPath.EXTRA_TOPIC_ID);
         if (id != null && id > 0) {
             load(id);
         }

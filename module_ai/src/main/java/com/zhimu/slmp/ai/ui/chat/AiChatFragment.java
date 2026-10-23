@@ -105,10 +105,10 @@ public class AiChatFragment extends BaseFragment {
             if (result.getResultCode() != android.app.Activity.RESULT_OK || data == null) {
                 return;
             }
-            long id = data.getLongExtra(AiExtras.EXTRA_SESSION_ID, 0);
+            long id = data.getLongExtra(RouterPath.EXTRA_SESSION_ID, 0);
             if (id > 0) {
                 vm.loadSession(id);
-            } else if (data.getBooleanExtra(AiExtras.EXTRA_NEW_SESSION, false)) {
+            } else if (data.getBooleanExtra(RouterPath.EXTRA_NEW_SESSION, false)) {
                 vm.newSession(null, null);
             }
         });
@@ -147,10 +147,10 @@ public class AiChatFragment extends BaseFragment {
             return;
         }
         String question = args.getString(RouterPath.EXTRA_QUESTION);
-        long courseId = args.getLong(AiExtras.EXTRA_COURSE_ID, 0);
-        String courseTitle = args.getString(AiExtras.EXTRA_COURSE_TITLE);
-        boolean newSession = args.getBoolean(AiExtras.EXTRA_NEW_SESSION, false);
-        long sessionId = args.getLong(AiExtras.EXTRA_SESSION_ID, 0);
+        long courseId = args.getLong(RouterPath.EXTRA_COURSE_ID, 0);
+        String courseTitle = args.getString(RouterPath.EXTRA_COURSE_TITLE);
+        boolean newSession = args.getBoolean(RouterPath.EXTRA_NEW_SESSION, false);
+        long sessionId = args.getLong(RouterPath.EXTRA_SESSION_ID, 0);
         if (sessionId > 0) {
             vm.loadSession(sessionId);
             return;
@@ -651,8 +651,8 @@ public class AiChatFragment extends BaseFragment {
         });
         vm.getOpenKnowledge().observe(owner, c -> {
             Bundle b = new Bundle();
-            b.putLong(AiExtras.EXTRA_KNOWLEDGE_ID, c.getKnowledgeId());
-            b.putLong(AiExtras.EXTRA_CITATION_ID, c.getId());
+            b.putLong(RouterPath.EXTRA_KNOWLEDGE_ID, c.getKnowledgeId());
+            b.putLong(RouterPath.EXTRA_CITATION_ID, c.getId());
             Router.open(requireContext(), RouterPath.K03, b);
         });
         vm.getOpenInspectReport().observe(owner, arr -> {

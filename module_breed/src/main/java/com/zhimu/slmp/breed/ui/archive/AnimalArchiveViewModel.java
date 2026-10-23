@@ -123,7 +123,7 @@ public class AnimalArchiveViewModel extends BreedFormViewModel implements PregCh
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         exitIdem = new SubmitSupport.IdemKeeper(handle, "exit");
         checkIdem = new SubmitSupport.IdemKeeper(handle, "archive_check");
-        Object id = handle.get(BreedExtras.EXTRA_ANIMAL_ID);
+        Object id = handle.get(RouterPath.EXTRA_ANIMAL_ID);
         if (id instanceof Long) {
             load((Long) id);
         } else {
@@ -189,16 +189,16 @@ public class AnimalArchiveViewModel extends BreedFormViewModel implements PregCh
         }
         switch (d.getNextAction()) {
             case BreedCodes.TYPE_MATING:
-                navigate.setValue(NavRequest.forResult(RouterPath.B03).put(BreedExtras.EXTRA_ANIMAL_ID, animalId));
+                navigate.setValue(NavRequest.forResult(RouterPath.B03).put(RouterPath.EXTRA_ANIMAL_ID, animalId));
                 break;
             case BreedCodes.TYPE_PREG_CHECK:
                 openHeaderCheck(d);
                 break;
             case BreedCodes.TYPE_FARROWING:
-                navigate.setValue(NavRequest.forResult(RouterPath.B04).put(BreedExtras.EXTRA_ANIMAL_ID, animalId));
+                navigate.setValue(NavRequest.forResult(RouterPath.B04).put(RouterPath.EXTRA_ANIMAL_ID, animalId));
                 break;
             case BreedCodes.TYPE_WEANING:
-                navigate.setValue(NavRequest.forResult(RouterPath.B05).put(BreedExtras.EXTRA_ANIMAL_ID, animalId));
+                navigate.setValue(NavRequest.forResult(RouterPath.B05).put(RouterPath.EXTRA_ANIMAL_ID, animalId));
                 break;
             default:
                 break;
@@ -239,7 +239,7 @@ public class AnimalArchiveViewModel extends BreedFormViewModel implements PregCh
         switch (item) {
             case MENU_EDIT:
                 navigate.setValue(NavRequest.forResult(BreedExtras.ACTION_ANIMAL_FORM)
-                        .put(BreedExtras.EXTRA_ANIMAL_ID, animalId));
+                        .put(RouterPath.EXTRA_ANIMAL_ID, animalId));
                 break;
             case MENU_LOG:
                 openChangeLog.setValue(new String[]{BreedCodes.BIZ_BREEDING_ANIMAL, String.valueOf(animalId),
@@ -277,18 +277,18 @@ public class AnimalArchiveViewModel extends BreedFormViewModel implements PregCh
         String type = r.getRecordType() == null ? "" : r.getRecordType();
         switch (type) {
             case BreedCodes.BIZ_MATING:
-                navigate.setValue(NavRequest.forResult(RouterPath.B03).put(BreedExtras.EXTRA_ANIMAL_ID, animalId)
-                        .put(BreedExtras.EXTRA_RECORD_ID, r.getRecordId()).put(BreedExtras.EXTRA_RECORD_JSON, json));
+                navigate.setValue(NavRequest.forResult(RouterPath.B03).put(RouterPath.EXTRA_ANIMAL_ID, animalId)
+                        .put(RouterPath.EXTRA_RECORD_ID, r.getRecordId()).put(BreedExtras.EXTRA_RECORD_JSON, json));
                 break;
             case BreedCodes.BIZ_PREG_CHECK:
                 openEditCheck(r);
                 break;
             case BreedCodes.BIZ_FARROWING:
-                navigate.setValue(NavRequest.forResult(RouterPath.B04).put(BreedExtras.EXTRA_RECORD_ID, r.getRecordId()));
+                navigate.setValue(NavRequest.forResult(RouterPath.B04).put(RouterPath.EXTRA_RECORD_ID, r.getRecordId()));
                 break;
             case BreedCodes.BIZ_WEANING:
-                navigate.setValue(NavRequest.forResult(RouterPath.B05).put(BreedExtras.EXTRA_ANIMAL_ID, animalId)
-                        .put(BreedExtras.EXTRA_RECORD_ID, r.getRecordId()).put(BreedExtras.EXTRA_RECORD_JSON, json));
+                navigate.setValue(NavRequest.forResult(RouterPath.B05).put(RouterPath.EXTRA_ANIMAL_ID, animalId)
+                        .put(RouterPath.EXTRA_RECORD_ID, r.getRecordId()).put(BreedExtras.EXTRA_RECORD_JSON, json));
                 break;
             default:
                 break;

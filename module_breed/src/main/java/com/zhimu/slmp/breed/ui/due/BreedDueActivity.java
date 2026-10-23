@@ -100,11 +100,11 @@ public class BreedDueActivity extends BaseActivity {
         });
 
         vm.getOpenFarrowing().observe(this, id -> Router.openForResult(this, launcher, RouterPath.B04,
-                BreedNav.forResult(BreedNav.id(BreedExtras.EXTRA_ANIMAL_ID, id))));
+                BreedNav.forResult(BreedNav.id(RouterPath.EXTRA_ANIMAL_ID, id))));
         vm.getOpenArchive().observe(this, id -> Router.openForResult(this, launcher, RouterPath.B06,
-                BreedNav.forResult(BreedNav.id(BreedExtras.EXTRA_ANIMAL_ID, id))));
+                BreedNav.forResult(BreedNav.id(RouterPath.EXTRA_ANIMAL_ID, id))));
         vm.getOpenIncubation().observe(this, id -> Router.openForResult(this, launcher, RouterPath.B07,
-                BreedNav.forResult(id == null || id == 0 ? null : BreedNav.id(BreedExtras.EXTRA_INCUBATION_ID, id))));
+                BreedNav.forResult(id == null || id == 0 ? null : BreedNav.id(RouterPath.EXTRA_INCUBATION_ID, id))));
         vm.getOpenFarmPicker().observe(this, v -> {
             IFarmContextService service = ServiceHub.get(IFarmContextService.class);
             if (service != null) {

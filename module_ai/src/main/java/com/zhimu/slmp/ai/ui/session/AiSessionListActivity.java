@@ -31,6 +31,7 @@ import com.zhimu.slmp.base.widget.StateLayout;
 import com.zhimu.slmp.base.widget.TopAppBarHelper;
 
 import kotlin.Unit;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * K02 历史会话：说明横幅、按日期分组（今天 / 昨天 / 近 7 天 / 更早）的本人会话、搜索（结果不分组）、扩展 FAB“新对话”。
@@ -133,12 +134,12 @@ public class AiSessionListActivity extends BaseActivity {
             }
         });
         vm.getOpenSession().observe(this, id -> {
-            Intent data = new Intent().putExtra(AiExtras.EXTRA_SESSION_ID, id);
+            Intent data = new Intent().putExtra(RouterPath.EXTRA_SESSION_ID, id);
             setResult(RESULT_OK, data);
             finish();
         });
         vm.getNewChat().observe(this, v -> {
-            setResult(RESULT_OK, new Intent().putExtra(AiExtras.EXTRA_NEW_SESSION, true));
+            setResult(RESULT_OK, new Intent().putExtra(RouterPath.EXTRA_NEW_SESSION, true));
             finish();
         });
     }

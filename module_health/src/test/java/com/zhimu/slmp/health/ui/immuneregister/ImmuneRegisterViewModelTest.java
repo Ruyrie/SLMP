@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.rxjava3.core.Single;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * D03 登记接种：按 API-D12 预填、批号默认先到期先出（2025081）、接种数量不超过存栏 200 头、
@@ -101,7 +102,7 @@ public class ImmuneRegisterViewModelTest {
         when(farm.isStaff()).thenReturn(staff);
         vm = new ImmuneRegisterViewModel(repository, shared, farm);
         Map<String, Object> args = new HashMap<>();
-        args.put(HealthExtras.EXTRA_PLAN_ID, 8117L);
+        args.put(RouterPath.EXTRA_PLAN_ID, 8117L);
         vm.attachSavedState(new SavedStateHandle(args));
     }
 

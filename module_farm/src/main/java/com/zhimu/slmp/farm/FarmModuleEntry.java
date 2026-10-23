@@ -67,14 +67,14 @@ public class FarmModuleEntry implements IModuleEntry {
     @NonNull
     private static Bundle member(long memberId) {
         Bundle b = farm(1001, null);
-        b.putLong(FarmExtras.EXTRA_MEMBER_ID, memberId);
+        b.putLong(RouterPath.EXTRA_MEMBER_ID, memberId);
         return b;
     }
 
     @NonNull
     private static Bundle change() {
         Bundle b = farm(1001, null);
-        b.putString(FarmExtras.EXTRA_SCROLL_TARGET, FarmExtras.TARGET_ADDRESS);
+        b.putString(RouterPath.EXTRA_SCROLL_TARGET, FarmExtras.TARGET_ADDRESS);
         return b;
     }
 }

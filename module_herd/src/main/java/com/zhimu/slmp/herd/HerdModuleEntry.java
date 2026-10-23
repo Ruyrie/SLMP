@@ -40,7 +40,7 @@ public class HerdModuleEntry implements IModuleEntry {
         pages.add(new DebugPage("L01 生产页（以所有者登录）", DEBUG_TAB_ACTION, tab(TabRegistry.PRODUCTION)));
         pages.add(new DebugPage("L02 我的栏舍（以员工登录）", DEBUG_TAB_ACTION, tab(TabRegistry.MY_PENS)));
         pages.add(new DebugPage("L03 存栏总览 · 按栏舍", RouterPath.L03));
-        pages.add(new DebugPage("L03 存栏总览 · 按批次", RouterPath.L03, str(HerdExtras.EXTRA_VIEW_TYPE,
+        pages.add(new DebugPage("L03 存栏总览 · 按批次", RouterPath.L03, str(RouterPath.EXTRA_VIEW_TYPE,
                 HerdExtras.VIEW_BATCH)));
         pages.add(new DebugPage("L04 栏舍详情 · 3 号育肥舍（pen_id=2003）", RouterPath.L04,
                 id(RouterPath.EXTRA_PEN_ID, 2003)));
@@ -53,23 +53,23 @@ public class HerdModuleEntry implements IModuleEntry {
         pages.add(new DebugPage("L06 批次档案 · 可删除新批次 ZM2610-058（batch_id=3058）", RouterPath.L06,
                 id(RouterPath.EXTRA_BATCH_ID, 3058)));
         Bundle cross = id(RouterPath.EXTRA_BATCH_ID, 3201);
-        cross.putLong(HerdExtras.EXTRA_FROM_FARM_ID, 1001);
-        cross.putString(HerdExtras.EXTRA_FROM_FARM_NAME, "东山猪场");
-        cross.putString(HerdExtras.EXTRA_CROSS_FARM_NAME, "西岭鸡场");
+        cross.putLong(RouterPath.EXTRA_FROM_FARM_ID, 1001);
+        cross.putString(RouterPath.EXTRA_FROM_FARM_NAME, "东山猪场");
+        cross.putString(RouterPath.EXTRA_CROSS_FARM_NAME, "西岭鸡场");
         pages.add(new DebugPage("L06 批次档案 · 跨场扫码打开（batch_id=3201）", RouterPath.L06, cross));
         pages.add(new DebugPage("L07 扫码查看档案", RouterPath.L07));
         pages.add(new DebugPage("L08 批次入栏", RouterPath.L08));
         Bundle editEntry = id(RouterPath.EXTRA_BATCH_ID, 3058);
-        editEntry.putLong(HerdExtras.EXTRA_ENTRY_EVENT_ID, 958);
+        editEntry.putLong(RouterPath.EXTRA_ENTRY_EVENT_ID, 958);
         pages.add(new DebugPage("L08 修改入栏记录（batch_id=3058，entry_event_id=958）", RouterPath.L08, editEntry));
         pages.add(new DebugPage("L10 转栏登记（batch_id=3001）", RouterPath.L10, id(RouterPath.EXTRA_BATCH_ID, 3001)));
         Bundle editTransfer = id(RouterPath.EXTRA_BATCH_ID, 3001);
-        editTransfer.putLong(HerdExtras.EXTRA_EVENT_ID, 907);
+        editTransfer.putLong(RouterPath.EXTRA_EVENT_ID, 907);
         pages.add(new DebugPage("L10 修改转栏记录（event_id=907）", RouterPath.L10, editTransfer));
         pages.add(new DebugPage("L11 死淘登记（batch_id=3001）", RouterPath.L11, id(RouterPath.EXTRA_BATCH_ID, 3001)));
         pages.add(new DebugPage("L11 死淘登记（未带批次）", RouterPath.L11));
         Bundle editDeath = id(RouterPath.EXTRA_BATCH_ID, 3001);
-        editDeath.putLong(HerdExtras.EXTRA_EVENT_ID, 905);
+        editDeath.putLong(RouterPath.EXTRA_EVENT_ID, 905);
         pages.add(new DebugPage("L11 修改死淘记录（event_id=905）", RouterPath.L11, editDeath));
         return pages;
     }

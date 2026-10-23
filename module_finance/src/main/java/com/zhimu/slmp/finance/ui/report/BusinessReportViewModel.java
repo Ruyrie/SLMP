@@ -123,9 +123,9 @@ public class BusinessReportViewModel extends FinanceViewModel {
         if (denyStaff()) {
             return;
         }
-        String type = handle.get(FinanceExtras.REPORT_TYPE);
-        presetPeriod = handle.get(FinanceExtras.PERIOD_START);
-        ownedMode = RouterPath.MODE_OWNED_FARMS.equals(handle.get(FinanceExtras.MODE));
+        String type = handle.get(RouterPath.EXTRA_REPORT_TYPE);
+        presetPeriod = handle.get(RouterPath.EXTRA_PERIOD_START);
+        ownedMode = RouterPath.MODE_OWNED_FARMS.equals(handle.get(RouterPath.EXTRA_MODE));
         ReportQuery q = ReportQuery.toDate();
         if (ownedMode) {
             q = q.withScope(FinanceConst.SCOPE_ALL);
@@ -655,11 +655,11 @@ public class BusinessReportViewModel extends FinanceViewModel {
     // ===== 跳转 =====
 
     public void openBatchSettlement(long batchId) {
-        open(NavTarget.of(RouterPath.E10).put(FinanceExtras.BATCH_ID, batchId));
+        open(NavTarget.of(RouterPath.E10).put(RouterPath.EXTRA_BATCH_ID, batchId));
     }
 
     public void openBatchArchive(long batchId) {
-        open(NavTarget.of(RouterPath.L06).put(FinanceExtras.BATCH_ID, batchId).forResult());
+        open(NavTarget.of(RouterPath.L06).put(RouterPath.EXTRA_BATCH_ID, batchId).forResult());
     }
 
     /** “查看批次记录”：1 个差异批次直接进入 L06，多个时选择 */

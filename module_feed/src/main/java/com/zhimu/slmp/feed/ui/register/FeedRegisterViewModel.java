@@ -53,7 +53,7 @@ import javax.inject.Inject;
 import io.reactivex.rxjava3.core.Single;
 
 /**
- * G02 登记投喂（新增、修改、只读）。入参 EXTRA_TASK_ID（待投喂、已逾期）或 FeedExtras.EXTRA_RECORD_ID（已登记）。
+ * G02 登记投喂（新增、修改、只读）。入参 EXTRA_TASK_ID（待投喂、已逾期）或 RouterPath.EXTRA_RECORD_ID（已登记）。
  * <ul>
  *     <li>新增：API-G03 带出任务、计划量与饲料；已登记（record_id）改调 API-G05；不能登记时 blockText 只读</li>
  *     <li>修改（所有者、场长当天记录）：API-G05 + API-G03（饲料与执行人选项，待定事项 2）→ API-G06；菜单作废 API-G07</li>
@@ -175,7 +175,7 @@ public class FeedRegisterViewModel extends BaseViewModel {
         idem.attach(handle);
         penId = FeedExtras.readId(handle.get(RouterPath.EXTRA_PEN_ID));
         init(FeedExtras.readId(handle.get(RouterPath.EXTRA_TASK_ID)),
-                FeedExtras.readId(handle.get(FeedExtras.EXTRA_RECORD_ID)));
+                FeedExtras.readId(handle.get(RouterPath.EXTRA_RECORD_ID)));
     }
 
     // ===================== 对外 =====================

@@ -119,14 +119,14 @@ public class ImmuneItemEditViewModel extends BaseViewModel {
         idem.attach(handle);
         Object b = handle.get(RouterPath.EXTRA_BATCH_ID);
         batchId = b instanceof Number ? ((Number) b).longValue() : 0;
-        Object p = handle.get(HealthExtras.EXTRA_PLAN_ID);
+        Object p = handle.get(RouterPath.EXTRA_PLAN_ID);
         planId = p instanceof Number ? ((Number) p).longValue() : null;
         if (planId != null) {
             editMode.setValue(true);
-            Object v = handle.get(HealthExtras.EXTRA_VERSION);
+            Object v = handle.get(RouterPath.EXTRA_VERSION);
             version = v instanceof Number ? ((Number) v).intValue() : 0;
-            dose.setValue(HealthFormat.nonNull(handle.get(HealthExtras.EXTRA_DOSE)));
-            methodCode.setValue(handle.get(HealthExtras.EXTRA_METHOD_CODE));
+            dose.setValue(HealthFormat.nonNull(handle.get(RouterPath.EXTRA_DOSE)));
+            methodCode.setValue(handle.get(RouterPath.EXTRA_METHOD_CODE));
             editVaccineName = handle.get(EXTRA_VACCINE_NAME);
             editDoseUnit = handle.get(EXTRA_DOSE_UNIT);
             String mode = handle.get(EXTRA_PLAN_MODE);

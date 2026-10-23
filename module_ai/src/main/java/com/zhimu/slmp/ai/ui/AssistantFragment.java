@@ -20,6 +20,7 @@ import com.zhimu.slmp.ai.ui.history.WatchHistoryActivity;
 import com.zhimu.slmp.base.ui.BaseFragment;
 import com.zhimu.slmp.common.service.MainTabHost;
 import com.zhimu.slmp.common.service.TabRegistry;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * 底部导航“助手”一级页（K01、K04 的宿主）：顶部栏 + 连接按钮组“AI 问答 / 养殖课堂”；右侧图标随模式替换
@@ -101,7 +102,7 @@ public class AssistantFragment extends BaseFragment {
 
     /** 外部进入：K01 / K04 action、T01 推荐问题、K05“问 AI” */
     public void handleArgs(@NonNull Bundle args) {
-        String m = args.getString(AiExtras.EXTRA_ASSISTANT_MODE, AiExtras.MODE_CHAT);
+        String m = args.getString(RouterPath.EXTRA_ASSISTANT_MODE, AiExtras.MODE_CHAT);
         setMode(m, false);
         if (AiExtras.MODE_CHAT.equals(m) && chat != null) {
             chat.handleEntry(args);

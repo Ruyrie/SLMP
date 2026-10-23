@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * B05 登记断奶（技术文档 2.4.5）：哺乳母猪下拉（API-B04 WEANING）、产仔信息卡（API-B11 WEANING）、断奶日期、
@@ -103,8 +104,8 @@ public class WeaningRegisterViewModel extends BreedFormViewModel {
         if (json != null) {
             editRecord = GsonFactory.get().fromJson(json, BreedingRecordVO.class);
         }
-        Object a = handle.get(BreedExtras.EXTRA_ANIMAL_ID);
-        Object r = handle.get(BreedExtras.EXTRA_RECORD_ID);
+        Object a = handle.get(RouterPath.EXTRA_ANIMAL_ID);
+        Object r = handle.get(RouterPath.EXTRA_RECORD_ID);
         init(a instanceof Long ? (Long) a : null, r instanceof Long ? (Long) r : null);
     }
 

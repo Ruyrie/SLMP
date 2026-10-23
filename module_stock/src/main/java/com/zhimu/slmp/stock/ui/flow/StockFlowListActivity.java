@@ -27,6 +27,7 @@ import com.zhimu.slmp.stock.ui.common.RowPagingAdapter;
 import com.zhimu.slmp.stock.ui.common.StockNav;
 
 import kotlin.Unit;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * 出入库流水列表（M01“全部流水”、饲料卡“流水”、M05 菜单“全部出入库流水”）：顶部单选 Chip，按日期分组，每页 20 条。
@@ -43,11 +44,11 @@ public class StockFlowListActivity extends BaseActivity {
     public static Intent intent(@NonNull Context context, @NonNull String materialType, @Nullable Long filterId,
                                 @Nullable String title) {
         Intent i = new Intent(context, StockFlowListActivity.class)
-                .putExtra(StockExtras.EXTRA_MATERIAL_TYPE, materialType)
-                .putExtra(StockExtras.EXTRA_TITLE, title);
+                .putExtra(RouterPath.EXTRA_MATERIAL_TYPE, materialType)
+                .putExtra(RouterPath.EXTRA_TITLE, title);
         if (filterId != null) {
-            i.putExtra(StockEnums.MATERIAL_DRUG.equals(materialType) ? StockExtras.EXTRA_DRUG_ID
-                    : StockExtras.EXTRA_FEED_ID, filterId.longValue());
+            i.putExtra(StockEnums.MATERIAL_DRUG.equals(materialType) ? RouterPath.EXTRA_DRUG_ID
+                    : RouterPath.EXTRA_FEED_ID, filterId.longValue());
         }
         return i;
     }
@@ -59,7 +60,7 @@ public class StockFlowListActivity extends BaseActivity {
         setContentView(binding.getRoot());
         vm = obtainViewModel(StockInjector.factory(), StockFlowListViewModel.class);
         observeBase(vm);
-        String title = getIntent().getStringExtra(StockExtras.EXTRA_TITLE);
+        String title = getIntent().getStringExtra(RouterPath.EXTRA_TITLE);
         TopAppBarHelper.setupBack(binding.stockTopBar.baseToolbar,
                 title == null || title.isEmpty() ? getString(R.string.stock_flow_all_title) : title);
         recordLauncher = Router.registerForResult(this, r -> {

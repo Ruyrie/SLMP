@@ -196,10 +196,10 @@ public class MedicationRegisterViewModel extends BaseViewModel {
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         idem.attach(handle);
         todoId = asLong(handle.get(RouterPath.EXTRA_TODO_ID));
-        presetReportId = asLong(handle.get(HealthExtras.EXTRA_REPORT_ID));
-        presetDiagnosisId = asLong(handle.get(HealthExtras.EXTRA_DIAGNOSIS_ID));
+        presetReportId = asLong(handle.get(RouterPath.EXTRA_REPORT_ID));
+        presetDiagnosisId = asLong(handle.get(RouterPath.EXTRA_DIAGNOSIS_ID));
         init(asLong(handle.get(RouterPath.EXTRA_BATCH_ID)), asLong(handle.get(RouterPath.EXTRA_PEN_ID)),
-                asLong(handle.get(HealthExtras.EXTRA_RECORD_ID)));
+                asLong(handle.get(RouterPath.EXTRA_RECORD_ID)));
     }
 
     @Nullable

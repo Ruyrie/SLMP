@@ -11,18 +11,8 @@ public final class BreedExtras {
     private BreedExtras() {
     }
 
-    /** 种畜 ID（long）：B03–B06 预选母猪；T04“去登记”打开 B04 时为待办 biz_id */
-    public static final String EXTRA_ANIMAL_ID = "animal_id";
-    /** 模块03 Mock 中 T04 预产待办的参数键（与 animal_id 同义，兼容读取） */
-    public static final String EXTRA_SOW_ID = "sow_id";
-    /** 繁育记录 ID（long）：B03 / B04 / B05 修改模式 */
-    public static final String EXTRA_RECORD_ID = "record_id";
     /** 繁育记录（String，BreedingRecordVO 的 JSON）：B03 / B05 修改模式的初值 */
     public static final String EXTRA_RECORD_JSON = "record_json";
-    /** 孵化记录 ID（long）：B07；不带为新建入孵 */
-    public static final String EXTRA_INCUBATION_ID = "incubation_id";
-    /** B02 初始分段（String）：FARROW / HATCH */
-    public static final String EXTRA_TAB = "tab";
     /** 本组件页面以“需要结果”打开时为 true：登记成功后 setResult 带回提示，由上一页显示 Snackbar */
     public static final String EXTRA_FOR_RESULT = "breed_for_result";
 

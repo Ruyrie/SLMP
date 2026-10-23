@@ -68,7 +68,7 @@ public class InspectHistoryViewModel extends BaseListViewModel<HistoryQuery, Pen
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         Long pen = Args.getLong(handle, RouterPath.EXTRA_PEN_ID);
         penId = pen == null ? 0 : pen;
-        String locate = Args.getString(handle, InspectExtras.EXTRA_LOCATE_DATE);
+        String locate = Args.getString(handle, RouterPath.EXTRA_LOCATE_DATE);
         if (locate != null) {
             setFilter(new HistoryQuery(HistoryQuery.ALL, null, null, locate));
             highlightDate.setValue(locate);
@@ -195,7 +195,7 @@ public class InspectHistoryViewModel extends BaseListViewModel<HistoryQuery, Pen
 
     public void onBackfill(@NonNull PenInspectionRowVO row) {
         navEvent.setValue(NavTarget.of(RouterPath.I03).put(RouterPath.EXTRA_PEN_ID, penId)
-                .put(InspectExtras.EXTRA_INSPECT_DATE, row.getInspectDate()).forResult());
+                .put(RouterPath.EXTRA_INSPECT_DATE, row.getInspectDate()).forResult());
     }
 
     public void onMenu(@NonNull PenInspectionRowVO row, int action) {
@@ -203,18 +203,18 @@ public class InspectHistoryViewModel extends BaseListViewModel<HistoryQuery, Pen
             case MENU_DETAIL:
                 navEvent.setValue(NavTarget.of(RouterPath.I02).put(RouterPath.EXTRA_PEN_ID, penId)
                         .put(RouterPath.EXTRA_MODE, InspectExtras.MODE_READONLY)
-                        .put(InspectExtras.EXTRA_INSPECTION_ID, row.getInspectionId()));
+                        .put(RouterPath.EXTRA_INSPECTION_ID, row.getInspectionId()));
                 break;
             case MENU_MODIFY:
                 if (PenInspectionRowVO.TARGET_BACKFILL.equals(row.getModifyTarget())) {
                     navEvent.setValue(NavTarget.of(RouterPath.I03).put(RouterPath.EXTRA_PEN_ID, penId)
-                            .put(InspectExtras.EXTRA_INSPECTION_ID, row.getInspectionId())
-                            .put(InspectExtras.EXTRA_INSPECT_DATE, row.getInspectDate())
-                            .put(InspectExtras.EXTRA_DATE_LOCKED, true).forResult());
+                            .put(RouterPath.EXTRA_INSPECTION_ID, row.getInspectionId())
+                            .put(RouterPath.EXTRA_INSPECT_DATE, row.getInspectDate())
+                            .put(RouterPath.EXTRA_DATE_LOCKED, true).forResult());
                 } else {
                     navEvent.setValue(NavTarget.of(RouterPath.I02).put(RouterPath.EXTRA_PEN_ID, penId)
                             .put(RouterPath.EXTRA_MODE, InspectExtras.MODE_MODIFY)
-                            .put(InspectExtras.EXTRA_INSPECTION_ID, row.getInspectionId()).forResult());
+                            .put(RouterPath.EXTRA_INSPECTION_ID, row.getInspectionId()).forResult());
                 }
                 break;
             case MENU_CHANGE:

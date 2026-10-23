@@ -120,7 +120,7 @@ public class FarrowingRegisterActivity extends BaseActivity {
         vm.getConfirmDiscard().observe(this, v -> BreedNav.showDiscard(this, REQ_DISCARD));
         BreedNav.listenDiscard(this, REQ_DISCARD);
         vm.getOpenArchive().observe(this, id -> {
-            Router.open(this, RouterPath.B06, BreedNav.id(BreedExtras.EXTRA_ANIMAL_ID, id));
+            Router.open(this, RouterPath.B06, BreedNav.id(RouterPath.EXTRA_ANIMAL_ID, id));
             finish();
         });
         vm.getOpenChangeRequest().observe(this, id -> {

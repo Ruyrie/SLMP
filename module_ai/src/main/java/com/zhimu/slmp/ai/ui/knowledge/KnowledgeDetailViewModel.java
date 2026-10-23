@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * K03 知识原文（技术文档 2.4.3）：API-K12（从 K01 进入带 citation_id，定位并标注被引用段落）；回答后条目已更新时显示 Notice；
@@ -71,8 +72,8 @@ public class KnowledgeDetailViewModel extends BaseViewModel {
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        Long id = handle.get(AiExtras.EXTRA_KNOWLEDGE_ID);
-        Long cite = handle.get(AiExtras.EXTRA_CITATION_ID);
+        Long id = handle.get(RouterPath.EXTRA_KNOWLEDGE_ID);
+        Long cite = handle.get(RouterPath.EXTRA_CITATION_ID);
         if (id != null && id > 0) {
             load(id, cite != null && cite > 0 ? cite : null);
         }

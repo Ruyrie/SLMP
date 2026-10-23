@@ -204,7 +204,7 @@ public abstract class InspectFormViewModel extends BaseViewModel {
         requestKeeper = new ClientRequestKeeper(handle, "inspect_client_request_id");
         Long pen = Args.getLong(handle, RouterPath.EXTRA_PEN_ID);
         penId = pen == null ? 0 : pen;
-        inspectionId = Args.getLong(handle, InspectExtras.EXTRA_INSPECTION_ID);
+        inspectionId = Args.getLong(handle, RouterPath.EXTRA_INSPECTION_ID);
         todoId = Args.getLong(handle, RouterPath.EXTRA_TODO_ID);
         titleText.setValue(defaultTitle());
         primaryText.setValue(defaultPrimaryText());
@@ -757,7 +757,7 @@ public abstract class InspectFormViewModel extends BaseViewModel {
         }
         if (thenReport) {
             navEvent.setValue(NavTarget.of(RouterPath.I05)
-                    .put(InspectExtras.EXTRA_INSPECTION_ID, r.getInspectionId())
+                    .put(RouterPath.EXTRA_INSPECTION_ID, r.getInspectionId())
                     .put(RouterPath.EXTRA_PEN_ID, penId)
                     .finishCurrent());
             return;

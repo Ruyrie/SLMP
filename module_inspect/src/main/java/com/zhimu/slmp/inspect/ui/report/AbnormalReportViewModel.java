@@ -126,7 +126,7 @@ public class AbnormalReportViewModel extends BaseViewModel {
         mediaObserver = list -> onMediaChanged(list == null ? Collections.emptyList() : list);
         media.getItems().observeForever(mediaObserver);
         keeper = new ClientRequestKeeper(handle, "report_client_request_id");
-        inspectionId = Args.getLong(handle, InspectExtras.EXTRA_INSPECTION_ID);
+        inspectionId = Args.getLong(handle, RouterPath.EXTRA_INSPECTION_ID);
         argPenId = Args.getLong(handle, RouterPath.EXTRA_PEN_ID);
         init();
     }
@@ -415,10 +415,10 @@ public class AbnormalReportViewModel extends BaseViewModel {
         }
         GlobalEvents.postMessage(UiMessage.of(MSG_SUBMITTED));
         navEvent.setValue(NavTarget.of(RouterPath.I06)
-                .put(InspectExtras.EXTRA_REPORT_ID, r.getReportId())
-                .put(InspectExtras.EXTRA_POLL_INTERVAL, r.getPollIntervalSec())
-                .put(InspectExtras.EXTRA_POLL_MAX, r.getPollMaxSec())
-                .put(InspectExtras.EXTRA_AI_STATE, r.getAiState())
+                .put(RouterPath.EXTRA_REPORT_ID, r.getReportId())
+                .put(RouterPath.EXTRA_POLL_INTERVAL, r.getPollIntervalSec())
+                .put(RouterPath.EXTRA_POLL_MAX, r.getPollMaxSec())
+                .put(RouterPath.EXTRA_AI_STATE, r.getAiState())
                 .finishCurrent());
     }
 
@@ -437,7 +437,7 @@ public class AbnormalReportViewModel extends BaseViewModel {
             showMessage(e.getMessage());
             if (reportId != null) {
                 finished = true;
-                navEvent.setValue(NavTarget.of(RouterPath.I06).put(InspectExtras.EXTRA_REPORT_ID, reportId)
+                navEvent.setValue(NavTarget.of(RouterPath.I06).put(RouterPath.EXTRA_REPORT_ID, reportId)
                         .finishCurrent());
             }
             return;

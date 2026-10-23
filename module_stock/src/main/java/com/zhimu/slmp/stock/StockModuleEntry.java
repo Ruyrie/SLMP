@@ -30,23 +30,23 @@ public class StockModuleEntry implements IModuleEntry {
     public List<DebugPage> debugPages() {
         return Arrays.asList(
                 new DebugPage("M01 饲料库存", RouterPath.M01),
-                new DebugPage("M02 饲料档案（育肥全价料）", RouterPath.M02, longArg(StockExtras.EXTRA_FEED_ID, 5101)),
-                new DebugPage("M03 饲料入库（预选育肥全价料）", RouterPath.M03, longArg(StockExtras.EXTRA_FEED_ID, 5101)),
-                new DebugPage("M03 入库单（已发生出库）", RouterPath.M03, longArg(StockExtras.EXTRA_RECORD_ID, 6201)),
+                new DebugPage("M02 饲料档案（育肥全价料）", RouterPath.M02, longArg(RouterPath.EXTRA_FEED_ID, 5101)),
+                new DebugPage("M03 饲料入库（预选育肥全价料）", RouterPath.M03, longArg(RouterPath.EXTRA_FEED_ID, 5101)),
+                new DebugPage("M03 入库单（已发生出库）", RouterPath.M03, longArg(RouterPath.EXTRA_RECORD_ID, 6201)),
                 new DebugPage("M04 盘点与报损", RouterPath.M04),
                 new DebugPage("M05 兽药与疫苗库存", RouterPath.M05),
-                new DebugPage("M06 批号详情（已停用）", RouterPath.M06, longArg(StockExtras.EXTRA_LOT_ID, 5201)),
-                new DebugPage("M06 批号详情（临期）", RouterPath.M06, longArg(StockExtras.EXTRA_LOT_ID, 6301)),
-                new DebugPage("M07 登记报废（已停用批号）", RouterPath.M07, longArg(StockExtras.EXTRA_LOT_ID, 5201)),
+                new DebugPage("M06 批号详情（已停用）", RouterPath.M06, longArg(RouterPath.EXTRA_LOT_ID, 5201)),
+                new DebugPage("M06 批号详情（临期）", RouterPath.M06, longArg(RouterPath.EXTRA_LOT_ID, 6301)),
+                new DebugPage("M07 登记报废（已停用批号）", RouterPath.M07, longArg(RouterPath.EXTRA_LOT_ID, 5201)),
                 new DebugPage("M08 兽药与疫苗入库", RouterPath.M08),
-                new DebugPage("M08 入库单（未出库，可修改）", RouterPath.M08, longArg(StockExtras.EXTRA_RECORD_ID, 6211)),
-                new DebugPage("M09 药品档案（氟苯尼考粉）", RouterPath.M09, longArg(StockExtras.EXTRA_DRUG_ID, 5202)),
+                new DebugPage("M08 入库单（未出库，可修改）", RouterPath.M08, longArg(RouterPath.EXTRA_RECORD_ID, 6211)),
+                new DebugPage("M09 药品档案（氟苯尼考粉）", RouterPath.M09, longArg(RouterPath.EXTRA_DRUG_ID, 5202)),
                 new DebugPage("M09 新增药品档案", RouterPath.M09),
                 new DebugPage("M10 饲料其他出库", RouterPath.M10),
-                new DebugPage("M10 其他出库记录（今天）", RouterPath.M10, longArg(StockExtras.EXTRA_RECORD_ID, 6502)),
+                new DebugPage("M10 其他出库记录（今天）", RouterPath.M10, longArg(RouterPath.EXTRA_RECORD_ID, 6502)),
                 new DebugPage("M11 领用（聚维酮碘 2025033）", RouterPath.M11, lotArgs(5301, 6301)),
-                new DebugPage("M11 退货记录", RouterPath.M11, longArg(StockExtras.EXTRA_RECORD_ID, 6512)),
-                new DebugPage("M11 领用记录（今天，关联栏舍）", RouterPath.M11, longArg(StockExtras.EXTRA_RECORD_ID, 6511)));
+                new DebugPage("M11 退货记录", RouterPath.M11, longArg(RouterPath.EXTRA_RECORD_ID, 6512)),
+                new DebugPage("M11 领用记录（今天，关联栏舍）", RouterPath.M11, longArg(RouterPath.EXTRA_RECORD_ID, 6511)));
     }
 
     @NonNull
@@ -58,8 +58,8 @@ public class StockModuleEntry implements IModuleEntry {
 
     @NonNull
     private static Bundle lotArgs(long drugId, long lotId) {
-        Bundle b = longArg(StockExtras.EXTRA_DRUG_ID, drugId);
-        b.putLong(StockExtras.EXTRA_LOT_ID, lotId);
+        Bundle b = longArg(RouterPath.EXTRA_DRUG_ID, drugId);
+        b.putLong(RouterPath.EXTRA_LOT_ID, lotId);
         return b;
     }
 }

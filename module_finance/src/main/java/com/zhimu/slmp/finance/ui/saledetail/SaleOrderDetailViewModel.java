@@ -86,7 +86,7 @@ public class SaleOrderDetailViewModel extends FinanceViewModel implements Receip
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         receipt.attach(handle);
-        Long id = handle.get(FinanceExtras.SALE_ORDER_ID);
+        Long id = handle.get(RouterPath.EXTRA_SALE_ORDER_ID);
         if (id == null) {
             id = handle.get(RouterPath.EXTRA_BIZ_ID);
         }
@@ -227,13 +227,13 @@ public class SaleOrderDetailViewModel extends FinanceViewModel implements Receip
         }
         switch (itemId) {
             case MENU_APPLY_CHANGE:
-                open(NavTarget.of(RouterPath.E08).put(FinanceExtras.SALE_ORDER_ID, d.getId()).forResult());
+                open(NavTarget.of(RouterPath.E08).put(RouterPath.EXTRA_SALE_ORDER_ID, d.getId()).forResult());
                 break;
             case MENU_LOG:
                 launch(baseData.getRecordLogs(FinanceConst.LOG_SALE_ORDER, d.getId()), showLogSheet::setValue);
                 break;
             case MENU_EDIT:
-                open(NavTarget.of(RouterPath.E06).put(FinanceExtras.SALE_ORDER_ID, d.getId()).forResult());
+                open(NavTarget.of(RouterPath.E06).put(RouterPath.EXTRA_SALE_ORDER_ID, d.getId()).forResult());
                 break;
             case MENU_VOID:
                 showReasonDialog.setValue("作废后 " + d.getBatchNo() + " 存栏恢复 "
@@ -271,7 +271,7 @@ public class SaleOrderDetailViewModel extends FinanceViewModel implements Receip
     public void openSettlement() {
         SaleOrderDetailVO d = detail.getValue();
         if (d != null) {
-            open(NavTarget.of(RouterPath.E10).put(FinanceExtras.BATCH_ID, d.getBatchId()));
+            open(NavTarget.of(RouterPath.E10).put(RouterPath.EXTRA_BATCH_ID, d.getBatchId()));
         }
     }
 
@@ -280,8 +280,8 @@ public class SaleOrderDetailViewModel extends FinanceViewModel implements Receip
         if (r.getFinanceRecordId() == null) {
             return;
         }
-        open(NavTarget.of(RouterPath.E04).put(FinanceExtras.HIGHLIGHT_ID, r.getFinanceRecordId())
-                .put(FinanceExtras.MONTH, FinanceFormat.monthOf(r.getReceiptDate())));
+        open(NavTarget.of(RouterPath.E04).put(RouterPath.EXTRA_HIGHLIGHT_ID, r.getFinanceRecordId())
+                .put(RouterPath.EXTRA_MONTH, FinanceFormat.monthOf(r.getReceiptDate())));
     }
 
     /** 待审核横幅“查看”→ U02 我的修改申请 */

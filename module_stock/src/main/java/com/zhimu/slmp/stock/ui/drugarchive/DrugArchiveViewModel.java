@@ -45,6 +45,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import io.reactivex.rxjava3.core.Single;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * M09 药品档案（技术准备文档 2.4.11，按需求补充）：
@@ -116,14 +117,14 @@ public class DrugArchiveViewModel extends StockFormViewModel {
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         super.onSavedStateAttached(handle);
-        String kw = handle.get(StockExtras.EXTRA_KEYWORD);
+        String kw = handle.get(RouterPath.EXTRA_KEYWORD);
         keyword = kw == null ? "" : kw.trim();
-        String cat = handle.get(StockExtras.EXTRA_CATEGORY);
+        String cat = handle.get(RouterPath.EXTRA_CATEGORY);
         if (StockEnums.CAT_VACCINE.equals(cat) || StockEnums.CAT_DISINFECTANT.equals(cat)
                 || StockEnums.CAT_VET_DRUG.equals(cat)) {
             category.setValue(cat);
         }
-        load(StockExtras.readId(handle.get(StockExtras.EXTRA_DRUG_ID)));
+        load(StockExtras.readId(handle.get(RouterPath.EXTRA_DRUG_ID)));
     }
 
     public void load(@Nullable Long id) {

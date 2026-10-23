@@ -170,7 +170,7 @@ public class ImmunePlanActivity extends BaseActivity {
         vm.getOpenEditItem().observe(this, this::openEditItem);
         vm.getOpenRecord().observe(this, id -> {
             Bundle extras = new Bundle();
-            extras.putLong(HealthExtras.EXTRA_RECORD_ID, id);
+            extras.putLong(RouterPath.EXTRA_RECORD_ID, id);
             HealthNav.open(this, childLauncher, RouterPath.D03, extras);
         });
         vm.getShowPostpone().observe(this, p -> PostponeDialogFragment.show(getSupportFragmentManager()));
@@ -311,8 +311,8 @@ public class ImmunePlanActivity extends BaseActivity {
 
     private void openRegister(@NonNull ImmunePlanVO plan) {
         Bundle extras = new Bundle();
-        extras.putLong(HealthExtras.EXTRA_PLAN_ID, plan.getId());
-        extras.putBoolean(HealthExtras.EXTRA_BACKFILL, ImmuneRules.STATUS_MISSED.equals(plan.getStatus()));
+        extras.putLong(RouterPath.EXTRA_PLAN_ID, plan.getId());
+        extras.putBoolean(RouterPath.EXTRA_BACKFILL, ImmuneRules.STATUS_MISSED.equals(plan.getStatus()));
         HealthNav.open(this, childLauncher, RouterPath.D03, extras);
     }
 
@@ -323,10 +323,10 @@ public class ImmunePlanActivity extends BaseActivity {
             extras.putLong(RouterPath.EXTRA_BATCH_ID, batchId);
         }
         if (plan != null) {
-            extras.putLong(HealthExtras.EXTRA_PLAN_ID, plan.getId());
-            extras.putInt(HealthExtras.EXTRA_VERSION, plan.getVersion());
-            extras.putString(HealthExtras.EXTRA_DOSE, HealthFormat.plain(plan.getDose()));
-            extras.putString(HealthExtras.EXTRA_METHOD_CODE, plan.getMethodCode());
+            extras.putLong(RouterPath.EXTRA_PLAN_ID, plan.getId());
+            extras.putInt(RouterPath.EXTRA_VERSION, plan.getVersion());
+            extras.putString(RouterPath.EXTRA_DOSE, HealthFormat.plain(plan.getDose()));
+            extras.putString(RouterPath.EXTRA_METHOD_CODE, plan.getMethodCode());
             extras.putString(ImmuneItemEditViewModel.EXTRA_VACCINE_NAME, plan.getVaccineName()
                     + (plan.getImmuneRound() == null ? "" : HealthFormat.DOT + plan.getImmuneRound()));
             extras.putString(ImmuneItemEditViewModel.EXTRA_PLAN_MODE, plan.getPlanMode());

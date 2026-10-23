@@ -60,8 +60,8 @@ public class TopicDetailActivity extends BaseActivity {
         vm.getActionText().observe(this, t -> binding.aiTopicAction.setText(t));
         vm.getOpenPlay().observe(this, args -> {
             Bundle b = new Bundle();
-            b.putLong(AiExtras.EXTRA_COURSE_ID, args.getCourseId());
-            b.putString(AiExtras.EXTRA_ENTRY_TYPE, args.getEntryType());
+            b.putLong(RouterPath.EXTRA_COURSE_ID, args.getCourseId());
+            b.putString(RouterPath.EXTRA_ENTRY_TYPE, args.getEntryType());
             Router.open(this, RouterPath.K05, b);
         });
         vm.getShareText().observe(this, text -> {

@@ -30,6 +30,7 @@ import java.time.YearMonth;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import com.zhimu.slmp.base.util.DateFormatter;
 
 /**
  * 月历网格（技术文档 2.7.4）：月视图画含本月的完整周（5 或 6 行，行高 48 dp），单周模式只画选中日期所在的一周（兼作周日期条）。
@@ -78,9 +79,9 @@ public class MonthCalendarView extends View {
     private int cellCount;
 
     @NonNull
-    private YearMonth month = YearMonth.now();
+    private YearMonth month = YearMonth.from(DateFormatter.today());
     @NonNull
-    private LocalDate selected = LocalDate.now();
+    private LocalDate selected = DateFormatter.today();
     @Nullable
     private LocalDate today;
     @NonNull

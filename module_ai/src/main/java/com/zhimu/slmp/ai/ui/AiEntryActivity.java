@@ -22,8 +22,8 @@ import com.zhimu.slmp.common.service.TabRegistry;
  *     MainActivity 恢复后由本组件注册的生命周期回调调用 {@code MainTabHost.selectTab(ASSISTANT, args)}；</li>
  *     <li>单独运行（没有 MAIN）时：本页直接承载 AssistantFragment。</li>
  * </ul>
- * 参数：K01 可带 RouterPath.EXTRA_QUESTION（T01 推荐问题）、AiExtras.EXTRA_COURSE_ID / EXTRA_COURSE_TITLE（K05“问 AI”）、
- * AiExtras.EXTRA_NEW_SESSION。
+ * 参数：K01 可带 RouterPath.EXTRA_QUESTION（T01 推荐问题）、RouterPath.EXTRA_COURSE_ID / EXTRA_COURSE_TITLE（K05“问 AI”）、
+ * RouterPath.EXTRA_NEW_SESSION。
  */
 public class AiEntryActivity extends BaseActivity implements MainTabHost {
 
@@ -63,13 +63,13 @@ public class AiEntryActivity extends BaseActivity implements MainTabHost {
     @NonNull
     static Bundle entryArgs(@NonNull Intent intent) {
         Bundle b = intent.getExtras() == null ? new Bundle() : new Bundle(intent.getExtras());
-        if (!b.containsKey(AiExtras.EXTRA_ASSISTANT_MODE)) {
-            b.putString(AiExtras.EXTRA_ASSISTANT_MODE,
+        if (!b.containsKey(RouterPath.EXTRA_ASSISTANT_MODE)) {
+            b.putString(RouterPath.EXTRA_ASSISTANT_MODE,
                     RouterPath.K04.equals(intent.getAction()) ? AiExtras.MODE_COURSE : AiExtras.MODE_CHAT);
         }
-        if (RouterPath.K01.equals(intent.getAction()) && !b.containsKey(AiExtras.EXTRA_NEW_SESSION)
-                && (b.containsKey(RouterPath.EXTRA_QUESTION) || b.containsKey(AiExtras.EXTRA_COURSE_ID))) {
-            b.putBoolean(AiExtras.EXTRA_NEW_SESSION, true);
+        if (RouterPath.K01.equals(intent.getAction()) && !b.containsKey(RouterPath.EXTRA_NEW_SESSION)
+                && (b.containsKey(RouterPath.EXTRA_QUESTION) || b.containsKey(RouterPath.EXTRA_COURSE_ID))) {
+            b.putBoolean(RouterPath.EXTRA_NEW_SESSION, true);
         }
         return b;
     }

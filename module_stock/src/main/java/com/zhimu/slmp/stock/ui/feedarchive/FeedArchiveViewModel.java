@@ -33,6 +33,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import io.reactivex.rxjava3.core.Single;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * M02 饲料档案（技术准备文档 2.4.3）：feed_id 为空时新增（API-M05），否则编辑（API-M04 → API-M06，带 edit_version）。
@@ -81,7 +82,7 @@ public class FeedArchiveViewModel extends StockFormViewModel {
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         super.onSavedStateAttached(handle);
-        load(StockExtras.readId(handle.get(StockExtras.EXTRA_FEED_ID)));
+        load(StockExtras.readId(handle.get(RouterPath.EXTRA_FEED_ID)));
     }
 
     /** 新增只取选项；编辑同时取档案 */

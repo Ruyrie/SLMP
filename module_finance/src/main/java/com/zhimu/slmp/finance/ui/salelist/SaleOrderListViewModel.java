@@ -195,7 +195,7 @@ public class SaleOrderListViewModel extends FinanceListViewModel<SaleOrderListVi
     }
 
     public void openDetail(long id) {
-        open(NavTarget.of(RouterPath.E07).put(FinanceExtras.SALE_ORDER_ID, id).forResult());
+        open(NavTarget.of(RouterPath.E07).put(RouterPath.EXTRA_SALE_ORDER_ID, id).forResult());
     }
 
     public void openCreate() {

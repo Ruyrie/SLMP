@@ -116,9 +116,9 @@ public class BatchScanActivity extends BaseActivity {
             extras.putLong(RouterPath.EXTRA_BATCH_ID, vo.getBatchId());
         }
         if (BatchLookupVO.SWITCH_FARM.equals(vo.getResult()) && vm.getSwitchedFromFarmId() != null) {
-            extras.putLong(HerdExtras.EXTRA_FROM_FARM_ID, vm.getSwitchedFromFarmId());
-            extras.putString(HerdExtras.EXTRA_FROM_FARM_NAME, vm.getSwitchedFromFarmName());
-            extras.putString(HerdExtras.EXTRA_CROSS_FARM_NAME, vo.getFarmName());
+            extras.putLong(RouterPath.EXTRA_FROM_FARM_ID, vm.getSwitchedFromFarmId());
+            extras.putString(RouterPath.EXTRA_FROM_FARM_NAME, vm.getSwitchedFromFarmName());
+            extras.putString(RouterPath.EXTRA_CROSS_FARM_NAME, vo.getFarmName());
         }
         if (Router.open(this, RouterPath.L06, extras)) {
             finish();

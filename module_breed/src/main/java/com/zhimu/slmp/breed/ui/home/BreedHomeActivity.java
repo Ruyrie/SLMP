@@ -133,7 +133,7 @@ public class BreedHomeActivity extends BaseActivity implements ListScrollHost {
         });
         vm.getRedirectToHatch().observe(this, v -> {
             Bundle b = new Bundle();
-            b.putString(BreedExtras.EXTRA_TAB, BreedExtras.TAB_HATCH);
+            b.putString(RouterPath.EXTRA_TAB, BreedExtras.TAB_HATCH);
             Router.open(this, RouterPath.B02, b);
             finish();
         });
@@ -153,11 +153,11 @@ public class BreedHomeActivity extends BaseActivity implements ListScrollHost {
                 (key, result) -> vm.onRegisterPicked(result.getString(BreedRegisterSheet.RESULT_TYPE)));
         vm.getOpenPage().observe(this, this::openPage);
         vm.getOpenArchive().observe(this, id -> Router.openForResult(this, launcher, RouterPath.B06,
-                BreedNav.forResult(BreedNav.id(BreedExtras.EXTRA_ANIMAL_ID, id))));
+                BreedNav.forResult(BreedNav.id(RouterPath.EXTRA_ANIMAL_ID, id))));
         dueVm.getOpenFarrowing().observe(this, id -> Router.openForResult(this, launcher, RouterPath.B04,
-                BreedNav.forResult(BreedNav.id(BreedExtras.EXTRA_ANIMAL_ID, id))));
+                BreedNav.forResult(BreedNav.id(RouterPath.EXTRA_ANIMAL_ID, id))));
         dueVm.getOpenArchive().observe(this, id -> Router.openForResult(this, launcher, RouterPath.B06,
-                BreedNav.forResult(BreedNav.id(BreedExtras.EXTRA_ANIMAL_ID, id))));
+                BreedNav.forResult(BreedNav.id(RouterPath.EXTRA_ANIMAL_ID, id))));
     }
 
     @Override

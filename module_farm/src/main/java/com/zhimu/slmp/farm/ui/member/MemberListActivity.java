@@ -175,7 +175,7 @@ public class MemberListActivity extends BaseActivity {
         vm.getOpenDetail().observe(this, memberId -> {
             Bundle extras = new Bundle();
             extras.putLong(RouterPath.EXTRA_FARM_ID, vm.getFarmId());
-            extras.putLong(FarmExtras.EXTRA_MEMBER_ID, memberId);
+            extras.putLong(RouterPath.EXTRA_MEMBER_ID, memberId);
             Router.openForResult(this, childLauncher, RouterPath.F09, extras);
         });
         vm.getOpenInvite().observe(this, this::openInvite);

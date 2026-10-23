@@ -46,6 +46,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import io.reactivex.rxjava3.core.Single;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * B03 登记配种 / 妊检（技术文档 2.4.3）：上半部分登记配种（API-B04 MATING 候选、API-B11 带入、API-B12 / B13），
@@ -127,8 +128,8 @@ public class MatingRegisterViewModel extends BreedFormViewModel implements PregC
         canSubmit.addSource(matingDate, d -> computeCanSubmit());
         idem = new SubmitSupport.IdemKeeper(handle, "mating");
         checkIdem = new SubmitSupport.IdemKeeper(handle, "preg_check");
-        presetAnimalId = readLong(handle.get(BreedExtras.EXTRA_ANIMAL_ID));
-        recordId = readLong(handle.get(BreedExtras.EXTRA_RECORD_ID));
+        presetAnimalId = readLong(handle.get(RouterPath.EXTRA_ANIMAL_ID));
+        recordId = readLong(handle.get(RouterPath.EXTRA_RECORD_ID));
         String json = handle.get(BreedExtras.EXTRA_RECORD_JSON);
         if (json != null) {
             editRecord = GsonFactory.get().fromJson(json, BreedingRecordVO.class);

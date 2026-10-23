@@ -87,7 +87,7 @@ public class HandleResultViewModel extends BaseViewModel {
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        Long id = Args.getLong(handle, InspectExtras.EXTRA_REPORT_ID);
+        Long id = Args.getLong(handle, RouterPath.EXTRA_REPORT_ID);
         reportId = id == null ? 0 : id;
         load(repository.getDiagnosis(reportId), this::applyWithDirect);
     }
@@ -334,9 +334,9 @@ public class HandleResultViewModel extends BaseViewModel {
             NavTarget t = NavTarget.of(RouterPath.D04).finishCurrent();
             if (p != null) {
                 t.put(RouterPath.EXTRA_PEN_ID, p.getPenId()).put(RouterPath.EXTRA_BATCH_ID, p.getBatchId())
-                        .put(InspectExtras.EXTRA_REPORT_ID, p.getReportId())
-                        .put(InspectExtras.EXTRA_DIAGNOSIS_ID, p.getDiagnosisId())
-                        .put(InspectExtras.EXTRA_MEDICATION_REASON, p.getReason());
+                        .put(RouterPath.EXTRA_REPORT_ID, p.getReportId())
+                        .put(RouterPath.EXTRA_DIAGNOSIS_ID, p.getDiagnosisId())
+                        .put(RouterPath.EXTRA_REASON, p.getReason());
             }
             navEvent.setValue(t);
             return;

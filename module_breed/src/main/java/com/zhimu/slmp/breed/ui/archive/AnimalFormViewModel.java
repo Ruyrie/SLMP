@@ -35,6 +35,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import io.reactivex.rxjava3.core.Single;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * 档案表单（技术文档 2.4.7）：EXTRA_ANIMAL_ID 有值为“编辑档案”（API-B05 初值、API-B08），否则“新增母猪”（API-B07）。
@@ -89,7 +90,7 @@ public class AnimalFormViewModel extends BreedFormViewModel {
         breedId = handle.getLiveData(KEY_BREED);
         penId = handle.getLiveData(KEY_PEN);
         idem = new SubmitSupport.IdemKeeper(handle, "animal");
-        Object id = handle.get(BreedExtras.EXTRA_ANIMAL_ID);
+        Object id = handle.get(RouterPath.EXTRA_ANIMAL_ID);
         init(id instanceof Long ? (Long) id : null);
     }
 

@@ -64,8 +64,8 @@ public class WatchHistoryActivity extends BaseActivity {
         binding.aiHistoryState.setOnRetryListener(v -> adapter.retry());
         vm.getOpenPlay().observe(this, args -> {
             Bundle b = new Bundle();
-            b.putLong(AiExtras.EXTRA_COURSE_ID, args.getCourseId());
-            b.putString(AiExtras.EXTRA_ENTRY_TYPE, args.getEntryType());
+            b.putLong(RouterPath.EXTRA_COURSE_ID, args.getCourseId());
+            b.putString(RouterPath.EXTRA_ENTRY_TYPE, args.getEntryType());
             Router.open(this, RouterPath.K05, b);
         });
     }

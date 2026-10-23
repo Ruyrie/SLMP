@@ -40,16 +40,16 @@ public class AiModuleEntry implements IModuleEntry {
         pages.add(new DebugPage("K01 带推荐问题（T01 入口）", RouterPath.K01, hint));
         pages.add(new DebugPage("K02 历史会话", RouterPath.K02));
         Bundle k = new Bundle();
-        k.putLong(AiExtras.EXTRA_KNOWLEDGE_ID, 8101);
-        k.putLong(AiExtras.EXTRA_CITATION_ID, 9902);
+        k.putLong(RouterPath.EXTRA_KNOWLEDGE_ID, 8101);
+        k.putLong(RouterPath.EXTRA_CITATION_ID, 9902);
         pages.add(new DebugPage("K03 知识原文（休药期计算与出栏，带引用）", RouterPath.K03, k));
         pages.add(new DebugPage("K04 养殖课堂", RouterPath.K04));
         Bundle play = new Bundle();
-        play.putLong(AiExtras.EXTRA_COURSE_ID, 6102);
-        play.putString(AiExtras.EXTRA_ENTRY_TYPE, AiCodes.ENTRY_COURSE);
+        play.putLong(RouterPath.EXTRA_COURSE_ID, 6102);
+        play.putString(RouterPath.EXTRA_ENTRY_TYPE, AiCodes.ENTRY_COURSE);
         pages.add(new DebugPage("K05 视频播放（仔猪腹泻的日常防控）", RouterPath.K05, play));
         Bundle topic = new Bundle();
-        topic.putLong(AiExtras.EXTRA_TOPIC_ID, 7001);
+        topic.putLong(RouterPath.EXTRA_TOPIC_ID, 7001);
         pages.add(new DebugPage("K07 专题详情（仔猪腹泻防控）", RouterPath.K07, topic));
         return pages;
     }

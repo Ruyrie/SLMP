@@ -140,13 +140,13 @@ public class FinanceRecordEditViewModel extends FinanceViewModel {
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         idem.attach(handle);
         photos = uploads.create(handle, "vouchers", MediaScene.VOUCHER, MAX_VOUCHERS);
-        Long id = handle.get(FinanceExtras.RECORD_ID);
+        Long id = handle.get(RouterPath.EXTRA_RECORD_ID);
         recordId = id == null ? 0 : id;
-        String type = handle.get(FinanceExtras.RECORD_TYPE);
+        String type = handle.get(RouterPath.EXTRA_RECORD_TYPE);
         if (FinanceConst.INCOME.equals(type)) {
             recordType.setValue(FinanceConst.INCOME);
         }
-        readOnly.setValue(MODE_VIEW.equals(handle.get(FinanceExtras.MODE)));
+        readOnly.setValue(MODE_VIEW.equals(handle.get(RouterPath.EXTRA_MODE)));
         editMode.setValue(recordId > 0);
         init();
     }
@@ -416,8 +416,8 @@ public class FinanceRecordEditViewModel extends FinanceViewModel {
         if (d == null || d.getRecordId() == null) {
             return;
         }
-        open(NavTarget.of(RouterPath.E04).put(FinanceExtras.HIGHLIGHT_ID, d.getRecordId())
-                .put(FinanceExtras.MONTH, FinanceFormat.monthOf(d.getRecordDate() == null ? recordDate.getValue()
+        open(NavTarget.of(RouterPath.E04).put(RouterPath.EXTRA_HIGHLIGHT_ID, d.getRecordId())
+                .put(RouterPath.EXTRA_MONTH, FinanceFormat.monthOf(d.getRecordDate() == null ? recordDate.getValue()
                         : d.getRecordDate())));
     }
 

@@ -333,19 +333,19 @@ public class InspectTodayViewModel extends BaseListViewModel<TodayQuery, Inspect
     @Nullable
     NavTarget itemTarget(@NonNull InspectionListItemVO item) {
         if (item.getReportId() != null && item.isCanViewDiagnosis()) {
-            return NavTarget.of(RouterPath.I06).put(InspectExtras.EXTRA_REPORT_ID, item.getReportId());
+            return NavTarget.of(RouterPath.I06).put(RouterPath.EXTRA_REPORT_ID, item.getReportId());
         }
         NavTarget t = NavTarget.of(RouterPath.I02).put(RouterPath.EXTRA_PEN_ID, item.getPenId()).forResult();
         if (item.isCanModify()) {
             return t.put(RouterPath.EXTRA_MODE, InspectExtras.MODE_MODIFY)
-                    .put(InspectExtras.EXTRA_INSPECTION_ID, item.getInspectionId());
+                    .put(RouterPath.EXTRA_INSPECTION_ID, item.getInspectionId());
         }
         if (item.isCanRegister()) {
             return t.put(RouterPath.EXTRA_MODE, InspectExtras.MODE_REGISTER).put(RouterPath.EXTRA_TODO_ID, todoId);
         }
         if (item.isDone() || item.isAbnormal()) {
             return t.put(RouterPath.EXTRA_MODE, InspectExtras.MODE_READONLY)
-                    .put(InspectExtras.EXTRA_INSPECTION_ID, item.getInspectionId());
+                    .put(RouterPath.EXTRA_INSPECTION_ID, item.getInspectionId());
         }
         return null;
     }
@@ -353,11 +353,11 @@ public class InspectTodayViewModel extends BaseListViewModel<TodayQuery, Inspect
     /** “转上报”：巡检已保存，直接进入 I05 */
     public void onReportClick(@NonNull InspectionListItemVO item) {
         if (item.getReportId() != null) {
-            navEvent.setValue(NavTarget.of(RouterPath.I06).put(InspectExtras.EXTRA_REPORT_ID, item.getReportId()));
+            navEvent.setValue(NavTarget.of(RouterPath.I06).put(RouterPath.EXTRA_REPORT_ID, item.getReportId()));
             return;
         }
         navEvent.setValue(NavTarget.of(RouterPath.I05)
-                .put(InspectExtras.EXTRA_INSPECTION_ID, item.getInspectionId())
+                .put(RouterPath.EXTRA_INSPECTION_ID, item.getInspectionId())
                 .put(RouterPath.EXTRA_PEN_ID, item.getPenId())
                 .forResult());
     }
@@ -369,19 +369,19 @@ public class InspectTodayViewModel extends BaseListViewModel<TodayQuery, Inspect
             return;
         }
         navEvent.setValue(NavTarget.of(RouterPath.I04).put(RouterPath.EXTRA_PEN_ID, issue.getPenId())
-                .put(InspectExtras.EXTRA_LOCATE_DATE, issue.getInspectDate()).forResult());
+                .put(RouterPath.EXTRA_LOCATE_DATE, issue.getInspectDate()).forResult());
     }
 
     /** “补录” → I03，栏舍和日期已带入 */
     public void onBackfillClick(@NonNull RecentIssueVO issue) {
         navEvent.setValue(NavTarget.of(RouterPath.I03).put(RouterPath.EXTRA_PEN_ID, issue.getPenId())
-                .put(InspectExtras.EXTRA_INSPECT_DATE, issue.getInspectDate()).forResult());
+                .put(RouterPath.EXTRA_INSPECT_DATE, issue.getInspectDate()).forResult());
     }
 
     /** 员工版“昨天”分组 → I04 */
     public void onYesterdayClick(@NonNull InspectionListItemVO item) {
         navEvent.setValue(NavTarget.of(RouterPath.I04).put(RouterPath.EXTRA_PEN_ID, item.getPenId())
-                .put(InspectExtras.EXTRA_LOCATE_DATE,
+                .put(RouterPath.EXTRA_LOCATE_DATE,
                         DateFormatter.toDateString(DateFormatter.today().minusDays(1))).forResult());
     }
 

@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import javax.inject.Inject;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * I03 补录巡检（所有者、场长，模块07 文档 2.4.4）：补录日期只能选 backfill_dates 中前 3 天内的漏巡日，实际执行人必选，
@@ -75,8 +76,8 @@ public class InspectBackfillViewModel extends InspectFormViewModel {
 
     @Override
     protected void init(@NonNull SavedStateHandle handle) {
-        inspectDate.setValue(Args.getString(handle, InspectExtras.EXTRA_INSPECT_DATE));
-        dateLocked.setValue(Args.getBoolean(handle, InspectExtras.EXTRA_DATE_LOCKED) && inspectionId != null);
+        inspectDate.setValue(Args.getString(handle, RouterPath.EXTRA_INSPECT_DATE));
+        dateLocked.setValue(Args.getBoolean(handle, RouterPath.EXTRA_DATE_LOCKED) && inspectionId != null);
         start();
     }
 

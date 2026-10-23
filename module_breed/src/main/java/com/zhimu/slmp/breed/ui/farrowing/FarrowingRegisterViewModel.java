@@ -45,6 +45,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import io.reactivex.rxjava3.core.Single;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * B04 登记产仔（技术文档 2.4.4）：母猪卡（B02、T04、B06 进入时已带入）或妊娠母猪下拉（B01 FAB）；
@@ -151,15 +152,15 @@ public class FarrowingRegisterViewModel extends BreedFormViewModel {
         capacityConfirmed = handle.getLiveData(KEY_CONFIRMED, false);
         bindFields();
         idem = new SubmitSupport.IdemKeeper(handle, "farrowing");
-        Long a = readLong(handle.get(BreedExtras.EXTRA_ANIMAL_ID));
+        Long a = readLong(handle.get(RouterPath.EXTRA_ANIMAL_ID));
         if (a == null) {
-            a = readLong(handle.get(BreedExtras.EXTRA_SOW_ID));
+            a = readLong(handle.get(RouterPath.EXTRA_SOW_ID));
         }
         if (a == null) {
             a = readLong(handle.get(com.zhimu.slmp.common.router.RouterPath.EXTRA_BIZ_ID));
         }
         todoId = readLong(handle.get(com.zhimu.slmp.common.router.RouterPath.EXTRA_TODO_ID));
-        init(a, readLong(handle.get(BreedExtras.EXTRA_RECORD_ID)));
+        init(a, readLong(handle.get(RouterPath.EXTRA_RECORD_ID)));
     }
 
     /** 带入母猪（B11）或加载妊娠母猪候选（B04）；修改模式加载产仔记录（B19） */

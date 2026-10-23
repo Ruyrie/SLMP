@@ -116,17 +116,17 @@ public class DrugLotDetailActivity extends BaseActivity {
         binding.stockActionBar.setOnSecondaryClickListener(v -> vm.onScrap());
 
         vm.getOpenScrap().observe(this, id -> StockNav.open(this, childLauncher, RouterPath.M07,
-                StockNav.idArgs(StockExtras.EXTRA_LOT_ID, id)));
+                StockNav.idArgs(RouterPath.EXTRA_LOT_ID, id)));
         vm.getOpenOutbound().observe(this, id -> {
             DrugLotDetailVO d = vm.getDetail().getValue();
             StockNav.open(this, childLauncher, RouterPath.M11, StockNav.outboundArgs(d == null ? null : d.drugId, id));
         });
         vm.getOpenArchive().observe(this, id -> StockNav.open(this, childLauncher, RouterPath.M09,
-                StockNav.idArgs(StockExtras.EXTRA_DRUG_ID, id)));
+                StockNav.idArgs(RouterPath.EXTRA_DRUG_ID, id)));
         vm.getOpenMessage().observe(this, id -> Router.open(this, RouterPath.T06,
                 StockNav.idArgs(RouterPath.EXTRA_MESSAGE_ID, id)));
         vm.getOpenInboundEdit().observe(this, id -> {
-            Bundle b = StockNav.idArgs(StockExtras.EXTRA_RECORD_ID, id);
+            Bundle b = StockNav.idArgs(RouterPath.EXTRA_RECORD_ID, id);
             b.putString(RouterPath.EXTRA_MODE, "EDIT");
             StockNav.open(this, childLauncher, RouterPath.M08, b);
         });

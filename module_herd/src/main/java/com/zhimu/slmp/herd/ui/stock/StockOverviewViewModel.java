@@ -91,7 +91,7 @@ public class StockOverviewViewModel extends BaseViewModel {
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        String type = handle.get(HerdExtras.EXTRA_VIEW_TYPE);
+        String type = handle.get(RouterPath.EXTRA_VIEW_TYPE);
         if (HerdExtras.VIEW_BATCH.equals(type) || HerdExtras.VIEW_CATEGORY.equals(type)) {
             viewType.setValue(type);
         }

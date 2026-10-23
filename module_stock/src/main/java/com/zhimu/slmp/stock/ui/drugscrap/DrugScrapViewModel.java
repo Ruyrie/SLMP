@@ -40,6 +40,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import io.reactivex.rxjava3.core.Single;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * M07 登记报废（技术准备文档 2.4.9）：API-M26 取批号；数量默认全部结存（疫苗按头份，其他按包装），
@@ -90,7 +91,7 @@ public class DrugScrapViewModel extends StockFormViewModel {
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         super.onSavedStateAttached(handle);
-        Long id = StockExtras.readId(handle.get(StockExtras.EXTRA_LOT_ID));
+        Long id = StockExtras.readId(handle.get(RouterPath.EXTRA_LOT_ID));
         load(id == null ? 0 : id);
     }
 

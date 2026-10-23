@@ -38,6 +38,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * E08 出栏单修改申请（只对已有收款的出栏单）：修改单价 / 修改数量 / 作废，审核通过后的预计结果（API-E23，新值变化防抖 300 毫秒），
@@ -107,7 +108,7 @@ public class SaleChangeRequestViewModel extends FinanceViewModel {
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         idem.attach(handle);
-        Long id = handle.get(FinanceExtras.SALE_ORDER_ID);
+        Long id = handle.get(RouterPath.EXTRA_SALE_ORDER_ID);
         orderId = id == null ? 0 : id;
         init();
     }

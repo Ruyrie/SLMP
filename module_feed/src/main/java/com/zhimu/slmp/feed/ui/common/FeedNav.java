@@ -54,7 +54,7 @@ public final class FeedNav {
     @NonNull
     public static Bundle recordArgs(long recordId) {
         Bundle b = new Bundle();
-        b.putLong(FeedExtras.EXTRA_RECORD_ID, recordId);
+        b.putLong(RouterPath.EXTRA_RECORD_ID, recordId);
         return b;
     }
 
@@ -78,7 +78,7 @@ public final class FeedNav {
     @NonNull
     public static Bundle stockInArgs(long feedId) {
         Bundle b = new Bundle();
-        b.putLong(FeedExtras.EXTRA_FEED_ID, feedId);
+        b.putLong(RouterPath.EXTRA_FEED_ID, feedId);
         return b;
     }
 }

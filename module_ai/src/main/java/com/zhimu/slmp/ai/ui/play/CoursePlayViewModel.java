@@ -34,6 +34,7 @@ import java.util.Objects;
 import javax.inject.Inject;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * K05 / K06 视频播放（技术文档 2.4.6、2.6.7、2.6.8）：ExoPlayer 由 Activity 持有，本类只保存播放信息、清晰度与倍速、
@@ -108,10 +109,10 @@ public class CoursePlayViewModel extends BaseViewModel {
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        Long id = handle.get(AiExtras.EXTRA_COURSE_ID);
-        String entry = handle.get(AiExtras.EXTRA_ENTRY_TYPE);
-        Boolean full = handle.get(AiExtras.EXTRA_FULLSCREEN);
-        Long start = handle.get(AiExtras.EXTRA_START_MS);
+        Long id = handle.get(RouterPath.EXTRA_COURSE_ID);
+        String entry = handle.get(RouterPath.EXTRA_ENTRY_TYPE);
+        Boolean full = handle.get(RouterPath.EXTRA_FULLSCREEN);
+        Long start = handle.get(RouterPath.EXTRA_START_MS);
         if (start != null) {
             initialStartMs = start;
         }

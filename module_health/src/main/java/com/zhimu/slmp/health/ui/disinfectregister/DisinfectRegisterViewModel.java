@@ -187,9 +187,9 @@ public class DisinfectRegisterViewModel extends BaseViewModel implements RecordL
         idem.attach(handle);
         photos = uploads.create(handle, "photos", MediaScene.DISINFECT, MAX_PHOTOS);
         todoId = asLong(handle.get(RouterPath.EXTRA_TODO_ID));
-        Object b = handle.get(HealthExtras.EXTRA_BACKFILL);
-        init(asLong(handle.get(RouterPath.EXTRA_TASK_ID)), handle.get(HealthExtras.EXTRA_RECORD_TYPE),
-                Boolean.TRUE.equals(b) || "true".equals(b), asLong(handle.get(HealthExtras.EXTRA_RECORD_ID)),
+        Object b = handle.get(RouterPath.EXTRA_BACKFILL);
+        init(asLong(handle.get(RouterPath.EXTRA_TASK_ID)), handle.get(RouterPath.EXTRA_RECORD_TYPE),
+                Boolean.TRUE.equals(b) || "true".equals(b), asLong(handle.get(RouterPath.EXTRA_RECORD_ID)),
                 asLong(handle.get(RouterPath.EXTRA_PEN_ID)));
     }
 

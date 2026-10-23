@@ -25,6 +25,7 @@ import com.zhimu.slmp.stock.ui.common.StockUi;
 import com.zhimu.slmp.stock.ui.record.StockRecordActivity;
 
 import kotlin.Unit;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /** 盘点记录列表（M04 history）：本组件内页面，显式 Intent 打开。 */
 public class StocktakeHistoryActivity extends BaseActivity {
@@ -54,8 +55,8 @@ public class StocktakeHistoryActivity extends BaseActivity {
         adapter.addLoadStateListener(this::onLoadStates);
         vm.getPagingData().observe(this, d -> adapter.submitData(getLifecycle(), d));
         vm.getOpenRecord().observe(this, id -> startActivity(new Intent(this, StockRecordActivity.class)
-                .putExtra(StockExtras.EXTRA_RECORD_KIND, StockExtras.KIND_STOCKTAKE)
-                .putExtra(StockExtras.EXTRA_RECORD_ID, id.longValue())));
+                .putExtra(RouterPath.EXTRA_RECORD_KIND, StockExtras.KIND_STOCKTAKE)
+                .putExtra(RouterPath.EXTRA_RECORD_ID, id.longValue())));
         binding.stockRefresh.setOnChildScrollUpCallback((p, c) -> binding.stockList.canScrollVertically(-1));
         binding.stockRefresh.setOnRefreshListener(adapter::refresh);
         binding.stockState.setOnRetryListener(v -> adapter.retry());

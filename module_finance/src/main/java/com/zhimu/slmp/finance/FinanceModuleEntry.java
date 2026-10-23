@@ -46,27 +46,27 @@ public class FinanceModuleEntry implements IModuleEntry {
         pages.add(new DebugPage("E01 经营页（以所有者登录）", RouterPath.E01));
         pages.add(new DebugPage("E02 收支记账", RouterPath.E02));
         pages.add(new DebugPage("E03 记一笔 · 支出", RouterPath.E03));
-        pages.add(new DebugPage("E03 记一笔 · 收入", RouterPath.E03, str(FinanceExtras.RECORD_TYPE, FinanceConst.INCOME)));
-        pages.add(new DebugPage("E03 修改手工记录（record_id=8203）", RouterPath.E03, id(FinanceExtras.RECORD_ID, 8203)));
+        pages.add(new DebugPage("E03 记一笔 · 收入", RouterPath.E03, str(RouterPath.EXTRA_RECORD_TYPE, FinanceConst.INCOME)));
+        pages.add(new DebugPage("E03 修改手工记录（record_id=8203）", RouterPath.E03, id(RouterPath.EXTRA_RECORD_ID, 8203)));
         pages.add(new DebugPage("E04 收支流水", RouterPath.E04));
         pages.add(new DebugPage("E05 支出分类", RouterPath.E05));
         pages.add(new DebugPage("E06 登记出栏单", RouterPath.E06));
         pages.add(new DebugPage("E06 登记出栏单 · 休药中 ZM2610-031（batch_id=3001）", RouterPath.E06,
-                id(FinanceExtras.BATCH_ID, 3001)));
+                id(RouterPath.EXTRA_BATCH_ID, 3001)));
         pages.add(new DebugPage("E07 出栏单详情 · 部分收款 ZM2609-012（9102）", RouterPath.E07,
-                id(FinanceExtras.SALE_ORDER_ID, 9102)));
+                id(RouterPath.EXTRA_SALE_ORDER_ID, 9102)));
         pages.add(new DebugPage("E07 出栏单详情 · 未收款 ZM2610-019（9103）", RouterPath.E07,
-                id(FinanceExtras.SALE_ORDER_ID, 9103)));
-        pages.add(new DebugPage("E08 出栏单修改申请（9102）", RouterPath.E08, id(FinanceExtras.SALE_ORDER_ID, 9102)));
+                id(RouterPath.EXTRA_SALE_ORDER_ID, 9103)));
+        pages.add(new DebugPage("E08 出栏单修改申请（9102）", RouterPath.E08, id(RouterPath.EXTRA_SALE_ORDER_ID, 9102)));
         pages.add(new DebugPage("E09 待收款", RouterPath.E09));
         pages.add(new DebugPage("E10 批次核算 · ZM2609-012 已锁定（batch_id=3009）", RouterPath.E10,
-                id(FinanceExtras.BATCH_ID, 3009)));
+                id(RouterPath.EXTRA_BATCH_ID, 3009)));
         pages.add(new DebugPage("E10 批次核算 · ZM2610-031 在养（batch_id=3001）", RouterPath.E10,
-                id(FinanceExtras.BATCH_ID, 3001)));
+                id(RouterPath.EXTRA_BATCH_ID, 3001)));
         pages.add(new DebugPage("E11 市场行情", RouterPath.E11));
         pages.add(new DebugPage("E12 AI 出栏建议", RouterPath.E12));
         pages.add(new DebugPage("E12 AI 出栏建议 · 可出栏 ZM2610-019（batch_id=3002）", RouterPath.E12,
-                id(FinanceExtras.BATCH_ID, 3002)));
+                id(RouterPath.EXTRA_BATCH_ID, 3002)));
         pages.add(new DebugPage("E13 经营报表", RouterPath.E13));
         pages.add(new DebugPage("E13 经营报表 · 注销前导出（A09）", RouterPath.E13,
                 str(RouterPath.EXTRA_MODE, RouterPath.MODE_OWNED_FARMS)));

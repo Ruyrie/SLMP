@@ -145,17 +145,17 @@ public class DisinfectTaskActivity extends BaseActivity {
             Bundle extras = new Bundle();
             extras.putLong(RouterPath.EXTRA_TASK_ID, t.getId());
             extras.putLong(RouterPath.EXTRA_PEN_ID, t.getPenId());
-            extras.putBoolean(HealthExtras.EXTRA_BACKFILL, DisinfectTaskViewModel.OVERDUE.equals(t.getStatus()));
+            extras.putBoolean(RouterPath.EXTRA_BACKFILL, DisinfectTaskViewModel.OVERDUE.equals(t.getStatus()));
             HealthNav.open(this, childLauncher, RouterPath.D08, extras);
         });
         vm.getOpenRecord().observe(this, id -> {
             Bundle extras = new Bundle();
-            extras.putLong(HealthExtras.EXTRA_RECORD_ID, id);
+            extras.putLong(RouterPath.EXTRA_RECORD_ID, id);
             HealthNav.open(this, childLauncher, RouterPath.D08, extras);
         });
         vm.getOpenTemp().observe(this, v -> {
             Bundle extras = new Bundle();
-            extras.putString(HealthExtras.EXTRA_RECORD_TYPE, HealthExtras.RECORD_EMPTY_PEN);
+            extras.putString(RouterPath.EXTRA_RECORD_TYPE, HealthExtras.RECORD_EMPTY_PEN);
             HealthNav.open(this, childLauncher, RouterPath.D08, extras);
         });
         vm.getOpenPlans().observe(this, v -> Router.open(this, RouterPath.D06));

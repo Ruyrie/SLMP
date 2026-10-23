@@ -23,7 +23,7 @@ import com.zhimu.slmp.stock.ui.common.StockNav;
 import com.zhimu.slmp.stock.ui.common.StockUi;
 
 /**
- * 单据只读页（报损、报废、盘点）：参数 StockExtras.EXTRA_RECORD_KIND（LOSS / STOCKTAKE）、EXTRA_RECORD_ID。
+ * 单据只读页（报损、报废、盘点）：参数 RouterPath.EXTRA_RECORD_KIND（LOSS / STOCKTAKE）、EXTRA_RECORD_ID。
  * 本组件内页面（没有页面编号），由流水与盘点记录显式打开。
  */
 public class StockRecordActivity extends BaseActivity implements RecordMenu.Callback {

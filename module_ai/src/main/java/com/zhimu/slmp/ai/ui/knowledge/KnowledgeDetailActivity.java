@@ -149,7 +149,7 @@ public class KnowledgeDetailActivity extends BaseActivity {
         });
         vm.getOpenKnowledge().observe(this, id -> {
             Bundle b = new Bundle();
-            b.putLong(AiExtras.EXTRA_KNOWLEDGE_ID, id);
+            b.putLong(RouterPath.EXTRA_KNOWLEDGE_ID, id);
             Router.open(this, RouterPath.K03, b);
         });
     }
@@ -230,10 +230,10 @@ public class KnowledgeDetailActivity extends BaseActivity {
         }
         player.pause();
         Bundle b = new Bundle();
-        b.putLong(AiExtras.EXTRA_COURSE_ID, vm.getEmbeddedPlay().getValue().getId());
-        b.putString(AiExtras.EXTRA_ENTRY_TYPE, AiCodes.ENTRY_KNOWLEDGE);
-        b.putBoolean(AiExtras.EXTRA_FULLSCREEN, true);
-        b.putLong(AiExtras.EXTRA_START_MS, player.position());
+        b.putLong(RouterPath.EXTRA_COURSE_ID, vm.getEmbeddedPlay().getValue().getId());
+        b.putString(RouterPath.EXTRA_ENTRY_TYPE, AiCodes.ENTRY_KNOWLEDGE);
+        b.putBoolean(RouterPath.EXTRA_FULLSCREEN, true);
+        b.putLong(RouterPath.EXTRA_START_MS, player.position());
         Router.open(this, RouterPath.K05, b);
     }
 

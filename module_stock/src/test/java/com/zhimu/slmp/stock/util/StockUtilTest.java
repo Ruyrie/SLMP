@@ -168,7 +168,7 @@ public class StockUtilTest {
         f.bizType = "LOSS";
         FlowRouter.Target loss = FlowRouter.route(f);
         assertEquals(FlowRouter.PAGE_RECORD, loss.page);
-        assertEquals(StockExtras.KIND_LOSS, loss.args.get(StockExtras.EXTRA_RECORD_KIND));
+        assertEquals(StockExtras.KIND_LOSS, loss.args.get(RouterPath.EXTRA_RECORD_KIND));
         f.bizType = "IMMUNE_RECORD";
         assertEquals("D03", FlowRouter.route(f).page);
         f.bizType = "CHANGE_REQUEST";

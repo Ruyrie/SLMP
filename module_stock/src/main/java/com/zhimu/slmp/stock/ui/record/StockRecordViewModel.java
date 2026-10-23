@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * 单据只读页（技术准备文档 2.4.6，原型未绘制，按只读分组列表补充）：record_kind 为 LOSS（报损、报废，API-M19）或
@@ -54,8 +55,8 @@ public class StockRecordViewModel extends BaseViewModel {
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        recordKind = handle.get(StockExtras.EXTRA_RECORD_KIND);
-        Long id = StockExtras.readId(handle.get(StockExtras.EXTRA_RECORD_ID));
+        recordKind = handle.get(RouterPath.EXTRA_RECORD_KIND);
+        Long id = StockExtras.readId(handle.get(RouterPath.EXTRA_RECORD_ID));
         recordId = id == null ? 0 : id;
         load(recordKind, recordId);
     }

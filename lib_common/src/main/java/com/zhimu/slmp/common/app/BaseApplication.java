@@ -33,6 +33,13 @@ import java.util.List;
 import io.reactivex.rxjava3.exceptions.UndeliverableException;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+import com.zhimu.slmp.base.util.DateFormatter;
+import com.zhimu.slmp.common.BuildConfig;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 
 /**
  * Application 基类（壳工程 ZhimuApp 与各组件单独运行的 XxxAloneApp 继承）：
@@ -65,6 +72,21 @@ public abstract class BaseApplication extends Application implements CoreCompone
         return (BaseApplication) context.getApplicationContext();
     }
 
+    /** debug 包走 Mock 时，把“今天”对齐示例数据（local.properties zmt.mockToday），时分秒照常走 */
+    private static void applyMockToday() {
+        if (!BuildConfig.DEBUG || !BuildConfig.USE_MOCK || BuildConfig.MOCK_TODAY.isEmpty()) {
+            return;
+        }
+        try {
+            LocalDate mockDay = LocalDate.parse(BuildConfig.MOCK_TODAY);
+            ZonedDateTime now = ZonedDateTime.now(DateFormatter.ZONE);
+            Duration offset = Duration.between(now, now.with(mockDay));
+            DateFormatter.setClock(Clock.offset(Clock.system(DateFormatter.ZONE), offset));
+        } catch (DateTimeParseException e) {
+            Log.w(TAG, "zmt.mockToday 格式应为 yyyy-MM-dd：" + BuildConfig.MOCK_TODAY);
+        }
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -72,6 +94,7 @@ public abstract class BaseApplication extends Application implements CoreCompone
             Throwable t = e instanceof UndeliverableException && e.getCause() != null ? e.getCause() : e;
             Log.w(TAG, "RxJava 未处理的错误", t);
         });
+        applyMockToday();
         coreComponent = DaggerCoreComponent.factory().create(this);
         registerActivityLifecycleCallbacks(new ForegroundCallbacks());
         loadEntries();

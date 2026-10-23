@@ -234,7 +234,7 @@ public class FeedRegisterViewModelTest {
         when(repo.getTaskForm(70107L)).thenReturn(Single.just(TestRules.mock("task_form_70107.json",
                 FeedTaskFormVO.class)));
         Map<String, Object> args = new HashMap<>();
-        args.put(FeedExtras.EXTRA_RECORD_ID, 7106L);
+        args.put(RouterPath.EXTRA_RECORD_ID, 7106L);
         vm.attachSavedState(new SavedStateHandle(args));
 
         assertEquals(FeedRegisterMode.EDIT, vm.getMode().getValue());

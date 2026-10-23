@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import io.reactivex.rxjava3.core.Single;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * B03 登记配种 / 妊检：预产期推算卡、配种表单校验、提交成功提示，以及“登记妊检”面板的校验与提交（数据取本组件 Mock）。
@@ -74,7 +75,7 @@ public class MatingRegisterViewModelTest {
 
     private void open(Long animalId) {
         Map<String, Object> args = animalId == null ? Collections.emptyMap()
-                : Collections.singletonMap(BreedExtras.EXTRA_ANIMAL_ID, animalId);
+                : Collections.singletonMap(RouterPath.EXTRA_ANIMAL_ID, animalId);
         vm.attachSavedState(new SavedStateHandle(args));
     }
 

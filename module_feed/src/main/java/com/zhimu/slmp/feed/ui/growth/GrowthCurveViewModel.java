@@ -372,12 +372,12 @@ public class GrowthCurveViewModel extends BaseListViewModel<Long, WeighRecordIte
     public void onRecordClick(@NonNull WeighRecordItemVO item) {
         if (WeighRecordItemVO.ACTION_EDIT.equals(item.getAction())) {
             Bundle b = new Bundle();
-            b.putLong(FeedExtras.EXTRA_WEIGH_RECORD_ID, item.getId());
+            b.putLong(RouterPath.EXTRA_WEIGH_RECORD_ID, item.getId());
             Long id = batchId.getValue();
             if (id != null) {
                 b.putLong(RouterPath.EXTRA_BATCH_ID, id);
             }
-            b.putBoolean(FeedExtras.EXTRA_FROM_GROWTH, true);
+            b.putBoolean(RouterPath.EXTRA_FROM_GROWTH, true);
             openWeigh.setValue(b);
         } else if (WeighRecordItemVO.ACTION_REQUEST_CHANGE.equals(item.getAction())) {
             showRecordMenu.setValue(item);
@@ -395,7 +395,7 @@ public class GrowthCurveViewModel extends BaseListViewModel<Long, WeighRecordIte
             return;
         }
         Bundle b = FeedNav.batchArgs(id);
-        b.putBoolean(FeedExtras.EXTRA_FROM_GROWTH, true);
+        b.putBoolean(RouterPath.EXTRA_FROM_GROWTH, true);
         openWeigh.setValue(b);
     }
 }

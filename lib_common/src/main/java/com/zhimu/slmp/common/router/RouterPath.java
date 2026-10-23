@@ -357,6 +357,98 @@ public final class RouterPath {
     /** 页内分段（String，例如 B02 的 FARROW / HATCH） */
     public static final String EXTRA_TAB = "tab";
 
+    // ===== 以下由各组件 Extras 并入（2026-10-23） =====
+    /** 知识条目 ID（long，打开 K03） */
+    public static final String EXTRA_KNOWLEDGE_ID = "knowledge_id";
+    /** 引用 ID（long，K01 角标进入 K03 时带，相关条目不带） */
+    public static final String EXTRA_CITATION_ID = "citation_id";
+    /** 课程 ID（long，打开 K05；K05“问 AI”进 K01 时作为课程背景） */
+    public static final String EXTRA_COURSE_ID = "course_id";
+    /** 课程标题（String，K05“问 AI”进 K01 时显示“正在问：……”） */
+    public static final String EXTRA_COURSE_TITLE = "course_title";
+    /** 专题 ID（long，打开 K07） */
+    public static final String EXTRA_TOPIC_ID = "topic_id";
+    /** 播放入口（String，PlayEntry：COURSE、TOPIC、CONTINUE、HISTORY、KNOWLEDGE） */
+    public static final String EXTRA_ENTRY_TYPE = "entry_type";
+    /** 会话 ID（long，K02 返回 K01） */
+    public static final String EXTRA_SESSION_ID = "session_id";
+    /** 新会话（boolean，K02“新对话”返回、外部进入 K01） */
+    public static final String EXTRA_NEW_SESSION = "new_session";
+    /** 助手页模式（String：chat / course，K01、K04 两个 action 进入助手页） */
+    public static final String EXTRA_ASSISTANT_MODE = "assistant_mode";
+    /** 直接进入横屏全屏（boolean，K06 或 K03 内嵌视频点全屏） */
+    public static final String EXTRA_FULLSCREEN = "fullscreen";
+    /** 起播位置（long 毫秒，K03 内嵌视频进入全屏时接着播） */
+    public static final String EXTRA_START_MS = "start_ms";
+    /** 模块03 Mock 中 T04 预产待办的参数键（与 animal_id 同义，兼容读取） */
+    public static final String EXTRA_SOW_ID = "sow_id";
+    /** F06 进入后滚动到的字段：NAME / ADDRESS / QUALIFICATION */
+    public static final String EXTRA_SCROLL_TARGET = "scroll_target";
+    /** G05 由 G06 打开：提交成功后返回 G06，而不是再打开一个 G06 */
+    public static final String EXTRA_FROM_GROWTH = "from_growth";
+    /** E07、E08、E06 编辑态：出栏单 ID（T01 / T03 待办链接 params 已使用 sale_order_id） */
+    public static final String EXTRA_SALE_ORDER_ID = "sale_order_id";
+    /** E04、E02：月份 yyyy-MM */
+    public static final String EXTRA_MONTH = "month";
+    /** E04：逗号分隔的一级分类 ID 与 Chip 名称 */
+    public static final String EXTRA_CATEGORY_IDS = "category_ids";
+    /** FinanceExtras 并入 */
+    public static final String EXTRA_CATEGORY_NAME = "category_name";
+    /** E04：批次筛选 Chip 显示的批次号 */
+    public static final String EXTRA_BATCH_NO = "batch_no";
+    /** E04：只看手工记录（E10“其他费用”行） */
+    public static final String EXTRA_RECORD_FILTER_TYPE = "record_filter_type";
+    /** E04：定位并高亮的记录 ID */
+    public static final String EXTRA_HIGHLIGHT_ID = "highlight_id";
+    /** E04：合计视角 scope=ALL */
+    public static final String EXTRA_SCOPE = "scope";
+    /** E03：默认收支类型 EXPENSE / INCOME */
+    public static final String EXTRA_RECORD_TYPE = "record_type";
+    /** E13：报表类型与期次（T06 报表生成消息带入，见待定事项 1） */
+    public static final String EXTRA_REPORT_TYPE = "report_type";
+    /** FinanceExtras 并入 */
+    public static final String EXTRA_PERIOD_START = "period_start";
+    /** FinanceExtras 并入 */
+    public static final String EXTRA_LOT_ID = "lot_id";
+    /** 模块03 待办 register_link 中免疫计划项目 ID 的写法（long，与 plan_id 同义） */
+    public static final String EXTRA_PLAN_ITEM_ID = "plan_item_id";
+    /** 是否补录（boolean，D03 漏免补免、D08 逾期补录） */
+    public static final String EXTRA_BACKFILL = "backfill";
+    /** 版本号（int，D02 修改项目） */
+    public static final String EXTRA_VERSION = "version";
+    /** 剂量（String，D02 修改项目预填） */
+    public static final String EXTRA_DOSE = "dose";
+    /** 接种方式编码（String，D02 修改项目预填） */
+    public static final String EXTRA_METHOD_CODE = "method_code";
+    /** L08 修改入栏：入栏记录 ID（long） */
+    public static final String EXTRA_ENTRY_EVENT_ID = "entry_event_id";
+    /** L06 跨场扫码打开：扫码前所在养殖场 ID（long），用于“切回东山猪场” */
+    public static final String EXTRA_FROM_FARM_ID = "from_farm_id";
+    /** L06 跨场扫码打开：扫码前所在养殖场名称（String） */
+    public static final String EXTRA_FROM_FARM_NAME = "from_farm_name";
+    /** L06 跨场扫码打开：批次所属养殖场名称（String，头部养殖场标签） */
+    public static final String EXTRA_CROSS_FARM_NAME = "cross_farm_name";
+    /** 巡检日期 yyyy-MM-dd（String，I03 补录日期） */
+    public static final String EXTRA_INSPECT_DATE = "inspect_date";
+    /** I04 列表定位到的日期（String） */
+    public static final String EXTRA_LOCATE_DATE = "locate_date";
+    /** I03 补录日期锁定（boolean，从 I04 修改前 3 天内的记录进入） */
+    public static final String EXTRA_DATE_LOCKED = "date_locked";
+    /** I06 轮询间隔、最长轮询秒数（int，I05 提交后带入） */
+    public static final String EXTRA_POLL_INTERVAL = "poll_interval_sec";
+    /** InspectExtras 并入 */
+    public static final String EXTRA_POLL_MAX = "poll_max_sec";
+    /** I05 提交后的 ai_state（String，DIAGNOSING 时 I06 先显示诊断中并轮询） */
+    public static final String EXTRA_AI_STATE = "ai_state";
+    /** 物资类型（String：FEED / DRUG，流水页） */
+    public static final String EXTRA_MATERIAL_TYPE = "material_type";
+    /** 药品编号（long，M08 预选、M09 编辑、M11 预选、流水页筛选） */
+    public static final String EXTRA_DRUG_ID = "drug_id";
+    /** 单据类型（String：LOSS / STOCKTAKE，单据只读页） */
+    public static final String EXTRA_RECORD_KIND = "record_kind";
+    /** 搜索词（String，M08 → M09 名称面板） */
+    public static final String EXTRA_KEYWORD = "keyword";
+
     /** EXTRA_MODE 取值：E13 经营报表只统计本人创建的养殖场（A09 注销前导出） */
     public static final String MODE_OWNED_FARMS = "OWNED_FARMS";
 

@@ -113,9 +113,9 @@ public final class StockNav {
     /** M11 预选药品与批号 */
     @NonNull
     public static Bundle outboundArgs(@Nullable Long drugId, @Nullable Long lotId) {
-        Bundle b = idArgs(StockExtras.EXTRA_DRUG_ID, drugId);
+        Bundle b = idArgs(RouterPath.EXTRA_DRUG_ID, drugId);
         if (lotId != null && lotId > 0) {
-            b.putLong(StockExtras.EXTRA_LOT_ID, lotId);
+            b.putLong(RouterPath.EXTRA_LOT_ID, lotId);
         }
         return b;
     }

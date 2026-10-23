@@ -56,7 +56,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.Disposable;
 
 /**
- * G05 称重登记（新增、修改、称重周期）。入参 EXTRA_BATCH_ID 或 FeedExtras.EXTRA_WEIGH_RECORD_ID；都没有时先选批次（API-G18）。
+ * G05 称重登记（新增、修改、称重周期）。入参 EXTRA_BATCH_ID 或 RouterPath.EXTRA_WEIGH_RECORD_ID；都没有时先选批次（API-G18）。
  * 结果卡由 MediatorLiveData 即时派生：平均体重、标准体重插值（改日期时先本地预算，300 ms 防抖后取 API-G19 覆盖）、
  * 偏离与生长预判、日增重；抽样数超过存栏时禁用提交，少于建议值时显示偏少横幅仍可提交。
  * 提交带幂等键（API-G20），超时、40901 后同键重发；新增模式离开时保存草稿（page_code G05，biz_key batch:{batch_id}:{weigh_date}）。
@@ -184,9 +184,9 @@ public class WeighRegisterViewModel extends BaseViewModel {
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         idem.attach(handle);
-        fromGrowth = FeedExtras.readBoolean(handle.get(FeedExtras.EXTRA_FROM_GROWTH));
+        fromGrowth = FeedExtras.readBoolean(handle.get(RouterPath.EXTRA_FROM_GROWTH));
         init(FeedExtras.readId(handle.get(RouterPath.EXTRA_BATCH_ID)),
-                FeedExtras.readId(handle.get(FeedExtras.EXTRA_WEIGH_RECORD_ID)));
+                FeedExtras.readId(handle.get(RouterPath.EXTRA_WEIGH_RECORD_ID)));
     }
 
     // ===================== 对外 =====================

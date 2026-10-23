@@ -148,10 +148,10 @@ public class BatchArchiveViewModel extends BaseViewModel {
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         Object id = handle.get(RouterPath.EXTRA_BATCH_ID);
         batchId = id instanceof Number ? ((Number) id).longValue() : 0L;
-        Object from = handle.get(HerdExtras.EXTRA_FROM_FARM_ID);
+        Object from = handle.get(RouterPath.EXTRA_FROM_FARM_ID);
         fromFarmId = from instanceof Number ? ((Number) from).longValue() : null;
-        fromFarmName = handle.get(HerdExtras.EXTRA_FROM_FARM_NAME);
-        String cross = handle.get(HerdExtras.EXTRA_CROSS_FARM_NAME);
+        fromFarmName = handle.get(RouterPath.EXTRA_FROM_FARM_NAME);
+        String cross = handle.get(RouterPath.EXTRA_CROSS_FARM_NAME);
         crossFarmName.setValue(cross);
         load();
         setTimelineType(null);
@@ -323,13 +323,13 @@ public class BatchArchiveViewModel extends BaseViewModel {
         }
         if (TimelineItemVO.TYPE_ENTRY.equals(type)) {
             navEvent.setValue(NavTarget.of(RouterPath.L08).put(RouterPath.EXTRA_BATCH_ID, batchId)
-                    .put(HerdExtras.EXTRA_ENTRY_EVENT_ID, item.getBizId()).forResult());
+                    .put(RouterPath.EXTRA_ENTRY_EVENT_ID, item.getBizId()).forResult());
         } else if (TimelineItemVO.TYPE_TRANSFER.equals(type)) {
             navEvent.setValue(NavTarget.of(RouterPath.L10).put(RouterPath.EXTRA_BATCH_ID, batchId)
-                    .put(HerdExtras.EXTRA_EVENT_ID, item.getBizId()).forResult());
+                    .put(RouterPath.EXTRA_EVENT_ID, item.getBizId()).forResult());
         } else if (TimelineItemVO.TYPE_DEATH.equals(type)) {
             navEvent.setValue(NavTarget.of(RouterPath.L11).put(RouterPath.EXTRA_BATCH_ID, batchId)
-                    .put(HerdExtras.EXTRA_EVENT_ID, item.getBizId()).forResult());
+                    .put(RouterPath.EXTRA_EVENT_ID, item.getBizId()).forResult());
         }
     }
 

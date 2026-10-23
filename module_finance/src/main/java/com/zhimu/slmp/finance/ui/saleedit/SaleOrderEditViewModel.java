@@ -133,9 +133,9 @@ public class SaleOrderEditViewModel extends FinanceViewModel {
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         idem.attach(handle);
-        Long id = handle.get(FinanceExtras.SALE_ORDER_ID);
+        Long id = handle.get(RouterPath.EXTRA_SALE_ORDER_ID);
         saleOrderId = id == null ? 0 : id;
-        Long b = handle.get(FinanceExtras.BATCH_ID);
+        Long b = handle.get(RouterPath.EXTRA_BATCH_ID);
         presetBatchId = b == null ? 0 : b;
         editMode.setValue(saleOrderId > 0);
         init();
@@ -678,7 +678,7 @@ public class SaleOrderEditViewModel extends FinanceViewModel {
         submitting.setValue(false);
         idem.clear();
         notifyTodoChanged(FinanceConst.BIZ_SALE_ORDER, vo.getId());
-        openDetail.setValue(NavTarget.of(RouterPath.E07).put(FinanceExtras.SALE_ORDER_ID, vo.getId())
+        openDetail.setValue(NavTarget.of(RouterPath.E07).put(RouterPath.EXTRA_SALE_ORDER_ID, vo.getId())
                 .put(RouterPath.EXTRA_SWITCH_TIP, createdText(vo)).replace());
     }
 
@@ -734,7 +734,7 @@ public class SaleOrderEditViewModel extends FinanceViewModel {
             Long id = s.getSaleOrderId() != null ? s.getSaleOrderId() : s.getBizId();
             if (s.isSaved() && id != null) {
                 idem.clear();
-                openDetail.setValue(NavTarget.of(RouterPath.E07).put(FinanceExtras.SALE_ORDER_ID, id)
+                openDetail.setValue(NavTarget.of(RouterPath.E07).put(RouterPath.EXTRA_SALE_ORDER_ID, id)
                         .put(RouterPath.EXTRA_SWITCH_TIP, "已登记出栏单").replace());
             } else {
                 showMessage(FinanceErrors.MSG_TIMEOUT);

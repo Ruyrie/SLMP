@@ -131,8 +131,8 @@ public class FeedInboundViewModel extends StockFormViewModel {
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         super.onSavedStateAttached(handle);
         todoId = StockExtras.readId(handle.get(RouterPath.EXTRA_TODO_ID));
-        init(StockExtras.readId(handle.get(StockExtras.EXTRA_FEED_ID)),
-                StockExtras.readId(handle.get(StockExtras.EXTRA_RECORD_ID)));
+        init(StockExtras.readId(handle.get(RouterPath.EXTRA_FEED_ID)),
+                StockExtras.readId(handle.get(RouterPath.EXTRA_RECORD_ID)));
     }
 
     /** feedId 预选饲料；recordId 有值为只读 */

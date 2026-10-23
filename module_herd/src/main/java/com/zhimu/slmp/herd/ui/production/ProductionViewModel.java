@@ -177,7 +177,7 @@ public class ProductionViewModel extends BaseViewModel {
         String today = o != null ? o.getToday() : DateFormatter.todayString();
         switch (metric) {
             case METRIC_STOCK:
-                navEvent.setValue(NavTarget.of(RouterPath.L03).put(HerdExtras.EXTRA_VIEW_TYPE, HerdExtras.VIEW_PEN));
+                navEvent.setValue(NavTarget.of(RouterPath.L03).put(RouterPath.EXTRA_VIEW_TYPE, HerdExtras.VIEW_PEN));
                 break;
             case METRIC_TODO:
                 navEvent.setValue(NavTarget.of(RouterPath.T03).put(RouterPath.EXTRA_DATE, today)
@@ -197,11 +197,11 @@ public class ProductionViewModel extends BaseViewModel {
     /** 功能入口：页面编号；“批次档案”为 L03 批次视图 */
     public void onEntryClick(@NonNull String code) {
         if (ENTRY_BATCH_ARCHIVE.equals(code)) {
-            navEvent.setValue(NavTarget.of(RouterPath.L03).put(HerdExtras.EXTRA_VIEW_TYPE, HerdExtras.VIEW_BATCH));
+            navEvent.setValue(NavTarget.of(RouterPath.L03).put(RouterPath.EXTRA_VIEW_TYPE, HerdExtras.VIEW_BATCH));
             return;
         }
         if ("L03".equals(code)) {
-            navEvent.setValue(NavTarget.of(RouterPath.L03).put(HerdExtras.EXTRA_VIEW_TYPE, HerdExtras.VIEW_PEN));
+            navEvent.setValue(NavTarget.of(RouterPath.L03).put(RouterPath.EXTRA_VIEW_TYPE, HerdExtras.VIEW_PEN));
             return;
         }
         NavTarget t = NavTarget.ofPage(code);

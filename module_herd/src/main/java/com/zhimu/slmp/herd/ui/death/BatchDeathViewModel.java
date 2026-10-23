@@ -172,7 +172,7 @@ public class BatchDeathViewModel extends BaseViewModel {
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         photos = uploads.create(handle, "photos", MediaScene.DEATH, MAX_PHOTOS);
-        init(asLong(handle.get(RouterPath.EXTRA_BATCH_ID)), asLong(handle.get(HerdExtras.EXTRA_EVENT_ID)));
+        init(asLong(handle.get(RouterPath.EXTRA_BATCH_ID)), asLong(handle.get(RouterPath.EXTRA_EVENT_ID)));
     }
 
     @Nullable

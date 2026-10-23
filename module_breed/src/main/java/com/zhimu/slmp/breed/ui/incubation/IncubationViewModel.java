@@ -148,7 +148,7 @@ public class IncubationViewModel extends BreedFormViewModel {
         setIdem = new SubmitSupport.IdemKeeper(handle, "inc_set");
         candleIdem = new SubmitSupport.IdemKeeper(handle, "inc_candle");
         hatchIdem = new SubmitSupport.IdemKeeper(handle, "inc_hatch");
-        Object id = handle.get(BreedExtras.EXTRA_INCUBATION_ID);
+        Object id = handle.get(RouterPath.EXTRA_INCUBATION_ID);
         init(id instanceof Long && (Long) id > 0 ? (Long) id : null);
     }
 

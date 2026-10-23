@@ -60,6 +60,7 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * M11 兽药与疫苗出库（技术准备文档 2.4.13，按需求补充）：
@@ -193,9 +194,9 @@ public class DrugOutboundViewModel extends StockFormViewModel {
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         super.onSavedStateAttached(handle);
-        init(StockExtras.readId(handle.get(StockExtras.EXTRA_DRUG_ID)),
-                StockExtras.readId(handle.get(StockExtras.EXTRA_LOT_ID)),
-                StockExtras.readId(handle.get(StockExtras.EXTRA_RECORD_ID)));
+        init(StockExtras.readId(handle.get(RouterPath.EXTRA_DRUG_ID)),
+                StockExtras.readId(handle.get(RouterPath.EXTRA_LOT_ID)),
+                StockExtras.readId(handle.get(RouterPath.EXTRA_RECORD_ID)));
     }
 
     /** M06“出库”带药品与批号；M05 菜单不预选；record_id 有值为只读 */

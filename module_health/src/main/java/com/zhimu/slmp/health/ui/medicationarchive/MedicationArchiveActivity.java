@@ -152,7 +152,7 @@ public class MedicationArchiveActivity extends BaseActivity {
         });
         vm.getOpenEdit().observe(this, id -> {
             Bundle extras = new Bundle();
-            extras.putLong(HealthExtras.EXTRA_RECORD_ID, id);
+            extras.putLong(RouterPath.EXTRA_RECORD_ID, id);
             HealthNav.open(this, childLauncher, RouterPath.D04, extras);
         });
         vm.getOpenChangeRequest().observe(this, id -> {

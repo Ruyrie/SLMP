@@ -89,7 +89,7 @@ public class MemberDetailViewModel extends BaseViewModel {
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         Long fid = handle.get(RouterPath.EXTRA_FARM_ID);
         farmId = fid != null && fid > 0 ? fid : farmContext.farmIdOrZero();
-        Long mid = handle.get(FarmExtras.EXTRA_MEMBER_ID);
+        Long mid = handle.get(RouterPath.EXTRA_MEMBER_ID);
         memberId = mid == null ? 0 : mid;
         if (FarmUi.deniedByContext(farmContext, farmId, farmContext.permissions().isCanViewMembers())) {
             setUiState(FarmUi.noPermissionState());

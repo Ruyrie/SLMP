@@ -38,6 +38,7 @@ import org.mockito.ArgumentCaptor;
 import java.util.Collections;
 
 import io.reactivex.rxjava3.core.Single;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * B04 登记产仔的提交：和校验、转批次成功（带批次）、不转批次的提示、42206 超容量确认后换新幂等键重提。
@@ -65,7 +66,7 @@ public class FarrowingRegisterViewModelTest {
         vm.getCapacityText().observeForever(v -> { });
         vm.getEntryText().observeForever(v -> { });
         vm.getStatusHint().observeForever(v -> { });
-        vm.attachSavedState(new SavedStateHandle(Collections.singletonMap(BreedExtras.EXTRA_ANIMAL_ID, 4131L)));
+        vm.attachSavedState(new SavedStateHandle(Collections.singletonMap(RouterPath.EXTRA_ANIMAL_ID, 4131L)));
     }
 
     private void fill(String total, String live, String still) {

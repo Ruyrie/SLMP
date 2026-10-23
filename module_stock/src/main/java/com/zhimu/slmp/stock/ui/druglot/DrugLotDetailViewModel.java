@@ -84,7 +84,7 @@ public class DrugLotDetailViewModel extends BaseListViewModel<Long, ListRow<Stoc
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        Long id = StockExtras.readId(handle.get(StockExtras.EXTRA_LOT_ID));
+        Long id = StockExtras.readId(handle.get(RouterPath.EXTRA_LOT_ID));
         if (id == null) {
             id = StockExtras.readId(handle.get(RouterPath.EXTRA_BIZ_ID));
         }

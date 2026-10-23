@@ -43,6 +43,7 @@ import javax.inject.Inject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * B02 待产与待出雏（技术文档 2.4.2）：分段“待产 / 待出雏”（API-B22、B23 分页，分组标题“今天 · 1 头”）、
@@ -126,7 +127,7 @@ public class BreedDueViewModel extends BaseViewModel {
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        presetTab = handle.get(BreedExtras.EXTRA_TAB);
+        presetTab = handle.get(RouterPath.EXTRA_TAB);
         if (presetTab != null) {
             tab.setValue(presetTab);
         }

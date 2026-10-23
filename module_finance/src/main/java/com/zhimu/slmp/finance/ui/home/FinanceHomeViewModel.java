@@ -205,7 +205,7 @@ public class FinanceHomeViewModel extends FinanceViewModel {
                 open(NavTarget.of(RouterPath.E14));
                 break;
             case TOOL_REPORT:
-                open(NavTarget.of(RouterPath.E13).put(FinanceExtras.REPORT_TYPE, FinanceConst.REPORT_TO_DATE));
+                open(NavTarget.of(RouterPath.E13).put(RouterPath.EXTRA_REPORT_TYPE, FinanceConst.REPORT_TO_DATE));
                 break;
             case TODO_ALL:
                 open(NavTarget.of(RouterPath.T03).put(RouterPath.EXTRA_CATEGORY, TODO_CATEGORY_BUSINESS));
@@ -221,11 +221,11 @@ public class FinanceHomeViewModel extends FinanceViewModel {
             return;
         }
         if (FinanceConst.BIZ_BATCH.equals(item.getBizType())) {
-            open(NavTarget.of(RouterPath.E06).put(FinanceExtras.BATCH_ID, item.getBizId())
-                    .put(FinanceExtras.TODO_ID, item.getTodoId()));
+            open(NavTarget.of(RouterPath.E06).put(RouterPath.EXTRA_BATCH_ID, item.getBizId())
+                    .put(RouterPath.EXTRA_TODO_ID, item.getTodoId()));
         } else {
-            open(NavTarget.of(RouterPath.E07).put(FinanceExtras.SALE_ORDER_ID, item.getBizId())
-                    .put(FinanceExtras.TODO_ID, item.getTodoId()));
+            open(NavTarget.of(RouterPath.E07).put(RouterPath.EXTRA_SALE_ORDER_ID, item.getBizId())
+                    .put(RouterPath.EXTRA_TODO_ID, item.getTodoId()));
         }
     }
 }

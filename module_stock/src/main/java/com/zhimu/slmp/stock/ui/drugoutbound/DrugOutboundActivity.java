@@ -246,7 +246,7 @@ public class DrugOutboundActivity extends BaseActivity implements PickerHost, Re
                     .build().showSafely(getSupportFragmentManager());
         });
         vm.getOpenScrap().observe(this, lotId -> {
-            Router.open(this, RouterPath.M07, StockNav.idArgs(StockExtras.EXTRA_LOT_ID, lotId));
+            Router.open(this, RouterPath.M07, StockNav.idArgs(RouterPath.EXTRA_LOT_ID, lotId));
             finish();
         });
         vm.getSubmitted().observe(this, msg -> StockNav.finishWithMessage(this, UiMessage.of(msg)));

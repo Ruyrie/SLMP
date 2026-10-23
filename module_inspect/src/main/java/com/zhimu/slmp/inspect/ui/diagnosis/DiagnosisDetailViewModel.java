@@ -101,13 +101,13 @@ public class DiagnosisDetailViewModel extends BaseViewModel
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        Long id = Args.getLong(handle, InspectExtras.EXTRA_REPORT_ID);
+        Long id = Args.getLong(handle, RouterPath.EXTRA_REPORT_ID);
         reportId = id == null ? 0 : id;
-        Integer interval = Args.getInt(handle, InspectExtras.EXTRA_POLL_INTERVAL);
-        Integer max = Args.getInt(handle, InspectExtras.EXTRA_POLL_MAX);
+        Integer interval = Args.getInt(handle, RouterPath.EXTRA_POLL_INTERVAL);
+        Integer max = Args.getInt(handle, RouterPath.EXTRA_POLL_MAX);
         pollInterval = interval == null || interval <= 0 ? 3 : interval;
         pollMax = max == null || max <= 0 ? 90 : max;
-        freshSubmit = DiagnosisDetailVO.AI_DIAGNOSING.equals(Args.getString(handle, InspectExtras.EXTRA_AI_STATE))
+        freshSubmit = DiagnosisDetailVO.AI_DIAGNOSING.equals(Args.getString(handle, RouterPath.EXTRA_AI_STATE))
                 && !Boolean.TRUE.equals(handle.get("inspect_diag_done"));
         load();
     }
@@ -354,7 +354,7 @@ public class DiagnosisDetailViewModel extends BaseViewModel
 
     /** “登记处理结果”“修改处理结果” → I07 */
     public void openHandle() {
-        navEvent.setValue(NavTarget.of(RouterPath.I07).put(InspectExtras.EXTRA_REPORT_ID, reportId).forResult());
+        navEvent.setValue(NavTarget.of(RouterPath.I07).put(RouterPath.EXTRA_REPORT_ID, reportId).forResult());
     }
 
     /** 处理结果卡“已转为用药记录” → D05 该批次用药档案 */
@@ -374,7 +374,7 @@ public class DiagnosisDetailViewModel extends BaseViewModel
         DiagnosisDetailVO.DiagnosisReport r = d.getReport();
         String at = r.getInspectionRegisteredAt() != null ? r.getInspectionRegisteredAt() : r.getReportedAt();
         navEvent.setValue(NavTarget.of(RouterPath.I04).put(RouterPath.EXTRA_PEN_ID, r.getPenId())
-                .put(InspectExtras.EXTRA_LOCATE_DATE, at == null ? null : at.substring(0, Math.min(10, at.length()))));
+                .put(RouterPath.EXTRA_LOCATE_DATE, at == null ? null : at.substring(0, Math.min(10, at.length()))));
     }
 
     /** 更多菜单“查看修改记录” */

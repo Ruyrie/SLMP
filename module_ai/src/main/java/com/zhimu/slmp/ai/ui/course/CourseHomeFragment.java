@@ -174,7 +174,7 @@ public class CourseHomeFragment extends BaseFragment {
         vm.getOpenPlay().observe(owner, this::openPlay);
         vm.getOpenTopic().observe(owner, id -> {
             Bundle b = new Bundle();
-            b.putLong(AiExtras.EXTRA_TOPIC_ID, id);
+            b.putLong(RouterPath.EXTRA_TOPIC_ID, id);
             Router.open(requireContext(), RouterPath.K07, b);
         });
         if (!isHidden()) {
@@ -267,8 +267,8 @@ public class CourseHomeFragment extends BaseFragment {
 
     private void openPlay(@NonNull PlayArgs args) {
         Bundle b = new Bundle();
-        b.putLong(AiExtras.EXTRA_COURSE_ID, args.getCourseId());
-        b.putString(AiExtras.EXTRA_ENTRY_TYPE, args.getEntryType());
+        b.putLong(RouterPath.EXTRA_COURSE_ID, args.getCourseId());
+        b.putString(RouterPath.EXTRA_ENTRY_TYPE, args.getEntryType());
         Router.open(requireContext(), RouterPath.K05, b);
     }
 

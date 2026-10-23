@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.rxjava3.core.Single;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * M11 兽药与疫苗出库：领用按先到期先出预选默认批号；切到退货只清空系统默认的批号（手选或从 M06 预选的保留）；
@@ -104,10 +105,10 @@ public class DrugOutboundViewModelTest {
     private void open(Long drugId, Long lotId) {
         Map<String, Object> args = new HashMap<>();
         if (drugId != null) {
-            args.put(StockExtras.EXTRA_DRUG_ID, drugId);
+            args.put(RouterPath.EXTRA_DRUG_ID, drugId);
         }
         if (lotId != null) {
-            args.put(StockExtras.EXTRA_LOT_ID, lotId);
+            args.put(RouterPath.EXTRA_LOT_ID, lotId);
         }
         vm.attachSavedState(new SavedStateHandle(args));
     }

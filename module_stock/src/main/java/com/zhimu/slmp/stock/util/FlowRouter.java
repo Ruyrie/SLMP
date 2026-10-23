@@ -68,18 +68,18 @@ public final class FlowRouter {
                 args.put(RouterPath.EXTRA_RECORD_ID, id);
                 return new Target("D08", args);
             case StockEnums.BIZ_INBOUND:
-                args.put(StockExtras.EXTRA_RECORD_ID, id);
+                args.put(RouterPath.EXTRA_RECORD_ID, id);
                 return new Target(StockEnums.MATERIAL_DRUG.equals(f.materialType) ? "M08" : "M03", args);
             case StockEnums.BIZ_OUTBOUND:
-                args.put(StockExtras.EXTRA_RECORD_ID, id);
+                args.put(RouterPath.EXTRA_RECORD_ID, id);
                 return new Target(StockEnums.FLOW_OTHER_OUT.equals(f.flowType) ? "M10" : "M11", args);
             case StockEnums.BIZ_LOSS:
-                args.put(StockExtras.EXTRA_RECORD_KIND, StockExtras.KIND_LOSS);
-                args.put(StockExtras.EXTRA_RECORD_ID, id);
+                args.put(RouterPath.EXTRA_RECORD_KIND, StockExtras.KIND_LOSS);
+                args.put(RouterPath.EXTRA_RECORD_ID, id);
                 return new Target(PAGE_RECORD, args);
             case StockEnums.BIZ_STOCKTAKE:
-                args.put(StockExtras.EXTRA_RECORD_KIND, StockExtras.KIND_STOCKTAKE);
-                args.put(StockExtras.EXTRA_RECORD_ID, id);
+                args.put(RouterPath.EXTRA_RECORD_KIND, StockExtras.KIND_STOCKTAKE);
+                args.put(RouterPath.EXTRA_RECORD_ID, id);
                 return new Target(PAGE_RECORD, args);
             default:
                 return null;

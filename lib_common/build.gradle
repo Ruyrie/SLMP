@@ -11,7 +11,9 @@ def directFields = [
         DEEPSEEK_MODEL       : props.getProperty('ai.deepseekModel', 'deepseek-flash'),
         ALIYUN_ACCESS_KEY_ID : props.getProperty('aliyun.accessKeyId', ''),
         ALIYUN_ACCESS_SECRET : props.getProperty('aliyun.accessKeySecret', ''),
-        ALIYUN_SMS_SIGN_NAME : props.getProperty('aliyun.smsSignName', '')
+        ALIYUN_SMS_SIGN_NAME : props.getProperty('aliyun.smsSignName', ''),
+        // Mock 模式下的“今天”（与示例数据一致）；填空则用真实日期
+        MOCK_TODAY           : props.getProperty('zmt.mockToday', '2026-10-19')
 ]
 
 android {

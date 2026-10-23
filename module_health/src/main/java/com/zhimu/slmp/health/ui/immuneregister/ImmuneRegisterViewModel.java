@@ -136,14 +136,14 @@ public class ImmuneRegisterViewModel extends BaseViewModel implements RecordLogH
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
         idem.attach(handle);
-        Long plan = asLong(handle.get(HealthExtras.EXTRA_PLAN_ID));
+        Long plan = asLong(handle.get(RouterPath.EXTRA_PLAN_ID));
         if (plan == null) {
-            plan = asLong(handle.get(HealthExtras.EXTRA_PLAN_ITEM_ID));
+            plan = asLong(handle.get(RouterPath.EXTRA_PLAN_ITEM_ID));
         }
-        Object b = handle.get(HealthExtras.EXTRA_BACKFILL);
+        Object b = handle.get(RouterPath.EXTRA_BACKFILL);
         boolean bf = Boolean.TRUE.equals(b) || "true".equals(b);
         todoId = asLong(handle.get(RouterPath.EXTRA_TODO_ID));
-        init(plan, bf, asLong(handle.get(HealthExtras.EXTRA_RECORD_ID)));
+        init(plan, bf, asLong(handle.get(RouterPath.EXTRA_RECORD_ID)));
     }
 
     @Nullable

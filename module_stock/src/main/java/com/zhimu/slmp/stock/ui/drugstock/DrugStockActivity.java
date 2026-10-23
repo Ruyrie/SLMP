@@ -159,9 +159,9 @@ public class DrugStockActivity extends BaseActivity implements PickerHost, NearD
         binding.stockFab.setOnClickListener(v -> vm.onFabClick());
 
         vm.getOpenLot().observe(this, id -> StockNav.open(this, childLauncher, RouterPath.M06,
-                StockNav.idArgs(StockExtras.EXTRA_LOT_ID, id)));
+                StockNav.idArgs(RouterPath.EXTRA_LOT_ID, id)));
         vm.getOpenInbound().observe(this, id -> StockNav.open(this, childLauncher, RouterPath.M08,
-                StockNav.idArgs(StockExtras.EXTRA_DRUG_ID, id)));
+                StockNav.idArgs(RouterPath.EXTRA_DRUG_ID, id)));
         vm.getOpenArchive().observe(this, this::openArchive);
         vm.getShowArchivePicker().observe(this, v -> PickerSheet.builder(DrugStockViewModel.PICKER_ARCHIVE)
                 .title(getString(R.string.stock_drug_archive_title))
@@ -193,9 +193,9 @@ public class DrugStockActivity extends BaseActivity implements PickerHost, NearD
     }
 
     private void openArchive(@Nullable Long drugId) {
-        Bundle b = StockNav.idArgs(StockExtras.EXTRA_DRUG_ID, drugId);
+        Bundle b = StockNav.idArgs(RouterPath.EXTRA_DRUG_ID, drugId);
         if (drugId == null && vm.currentCategory() != null) {
-            b.putString(StockExtras.EXTRA_CATEGORY, vm.currentCategory());
+            b.putString(RouterPath.EXTRA_CATEGORY, vm.currentCategory());
         }
         StockNav.open(this, childLauncher, RouterPath.M09, b);
     }

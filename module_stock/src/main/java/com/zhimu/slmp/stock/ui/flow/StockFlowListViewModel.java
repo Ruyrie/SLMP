@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * 出入库流水（技术准备文档 2.4.2，M01 的下级列表页）：material_type FEED 用 API-M13（feed_id 可选），DRUG 用 API-M28（drug_id 可选）；
@@ -52,9 +53,9 @@ public class StockFlowListViewModel extends BaseListViewModel<String, ListRow<St
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        String type = handle.get(StockExtras.EXTRA_MATERIAL_TYPE);
+        String type = handle.get(RouterPath.EXTRA_MATERIAL_TYPE);
         materialType = StockEnums.MATERIAL_DRUG.equals(type) ? StockEnums.MATERIAL_DRUG : StockEnums.MATERIAL_FEED;
-        filterId = StockExtras.readId(handle.get(isDrug() ? StockExtras.EXTRA_DRUG_ID : StockExtras.EXTRA_FEED_ID));
+        filterId = StockExtras.readId(handle.get(isDrug() ? RouterPath.EXTRA_DRUG_ID : RouterPath.EXTRA_FEED_ID));
     }
 
     @NonNull

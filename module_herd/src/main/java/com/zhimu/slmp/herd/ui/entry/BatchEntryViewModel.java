@@ -169,7 +169,7 @@ public class BatchEntryViewModel extends BaseViewModel {
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        init(asLong(handle.get(RouterPath.EXTRA_BATCH_ID)), asLong(handle.get(HerdExtras.EXTRA_ENTRY_EVENT_ID)));
+        init(asLong(handle.get(RouterPath.EXTRA_BATCH_ID)), asLong(handle.get(RouterPath.EXTRA_ENTRY_EVENT_ID)));
     }
 
     @Nullable

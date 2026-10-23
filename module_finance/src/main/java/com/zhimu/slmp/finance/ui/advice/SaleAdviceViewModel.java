@@ -73,7 +73,7 @@ public class SaleAdviceViewModel extends FinanceListViewModel<String, SaleAdvice
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        Long b = handle.get(FinanceExtras.BATCH_ID);
+        Long b = handle.get(RouterPath.EXTRA_BATCH_ID);
         presetBatchId = b == null ? 0 : b;
         init();
     }
@@ -303,7 +303,7 @@ public class SaleAdviceViewModel extends FinanceListViewModel<String, SaleAdvice
     public void openRegister() {
         Long id = selectedBatchId.getValue();
         if (id != null) {
-            open(NavTarget.of(RouterPath.E06).put(FinanceExtras.BATCH_ID, id));
+            open(NavTarget.of(RouterPath.E06).put(RouterPath.EXTRA_BATCH_ID, id));
         }
     }
 

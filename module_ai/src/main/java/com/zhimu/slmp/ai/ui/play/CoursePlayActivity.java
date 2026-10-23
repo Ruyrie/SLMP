@@ -207,19 +207,19 @@ public class CoursePlayActivity extends BaseActivity {
                 getString(R.string.ai_play_wifi_only_action), ACTION_WIFI_ONLY)));
         vm.getOpenAiChat().observe(this, ctx -> {
             Bundle b = new Bundle();
-            b.putLong(AiExtras.EXTRA_COURSE_ID, ctx.getCourseId());
-            b.putString(AiExtras.EXTRA_COURSE_TITLE, ctx.getTitle());
-            b.putBoolean(AiExtras.EXTRA_NEW_SESSION, true);
+            b.putLong(RouterPath.EXTRA_COURSE_ID, ctx.getCourseId());
+            b.putString(RouterPath.EXTRA_COURSE_TITLE, ctx.getTitle());
+            b.putBoolean(RouterPath.EXTRA_NEW_SESSION, true);
             Router.open(this, RouterPath.K01, b);
         });
         vm.getOpenKnowledge().observe(this, id -> {
             Bundle b = new Bundle();
-            b.putLong(AiExtras.EXTRA_KNOWLEDGE_ID, id);
+            b.putLong(RouterPath.EXTRA_KNOWLEDGE_ID, id);
             Router.open(this, RouterPath.K03, b);
         });
         vm.getOpenTopic().observe(this, id -> {
             Bundle b = new Bundle();
-            b.putLong(AiExtras.EXTRA_TOPIC_ID, id);
+            b.putLong(RouterPath.EXTRA_TOPIC_ID, id);
             Router.open(this, RouterPath.K07, b);
         });
     }
@@ -542,7 +542,7 @@ public class CoursePlayActivity extends BaseActivity {
     @Override
     protected void onNewIntent(@NonNull Intent intent) {
         super.onNewIntent(intent);
-        long id = intent.getLongExtra(AiExtras.EXTRA_COURSE_ID, 0);
+        long id = intent.getLongExtra(RouterPath.EXTRA_COURSE_ID, 0);
         if (id > 0) {
             vm.switchCourse(id);
         }

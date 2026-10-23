@@ -148,7 +148,7 @@ public class BatchTransferViewModel extends BaseViewModel {
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        init(asLong(handle.get(RouterPath.EXTRA_BATCH_ID)), asLong(handle.get(HerdExtras.EXTRA_EVENT_ID)));
+        init(asLong(handle.get(RouterPath.EXTRA_BATCH_ID)), asLong(handle.get(RouterPath.EXTRA_EVENT_ID)));
     }
 
     @Nullable

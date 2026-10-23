@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.rxjava3.core.Single;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * M07 报废（默认全部结存、原因按状态预选、损失金额、全部 / 部分报废的确认文案、日期不早于首次入库）、
@@ -84,7 +85,7 @@ public class DrugFormsViewModelTest {
         DrugScrapViewModel vm = new DrugScrapViewModel(repo, TestRules.noDrafts(), base, farm);
         vm.getLossText().observeForever(v -> {
         });
-        vm.attachSavedState(args(StockExtras.EXTRA_LOT_ID, lotId));
+        vm.attachSavedState(args(RouterPath.EXTRA_LOT_ID, lotId));
         return vm;
     }
 
@@ -159,7 +160,7 @@ public class DrugFormsViewModelTest {
         DrugInboundViewModel vm = new DrugInboundViewModel(repo, TestRules.noDrafts(), farm);
         vm.getAmountText().observeForever(v -> {
         });
-        vm.attachSavedState(args(StockExtras.EXTRA_DRUG_ID, 5003));
+        vm.attachSavedState(args(RouterPath.EXTRA_DRUG_ID, 5003));
         return vm;
     }
 

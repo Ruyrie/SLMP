@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.List;
 
 import io.reactivex.rxjava3.core.Single;
+import com.zhimu.slmp.common.router.RouterPath;
 
 /**
  * B07 孵化三步：入孵推算预计出雏日 → 登记入孵后进入照蛋（受精率实时）→ 登记照蛋后进入出雏（弱雏、孵化率、入栏容量）→
@@ -118,7 +119,7 @@ public class IncubationViewModelTest {
     public void step2_candle_liveFertilityThenStep3() throws Exception {
         when(repo.candle(eq(6003L), any(CandlingRequest.class), anyString())).thenReturn(Single.just(
                 TestRules.data("incubation_6003_candled.json", IncubationDetailVO.class)));
-        vm.attachSavedState(new SavedStateHandle(Collections.singletonMap(BreedExtras.EXTRA_INCUBATION_ID, 6003L)));
+        vm.attachSavedState(new SavedStateHandle(Collections.singletonMap(RouterPath.EXTRA_INCUBATION_ID, 6003L)));
         assertEquals(2, (int) vm.getCurrentStep().getValue());
         vm.getFertileCount().setValue("9201");
         vm.submitCandle();
@@ -135,7 +136,7 @@ public class IncubationViewModelTest {
     public void step3_hatch_derivedValuesCapacityAndResult() throws Exception {
         when(repo.hatch(eq(6001L), any(HatchRequest.class), anyString())).thenReturn(Single.just(
                 TestRules.data("hatch_ok_6001.json", RegisterResultVO.class)));
-        vm.attachSavedState(new SavedStateHandle(Collections.singletonMap(BreedExtras.EXTRA_INCUBATION_ID, 6001L)));
+        vm.attachSavedState(new SavedStateHandle(Collections.singletonMap(RouterPath.EXTRA_INCUBATION_ID, 6001L)));
         assertEquals(3, (int) vm.getCurrentStep().getValue());
         assertEquals("95.0%（9,120 ÷ 9,600）", vm.getFertilityText().getValue());
         StepItem hatch = vm.getStepItems().getValue().get(2);
