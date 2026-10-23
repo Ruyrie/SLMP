@@ -230,26 +230,26 @@ public class FarmServiceImpl implements FarmService {
         Map<String, Object> after = new LinkedHashMap<>();
         if (request.getContactName() != null) {
             FarmValidations.validateContactName(request.getContactName());
-            before.put("contact_name", farm.getContactName());
+            before.put("联系人", farm.getContactName());
             farm.setContactName(FarmValidations.trim(request.getContactName()));
-            after.put("contact_name", farm.getContactName());
+            after.put("联系人", farm.getContactName());
         }
         if (request.getContactPhone() != null) {
-            before.put("contact_phone", FarmValidations.maskedPhone(farm.getContactPhone()));
+            before.put("联系电话", FarmValidations.maskedPhone(farm.getContactPhone()));
             farm.setContactPhone(FarmValidations.normalizePhone(request.getContactPhone()));
-            after.put("contact_phone", FarmValidations.maskedPhone(farm.getContactPhone()));
+            after.put("联系电话", FarmValidations.maskedPhone(farm.getContactPhone()));
         }
         if (request.getScale() != null) {
             FarmValidations.validateScale(request.getScale());
-            before.put("scale", farm.getScale());
+            before.put("规模", farm.getScale());
             farm.setScale(request.getScale());
-            after.put("scale", farm.getScale());
+            after.put("规模", farm.getScale());
         }
         if (request.getIntro() != null) {
             FarmValidations.validateIntro(request.getIntro());
-            before.put("intro", farm.getIntro());
+            before.put("简介", farm.getIntro());
             farm.setIntro(FarmValidations.trim(request.getIntro()));
-            after.put("intro", farm.getIntro());
+            after.put("简介", farm.getIntro());
         }
         farm.setUpdatedBy(userId);
         int rows = farmMapper.updateById(farm);

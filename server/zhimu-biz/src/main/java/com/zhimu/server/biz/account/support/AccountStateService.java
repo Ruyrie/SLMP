@@ -86,10 +86,10 @@ public class AccountStateService {
     }
 
     /**
-     * 强制步骤判定（模块01 文档 2.7.4）：
-     * 必须改密 → RECOVERY_CHANGE_PASSWORD；没有未作废的码 → SAVE_RECOVERY_CODE；
-     * 待确认码场景为 REGISTER / RECOVERY → SAVE_RECOVERY_CODE；
-     * REGENERATE 只约束生成时的客户端。
+     * 强制步骤判定（模块01 文档 2.7.4，按 App 兼容修正）：
+     * 必须改密 → RECOVERY_CHANGE_PASSWORD；有待确认码且场景为 REGISTER / RECOVERY → SAVE_RECOVERY_CODE；
+     * REGENERATE 只约束生成时的客户端；没有任何未作废的码时不再强制（App 员工示例 next_step=NONE，
+     * 用户可在账号安全页主动生成）。
      */
     public NextStep resolveNextStep(User user, ClientType client) {
         if (user == null) {
@@ -104,7 +104,7 @@ public class AccountStateService {
     public NextStep resolveNextStep(Long userId, ClientType client) {
         RecoveryCode live = liveCode(userId);
         if (live == null) {
-            return NextStep.SAVE_RECOVERY_CODE;
+            return NextStep.NONE;
         }
         if (!RecoveryCodeStatus.PENDING_CONFIRM.name().equals(live.getStatus())) {
             return NextStep.NONE;

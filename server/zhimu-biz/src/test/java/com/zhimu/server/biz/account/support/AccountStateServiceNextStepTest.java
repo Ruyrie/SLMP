@@ -56,9 +56,9 @@ class AccountStateServiceNextStepTest {
     }
 
     @Test
-    void 没有未作废恢复码时要求保存() {
+    void 没有恢复码时不强制保存() {
         when(recoveryCodeMapper.selectOne(Mockito.any())).thenReturn(null);
-        assertThat(service.resolveNextStep(user(false), ClientType.APP_ANDROID)).isEqualTo(NextStep.SAVE_RECOVERY_CODE);
+        assertThat(service.resolveNextStep(user(false), ClientType.APP_ANDROID)).isEqualTo(NextStep.NONE);
     }
 
     @Test
