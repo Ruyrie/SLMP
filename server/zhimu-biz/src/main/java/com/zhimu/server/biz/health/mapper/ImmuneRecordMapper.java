@@ -8,6 +8,10 @@ import org.apache.ibatis.annotations.Select;
 /** 接种记录 Mapper。 */
 public interface ImmuneRecordMapper extends BaseMapper<ImmuneRecord> {
 
+    /** 修改申请按 ID 读取原记录：已删除的记录也要返回，由公共能力给出 41001 */
+    @Select("SELECT * FROM t_immune_record WHERE id = #{id}")
+    ImmuneRecord selectByIdIncludingDeleted(@Param("id") Long id);
+
     @Select("SELECT * FROM t_immune_record WHERE farm_id = #{farmId} AND client_request_id = #{clientRequestId} "
             + "AND deleted = 0 LIMIT 1")
     ImmuneRecord selectByClientRequestId(@Param("farmId") Long farmId,

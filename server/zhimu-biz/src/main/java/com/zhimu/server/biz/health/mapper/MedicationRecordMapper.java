@@ -10,6 +10,10 @@ import java.util.List;
 /** 用药记录 Mapper。 */
 public interface MedicationRecordMapper extends BaseMapper<MedicationRecord> {
 
+    /** 修改申请按 ID 读取原记录：已删除的记录也要返回，由公共能力给出 41001 */
+    @Select("SELECT * FROM t_medication_record WHERE id = #{id}")
+    MedicationRecord selectByIdIncludingDeleted(@Param("id") Long id);
+
     @Select("SELECT * FROM t_medication_record WHERE farm_id = #{farmId} AND client_request_id = #{clientRequestId} "
             + "AND batch_id = #{batchId} AND deleted = 0 LIMIT 1")
     MedicationRecord selectByClientRequestId(@Param("farmId") Long farmId,
