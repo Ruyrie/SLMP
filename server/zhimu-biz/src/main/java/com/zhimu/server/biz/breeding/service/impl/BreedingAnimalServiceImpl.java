@@ -144,7 +144,7 @@ public class BreedingAnimalServiceImpl implements BreedingAnimalService {
     @Override
     public PageVO<BreedingAnimalOptionVO> options(BreedingOptionQuery query) {
         String purpose = query.getPurpose();
-        if (!List.of("MATING", "FARROWING", "WEANING").contains(purpose)) {
+        if (purpose == null || !List.of("MATING", "FARROWING", "WEANING").contains(purpose)) {
             throw BreedingErrors.invalid("purpose", "登记类型不正确");
         }
         String keyword = query.keywordOrNull();

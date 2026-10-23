@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.inspect.vo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class PenInspectionRowVO {
     private boolean hasRevisions;
     private boolean canBackfill;
     private String backfillUntil;
+    @JsonProperty("backfill_expired")
     private Boolean isBackfillExpired;
     private String resultSummary;
 }

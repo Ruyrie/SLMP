@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.stock.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.Version;
@@ -34,6 +35,7 @@ public class Feed extends AuditEntity {
     private BigDecimal stockAmount;
     /** 移动加权平均成本（元/千克） */
     private BigDecimal avgPrice;
+    @TableField("usage_7d_qty")
     private BigDecimal usage7dQty;
     private Integer usageDays;
     private BigDecimal dailyUseQty;
