@@ -329,7 +329,7 @@ public class FinanceRecordServiceImpl implements FinanceRecordService {
         Map<Long, String> batchNos = batchNos(filtered);
         Map<Long, FarmBriefVO> farmMap = scope.farmMap();
 
-        String keyword = query.getKeyword() == null ? null : query.getKeyword().trim();
+        String keyword = query.getKeyword() == null ? "" : query.getKeyword().trim();
         if (!keyword.isEmpty()) {
             BigDecimal numeric = numeric(keyword);
             filtered = filtered.stream().filter(r -> {
