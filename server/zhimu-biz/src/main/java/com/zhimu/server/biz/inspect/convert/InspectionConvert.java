@@ -132,6 +132,8 @@ public final class InspectionConvert {
         vo.setResponsibleNames(responsibleNames == null ? List.of() : responsibleNames);
         vo.setDisplayStatus(displayStatus);
         vo.setDisplayStatusText(InspectRules.displayStatusText(displayStatus));
+        vo.setIsOverdue(false);
+        vo.setIsBackfill(false);
         if (inspection != null) {
             vo.setAbnormalSource(inspection.getAbnormalSource());
             vo.setAbnormalSummary(inspection.getAbnormalSummary());
@@ -148,7 +150,7 @@ public final class InspectionConvert {
         vo.setDeadlinePassed(deadlinePassed);
         vo.setReportStatus(reportStatus);
         boolean done = inspection != null && InspectRules.DONE.equals(inspection.getInspectStatus());
-        vo.setCanRegister(!done && inspection != null && !InspectRules.CANCELLED.equals(inspection.getInspectStatus()));
+        vo.setCanRegister("PENDING".equals(displayStatus));
         vo.setCanModify(done && canModify);
         vo.setCanReport(done && canReport);
         vo.setCanViewDiagnosis(inspection != null && inspection.getReportId() != null);
@@ -210,11 +212,11 @@ public final class InspectionConvert {
         vo.setCanChangeRequest(canChangeRequest);
         vo.setHasRevisions(false);
         vo.setCanBackfill(canBackfill);
+        vo.setIsBackfillExpired(false);
         if (InspectRules.MISSED.equals(inspection.getInspectStatus()) && inspection.getInspectDate() != null) {
             vo.setBackfillUntil(BeijingTime.format(InspectRules.backfillUntil(inspection.getInspectDate())));
+            vo.setIsBackfillExpired(InspectRules.backfillExpired(inspection.getInspectDate()));
         }
-        vo.setIsBackfillExpired(inspection.getInspectDate() != null
-                && InspectRules.backfillExpired(inspection.getInspectDate()));
         vo.setResultSummary(resultSummary);
         return vo;
     }

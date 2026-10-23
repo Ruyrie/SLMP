@@ -8,7 +8,7 @@ import com.zhimu.server.biz.inspect.entity.AbnormalReport;
 import com.zhimu.server.biz.inspect.entity.InspectionSetting;
 import com.zhimu.server.biz.inspect.mapper.AbnormalReportMapper;
 import com.zhimu.server.biz.inspect.mapper.InspectReferenceMapper;
-import com.zhimu.server.biz.inspect.mapper.InspectTemplateMapper;
+import com.zhimu.server.biz.inspect.mapper.InspectTemplateReadMapper;
 import com.zhimu.server.biz.inspect.mapper.InspectionSettingMapper;
 import com.zhimu.server.biz.inspect.query.BatchPenStockRow;
 import com.zhimu.server.biz.inspect.query.FarmGeoRow;
@@ -37,7 +37,7 @@ import java.util.Map;
 public class InspectSupport {
 
     private final InspectReferenceMapper referenceMapper;
-    private final InspectTemplateMapper templateMapper;
+    private final InspectTemplateReadMapper templateMapper;
     private final InspectionSettingMapper settingMapper;
     private final AbnormalReportMapper reportMapper;
     private final PenQueryService penQueryService;
