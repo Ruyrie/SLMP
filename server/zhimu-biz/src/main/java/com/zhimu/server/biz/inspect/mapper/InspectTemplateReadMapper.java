@@ -7,8 +7,8 @@ import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
-/** 巡检模板只读查询（管理端-03 的 V2_08 数据；不调用 U13）。 */
-public interface InspectTemplateMapper {
+/** 巡检模板只读查询（管理端-03 的 V2_08 数据；不调用 U13）。类名带 Read 避免与管理端-03 的 InspectTemplateMapper 重名。 */
+public interface InspectTemplateReadMapper {
 
     @Select("SELECT t.id AS templateId, t.online_version_no AS versionNo, v.id AS versionId "
             + "FROM t_inspect_template t JOIN t_inspect_template_version v "
