@@ -510,7 +510,7 @@ public class FeedTaskService {
         if (!batch.active()) {
             return "BATCH_ENDED";
         }
-        if (FeedCalc.TASK_DONE.equals(effective) || FeedCalc.TASK_MANUAL_DONE.equals(effective)) {
+        if (FeedCalc.TASK_DONE.equals(effective)) {
             return "DONE";
         }
         if (FeedCalc.TASK_CANCELLED.equals(effective)) {

@@ -169,6 +169,7 @@ public class FeedPlanService {
         for (FeedPlanStage stage : stages(plan.getId())) {
             existing.put(stage.getId(), stage);
         }
+        Map<Long, BreedStandardsVO.FeedStageVO> stdStages = stdStages(batch);
         List<FeedPlanStage> saved = new ArrayList<>();
         Set<Long> kept = new HashSet<>();
         int sortNo = 0;
@@ -185,6 +186,7 @@ public class FeedPlanService {
                     throw FeedErrors.field("stages", "已结束的阶段不能修改");
                 }
                 fillStage(stage, requestStage, plan, batch);
+                applyStdSnapshot(stage, stdStages.get(requestStage.getStdStageId()));
                 stage.setSortNo(sortNo);
                 if (stageMapper.updateById(stage) == 0) {
                     throw FeedErrors.versionConflict();
@@ -196,6 +198,7 @@ public class FeedPlanService {
                 stage.setBatchId(batchId);
                 stage.setDeleted(false);
                 fillStage(stage, requestStage, plan, batch);
+                applyStdSnapshot(stage, stdStages.get(requestStage.getStdStageId()));
                 stage.setSortNo(sortNo);
                 stageMapper.insert(stage);
             }
@@ -314,8 +317,36 @@ public class FeedPlanService {
         stage.setBatchId(batch.batchId());
     }
 
-    private void saveMeals(FeedPlanStage stage, List<String> times) {
-        List<FeedCalc.MealSlot> slots = FeedCalc.mealSlots(times);
+    private Map<Long, BreedStandardsVO.FeedStageVO> stdStages(BatchInfo batch) {
+        Map<Long, BreedStandardsVO.FeedStageVO> result = new HashMap<>();
+        try {
+            BreedStandardsVO standards = stdQueryService.standards(batch.breedId(), null);
+            if (standards != null && standards.getFeed() != null && standards.getFeed().getStages() != null) {
+                for (BreedStandardsVO.FeedStageVO stage : standards.getFeed().getStages()) {
+                    result.put(stage.getStageId(), stage);
+                }
+            }
+        } catch (RuntimeException ignored) {
+            // 品种没有饲喂标准时按手工方案保存
+        }
+        return result;
+    }
+
+    private void applyStdSnapshot(FeedPlanStage stage, BreedStandardsVO.FeedStageVO std) {
+        if (std == null) {
+            return;
+        }
+        stage.setStdStageId(std.getStageId());
+        stage.setStdFeedName(std.getSuggestedFeedName());
+        stage.setStdDailyQty(std.getDailyFeed());
+        stage.setStdMealsPerDay(std.getMealsPerDay());
+        stage.setStdMealTimes(std.getMealTimes() == null || std.getMealTimes().isEmpty()
+                ? null : String.join(",", std.getMealTimes()));
+        FeedStockPort.FeedBrief matched = matchFeed(lookup.feeds(), std.getSuggestedFeedName());
+        stage.setStdFeedId(matched == null ? null : matched.feedId());
+    }
+
+    private void saveMeals(FeedPlanStage stage, List<String> times) {        List<FeedCalc.MealSlot> slots = FeedCalc.mealSlots(times);
         mealMapper.delete(Wrappers.<FeedPlanMeal>lambdaQuery().eq(FeedPlanMeal::getStageId, stage.getId()));
         for (FeedCalc.MealSlot slot : slots) {
             FeedPlanMeal meal = new FeedPlanMeal();
