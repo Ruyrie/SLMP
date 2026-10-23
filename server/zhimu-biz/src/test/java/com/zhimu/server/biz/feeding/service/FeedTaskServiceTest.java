@@ -17,6 +17,7 @@ import com.zhimu.server.common.enums.FarmStatus;
 import com.zhimu.server.common.error.BizException;
 import com.zhimu.server.common.util.BeijingTime;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,6 +61,11 @@ class FeedTaskServiceTest {
     private FeedLookup lookup;
 
     private FeedTaskService service;
+
+    @BeforeAll
+    static void initTableInfo() {
+        com.zhimu.server.biz.feeding.FeedingTableInfo.init();
+    }
 
     @BeforeEach
     void setUp() {

@@ -158,7 +158,13 @@ public final class FeedCalc {
         }
         String text = value.trim();
         try {
-            return LocalTime.parse(text.length() == 5 ? text : text.substring(0, 5));
+            String[] parts = text.split(":");
+            if (parts.length < 2) {
+                return null;
+            }
+            int hour = Integer.parseInt(parts[0].trim());
+            int minute = Integer.parseInt(parts[1].trim());
+            return LocalTime.of(hour, minute);
         } catch (RuntimeException e) {
             return null;
         }
