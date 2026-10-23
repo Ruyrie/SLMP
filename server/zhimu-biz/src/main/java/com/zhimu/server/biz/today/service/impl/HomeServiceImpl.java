@@ -285,8 +285,14 @@ public class HomeServiceImpl implements HomeService {
     private com.zhimu.server.biz.today.vo.LinkVO penLink(FarmContext.FarmMember member, Long penId,
                                                          HomeMetricProvider.PenMetric metric) {
         Map<String, String> params = new LinkedHashMap<>();
-        params.put("pen_id", String.valueOf(penId));
-        String route = metric != null && metric.batches() != null && !metric.batches().isEmpty() ? "L06" : "L02";
+        boolean hasBatch = metric != null && metric.batches() != null && !metric.batches().isEmpty();
+        if (hasBatch) {
+            // L06 批次档案以 batch_id 打开；没有在栏批次时进 L02 我的栏舍（pen_id）
+            params.put("batch_id", String.valueOf(metric.batches().get(0).batchId()));
+        } else {
+            params.put("pen_id", String.valueOf(penId));
+        }
+        String route = hasBatch ? "L06" : "L02";
         return TodoLinks.link(route, member.farmId(), member.farmName(), params);
     }
 

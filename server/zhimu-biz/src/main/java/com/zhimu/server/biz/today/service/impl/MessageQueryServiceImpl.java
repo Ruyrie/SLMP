@@ -60,6 +60,8 @@ public class MessageQueryServiceImpl implements MessageQueryService {
 
     private static final int RETENTION_DAYS = 180;
     private static final int UNDO_SECONDS = 60;
+    /** 撤回的平台通知仍保留在消息中心（显示“已撤回”），只隐藏正文与配图 */
+    private static final String HIDDEN_REASON_NOTICE_REVOKED = "NOTICE_REVOKED";
 
     private final MessageMapper messageMapper;
     private final TodoMapper todoMapper;
@@ -105,9 +107,9 @@ public class MessageQueryServiceImpl implements MessageQueryService {
         List<Message> unread = messageMapper.selectList(Wrappers.<Message>lambdaQuery()
                 .select(Message::getCategory)
                 .eq(Message::getUserId, userId)
-                .eq(Message::getHidden, false)
+                .ge(Message::getSortTime, now.minusDays(RETENTION_DAYS))
                 .isNull(Message::getReadAt)
-                .ge(Message::getSortTime, now.minusDays(RETENTION_DAYS)));
+                .and(MessageQueryServiceImpl::visible));
         for (Message message : unread) {
             byCategory.merge(message.getCategory(), 1, Integer::sum);
         }
@@ -126,11 +128,11 @@ public class MessageQueryServiceImpl implements MessageQueryService {
         int updated = messageMapper.update(null, Wrappers.<Message>update()
                 .set("read_at", now)
                 .eq("user_id", userId)
-                .eq("hidden", false)
                 .isNull("read_at")
                 .ge("sort_time", now.minusDays(RETENTION_DAYS))
                 .eq(category != null, "category", category)
-                .eq(farmId != null, "farm_id", farmId));
+                .eq(farmId != null, "farm_id", farmId)
+                .and(w -> w.eq("hidden", false).or().eq("hidden_reason", HIDDEN_REASON_NOTICE_REVOKED)));
         ReadAllResult result = new ReadAllResult();
         result.setUpdatedCount(updated);
         result.setTotalUnread(totalUnread(userId));
@@ -234,32 +236,39 @@ public class MessageQueryServiceImpl implements MessageQueryService {
             Long userId, String category, Long farmId, boolean unreadOnly, LocalDateTime now) {
         return Wrappers.<Message>lambdaQuery()
                 .eq(Message::getUserId, userId)
-                .eq(Message::getHidden, false)
                 .ge(Message::getSortTime, now.minusDays(RETENTION_DAYS))
                 .eq(category != null, Message::getCategory, category)
                 .eq(farmId != null, Message::getFarmId, farmId)
                 .isNull(unreadOnly, Message::getReadAt)
+                .and(MessageQueryServiceImpl::visible)
                 .orderByDesc(Message::getSortTime)
                 .orderByDesc(Message::getId);
+    }
+
+    /** 可见消息：未隐藏；撤回的平台通知仍保留在列表与未读数中（显示“已撤回”） */
+    private static void visible(
+            com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Message> wrapper) {
+        wrapper.and(q -> q.eq(Message::getHidden, false)
+                .or().eq(Message::getHiddenReason, HIDDEN_REASON_NOTICE_REVOKED));
     }
 
     private int totalUnread(Long userId) {
         Long count = messageMapper.selectCount(Wrappers.<Message>lambdaQuery()
                 .eq(Message::getUserId, userId)
-                .eq(Message::getHidden, false)
                 .isNull(Message::getReadAt)
-                .ge(Message::getSortTime, BeijingTime.now().minusDays(RETENTION_DAYS)));
+                .ge(Message::getSortTime, BeijingTime.now().minusDays(RETENTION_DAYS))
+                .and(MessageQueryServiceImpl::visible));
         return count == null ? 0 : count.intValue();
     }
 
     private int filteredUnread(Long userId, String category, Long farmId, LocalDateTime now) {
         Long count = messageMapper.selectCount(Wrappers.<Message>lambdaQuery()
                 .eq(Message::getUserId, userId)
-                .eq(Message::getHidden, false)
                 .isNull(Message::getReadAt)
                 .ge(Message::getSortTime, now.minusDays(RETENTION_DAYS))
                 .eq(category != null, Message::getCategory, category)
-                .eq(farmId != null, Message::getFarmId, farmId));
+                .eq(farmId != null, Message::getFarmId, farmId)
+                .and(MessageQueryServiceImpl::visible));
         return count == null ? 0 : count.intValue();
     }
 
@@ -297,7 +306,7 @@ public class MessageQueryServiceImpl implements MessageQueryService {
         OpenResultVO vo = new OpenResultVO();
         MsgType type = CodeEnum.of(MsgType.class, message.getMsgType());
         if (type == MsgType.FARM_INVITE || type == MsgType.MEMBER_REMOVED || type == MsgType.FARM_DISABLED
-                || type == MsgType.FARM_DELETED || isRevoked(message)) {
+                || type == MsgType.FARM_DELETED) {
             return noJump(vo);
         }
 
@@ -310,6 +319,13 @@ public class MessageQueryServiceImpl implements MessageQueryService {
             if (farmMember.farmStatus() == FarmStatus.FROZEN) {
                 return status(vo, "FARM_FROZEN", "养殖场已被平台冻结，暂时不能使用。原因见消息中心", null, null);
             }
+        }
+
+        // 平台通知与所有权转让都在 T07 详情页展示（撤回的通知也打开详情，正文由 payload 置空）
+        if (type == MsgType.NOTICE || type == MsgType.OWNER_TRANSFER) {
+            vo.setTargetStatus("OK");
+            vo.setTargetStatusText("可以打开");
+            return vo;
         }
 
         if (message.getTodoId() != null) {
@@ -412,10 +428,6 @@ public class MessageQueryServiceImpl implements MessageQueryService {
             case "FARM_FROZEN" -> "养殖场已冻结";
             default -> "不跳转";
         };
-    }
-
-    private static boolean isRevoked(Message message) {
-        return Boolean.TRUE.equals(message.getHidden()) && "NOTICE_REVOKED".equals(message.getHiddenReason());
     }
 
     private String validateCategory(String category) {

@@ -96,7 +96,7 @@ VALUES
 (90119, 1001, 'FEEDING', 'WORK', 2004, NULL, '4 号育肥舍', NULL, 'FEED_TASK', 70119, 'FEED_TASK:70119',
  '4 号育肥舍 · 早餐饲喂', '育肥全价料 · 计划 160 千克', NULL, NULL, NULL, NULL, 'PEN_STAFF',
  10003, '李明', '2026-10-19', 'AT_TIME', '07:00:00', '2026-10-19 09:00:00', '2026-10-19 07:00:00',
- 'DONE', 0, '2026-10-19 07:20:00', 10002, 'REGISTER', 'FEED_RECORD', 88119, NULL, NULL, NULL, NULL, 1,
+ 'DONE', 0, '2026-10-19 07:20:00', 10003, 'REGISTER', 'FEED_RECORD', 88119, NULL, NULL, NULL, NULL, 1,
  '2026-10-19 06:45:00', 2, 0, 0, '2026-10-18 18:00:00', '2026-10-19 07:20:00'),
 (90120, 1001, 'FEEDING', 'WORK', 2001, NULL, '1 号保育舍', NULL, 'FEED_TASK', 70120, 'FEED_TASK:70120',
  '1 号保育舍 · 晚餐饲喂', '育肥全价料 · 计划 160 千克', NULL, NULL, NULL, NULL, 'PEN_STAFF',
@@ -216,7 +216,7 @@ VALUES (7701, 90112, 1001, 'ADVANCE', '20261018', 'PLAN', '2026-10-17 08:00:00',
 
 INSERT INTO t_todo_handle_log (id, todo_id, farm_id, action, way, operator_id, reason, overdue_done, created_at)
 VALUES (7801, 90107, 1001, 'COMPLETE', 'REGISTER', 10003, NULL, 0, '2026-10-19 07:12:00'),
-       (7802, 90119, 1001, 'COMPLETE', 'REGISTER', 10002, NULL, 0, '2026-10-19 07:20:00'),
+       (7802, 90119, 1001, 'COMPLETE', 'REGISTER', 10003, NULL, 0, '2026-10-19 07:20:00'),
        (7803, 90403, 1002, 'IGNORE', 'MANUAL', 10002, '鸡舍已清空，无需投喂', 0, '2026-10-19 08:00:00');
 
 INSERT INTO t_message (id, user_id, farm_id, receiver_role, category, msg_type, level, title, summary, tag_code, tag_text,
@@ -310,7 +310,16 @@ VALUES
 (522, 10001, NULL, NULL, 'NOTICE', 'NOTICE', 'NORMAL', '智牧通 1.0 版本上线说明', '平台通知', NULL, NULL,
  'NOTICE', 280, NULL, 'T07',
  '{"level":"NORMAL","title":"智牧通 1.0 版本上线说明","sender_name":"智牧通平台","sent_at":"2026-09-20 10:00:00","content":"智牧通 1.0 正式上线：支持养殖场管理、今日待办、养殖日历、消息中心、AI 诊断与批次档案。使用中遇到问题可在“我的 · 帮助与反馈”提交。","target_farm_names":[],"revoked":false}',
- NULL, 1, '2026-09-20 10:00:00', '2026-09-20 11:00:00', 0, NULL, 0, NULL, 0, '2026-09-20 10:00:00', '2026-09-20 11:00:00');
+ NULL, 1, '2026-09-20 10:00:00', '2026-09-20 11:00:00', 0, NULL, 0, NULL, 0, '2026-09-20 10:00:00', '2026-09-20 11:00:00'),
+-- messages_owner_p2.json 第 2 页（523、524）与 total = 24 对齐
+(523, 10001, 1001, 'OWNER', 'OTHER', 'REPORT_READY', 'NORMAL', '东山猪场 8 月月报已生成', '8月1日–31日 · 经营报表',
+ NULL, NULL, 'BIZ_REPORT', 1208, NULL, 'E13',
+ '{"report_type":"MONTH","period_text":"2026-08"}',
+ NULL, 1, '2026-09-17 08:00:00', '2026-09-17 09:00:00', 0, NULL, 0, NULL, 0, '2026-09-17 08:00:00', '2026-09-17 09:00:00'),
+(524, 10001, 1001, 'OWNER', 'MEMBER', 'INVITE_ACCEPTED', 'NORMAL', '李明已加入东山猪场', '员工 · 负责 3 号育肥舍',
+ NULL, NULL, 'FARM_INVITE', 6001, NULL, 'F07',
+ '{"farm_name":"东山猪场","inviter_name":"王建国","role_text":"员工","pen_names":["3 号育肥舍"],"status":"ACCEPTED"}',
+ NULL, 1, '2026-05-06 10:12:00', '2026-05-06 11:00:00', 0, NULL, 0, NULL, 0, '2026-05-06 10:12:00', '2026-05-06 11:00:00');
 
 INSERT INTO t_reminder_setting (id, user_id, todo_remind_enabled, digest_enabled, digest_time, quiet_enabled, quiet_start,
                                 quiet_end, created_at, updated_at)

@@ -20,6 +20,9 @@ import com.zhimu.server.biz.herd.vo.MyPensVO;
 import com.zhimu.server.biz.herd.vo.PenStockItemVO;
 import com.zhimu.server.biz.herd.vo.ProductionOverviewVO;
 import com.zhimu.server.biz.herd.vo.StockSummaryVO;
+import com.zhimu.server.biz.inspect.service.InspectionService;
+import com.zhimu.server.biz.inspect.vo.InspectionSummaryVO;
+import com.zhimu.server.biz.today.api.TodoQueryService;
 import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.common.context.FarmContext;
 import com.zhimu.server.common.enums.FarmStatus;
@@ -37,7 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** API-L01–L05 查询实现。模块03/05–10 的指标先返回 0 或空，注释标明待接入模块。 */
+/** API-L01–L05 查询实现。模块03（今日待办）、07（巡检异常）已接入；08 休药中批次待接入。 */
 @Service
 @RequiredArgsConstructor
 public class StockServiceImpl implements StockService {
@@ -45,6 +48,8 @@ public class StockServiceImpl implements StockService {
     private final HerdSupport support;
     private final BatchMapper batchMapper;
     private final BatchPenMapper batchPenMapper;
+    private final TodoQueryService todoQueryService;
+    private final InspectionService inspectionService;
 
     @Override
     public ProductionOverviewVO overview() {
@@ -67,16 +72,52 @@ public class StockServiceImpl implements StockService {
         int stockTotal = active.stream().mapToInt(batch -> batch.getCurrentCount() == null ? 0 : batch.getCurrentCount()).sum();
         vo.setHasPen(!pens.isEmpty());
         vo.setStockTotal(stockTotal);
-        // 待模块03接入：今日生产类待办数
-        vo.setTodayTodoCount(0);
-        // 待模块03/07/08接入：巡检异常、紧急诊断、库存偏低等预警数
-        vo.setWarningCount(0);
-        // 待模块08接入：休药中批次；当前没有用药数据，生产提醒为空
-        vo.setReminderTotal(0);
-        vo.setReminders(List.of());
+
+        // 模块03：今日待办数与预警类待办（生产提醒项）
+        TodoQueryService.ProductionTodoSummary todoSummary = todoQueryService.productionSummary();
+        // 模块07：今日巡检异常数（无异常时 0，不影响概况）
+        int abnormalCount = 0;
+        String abnormalPenName = null;
+        InspectionSummaryVO inspection = inspectionService.summary(BeijingTime.format(BeijingTime.today()));
+        if (inspection != null) {
+            abnormalCount = inspection.getAbnormalCount();
+            abnormalPenName = inspection.getFirstAbnormalPenName();
+        }
+        List<ProductionOverviewVO.ProductionReminderItemVO> reminders = new ArrayList<>();
+        for (TodoQueryService.WarningTodo warning : todoSummary.warnings()) {
+            ProductionOverviewVO.ProductionReminderItemVO item =
+                    new ProductionOverviewVO.ProductionReminderItemVO();
+            item.setReminderType(warning.todoType());
+            item.setIsWarning(true);
+            item.setTitle(warning.title());
+            item.setSubtitle(warning.subtitle());
+            item.setTagText(warning.tagText());
+            item.setBatchId(warning.batchId());
+            item.setTodoId(warning.todoId());
+            item.setRoute(warning.route());
+            reminders.add(item);
+        }
+        if (abnormalCount > 0) {
+            ProductionOverviewVO.ProductionReminderItemVO item =
+                    new ProductionOverviewVO.ProductionReminderItemVO();
+            item.setReminderType("URGENT_DIAGNOSIS");
+            item.setIsWarning(!Boolean.TRUE.equals(inspection.isAllDone()));
+            item.setTitle("今日巡检发现异常");
+            item.setSubtitle((abnormalPenName == null ? "" : abnormalPenName + " · ")
+                    + abnormalCount + " 个栏舍待处理");
+            item.setTagText("待处理");
+            item.setRoute("I04");
+            reminders.add(item);
+        }
+        vo.setTodayTodoCount(todoSummary.todayTodoCount());
+        vo.setWarningCount(todoSummary.warnings().size() + abnormalCount);
+        // 待模块08接入：休药中批次也计入生产提醒；当前只统计 03/07 的预警项
+        vo.setReminderTotal(reminders.size());
+        vo.setReminders(reminders);
         ProductionOverviewVO.ProductionBadges badges = new ProductionOverviewVO.ProductionBadges();
         badges.setWithdrawal(false);
-        badges.setFeedLowStock(false);
+        badges.setFeedLowStock(reminders.stream()
+                .anyMatch(item -> "FEED_LOW_STOCK".equals(item.getReminderType())));
         vo.setBadges(badges);
         vo.setUnit(unit);
         vo.setUnitText(support.unitText(unit));
@@ -416,7 +457,17 @@ public class StockServiceImpl implements StockService {
     }
 
     private static boolean matchesPen(Pen pen, String keyword, List<Batch> batches) {
-        return contains(pen.getPenName(), keyword) || contains(pen.getPenCode(), keyword);
+        if (contains(pen.getPenName(), keyword) || contains(pen.getPenCode(), keyword)) {
+            return true;
+        }
+        // App 搜索框提示“输入栏舍名称或批次号”；批次号命中也返回该栏舍
+        String key = keyword.toUpperCase();
+        for (Batch batch : batches) {
+            if (batch.getBatchNo() != null && batch.getBatchNo().toUpperCase().contains(key)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String trim(String value) {

@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.herd.service;
 
+import com.zhimu.server.biz.herd.HerdTableInfo;
 import com.zhimu.server.admin.base.api.CategoryInfo;
 import com.zhimu.server.biz.herd.entity.Batch;
 import com.zhimu.server.biz.herd.entity.Pen;
@@ -7,7 +8,11 @@ import com.zhimu.server.biz.herd.mapper.BatchMapper;
 import com.zhimu.server.biz.herd.mapper.BatchPenMapper;
 import com.zhimu.server.biz.herd.service.impl.StockServiceImpl;
 import com.zhimu.server.biz.herd.support.HerdSupport;
+import com.zhimu.server.biz.herd.vo.ProductionOverviewVO;
 import com.zhimu.server.biz.herd.vo.StockSummaryVO;
+import com.zhimu.server.biz.inspect.service.InspectionService;
+import com.zhimu.server.biz.inspect.vo.InspectionSummaryVO;
+import com.zhimu.server.biz.today.api.TodoQueryService;
 import com.zhimu.server.common.context.FarmContext;
 import com.zhimu.server.common.enums.FarmRole;
 import com.zhimu.server.common.enums.FarmStatus;
@@ -26,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -39,12 +45,15 @@ class StockServiceImplTest {
     @Mock private HerdSupport support;
     @Mock private BatchMapper batchMapper;
     @Mock private BatchPenMapper batchPenMapper;
+    @Mock private TodoQueryService todoQueryService;
+    @Mock private InspectionService inspectionService;
 
     private StockServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service = new StockServiceImpl(support, batchMapper, batchPenMapper);
+        HerdTableInfo.ensure();
+        service = new StockServiceImpl(support, batchMapper, batchPenMapper, todoQueryService, inspectionService);
         FarmContext.set(new FarmContext.FarmMember(1001L, "东山猪场", 10001L, 5001L, FarmRole.OWNER,
                 Set.of(), FarmStatus.NORMAL));
         lenient().when(support.context()).thenReturn(FarmContext.get());
@@ -63,6 +72,11 @@ class StockServiceImplTest {
                     Batch batch = invocation.getArgument(0);
                     return batch.getId() == 3001L || batch.getId() == 3002L ? "育肥猪" : "保育猪";
                 });
+        lenient().when(todoQueryService.productionSummary())
+                .thenReturn(new TodoQueryService.ProductionTodoSummary(6, List.of(
+                        new TodoQueryService.WarningTodo(90105L, "FEED_LOW_STOCK", "育肥全价料库存不足",
+                                "结存 500 千克 · 剩余可用 1 天", "库存不足", null, "M01"))));
+        lenient().when(inspectionService.summary(any())).thenReturn(inspection(0, null));
     }
 
     @AfterEach
@@ -98,6 +112,65 @@ class StockServiceImplTest {
                     assertThat(group.getStageShortName()).isEqualTo("保育猪");
                     assertThat(group.getStock()).isEqualTo(520);
                 });
+    }
+
+    @Test
+    void overviewFillsTodoAndInspectionCounters() {
+        when(inspectionService.summary(any())).thenReturn(inspection(1, "3 号育肥舍"));
+
+        ProductionOverviewVO vo = service.overview();
+
+        assertThat(vo.getTodayTodoCount()).isEqualTo(6);
+        assertThat(vo.getWarningCount()).isEqualTo(2);
+        assertThat(vo.getReminderTotal()).isEqualTo(2);
+        assertThat(vo.getReminders()).hasSize(2);
+        assertThat(vo.getReminders().get(0).getReminderType()).isEqualTo("FEED_LOW_STOCK");
+        assertThat(vo.getReminders().get(0).getTodoId()).isEqualTo(90105L);
+        assertThat(vo.getReminders().get(1).getReminderType()).isEqualTo("URGENT_DIAGNOSIS");
+        assertThat(vo.getReminders().get(1).getRoute()).isEqualTo("I04");
+        assertThat(vo.getBadges().getFeedLowStock()).isTrue();
+        // 08 未接入：休药中批次为 0
+        assertThat(vo.getBadges().getWithdrawal()).isFalse();
+    }
+
+    @Test
+    void stockPensKeywordMatchesBatchNo() {
+        when(support.pensOfFarm(1001L)).thenReturn(pens().subList(0, 5));
+        Batch active = batch(3001L, 200, 5, 205);
+        active.setBatchNo("ZM2610-031");
+        when(support.activeBatches(1001L)).thenReturn(List.of(active));
+        com.zhimu.server.biz.herd.entity.BatchPen row = new com.zhimu.server.biz.herd.entity.BatchPen();
+        row.setBatchId(3001L);
+        row.setPenId(2003L);
+        row.setStockCount(200);
+        when(batchPenMapper.selectList(any())).thenReturn(List.of(row));
+        when(batchMapper.selectList(any())).thenReturn(List.of());
+        lenient().when(support.penTypeText(any())).thenReturn("育肥舍");
+        lenient().when(support.dayAge(any())).thenReturn(96);
+        lenient().when(support.stageName(any())).thenReturn("育肥期");
+
+        var page = service.pens(query("ZM2610-031"));
+
+        assertThat(page.getList()).hasSize(1);
+        assertThat(page.getList().get(0).getPenId()).isEqualTo(2003L);
+        assertThat(page.getList().get(0).getFirstBatch().getBatchNo()).isEqualTo("ZM2610-031");
+    }
+
+    private static com.zhimu.server.biz.herd.query.StockPenQuery query(String keyword) {
+        com.zhimu.server.biz.herd.query.StockPenQuery query =
+                new com.zhimu.server.biz.herd.query.StockPenQuery();
+        query.setKeyword(keyword);
+        query.setPage(1);
+        query.setSize(20);
+        return query;
+    }
+
+    private static InspectionSummaryVO inspection(int abnormal, String firstPen) {
+        InspectionSummaryVO vo = new InspectionSummaryVO();
+        vo.setAbnormalCount(abnormal);
+        vo.setFirstAbnormalPenName(firstPen);
+        vo.setAllDone(abnormal == 0);
+        return vo;
     }
 
     private static List<Pen> pens() {

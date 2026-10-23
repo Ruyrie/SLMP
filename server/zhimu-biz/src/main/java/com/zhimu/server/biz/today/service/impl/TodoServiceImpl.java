@@ -17,6 +17,7 @@ import com.zhimu.server.biz.today.request.TodoCompleteRequest;
 import com.zhimu.server.biz.today.request.TodoIgnoreRequest;
 import com.zhimu.server.biz.today.service.TodoService;
 import com.zhimu.server.biz.today.support.TodayText;
+import com.zhimu.server.biz.today.support.TodoLinks;
 import com.zhimu.server.biz.today.support.TodoScope;
 import com.zhimu.server.biz.today.vo.CalendarDayVO;
 import com.zhimu.server.biz.today.vo.TodoCalendarResult;
@@ -405,6 +406,42 @@ public class TodoServiceImpl implements TodoService, TodoQueryService {
             }
         }
         return count;
+    }
+
+    @Override
+    public ProductionTodoSummary productionSummary() {
+        FarmContext.FarmMember member = FarmContext.require();
+        LocalDate today = BeijingTime.today();
+        LocalDateTime now = BeijingTime.now();
+        int todayTodoCount = 0;
+        List<WarningTodo> warnings = new ArrayList<>();
+        for (Todo todo : pendingOfFarm(member.farmId())) {
+            if (!todoScope.canView(todo, member)) {
+                continue;
+            }
+            if (isTodayList(todo, today, now)) {
+                todayTodoCount++;
+            }
+            if (TodoCategory.WARNING.name().equals(todo.getCategory())) {
+                warnings.add(new WarningTodo(todo.getId(), todo.getTodoType(), todo.getTitle(),
+                        todo.getContentText(), warningTag(todo.getTodoType()), todo.getBatchId(),
+                        TodoLinks.listRoute(todo.getTodoType())));
+            }
+        }
+        warnings.sort(Comparator.comparing(WarningTodo::todoId,
+                Comparator.nullsLast(Comparator.naturalOrder())));
+        return new ProductionTodoSummary(todayTodoCount, warnings);
+    }
+
+    /** 生产提醒的标签文字（与 App L01 提醒项一致） */
+    private static String warningTag(String todoType) {
+        return switch (todoType == null ? "" : todoType) {
+            case "FEED_LOW_STOCK", "DRUG_LOW_STOCK" -> "库存不足";
+            case "DRUG_NEAR_EXPIRY" -> "即将到期";
+            case "DRUG_EXPIRED" -> "已过期";
+            case "WITHDRAWAL_END" -> "休药中";
+            default -> "预警";
+        };
     }
 
     // ===================== 内部 =====================
