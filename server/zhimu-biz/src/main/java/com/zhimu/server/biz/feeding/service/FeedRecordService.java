@@ -140,7 +140,9 @@ public class FeedRecordService {
             recordMapper.updateById(record);
         }
         completeTask(task, record.getId());
-        return detail(record.getId());
+        FeedRecordVO.Detail detail = detail(record.getId());
+        detail.setTodoCompleted(true);
+        return detail;
     }
 
     /** G05 投喂记录详情 */
@@ -309,6 +311,8 @@ public class FeedRecordService {
         vo.setExecutor(executor);
         vo.setRecorder(recorder);
         vo.setIsProxy(record.getIsProxy());
+        vo.setProxyExecutorName(Boolean.TRUE.equals(record.getIsProxy()) && executor != null
+                ? executor.getName() : null);
         vo.setIsBackfill(record.getIsBackfill());
         vo.setRegisteredAt(BeijingTime.format(record.getCreatedAt()));
         vo.setRemark(record.getRemark());
