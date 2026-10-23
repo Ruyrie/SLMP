@@ -194,10 +194,12 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
             BigDecimal newAmount = saleAmount(order.getPricingMethod(), change.totalWeight(),
                     order.getUnitPrice(), change.quantity());
             ensureNotBelowReceived(newAmount, received);
-            String normalized = String.valueOf(change.quantity());
+            // App E08 的数量是 JSON（含 total_weight）时原样保存，审核回写才能沿用 App 填写的总重
+            String text = newValue == null ? "" : newValue.trim();
+            String normalized = text.startsWith("{") ? text : String.valueOf(change.quantity());
             return ChangeValidation.of(fieldCode, field.fieldName(), field.valueUnit(),
                     field.value(), ChangeRequestJson.display(field.value(), field.valueUnit()),
-                    normalized, ChangeRequestJson.display(normalized, field.valueUnit()),
+                    normalized, ChangeRequestJson.display(String.valueOf(change.quantity()), field.valueUnit()),
                     List.of(ChangeImpact.INCOME, ChangeImpact.COST, ChangeImpact.STATS, ChangeImpact.STOCK),
                     RECALC_TAGS);
         }

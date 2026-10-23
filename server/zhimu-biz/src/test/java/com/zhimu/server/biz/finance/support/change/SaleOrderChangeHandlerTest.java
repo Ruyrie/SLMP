@@ -203,9 +203,11 @@ class SaleOrderChangeHandlerTest {
         assertThat(plain.impacts()).contains(ChangeImpact.STOCK);
 
         // App E08：数量联动总重的 JSON 字符串（任务书第 9 条）
+        String jsonValue = "{\"quantity\":96,\"total_weight\":11520}";
         ChangeValidation json = handler.validateChange(record, form, ChangeType.UPDATE,
-                "quantity", "{\"quantity\":96,\"total_weight\":11520}");
-        assertThat(json.afterValue()).isEqualTo("96");
+                "quantity", jsonValue);
+        assertThat(json.afterValue()).isEqualTo(jsonValue);
+        assertThat(json.afterDisplay()).isEqualTo("96 头");
 
         assertThatThrownBy(() -> handler.validateChange(record, form, ChangeType.UPDATE,
                 "quantity", "99"))
