@@ -65,9 +65,10 @@ public class FarmController {
         return ApiResponse.ok(farmService.getContext(farmId, UserContext.requireUserId()));
     }
 
-    /** F03 切换当前养殖场（只允许正常、已停用） */
+    /** F03 切换当前养殖场（待审核、已驳回也允许，权限全部 false 并带 restrict_tip） */
     @PostMapping("/{farmId:\\d+}/switch")
-    @RequireFarm(allowStatus = {FarmStatus.NORMAL, FarmStatus.DISABLED})
+    @RequireFarm(allowStatus = {FarmStatus.NORMAL, FarmStatus.DISABLED, FarmStatus.PENDING,
+            FarmStatus.REJECTED})
     public ApiResponse<FarmContextVO> switchFarm(@PathVariable("farmId") Long farmId) {
         return ApiResponse.ok(farmService.switchFarm(farmId, UserContext.requireUserId()));
     }

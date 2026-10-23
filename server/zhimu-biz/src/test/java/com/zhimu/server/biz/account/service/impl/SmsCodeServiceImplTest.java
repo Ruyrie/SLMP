@@ -199,12 +199,24 @@ class SmsCodeServiceImplTest {
     }
 
     @Test
+    void A01场景不正确只给message不带field_errors() {
+        BizException e = (BizException) catchException(() ->
+                service.send(new SmsCodeSendRequest("13800006620", "NOT_A_SCENE", null)));
+        assertThat(e.getCode()).isEqualTo(40001);
+        assertThat(e.getMessage()).isEqualTo("场景不正确");
+        // scene 不是输入框字段，按约定 7.1 第 6 条只给 message
+        assertThat(e.getData()).isNull();
+    }
+
+    @Test
     void A02只能发本人手机号且场景受限() {
         UserContext.set(new UserContext.LoginUser(10001L, ClientType.APP_ANDROID, 0, "jti"));
         when(accountState.requireUser(10001L)).thenReturn(user("13800006620", "NORMAL"));
         BizException e = (BizException) catchException(() ->
                 service.sendToSelf(new AccountSmsCodeRequest("LOGIN")));
         assertThat(e.getCode()).isEqualTo(40001);
+        assertThat(e.getMessage()).isEqualTo("场景不正确");
+        assertThat(e.getData()).isNull();
     }
 
     private static Throwable catchException(org.junit.jupiter.api.function.Executable executable) {

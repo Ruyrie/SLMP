@@ -106,15 +106,15 @@ public class AuthServiceImpl implements AuthService {
             errors.add("agreement_version", AccountValidation.MSG_AGREEMENT_UPDATED);
         }
         if (request == null || request.deviceId() == null || request.deviceId().isBlank()) {
-            errors.add("device_id", "缺少设备标识");
+            errors.messageOnly("缺少设备标识");
         } else if (request.deviceId().length() > 64) {
-            errors.add("device_id", "设备标识过长");
+            errors.messageOnly("设备标识过长");
         }
         if (request != null && request.deviceModel() != null && request.deviceModel().length() > 50) {
-            errors.add("device_model", "设备型号过长");
+            errors.messageOnly("设备型号过长");
         }
         if (request != null && request.osVersion() != null && request.osVersion().length() > 30) {
-            errors.add("os_version", "系统版本过长");
+            errors.messageOnly("系统版本过长");
         }
         errors.throwIfAny();
 

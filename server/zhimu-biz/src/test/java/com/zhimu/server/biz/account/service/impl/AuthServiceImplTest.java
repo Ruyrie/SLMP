@@ -125,7 +125,10 @@ class AuthServiceImplTest {
                 ClientType.APP_ANDROID));
         assertThat(e.getCode()).isEqualTo(40001);
         String data = e.getData().toString();
-        assertThat(data).contains("phone", "sms_code", "password", "agree_terms", "agreement_version", "device_id");
+        assertThat(data).contains("phone", "sms_code", "password", "agree_terms", "agreement_version");
+        // device_id 不是输入框字段：只给 message，不进 field_errors（约定 7.1 第 6 条）
+        assertThat(data).doesNotContain("device_id", "device_model", "os_version");
+        assertThat(e.getMessage()).contains("手机号格式不正确");
         verify(smsCodeService, never()).verifyAndConsume(any(), anyString(), anyString(), anyString());
     }
 
