@@ -13,6 +13,7 @@
 | L07 扫码 | 2026-10-22 确认：使用 lib_media 公共相机页识别后返回结果（技术文档原写 L07 自持相机） |
 | 测试直连（2026-10-22 用户确认） | 服务端完成前，debug 包允许放 Key 做测试：模块07 AI 诊断直连阿里云百炼 qwen3.8-max（OpenAI 兼容接口，图片 base64），失败时用 deepseek-flash 备用；短信验证码直连阿里云号码认证服务（Dypnsapi SendSmsVerifyCode / CheckSmsVerifyCode，签名“恒创联众”、系统模板 100001–100005）。Key 写在 local.properties（ai.dashscopeKey、ai.deepseekKey、aliyun.accessKeyId、aliyun.accessKeySecret、aliyun.smsSignName），只生成到 lib_common 的 debug BuildConfig；release 包为空，直连关闭、走服务端接口。正式上线前改回服务端调用 |
 | 接口契约冲突（2026-10-23 用户确认） | 同一接口在两份文档中写法不同时，以接口所属模块的服务端文档为准（例：API-M27 属模块09，purpose 取 VACCINATE / MEDICATE / DISINFECT，DrugLotOptionVO.stock 为 QtyVO，QtyVO 放 lib_common）；UI 文档未给的文案、原型未画的页面、文档之间的冲突保持现做法，汇总在 docs/App接口对接与待确认清单.md 由小组过目 |
+| 极光推送（2026-10-23 用户确认） | 只接极光自有通道，暂不接厂商通道（华为、小米、OPPO、vivo、魅族、FCM）；AppKey 绑定包名：local.properties 的 jpush.appKey 用于 debug 包 com.zhimu.slmp.debug，jpush.releaseAppKey 用于 release 包 com.zhimu.slmp；JPUSH_PKGNAME 按变体包名生成；module_today 中 ZhimuPushReceiver（action cn.jpush.android.intent.RECEIVE_MESSAGE）与 ZhimuPushService（继承 JCommonService，:pushcore 进程） |
 | Mock 日期（2026-10-23） | debug 包走 Mock 时 DateFormatter.today() 对齐示例数据 2026-10-19（local.properties zmt.mockToday，留空用真实日期）；取“今天”一律用 DateFormatter.today()，不直接 LocalDate.now() |
 | 测试直连扩展（2026-10-22 用户确认） | 模块11 K01 AI 问答（流式、附图）与模块10 E12 AI 出栏建议也直连千问，DeepSeek 备用；K01 语音转文字直连百炼语音识别；课程视频 Mock 用公开测试 HLS 地址 |
 | 麦克风被拒（2026-10-22 用户确认） | 录像时没有麦克风权限：说明“录像需要麦克风”并提供“去设置开启”，不开启就不录像（仍可拍照）；03 号 8.2 节“只录无声视频”作废 |

@@ -9,8 +9,9 @@ zmt.useMock=true
 zmt.mockToday=2026-10-19
 # 高德 Android Key（绑定包名与签名 SHA1），为空时地图选点只能手动填写地址
 amap.key=
-# 极光 AppKey，为空时不初始化推送
+# 极光 AppKey（绑定包名）：jpush.appKey 用于 debug 包 com.zhimu.slmp.debug，jpush.releaseAppKey 用于 release 包 com.zhimu.slmp；为空时不初始化推送
 jpush.appKey=
+jpush.releaseAppKey=
 
 # 测试直连（只进 debug 包，release 为空；为空时走 Mock 或服务端）
 # 百炼（千问）Key、对话模型、语音识别模型（为空用代码默认值）

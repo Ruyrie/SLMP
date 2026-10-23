@@ -45,6 +45,13 @@ android {
     }
 }
 
+// 极光要求 JPUSH_PKGNAME 与实际包名一致（debug 包带 .debug 后缀）
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        variant.manifestPlaceholders.put('JPUSH_PKGNAME', variant.applicationId)
+    }
+}
+
 dependencies {
     implementation project(':lib_common')
     implementation project(':lib_media')

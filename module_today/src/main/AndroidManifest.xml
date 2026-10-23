@@ -97,12 +97,23 @@
             </intent-filter>
         </activity>
 
+        <!-- 极光要求的自定义 Service：保持推送通道（:pushcore 进程，enabled 不能为 false） -->
+        <service
+            android:name=".push.ZhimuPushService"
+            android:enabled="true"
+            android:exported="false"
+            android:process=":pushcore">
+            <intent-filter>
+                <action android:name="cn.jiguang.user.service.action" />
+            </intent-filter>
+        </service>
+
         <!-- 极光消息接收器（不导出）：到达刷新未读数、点击打开中转页、注册与开关变化时上报设备 -->
         <receiver
             android:name=".push.ZhimuPushReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="cn.jpush.android.intent.RECEIVER_MESSAGE" />
+                <action android:name="cn.jpush.android.intent.RECEIVE_MESSAGE" />
                 <category android:name="${applicationId}" />
             </intent-filter>
         </receiver>

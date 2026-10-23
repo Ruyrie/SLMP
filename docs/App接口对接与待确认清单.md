@@ -202,6 +202,7 @@
 
 ## 第三部分 已定事项
 
+- 极光推送只接自有通道，暂不接厂商通道；debug、release 包各用一个 AppKey（包名分别为 com.zhimu.slmp.debug、com.zhimu.slmp）。
 - 员工退出养殖场的入口放在 A07，单独一行。
 - 养殖场地址必须有经纬度和 adcode。
 - L07 扫码沿用相机页。
