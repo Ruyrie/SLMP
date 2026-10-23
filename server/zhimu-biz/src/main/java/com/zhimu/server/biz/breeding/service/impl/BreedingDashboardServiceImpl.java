@@ -466,15 +466,19 @@ public class BreedingDashboardServiceImpl implements BreedingDashboardService {
         return cycleMapper.selectBatchIds(cycleIds);
     }
 
+    /**
+     * 养殖场畜种：以种畜品种为准（同一场可能既有种畜又有孵化记录，此时仍按种畜展示“母猪 / 畜类”）；
+     * 没有种畜档案时才按孵化记录判为禽类。
+     */
     private String resolveSpecies(List<BreedingAnimal> animals, List<Incubation> incubations) {
-        if (!incubations.isEmpty()) {
-            return "POULTRY";
-        }
         for (BreedingAnimal animal : animals) {
             CategoryInfo category = support.categoryOfBreed(animal.getBreedId());
             if (category != null && category.species() != null) {
                 return category.species();
             }
+        }
+        if (!incubations.isEmpty()) {
+            return "POULTRY";
         }
         return "PIG";
     }

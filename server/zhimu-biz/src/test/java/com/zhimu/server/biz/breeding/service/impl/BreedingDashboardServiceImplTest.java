@@ -169,6 +169,36 @@ class BreedingDashboardServiceImplTest {
     }
 
     @Test
+    void overviewMixedFarmKeepsLivestockLabelsButCountsHatchDue() {
+        // farm 1001 既有母猪又有孵化记录（V9_07 的 6101/6102）：畜种按种畜展示，待出雏照样统计
+        when(support.viewer()).thenReturn(member(FarmRole.OWNER, Set.of()));
+        when(animalMapper.selectList(any())).thenReturn(List.of(
+                animal(4131L, "0131", 2007L, "PREGNANT", 5131L)));
+        when(cycleMapper.selectList(any())).thenReturn(List.of(
+                cycle(5131L, 4131L, "PREGNANT", LocalDate.of(2026, 6, 27), LocalDate.of(2026, 10, 19))));
+        when(cycleMapper.selectBatchIds(any())).thenReturn(List.of(
+                cycle(5131L, 4131L, "PREGNANT", LocalDate.of(2026, 6, 27), LocalDate.of(2026, 10, 19))));
+        Incubation candled = incubation(6101L, 1001L, 3213L, 2303L, "CANDLED",
+                LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 22));
+        when(incubationMapper.selectList(any())).thenReturn(List.of(candled));
+        when(support.categoryOfBreed(1201L)).thenReturn(
+                new CategoryInfo(102L, "种猪", "PIG", "猪", "HEAD", "头", true, true));
+        when(penQueryService.listPens(1001L, false)).thenReturn(List.of(
+                pen(2007L, "ZC-02", "产房", "FARROWING", 40)));
+        when(farmQueryService.listFarmsOfUser(10001L)).thenReturn(List.of(
+                FarmBriefVO.builder().farmId(1001L).name("东山猪场").status("NORMAL").build()));
+
+        BreedingOverviewVO vo = service.overview();
+
+        assertThat(vo.getFarmKind()).isEqualTo("LIVESTOCK");
+        assertThat(vo.getAnimalLabel()).isEqualTo("母猪");
+        assertThat(vo.getCountUnit()).isEqualTo("HEAD");
+        assertThat(vo.isHasIncubation()).isTrue();
+        assertThat(vo.getHatchDueCount()).isEqualTo(1);
+        assertThat(vo.getFarrowDueCount()).isEqualTo(1);
+    }
+
+    @Test
     void overviewStaffOmitsManagerFieldsAndScopesToPens() {
         FarmContext.FarmMember staff = member(FarmRole.STAFF, Set.of(2007L));
         when(support.viewer()).thenReturn(staff);
