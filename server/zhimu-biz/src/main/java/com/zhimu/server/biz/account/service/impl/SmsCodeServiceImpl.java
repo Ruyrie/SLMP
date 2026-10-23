@@ -66,7 +66,8 @@ public class SmsCodeServiceImpl implements SmsCodeService {
             errors.add("phone", phone.isEmpty() ? AccountValidation.MSG_PHONE_EMPTY : AccountValidation.MSG_PHONE_FORMAT);
         }
         if (scene == null) {
-            errors.add("scene", "场景不正确");
+            // scene 不是输入框字段：只给 message，不进 field_errors（约定 7.1 第 6 条）
+            errors.messageOnly("场景不正确");
         }
         errors.throwIfAny();
 
@@ -101,7 +102,7 @@ public class SmsCodeServiceImpl implements SmsCodeService {
         User user = accountStateService.requireUser(UserContext.requireUserId());
         SmsScene scene = parseScene(request == null ? null : request.scene());
         if (scene != SmsScene.REGENERATE_RECOVERY_CODE && scene != SmsScene.CANCEL_ACCOUNT) {
-            throw Errors.fail("scene", "场景不正确");
+            throw new Errors().messageOnly("场景不正确").toException();
         }
         if (scene == SmsScene.CANCEL_ACCOUNT) {
             var check = cancellationRules.evaluate(user);
