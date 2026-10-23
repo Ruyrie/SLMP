@@ -69,6 +69,7 @@ class FeedTaskServiceTest {
 
     @BeforeEach
     void setUp() {
+        com.zhimu.server.biz.feeding.FeedingTableInfo.ensure();
         service = new FeedTaskService(taskMapper, planMapper, stageMapper, mealMapper, recordMapper, lookup);
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-19T01:30:00Z"), ZONE));
         FarmContext.set(new FarmContext.FarmMember(1001L, "东山猪场", 10001L, 5001L, FarmRole.OWNER,

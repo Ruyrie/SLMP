@@ -301,8 +301,9 @@ public class BreedingRecordServiceImpl implements BreedingRecordService {
             throw BreedingErrors.versionConflict();
         }
         log(BizType.PREG_CHECK, record.getId(), "CREATE", Map.of("result", result));
+        // 阴性时本周期已失败，不再返回预产期（App mock check_*_negative 为 null）
         return convert.registerResult(BreedingCodes.RECORD_PREG_CHECK, record.getId(), animal, cycle.getId(),
-                null, cycle.getExpectedDueDate(), null, null, null);
+                null, "POSITIVE".equals(result) ? cycle.getExpectedDueDate() : null, null, null, null);
     }
 
     @Override

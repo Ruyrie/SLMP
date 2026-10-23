@@ -18,6 +18,7 @@ import java.util.List;
 /**
  * 纯单元测试里使用 MyBatis-Plus LambdaQueryWrapper 前需要先注册实体的 TableInfo，
  * 否则会报 can not find lambda cache for this entity。Spring 环境由 MyBatis 自动完成。
+ * init()/ensure() 等价，供不同测试类调用，内部幂等。
  */
 public final class FeedingTableInfo {
 
@@ -27,10 +28,19 @@ public final class FeedingTableInfo {
     }
 
     public static synchronized void init() {
+        doInit();
+    }
+
+    public static synchronized void ensure() {
+        doInit();
+    }
+
+    private static void doInit() {
         if (initialized) {
             return;
         }
-        MapperBuilderAssistant assistant = new MapperBuilderAssistant(new MybatisConfiguration(), "");
+        MybatisConfiguration configuration = new MybatisConfiguration();
+        MapperBuilderAssistant assistant = new MapperBuilderAssistant(configuration, "");
         List<Class<?>> entities = List.of(FeedTask.class, FeedRecord.class, FeedPlan.class,
                 FeedPlanStage.class, FeedPlanMeal.class, FeedExecDaily.class,
                 BatchGrowth.class, WeighRecord.class, WeighRecordItem.class);

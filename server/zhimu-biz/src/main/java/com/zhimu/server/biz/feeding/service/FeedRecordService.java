@@ -194,7 +194,7 @@ public class FeedRecordService {
             throw FeedErrors.versionConflict();
         }
         if (oldFlow != null) {
-            feedStockPort.rollbackForFeeding(oldFlow);
+            feedStockPort.rollbackForFeeding(record.getId());
         }
         FeedStockPort.DeductResult deduct = feedStockPort.deductForFeeding(new FeedStockPort.DeductCommand(
                 record.getFarmId(), feed.feedId(), actualQty, record.getBatchId(), record.getPenId(), record.getId(),
@@ -235,7 +235,7 @@ public class FeedRecordService {
             throw FeedErrors.versionConflict();
         }
         if (record.getStockFlowId() != null) {
-            feedStockPort.rollbackForFeeding(record.getStockFlowId());
+            feedStockPort.rollbackForFeeding(record.getId());
         }
         restoreTask(record);
         return detail(record.getId());
