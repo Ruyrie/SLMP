@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.biz.account.mapper.UserMapper">
+
+    <sql id="columns">
+        id, phone, password_hash, name, status, token_version, token_revoke_reason, token_revoked_at,
+        must_change_password, temp_password_expire_at, password_updated_at, recovered_at,
+        recovery_fail_count, recovery_fail_first_at, recovery_lock_until, last_farm_id,
+        register_client, agreement_version, agreed_at, last_login_at, last_login_client, last_active_at,
+        disabled_at, disabled_by, disabled_reason, cancelled_at, profile_version, version,
+        created_by, created_at, updated_at
+    </sql>
+
+    <select id="selectByPhone" resultType="com.zhimu.server.biz.account.entity.User">
+        SELECT <include refid="columns"/>
+        FROM t_user
+        WHERE phone = #{phone}
+        LIMIT 1
+    </select>
+
+    <select id="selectByIdForUpdate" resultType="com.zhimu.server.biz.account.entity.User">
+        SELECT <include refid="columns"/>
+        FROM t_user
+        WHERE id = #{id}
+        FOR UPDATE
+    </select>
+
+    <update id="increaseRecoveryFail">
+        UPDATE t_user
+        SET recovery_fail_count = IF(recovery_fail_first_at IS NULL OR recovery_fail_first_at &lt; #{windowStart},
+                                      1, recovery_fail_count + 1),
+            recovery_fail_first_at = IF(recovery_fail_first_at IS NULL OR recovery_fail_first_at &lt; #{windowStart},
+                                       #{now}, recovery_fail_first_at),
+            updated_at = #{now}
+        WHERE id = #{id}
+    </update>
+
+    <update id="clearRecoveryFailure">
+        UPDATE t_user
+        SET recovery_fail_count = 0,
+            recovery_fail_first_at = NULL,
+            recovery_lock_until = NULL,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="bumpTokenVersion">
+        UPDATE t_user
+        SET token_version = token_version + 1,
+            token_revoke_reason = #{reason},
+            token_revoked_at = #{now},
+            updated_at = #{now}
+        WHERE id = #{id}
+    </update>
+</mapper>
