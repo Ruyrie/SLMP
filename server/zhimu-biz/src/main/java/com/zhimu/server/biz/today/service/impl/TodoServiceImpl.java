@@ -238,10 +238,8 @@ public class TodoServiceImpl implements TodoService, TodoQueryService {
         List<WeeklyDayVO> days = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
             LocalDate date = query.getWeekStart().plusDays(i);
-            List<Todo> todos = byDay.getOrDefault(date, List.of());
-            if (todos.isEmpty()) {
-                continue;
-            }
+            List<Todo> todos = new ArrayList<>(byDay.getOrDefault(date, List.of()));
+            // 周视图固定返回 7 天（没有待办的天也返回 0/空），App 按天渲染周分组
             todos.sort(dayComparator());
             WeeklyDayVO day = new WeeklyDayVO();
             day.setDate(date.toString());
@@ -428,8 +426,7 @@ public class TodoServiceImpl implements TodoService, TodoQueryService {
                         TodoLinks.listRoute(todo.getTodoType())));
             }
         }
-        warnings.sort(Comparator.comparing(WarningTodo::todoId,
-                Comparator.nullsLast(Comparator.naturalOrder())));
+        // pendingOfFarm 已按 sort_time 升序，提醒项保持“越早越靠前”
         return new ProductionTodoSummary(todayTodoCount, warnings);
     }
 

@@ -11,6 +11,7 @@ import java.util.List;
  * 只暴露模块04 自己的 record 类型，调用方不需要依赖 herd 的实体或 Mapper。
  * 一次调用对应一个批次；同一出栏单可多次调用（不同批次）。幂等键为（来源业务类型、来源业务 ID、批次），
  * 重复调用不会重复扣减；{@link #restoreSale(BizType, Long)} 按来源业务 ID 回滚全部批次的出栏。
+ * 修改已出栏数量时先 restoreSale 再按新数量 sale（或由出栏单走修改申请后调用）。
  */
 public interface BatchStockCommandService {
 
