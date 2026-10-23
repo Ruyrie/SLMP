@@ -818,10 +818,11 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         brief.setCostTotal(settlement == null ? null : settlement.getCostTotal());
         brief.setCostPerHead(settlement == null ? null : settlement.getCostPerHead());
         brief.setFcr(settlement == null ? null : settlement.getFcr());
-        brief.setPendingSupplementCount((int) supplementMapper.selectCount(
+        Long pendingSupplementCount = supplementMapper.selectCount(
                 Wrappers.<BatchSettlementSupplement>lambdaQuery()
                         .eq(BatchSettlementSupplement::getBatchId, batchId)
-                        .eq(BatchSettlementSupplement::getStatus, FinanceConst.SUPPLEMENT_PENDING)));
+                        .eq(BatchSettlementSupplement::getStatus, FinanceConst.SUPPLEMENT_PENDING));
+        brief.setPendingSupplementCount(pendingSupplementCount == null ? 0 : pendingSupplementCount.intValue());
         return brief;
     }
 
