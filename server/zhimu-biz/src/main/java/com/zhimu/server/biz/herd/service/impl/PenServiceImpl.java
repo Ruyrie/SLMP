@@ -50,14 +50,21 @@ public class PenServiceImpl implements PenService {
 
     private static final Pattern PEN_CODE = Pattern.compile("^[A-Za-z0-9-]{1,10}$");
 
-    private static final List<OptionVO> PEN_TYPES = List.of(
+    private static final List<OptionVO> PIG_PEN_TYPES = List.of(
             OptionVO.of("NURSERY", "保育舍"),
             OptionVO.of("FATTENING", "育肥舍"),
             OptionVO.of("SOW", "母猪舍"),
-            OptionVO.of("FARROWING", "产房"),
+            OptionVO.of("FARROWING", "产房"));
+
+    private static final List<OptionVO> POULTRY_PEN_TYPES = List.of(
             OptionVO.of("BROODING", "育雏舍"),
             OptionVO.of("BROILER", "肉鸡舍"),
             OptionVO.of("BREEDER", "种鸡舍"));
+
+    private static final List<OptionVO> RUMINANT_PEN_TYPES = List.of(
+            OptionVO.of("FATTENING", "育肥舍"),
+            OptionVO.of("SOW", "母畜舍"),
+            OptionVO.of("FARROWING", "产房"));
 
     private final HerdSupport support;
     private final FarmLookup farmLookup;
@@ -73,7 +80,7 @@ public class PenServiceImpl implements PenService {
         String species = main == null ? null : main.species();
 
         PenFormOptionsVO vo = new PenFormOptionsVO();
-        vo.setPenTypes(PEN_TYPES);
+        vo.setPenTypes(penTypesOf(species));
         List<PenFormOptionsVO.CategoryOption> categories = new ArrayList<>();
         for (CategoryInfo category : baseDataQueryService.listEnabledCategories()) {
             if (species != null && !species.equals(category.species())) {
@@ -390,6 +397,17 @@ public class PenServiceImpl implements PenService {
         return toDetail(pen, member);
     }
 
+    private static List<OptionVO> penTypesOf(String species) {
+        if (species == null) {
+            return PIG_PEN_TYPES;
+        }
+        return switch (species) {
+            case "POULTRY" -> POULTRY_PEN_TYPES;
+            case "CATTLE", "SHEEP" -> RUMINANT_PEN_TYPES;
+            default -> PIG_PEN_TYPES;
+        };
+    }
+
     private record Validated(String name, String penType) {
     }
 
@@ -405,7 +423,10 @@ public class PenServiceImpl implements PenService {
         if (type.isEmpty()) {
             throw HerdErrors.fieldInvalid("pen_type", "请选择栏舍类型");
         }
-        boolean known = PEN_TYPES.stream().anyMatch(option -> option.getValue().equals(type));
+        boolean known = penTypesOf(null).stream().anyMatch(option -> option.getValue().equals(type))
+                || PIG_PEN_TYPES.stream().anyMatch(option -> option.getValue().equals(type))
+                || POULTRY_PEN_TYPES.stream().anyMatch(option -> option.getValue().equals(type))
+                || RUMINANT_PEN_TYPES.stream().anyMatch(option -> option.getValue().equals(type));
         if (!known) {
             throw HerdErrors.fieldInvalid("pen_type", "请选择栏舍类型");
         }

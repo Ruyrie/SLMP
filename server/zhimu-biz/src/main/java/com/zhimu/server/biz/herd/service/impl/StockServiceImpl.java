@@ -304,9 +304,6 @@ public class StockServiceImpl implements StockService {
                         penNames.add(pen.getPenName());
                     }
                 }
-                if (!keywordHit && contains(batch.getBatchNo(), keyword)) {
-                    keywordHit = true;
-                }
                 if (!keywordHit) {
                     for (BatchPen row : rows) {
                         Pen pen = penMap.get(row.getPenId());
@@ -419,10 +416,7 @@ public class StockServiceImpl implements StockService {
     }
 
     private static boolean matchesPen(Pen pen, String keyword, List<Batch> batches) {
-        if (contains(pen.getPenName(), keyword) || contains(pen.getPenCode(), keyword)) {
-            return true;
-        }
-        return batches.stream().anyMatch(batch -> contains(batch.getBatchNo(), keyword));
+        return contains(pen.getPenName(), keyword) || contains(pen.getPenCode(), keyword);
     }
 
     private static String trim(String value) {
