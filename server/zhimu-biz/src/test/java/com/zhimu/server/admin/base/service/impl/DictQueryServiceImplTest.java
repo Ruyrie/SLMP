@@ -7,6 +7,7 @@ import com.zhimu.server.admin.base.mapper.CategoryMapper;
 import com.zhimu.server.admin.base.mapper.DictItemMapper;
 import com.zhimu.server.admin.base.mapper.FarmMainCategoryReadMapper;
 import com.zhimu.server.admin.base.support.BaseDataReadSupport;
+import com.zhimu.server.admin.base.support.DictTypes;
 import com.zhimu.server.admin.base.vo.BaseDictItemVO;
 import com.zhimu.server.common.error.BizException;
 import org.junit.jupiter.api.BeforeEach;
@@ -115,6 +116,22 @@ class DictQueryServiceImplTest {
         when(dictItemMapper.selectList(any())).thenReturn(feed);
         when(support.scopesByItem(any())).thenReturn(Map.of());
         assertThat(service.listForApp("FEED_TYPE", null, null, null)).hasSize(9);
+    }
+
+    @Test
+    void paymentMethodIsEighthKnownTypeAndNormalizesCase() {
+        when(dictItemMapper.selectList(any())).thenReturn(List.of(
+                item(3301L, "PAYMENT_METHOD", "BANK_TRANSFER", "银行转账", 1),
+                item(3302L, "PAYMENT_METHOD", "WECHAT", "微信", 2),
+                item(3303L, "PAYMENT_METHOD", "ALIPAY", "支付宝", 3),
+                item(3304L, "PAYMENT_METHOD", "CASH", "现金", 4)));
+        when(support.scopesByItem(any())).thenReturn(Map.of());
+
+        assertThat(DictTypes.ALL).containsExactly("PEN_TYPE", "DEATH_REASON", "SYMPTOM", "FEED_TYPE",
+                "VACCINATE_METHOD", "DISINFECT_METHOD", "SCRAP_REASON", "PAYMENT_METHOD");
+        assertThat(service.listForApp("payment_method", null, null, null))
+                .extracting(BaseDictItemVO::getCode)
+                .containsExactly("BANK_TRANSFER", "WECHAT", "ALIPAY", "CASH");
     }
 
     private static DictItem item(Long id, String type, String code, String name, int sort) {
