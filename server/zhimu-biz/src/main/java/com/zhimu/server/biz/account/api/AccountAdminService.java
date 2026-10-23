@@ -5,7 +5,7 @@ public interface AccountAdminService {
 
     void disable(Long userId, Long adminId, String reason, boolean notifySms, int version);
 
-    void enable(Long userId, Long adminId, int version);
+    void enable(Long userId, Long adminId, String reason, int version);
 
     /** 手机号是否被占用（含注销未满 30 天、尚未释放的账号），供客服代登记校验 */
     boolean existsPhoneIncludingCooling(String phone);

@@ -46,7 +46,7 @@ public class OperationLogRecorderImpl implements OperationLogRecorder {
         logRow.setOperatorId(entry.getOperatorId());
         logRow.setOperatorName(truncate(resolveOperatorName(entry), 32));
         logRow.setOperatorRole(truncate(entry.getOperatorRole(), 100));
-        logRow.setOpType(truncate(entry.getOpType(), 20));
+        logRow.setOpType(truncate(entry.getOpType(), 32));
         logRow.setOpAction(truncate(entry.getOpAction(), 20));
         logRow.setResult(entry.getResult() == null ? "SUCCESS" : truncate(entry.getResult(), 20));
         logRow.setBizType(truncate(entry.getBizType(), 30));

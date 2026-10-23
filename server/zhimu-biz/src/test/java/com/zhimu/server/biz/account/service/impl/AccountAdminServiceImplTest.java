@@ -91,7 +91,7 @@ class AccountAdminServiceImplTest {
         when(userMapper.selectById(10001L)).thenReturn(user("DISABLED", 2));
         when(userMapper.update(eq(null), any())).thenReturn(1);
 
-        service.enable(10001L, 9001L, 2);
+        service.enable(10001L, 9001L, "恢复使用", 2);
 
         verify(userMapper).update(eq(null), any());
         verify(operationLogRecorder).record(any());
@@ -101,7 +101,7 @@ class AccountAdminServiceImplTest {
     @Test
     void 启用非停用账号40903() {
         when(userMapper.selectById(10001L)).thenReturn(user("NORMAL", 2));
-        BizException e = (BizException) catchException(() -> service.enable(10001L, 9001L, 2));
+        BizException e = (BizException) catchException(() -> service.enable(10001L, 9001L, "恢复使用", 2));
         assertThat(e.getCode()).isEqualTo(40903);
     }
 

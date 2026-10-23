@@ -138,11 +138,11 @@ class AdminAuthInterceptorTest {
 
     @Test
     void 管理员停用或token_version变化时作废会话() throws Exception {
-        loader = id -> new AdminAuthState(2, false, "吴昊", Set.of("AUDITOR"), Set.of(), null);
+        loader = id -> new AdminAuthState(2, false, "吴昊", Set.of("AUDITOR"), Set.of(), null, "ADMIN_DISABLED");
         assertThat(perform(mvc(), get("/admin/v1/me").cookie(SESSION_COOKIE), 401).get("code").asInt()).isEqualTo(40106);
         verify(sessionService).invalidate("tok");
 
-        loader = id -> new AdminAuthState(3, true, "吴昊", Set.of("AUDITOR"), Set.of(), null);
+        loader = id -> new AdminAuthState(3, true, "吴昊", Set.of("AUDITOR"), Set.of(), null, "PASSWORD_CHANGED");
         assertThat(perform(mvc(), get("/admin/v1/me").cookie(SESSION_COOKIE), 401).get("code").asInt()).isEqualTo(40106);
 
         loader = id -> null;
@@ -151,7 +151,7 @@ class AdminAuthInterceptorTest {
 
     @Test
     void 强制步骤返回40309() throws Exception {
-        loader = id -> new AdminAuthState(2, true, "吴昊", Set.of("AUDITOR"), Set.of(), "CHANGE_PASSWORD");
+        loader = id -> new AdminAuthState(2, true, "吴昊", Set.of("AUDITOR"), Set.of(), "CHANGE_PASSWORD", null);
         MockMvc mvc = mvc();
         JsonNode blocked = perform(mvc, get("/admin/v1/me").cookie(SESSION_COOKIE), 403);
         assertThat(blocked.get("code").asInt()).isEqualTo(40309);
@@ -162,11 +162,11 @@ class AdminAuthInterceptorTest {
 
     @Test
     void 权限点一个都没有返回40308() throws Exception {
-        loader = id -> new AdminAuthState(2, true, "吴昊", Set.of("AUDITOR"), Set.of("WA-R01:VIEW"), null);
+        loader = id -> new AdminAuthState(2, true, "吴昊", Set.of("AUDITOR"), Set.of("WA-R01:VIEW"), null, null);
         assertThat(perform(mvc(), post("/admin/v1/audits/1/approve").cookie(SESSION_COOKIE), 403).get("code").asInt())
                 .isEqualTo(40308);
 
-        loader = id -> new AdminAuthState(2, true, "吴昊", Set.of("AUDITOR"), Set.of("WA-R01:HANDLE"), null);
+        loader = id -> new AdminAuthState(2, true, "吴昊", Set.of("AUDITOR"), Set.of("WA-R01:HANDLE"), null, null);
         JsonNode ok = perform(mvc(), post("/admin/v1/audits/1/approve").cookie(SESSION_COOKIE), 200).get("data");
         assertThat(ok.get("name").asString()).isEqualTo("吴昊");
     }

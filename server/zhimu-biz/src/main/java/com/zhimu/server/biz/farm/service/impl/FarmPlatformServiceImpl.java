@@ -17,6 +17,8 @@ import com.zhimu.server.biz.farm.support.FarmNotify;
 import com.zhimu.server.biz.farm.support.FarmStatuses;
 import com.zhimu.server.common.enums.BizType;
 import com.zhimu.server.common.enums.FarmStatus;
+import com.zhimu.server.common.error.BizException;
+import com.zhimu.server.common.error.ErrorCode;
 import com.zhimu.server.common.util.BeijingTime;
 import com.zhimu.server.framework.mybatis.TenantSkip;
 import com.zhimu.server.framework.oplog.OperationLogEntry;
@@ -45,7 +47,7 @@ public class FarmPlatformServiceImpl implements FarmPlatformService {
 
     @Override
     @Transactional
-    public void freeze(Long farmId, Long adminId, String reason, int version) {
+    public void freeze(Long farmId, Long adminId, String reason, boolean smsOwner, int version) {
         Farm farm = requireFarm(farmId);
         if (!Objects.equals(version, farm.getVersion())) {
             throw FarmErrors.versionConflict();
@@ -96,7 +98,10 @@ public class FarmPlatformServiceImpl implements FarmPlatformService {
 
     @Override
     @Transactional
-    public void unfreeze(Long farmId, Long adminId, int version) {
+    public void unfreeze(Long farmId, Long adminId, String reason, int version) {
+        if (reason == null || reason.isBlank()) {
+            throw new BizException(ErrorCode.REASON_EMPTY, "请填写原因");
+        }
         Farm farm = requireFarm(farmId);
         if (!Objects.equals(version, farm.getVersion())) {
             throw FarmErrors.versionConflict();
@@ -140,6 +145,7 @@ public class FarmPlatformServiceImpl implements FarmPlatformService {
                 .farmId(farmId)
                 .targetName(farm.getName())
                 .searchText(farm.getName())
+                .reason(reason)
                 .before(Map.of("frozen", true))
                 .after(Map.of("frozen", false))
                 .build());

@@ -91,7 +91,10 @@ public class AccountAdminServiceImpl implements AccountAdminService {
 
     @Override
     @Transactional
-    public void enable(Long userId, Long adminId, int version) {
+    public void enable(Long userId, Long adminId, String reason, int version) {
+        if (reason == null || reason.isBlank()) {
+            throw new BizException(ErrorCode.REASON_EMPTY, "请填写原因");
+        }
         User user = userId == null ? null : userMapper.selectById(userId);
         if (user == null) {
             throw new BizException(ErrorCode.NOT_FOUND);
@@ -126,6 +129,7 @@ public class AccountAdminServiceImpl implements AccountAdminService {
                 .bizType("USER")
                 .bizId(user.getId())
                 .targetName(Masks.phone(user.getPhone()))
+                .reason(reason)
                 .before(Map.of("status", UserStatus.DISABLED.name()))
                 .after(Map.of("status", UserStatus.NORMAL.name()))
                 .build());

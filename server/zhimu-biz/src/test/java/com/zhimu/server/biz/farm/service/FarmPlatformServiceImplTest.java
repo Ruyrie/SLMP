@@ -63,7 +63,7 @@ class FarmPlatformServiceImplTest {
 
     @Test
     void freezeSetsFlagsEvictsAndNotifiesAllMembers() {
-        service.freeze(1001L, 9L, "违规", 3);
+        service.freeze(1001L, 9L, "违规", false, 3);
 
         verify(farmMapper).update(any(Farm.class), any());
         verify(cache).evictUsers(1001L, List.of(10001L, 10002L));
@@ -81,7 +81,7 @@ class FarmPlatformServiceImplTest {
         when(inviteMapper.selectList(any())).thenReturn(List.of(invite));
         when(transferMapper.selectList(any())).thenReturn(List.of(transfer));
 
-        service.unfreeze(1001L, 9L, 3);
+        service.unfreeze(1001L, 9L, "整改完成", 3);
 
         ArgumentCaptor<FarmInvite> inviteCaptor = ArgumentCaptor.forClass(FarmInvite.class);
         verify(inviteMapper).updateById(inviteCaptor.capture());

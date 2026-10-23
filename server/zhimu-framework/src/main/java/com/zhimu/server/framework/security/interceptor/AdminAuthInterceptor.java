@@ -5,6 +5,7 @@ import com.zhimu.server.common.error.BizException;
 import com.zhimu.server.common.error.ErrorCode;
 import com.zhimu.server.framework.security.annotation.AdminPermission;
 import com.zhimu.server.framework.security.annotation.AllowForcedStep;
+import com.zhimu.server.framework.security.annotation.NoSessionRenew;
 import com.zhimu.server.framework.security.annotation.PublicApi;
 import com.zhimu.server.framework.security.session.AdminSession;
 import com.zhimu.server.framework.security.session.AdminSessionService;
@@ -47,17 +48,30 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
         String token = sessionService.readCookie(request);
         AdminSession session = sessionService.get(token);
         if (session == null) {
-            throw new BizException(ErrorCode.ADMIN_SESSION_TIMEOUT);
+            throw sessionInvalid("EXPIRED");
         }
         AdminAuthStateLoader loader = loaderProvider.getIfAvailable();
         AdminContext.LoginAdmin admin;
         if (loader == null) {
+            if (HandlerSupport.find(method, AdminPermission.class) != null) {
+                // fail-closed：权限点存在但还没有状态加载器时，不能静默放行
+                throw new BizException(ErrorCode.ADMIN_PERMISSION_DENIED);
+            }
             admin = new AdminContext.LoginAdmin(session.adminId(), null, Set.of(), Set.of(), session.tokenVersion(), token);
         } else {
             AdminAuthState state = loader.load(session.adminId());
-            if (state == null || !state.enabled() || state.tokenVersion() != session.tokenVersion()) {
+            if (state == null) {
                 sessionService.invalidate(token);
-                throw new BizException(ErrorCode.ADMIN_SESSION_TIMEOUT);
+                throw sessionInvalid("EXPIRED");
+            }
+            if (!state.enabled()) {
+                sessionService.invalidate(token);
+                throw sessionInvalid("ADMIN_DISABLED");
+            }
+            if (state.tokenVersion() != session.tokenVersion()) {
+                sessionService.invalidate(token);
+                throw sessionInvalid(state.invalidReason() == null || state.invalidReason().isBlank()
+                        ? "PASSWORD_CHANGED" : state.invalidReason());
             }
             if (hasNextStep(state) && !HandlerSupport.has(method, AllowForcedStep.class)) {
                 throw new BizException(ErrorCode.FORCED_STEP_REQUIRED).with("next_step", state.nextStep());
@@ -69,7 +83,9 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
             }
         }
         AdminContext.set(admin);
-        sessionService.touch(token, session.adminId());
+        if (!HandlerSupport.has(method, NoSessionRenew.class)) {
+            sessionService.touch(token, session.adminId());
+        }
         return true;
     }
 
@@ -100,6 +116,10 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
 
     private static boolean hasNextStep(AdminAuthState state) {
         return StringUtils.hasText(state.nextStep()) && !"NONE".equals(state.nextStep());
+    }
+
+    private static BizException sessionInvalid(String reason) {
+        return new BizException(ErrorCode.ADMIN_SESSION_TIMEOUT).with("reason", reason);
     }
 
     private static boolean hasAnyPermission(AdminContext.LoginAdmin admin, String[] required) {
