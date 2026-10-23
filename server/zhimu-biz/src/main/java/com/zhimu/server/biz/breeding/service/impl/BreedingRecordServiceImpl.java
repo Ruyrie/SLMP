@@ -128,6 +128,9 @@ public class BreedingRecordServiceImpl implements BreedingRecordService {
             }
             first = true;
         } else if (BreedingCodes.STATUS_MATED.equals(animal.getStatus())) {
+            if (animal.getCurrentCycleId() == null) {
+                throw stateChanged(animal);
+            }
             cycle = support.requireCycle(animal.getCurrentCycleId());
             if (matingDate.isBefore(cycle.getFirstMatingDate())) {
                 throw BreedingErrors.invalid("mating_date", "配种日期不能早于本周期首次配种日期 "
@@ -386,7 +389,7 @@ public class BreedingRecordServiceImpl implements BreedingRecordService {
         if (BreedingCodes.exited(animal.getStatus())) {
             throw exitedMessage(animal, "登记产仔");
         }
-        if (!BreedingCodes.STATUS_PREGNANT.equals(animal.getStatus())) {
+        if (!BreedingCodes.STATUS_PREGNANT.equals(animal.getStatus()) || animal.getCurrentCycleId() == null) {
             throw stateChanged(animal);
         }
         BreedingCycle cycle = support.requireCycle(animal.getCurrentCycleId());
@@ -592,7 +595,7 @@ public class BreedingRecordServiceImpl implements BreedingRecordService {
         if (BreedingCodes.exited(animal.getStatus())) {
             throw exitedMessage(animal, "登记断奶");
         }
-        if (!BreedingCodes.STATUS_LACTATING.equals(animal.getStatus())) {
+        if (!BreedingCodes.STATUS_LACTATING.equals(animal.getStatus()) || animal.getCurrentCycleId() == null) {
             throw stateChanged(animal);
         }
         BreedingCycle cycle = support.requireCycle(animal.getCurrentCycleId());
