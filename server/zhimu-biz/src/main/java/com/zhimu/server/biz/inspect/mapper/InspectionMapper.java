@@ -11,6 +11,10 @@ import java.util.List;
 /** 巡检记录 Mapper（自定义 SQL 显式过滤 deleted，不依赖逻辑删除插件）。 */
 public interface InspectionMapper extends BaseMapper<Inspection> {
 
+    /** 修改申请按 ID 读取原记录：已删除的记录也要返回，由公共能力给出 41001 */
+    @Select("SELECT * FROM t_inspection WHERE id = #{id}")
+    Inspection selectByIdIncludingDeleted(@Param("id") Long id);
+
     @Select("SELECT * FROM t_inspection WHERE farm_id = #{farmId} AND pen_id = #{penId} "
             + "AND inspect_date = #{date} AND deleted = 0 LIMIT 1")
     Inspection selectByPenDate(@Param("farmId") Long farmId, @Param("penId") Long penId,
