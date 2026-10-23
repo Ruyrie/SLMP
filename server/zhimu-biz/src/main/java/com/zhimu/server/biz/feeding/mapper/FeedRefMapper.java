@@ -51,6 +51,15 @@ public interface FeedRefMapper {
             """)
     List<Long> batchPenIds(@Param("batchId") Long batchId);
 
+    /** 有在养批次的养殖场 ID（定时任务跨养殖场扫描用） */
+    @Select("""
+            SELECT DISTINCT farm_id
+            FROM t_batch
+            WHERE status = 'ACTIVE' AND deleted = 0
+            ORDER BY farm_id
+            """)
+    List<Long> activeFarmIds();
+
     /** 养殖场批次（含已结束），按入栏日期与批次 ID 排序 */
     @Select("""
             SELECT id AS batch_id, batch_no, breed_id, category_id, entry_date, entry_age_days, entry_count,

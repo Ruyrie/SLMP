@@ -98,6 +98,12 @@ public class FeedLookup {
         return list == null ? List.of() : list;
     }
 
+    /** 有在养批次的养殖场 ID；定时任务没有当前养殖场上下文时使用 */
+    public List<Long> activeFarmIds() {
+        List<Long> ids = feedRefMapper.activeFarmIds();
+        return ids == null ? List.of() : ids;
+    }
+
     /** 养殖场批次（含已结束），用于称重批次选择与对比批次；不按 X-Farm-Id 二次过滤 */
     public List<FeedBatchRow> farmBatches(boolean includeEnded) {
         List<FeedBatchRow> rows = feedRefMapper.farmBatches(farmId(), includeEnded ? 1 : 0);
@@ -215,14 +221,19 @@ public class FeedLookup {
     }
 
     public Map<Long, UserBriefVO> memberBriefs(Collection<Long> userIds) {
+        return memberBriefs(farmId(), userIds);
+    }
+
+    /** 指定养殖场的成员姓名与角色（定时任务没有当前养殖场上下文时使用） */
+    public Map<Long, UserBriefVO> memberBriefs(Long farmId, Collection<Long> userIds) {
         Map<Long, UserBriefVO> result = new LinkedHashMap<>();
-        if (userIds == null || userIds.isEmpty()) {
+        if (farmId == null || userIds == null || userIds.isEmpty()) {
             return result;
         }
         Set<Long> ids = new LinkedHashSet<>(userIds);
         Map<Long, AccountBrief> accounts = accountQueryService.listBriefs(ids);
         Map<Long, FeedMemberRow> rows = new LinkedHashMap<>();
-        List<FeedMemberRow> members = feedRefMapper.activeMembers(farmId());
+        List<FeedMemberRow> members = feedRefMapper.activeMembers(farmId);
         if (members != null) {
             for (FeedMemberRow row : members) {
                 rows.putIfAbsent(row.getUserId(), row);
@@ -269,14 +280,19 @@ public class FeedLookup {
 
     /** 栏舍第一位负责员工（t_member_pen 按创建顺序），没有返回 null */
     public Long firstAssignee(Long penId) {
-        if (penId == null) {
+        return firstAssignee(farmId(), penId);
+    }
+
+    /** 指定养殖场的栏舍第一位负责员工（定时任务没有当前养殖场上下文时使用） */
+    public Long firstAssignee(Long farmId, Long penId) {
+        if (farmId == null || penId == null) {
             return null;
         }
-        List<FeedMemberPenRow> rows = feedRefMapper.memberPens(farmId());
+        List<FeedMemberPenRow> rows = feedRefMapper.memberPens(farmId);
         if (rows == null) {
             return null;
         }
-        List<FeedMemberRow> members = feedRefMapper.activeMembers(farmId());
+        List<FeedMemberRow> members = feedRefMapper.activeMembers(farmId);
         Set<Long> active = new LinkedHashSet<>();
         if (members != null) {
             for (FeedMemberRow row : members) {

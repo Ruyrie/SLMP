@@ -11,4 +11,17 @@ public interface TodoMapper extends BaseMapper<Todo> {
     /** 按 ID 取（含已逻辑删除的行），详情判权前先区分 40401 与 41001 */
     @Select("SELECT * FROM t_todo WHERE id = #{id} LIMIT 1")
     Todo selectIncludingDeleted(@Param("id") Long id);
+
+    /**
+     * 按来源去重键取（含已逻辑删除的行）：唯一键 uk_todo_dedup 覆盖已删除行，
+     * 来源幂等写入前必须能看到这些行，避免重复插入触发唯一键冲突。
+     */
+    @Select("""
+            SELECT *
+            FROM t_todo
+            WHERE farm_id = #{farmId} AND todo_type = #{todoType} AND dedup_key = #{dedupKey}
+            LIMIT 1
+            """)
+    Todo selectByDedupIncludingDeleted(@Param("farmId") Long farmId, @Param("todoType") String todoType,
+                                       @Param("dedupKey") String dedupKey);
 }

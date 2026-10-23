@@ -30,6 +30,9 @@ public final class FeedCalc {
     public static final String MEAL_DINNER = "DINNER";
     public static final String MEAL_EXTRA = "EXTRA";
 
+    /** 补登期限结束仍未登记时写入 t_feed_task.close_reason */
+    public static final String CLOSE_REASON_BACKFILL_EXPIRED = "超过补登期限";
+
     private static final String[] WEEKDAYS = {"周一", "周二", "周三", "周四", "周五", "周六", "周日"};
 
     private FeedCalc() {
