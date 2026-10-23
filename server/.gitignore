@@ -15,6 +15,8 @@ tools/*
 !tools/*.ps1
 !tools/contract/
 !tools/contract/**
+!tools/smoke/
+!tools/smoke/**
 
 # 本机密钥与环境变量，不进 git
 .env
