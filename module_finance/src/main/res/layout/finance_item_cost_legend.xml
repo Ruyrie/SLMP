@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E10 成本构成明细行（40 dp）：10 dp 色块 + 名称 + 注释；右侧金额、占比两列 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="40dp"
+    android:background="?attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <View
+        android:id="@+id/finance_cost_dot"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:background="@drawable/finance_bg_square" />
+
+    <TextView
+        android:id="@+id/finance_cost_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_space_2"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+        android:textColor="?attr/colorOnSurface" />
+
+    <TextView
+        android:id="@+id/finance_cost_note"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_space_2"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+
+    <TextView
+        android:id="@+id/finance_cost_amount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+        android:textColor="?attr/colorOnSurface" />
+
+    <TextView
+        android:id="@+id/finance_cost_share"
+        android:layout_width="56dp"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+</LinearLayout>

@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "saved": true,
+    "biz_type": "SALE_ORDER",
+    "biz_id": 9106,
+    "sale_order_id": 9106
+  },
+  "trace_id": "mock-finance-submission_saved"
+}

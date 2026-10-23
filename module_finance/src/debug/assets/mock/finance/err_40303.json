@@ -1,0 +1,6 @@
+{
+  "code": 40303,
+  "message": "你没有查看经营数据的权限。经营功能只对所有者和场长开放。",
+  "data": null,
+  "trace_id": "mock-finance-err_40303"
+}

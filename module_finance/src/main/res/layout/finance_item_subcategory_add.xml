@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E05 新增子类行：描边输入框“新子类”+ tonal 按钮“添加”（输入为空时不可点） -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Zmt.Card.ListItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="top"
+        android:orientation="horizontal"
+        android:paddingStart="72dp"
+        android:paddingTop="@dimen/base_space_3"
+        android:paddingEnd="@dimen/base_space_4"
+        android:paddingBottom="@dimen/base_space_2">
+
+        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+            android:id="@+id/finance_new_layout"
+            style="@style/Widget.Zmt.TextInputLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/finance_e05_new"
+            app:errorEnabled="false">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/finance_new_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionDone"
+                android:inputType="text"
+                android:maxLength="20"
+                android:maxLines="1" />
+        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/finance_new_add"
+            style="@style/Widget.Zmt.Button.Tonal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_3"
+            android:layout_marginTop="8dp"
+            android:enabled="false"
+            android:text="@string/finance_sub_add"
+            app:icon="@drawable/ic_add" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

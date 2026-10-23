@@ -1,0 +1,13 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "hit": true,
+    "record_id": 8201,
+    "category_name": "饲料采购",
+    "amount": 3200,
+    "record_date": "2026-10-19",
+    "source_label": "来自饲料入库单"
+  },
+  "trace_id": "mock-finance-dup_hit"
+}

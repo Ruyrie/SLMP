@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 三列指标中的一列：标签 12 sp + 数值 18 sp + 说明 / 环比 12 sp（E02 养殖场卡、E10 单头指标、E11 区间统计、E14 金额行） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/finance_col_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawablePadding="2dp"
+        android:gravity="center_vertical"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+
+    <TextView
+        android:id="@+id/finance_col_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:maxLines="1"
+        android:textAppearance="@style/TextAppearance.Zmt.TitleMedium.Number"
+        android:textColor="?attr/colorOnSurface" />
+
+    <TextView
+        android:id="@+id/finance_col_note"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+        android:visibility="gone" />
+</LinearLayout>

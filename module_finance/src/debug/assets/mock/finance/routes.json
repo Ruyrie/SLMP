@@ -1,0 +1,1238 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/business-overview",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/monthly-summary",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/finance-records",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-categories",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/batch-options",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/receivables",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/{id}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-orders",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batch-settlements",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batch-settlements/{batchId}",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/filters",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/trend",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/daily",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-advices/latest",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-advices",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/periods",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/view",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/ai-summary",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/business-reports/export",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-categories",
+    "when": {
+      "query": {
+        "direction": "EXPENSE"
+      }
+    },
+    "file": "categories_expense.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-categories",
+    "when": {
+      "query": {
+        "direction": "INCOME"
+      }
+    },
+    "file": "categories_income.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-categories",
+    "file": "categories_all.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/expense-subcategories",
+    "when": {
+      "body": "玉米"
+    },
+    "file": "err_40905_sub.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/expense-subcategories",
+    "when": {
+      "body": "预混料"
+    },
+    "file": "subcategory_premix.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/expense-subcategories",
+    "file": "subcategory_created.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/expense-subcategories/{id}",
+    "file": "subcategory_renamed.json"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/expense-subcategories/{id}",
+    "file": "ok_null.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records",
+    "when": {
+      "query": {
+        "keyword": "无"
+      }
+    },
+    "file": "records_highlight_none.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records",
+    "when": {
+      "query": {
+        "month": "2026-09"
+      }
+    },
+    "file": "records_202609.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records",
+    "when": {
+      "query": {
+        "category_ids": "101"
+      }
+    },
+    "file": "records_cat_101.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records",
+    "when": {
+      "query": {
+        "batch_id": "3009"
+      }
+    },
+    "file": "records_batch.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records",
+    "when": {
+      "query": {
+        "batch_id": "3001"
+      }
+    },
+    "file": "records_batch.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records",
+    "when": {
+      "query": {
+        "has_voucher": "true"
+      }
+    },
+    "file": "records_voucher.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records",
+    "when": {
+      "query": {
+        "type": "EXPENSE"
+      }
+    },
+    "file": "records_expense.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records",
+    "when": {
+      "query": {
+        "type": "INCOME"
+      }
+    },
+    "file": "records_income.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records",
+    "when": {
+      "query": {
+        "type": "AUTO"
+      }
+    },
+    "file": "records_auto.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records",
+    "when": {
+      "query": {
+        "type": "MANUAL"
+      }
+    },
+    "file": "records_manual.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records",
+    "when": {
+      "query": {
+        "keyword": "人工"
+      }
+    },
+    "file": "records_keyword.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records",
+    "when": {
+      "query": {
+        "scope": "ALL"
+      }
+    },
+    "file": "records_all_farms.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records",
+    "file": "records_202610.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/{id}",
+    "when": {
+      "path": {
+        "id": "8202"
+      }
+    },
+    "file": "record_8202.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/{id}",
+    "when": {
+      "path": {
+        "id": "8203"
+      }
+    },
+    "file": "record_8203.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/{id}",
+    "when": {
+      "path": {
+        "id": "8205"
+      }
+    },
+    "file": "record_8205.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/{id}",
+    "when": {
+      "path": {
+        "id": "8206"
+      }
+    },
+    "file": "record_8206.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/{id}",
+    "file": "record_default.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/finance-records",
+    "file": "record_created.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/finance-records/{id}",
+    "file": "record_updated.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/finance-records/{id}/void",
+    "file": "record_voided.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/duplicate-check",
+    "when": {
+      "query": {
+        "category_id": "101",
+        "amount": "3200",
+        "record_date": "2026-10-19"
+      }
+    },
+    "file": "dup_hit.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/duplicate-check",
+    "when": {
+      "query": {
+        "category_id": "101",
+        "amount": "3200.00",
+        "record_date": "2026-10-19"
+      }
+    },
+    "file": "dup_hit.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/duplicate-check",
+    "when": {
+      "query": {
+        "category_id": "101",
+        "amount": "3200.0",
+        "record_date": "2026-10-19"
+      }
+    },
+    "file": "dup_hit.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/duplicate-check",
+    "file": "dup_none.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-submissions/{client_request_id}",
+    "file": "submission_saved.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/monthly-summary",
+    "when": {
+      "query": {
+        "scope": "ALL"
+      }
+    },
+    "file": "summary_all.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/monthly-summary",
+    "when": {
+      "query": {
+        "month": "2026-09"
+      }
+    },
+    "file": "summary_202609.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/monthly-summary",
+    "when": {
+      "query": {
+        "month": "2026-07"
+      }
+    },
+    "file": "summary_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/finance-records/monthly-summary",
+    "file": "summary_202610.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders",
+    "when": {
+      "query": {
+        "status": "UNPAID"
+      }
+    },
+    "file": "orders_unpaid.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders",
+    "when": {
+      "query": {
+        "status": "PARTIAL"
+      }
+    },
+    "file": "orders_partial.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders",
+    "when": {
+      "query": {
+        "status": "PAID"
+      }
+    },
+    "file": "orders_paid.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders",
+    "when": {
+      "query": {
+        "status": "VOIDED"
+      }
+    },
+    "file": "orders_voided.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders",
+    "when": {
+      "query": {
+        "keyword": "2609"
+      }
+    },
+    "file": "orders_kw_0.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders",
+    "when": {
+      "query": {
+        "keyword": "012"
+      }
+    },
+    "file": "orders_kw_1.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders",
+    "when": {
+      "query": {
+        "keyword": "赤峰"
+      }
+    },
+    "file": "orders_kw_2.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders",
+    "when": {
+      "query": {
+        "keyword": "宁城"
+      }
+    },
+    "file": "orders_kw_3.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders",
+    "when": {
+      "query": {
+        "keyword": "2611"
+      }
+    },
+    "file": "orders_kw_none.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders",
+    "file": "orders_all.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/receivables",
+    "when": {
+      "query": {
+        "due_filter": "OVERDUE"
+      }
+    },
+    "file": "receivables_overdue.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/receivables",
+    "when": {
+      "query": {
+        "due_filter": "DUE_7D"
+      }
+    },
+    "file": "receivables_7d.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/receivables",
+    "file": "receivables_all.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/{id}",
+    "when": {
+      "path": {
+        "id": "9101"
+      }
+    },
+    "file": "order_9101.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/{id}",
+    "when": {
+      "path": {
+        "id": "9102"
+      }
+    },
+    "file": "order_9102.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/{id}",
+    "when": {
+      "path": {
+        "id": "9103"
+      }
+    },
+    "file": "order_9103.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/{id}",
+    "when": {
+      "path": {
+        "id": "9104"
+      }
+    },
+    "file": "order_9104.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/{id}",
+    "when": {
+      "path": {
+        "id": "9105"
+      }
+    },
+    "file": "order_9105.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/{id}",
+    "when": {
+      "path": {
+        "id": "9106"
+      }
+    },
+    "file": "order_9106.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/{id}",
+    "file": "order_9102.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/sale-orders/{id}",
+    "when": {
+      "path": {
+        "id": "9106"
+      }
+    },
+    "file": "order_9106.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/sale-orders/{id}",
+    "file": "order_9103.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-orders/{id}/void",
+    "file": "order_9103_voided.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-orders/{id}/receipts",
+    "when": {
+      "path": {
+        "id": "9102"
+      },
+      "body": "88160"
+    },
+    "file": "receipt_9102_paid.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-orders/{id}/receipts",
+    "when": {
+      "path": {
+        "id": "9101"
+      },
+      "body": "68448"
+    },
+    "file": "receipt_9101_paid.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-orders/{id}/receipts",
+    "when": {
+      "path": {
+        "id": "9101"
+      }
+    },
+    "file": "receipt_9101_partial.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-orders/{id}/receipts",
+    "when": {
+      "path": {
+        "id": "9103"
+      }
+    },
+    "file": "receipt_9103_partial.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-orders/{id}/receipts",
+    "file": "receipt_9102_partial.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-orders/{id}/change-preview",
+    "when": {
+      "path": {
+        "id": "9103"
+      }
+    },
+    "file": "err_40903_no_receipt.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-orders/{id}/change-preview",
+    "when": {
+      "body": "\"VOID\""
+    },
+    "file": "preview_void.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-orders/{id}/change-preview",
+    "when": {
+      "body": "new_unit_price"
+    },
+    "file": "preview_price.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-orders/{id}/change-preview",
+    "when": {
+      "body": "new_quantity"
+    },
+    "file": "preview_quantity.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-orders/{id}/change-preview",
+    "file": "preview_before.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "SALE_ORDER"
+      }
+    },
+    "file": "change_form_sale_order.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "FINANCE_RECORD"
+      }
+    },
+    "file": "logs_finance_record.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "SALE_ORDER"
+      }
+    },
+    "file": "logs_sale_order.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/base/dicts/{dict_type}",
+    "when": {
+      "path": {
+        "dict_type": "PAYMENT_METHOD"
+      }
+    },
+    "file": "dict_payment_method.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/batch-options",
+    "file": "batch_options.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-orders/prefill",
+    "file": "prefill.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-orders",
+    "file": "order_created.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/batch-settlements/{batchId}/confirm-supplements",
+    "file": "settlement_3009_confirmed.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batch-settlements/{batchId}",
+    "when": {
+      "path": {
+        "batchId": "3009"
+      }
+    },
+    "file": "settlement_3009.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batch-settlements/{batchId}",
+    "file": "settlement_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/batch-settlements",
+    "file": "settlement_options.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/filters",
+    "file": "market_filters.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/trend",
+    "when": {
+      "query": {
+        "province_code": "210000"
+      }
+    },
+    "file": "trend_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/trend",
+    "when": {
+      "query": {
+        "category_id": "201"
+      }
+    },
+    "file": "trend_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/trend",
+    "when": {
+      "query": {
+        "price_type": "SEEDLING"
+      }
+    },
+    "file": "trend_seedling.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/trend",
+    "when": {
+      "query": {
+        "range_days": "7"
+      }
+    },
+    "file": "trend_7.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/trend",
+    "when": {
+      "query": {
+        "range_days": "90"
+      }
+    },
+    "file": "trend_90.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/trend",
+    "file": "trend_30.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/daily",
+    "when": {
+      "query": {
+        "province_code": "210000"
+      }
+    },
+    "file": "daily_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/daily",
+    "when": {
+      "query": {
+        "category_id": "201"
+      }
+    },
+    "file": "daily_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/daily",
+    "when": {
+      "query": {
+        "price_type": "SEEDLING"
+      }
+    },
+    "file": "daily_seedling.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/daily",
+    "when": {
+      "query": {
+        "page": "2"
+      }
+    },
+    "file": "daily_p2.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/market-prices/daily",
+    "file": "daily_p1.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-advices/latest",
+    "when": {
+      "query": {
+        "batch_id": "3002"
+      }
+    },
+    "file": "advice_3002_generating.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-advices/latest",
+    "when": {
+      "query": {
+        "batch_id": "3004"
+      }
+    },
+    "file": "advice_3004.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-advices/latest",
+    "file": "advice_3001.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-advices",
+    "when": {
+      "body": "3001"
+    },
+    "file": "advice_3001_regen.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sale-advices",
+    "file": "advice_3002_generating.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-advices",
+    "file": "advice_history.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-advices/{id}",
+    "when": {
+      "path": {
+        "id": "7201"
+      }
+    },
+    "file": "advice_7201.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-advices/{id}",
+    "when": {
+      "path": {
+        "id": "7101"
+      }
+    },
+    "file": "advice_7101.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-advices/{id}",
+    "when": {
+      "path": {
+        "id": "7102"
+      }
+    },
+    "file": "advice_7102.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-advices/{id}",
+    "when": {
+      "path": {
+        "id": "7302"
+      }
+    },
+    "file": "advice_7302.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sale-advices/{id}",
+    "file": "advice_3001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/periods",
+    "when": {
+      "query": {
+        "report_type": "WEEKLY"
+      }
+    },
+    "file": "periods_weekly.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/periods",
+    "when": {
+      "query": {
+        "report_type": "MONTHLY"
+      }
+    },
+    "file": "periods_monthly.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/view",
+    "when": {
+      "query": {
+        "scope": "ALL"
+      }
+    },
+    "file": "report_all.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/view",
+    "when": {
+      "query": {
+        "report_type": "WEEKLY"
+      }
+    },
+    "file": "report_weekly.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/view",
+    "when": {
+      "query": {
+        "report_type": "MONTHLY"
+      }
+    },
+    "file": "report_monthly.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/view",
+    "file": "report_to_date.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/trend",
+    "when": {
+      "query": {
+        "metric": "MORTALITY"
+      }
+    },
+    "file": "trend_mortality.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/trend",
+    "when": {
+      "query": {
+        "metric": "FEED"
+      }
+    },
+    "file": "trend_feed.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/trend",
+    "when": {
+      "query": {
+        "metric": "BALANCE"
+      }
+    },
+    "file": "trend_balance.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/trend",
+    "file": "trend_stock.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/ai-summary",
+    "when": {
+      "query": {
+        "report_type": "MONTHLY"
+      }
+    },
+    "file": "summary_monthly.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-reports/ai-summary",
+    "file": "summary_to_date.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/business-reports/ai-summary/regenerate",
+    "file": "summary_generating.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/business-reports/export",
+    "when": {
+      "body": "PDF"
+    },
+    "file": "export_pdf.json",
+    "delay": 1200
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/business-reports/export",
+    "file": "export_xlsx.json",
+    "delay": 1200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/business-overview",
+    "file": "overview.json"
+  }
+]

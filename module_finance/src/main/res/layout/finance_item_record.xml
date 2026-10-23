@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E04 收支记录（图 10-6）：日期分组标题（每组第一条显示）+ 列表项。
+     自动记录：分类、来源标签、明细、锁图标说明，尾部金额 + “原单据”；手工记录：标题、次要文字，尾部金额 + more_vert；
+     已作废：中性图标底、删除线、“已作废”标签 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/base_page_margin"
+    android:paddingEnd="@dimen/base_page_margin">
+
+    <TextView
+        android:id="@+id/finance_record_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/base_section_gap"
+        android:paddingBottom="@dimen/base_section_title_gap"
+        android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+        android:textColor="?attr/colorPrimary" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/finance_record_card"
+        style="@style/Widget.Zmt.Card.ListItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:minHeight="72dp"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/base_space_4"
+            android:paddingTop="@dimen/base_space_3"
+            android:paddingEnd="@dimen/base_space_1"
+            android:paddingBottom="@dimen/base_space_3">
+
+            <FrameLayout
+                android:id="@+id/finance_record_icon_bg"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="top"
+                android:background="@drawable/finance_bg_icon_secondary">
+
+                <ImageView
+                    android:id="@+id/finance_record_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:importantForAccessibility="no" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_4"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/finance_record_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <LinearLayout
+                    android:id="@+id/finance_record_farm_row"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <com.zhimu.slmp.base.widget.StatusTagView
+                        android:id="@+id/finance_record_farm"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:tagIcon="@drawable/ic_domain"
+                        app:tagType="farm" />
+                </LinearLayout>
+
+                <com.zhimu.slmp.base.widget.StatusTagView
+                    android:id="@+id/finance_record_source"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:visibility="gone"
+                    app:tagIcon="@drawable/ic_link"
+                    app:tagType="primary" />
+
+                <TextView
+                    android:id="@+id/finance_record_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/finance_record_lock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:drawablePadding="4dp"
+                    android:gravity="center_vertical"
+                    android:text="@string/finance_e04_auto_lock"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:visibility="gone"
+                    app:drawableStartCompat="@drawable/ic_lock"
+                    app:drawableTint="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:gravity="end|center_vertical"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/finance_record_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/base_space_3"
+                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium.Number"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/finance_record_source_btn"
+                    style="@style/Widget.Zmt.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="40dp"
+                    android:text="@string/finance_e04_source"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_chevron_right"
+                    app:iconGravity="end" />
+
+                <com.zhimu.slmp.base.widget.StatusTagView
+                    android:id="@+id/finance_record_void_tag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="@dimen/base_space_3"
+                    android:text="@string/finance_e04_voided"
+                    android:visibility="gone"
+                    app:tagType="neutral" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/finance_record_more"
+                style="@style/Widget.Zmt.Button.Icon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="@string/base_cd_more"
+                android:src="@drawable/ic_more_vert"
+                android:visibility="gone" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</LinearLayout>

@@ -1,0 +1,70 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "provinces": [
+      {
+        "code": "150000",
+        "name": "内蒙古"
+      },
+      {
+        "code": "130000",
+        "name": "河北"
+      },
+      {
+        "code": "210000",
+        "name": "辽宁"
+      }
+    ],
+    "categories": [
+      {
+        "id": 101,
+        "name": "育肥猪"
+      },
+      {
+        "id": 201,
+        "name": "肉鸡"
+      }
+    ],
+    "breeds": [
+      {
+        "category_id": 101,
+        "breed_id": 0,
+        "name": "全部品种"
+      },
+      {
+        "category_id": 101,
+        "breed_id": 1101,
+        "name": "杜长大"
+      },
+      {
+        "category_id": 201,
+        "breed_id": 0,
+        "name": "全部品种"
+      },
+      {
+        "category_id": 201,
+        "breed_id": 2101,
+        "name": "白羽肉鸡"
+      }
+    ],
+    "price_types": [
+      {
+        "code": "SLAUGHTER",
+        "name": "出栏价"
+      },
+      {
+        "code": "SEEDLING",
+        "name": "种苗价"
+      }
+    ],
+    "defaults": {
+      "province_code": "150000",
+      "category_id": 101,
+      "breed_id": 0,
+      "price_type": "SLAUGHTER"
+    },
+    "default_desc": "按东山猪场所在地区和在养品类默认筛选"
+  },
+  "trace_id": "mock-finance-market_filters"
+}

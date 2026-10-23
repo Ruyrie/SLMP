@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E13 指标块（172 x 62 dp，圆角 12）：左上标签、右上变化（16 dp 箭头）、下方数值 + 单位；选中 secondary-container -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:background="@drawable/finance_bg_metric"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    android:minHeight="62dp"
+    android:orientation="vertical"
+    android:padding="@dimen/base_space_3">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/finance_metric_label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall" />
+
+        <TextView
+            android:id="@+id/finance_metric_change"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/finance_metric_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textAppearance="@style/TextAppearance.Zmt.TitleLarge.Number" />
+</LinearLayout>

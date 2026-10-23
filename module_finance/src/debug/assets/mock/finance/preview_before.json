@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "sale_amount_before": 188160,
+    "unpaid_amount_before": 88160,
+    "received_amount": 100000,
+    "profit_before": 3160
+  },
+  "trace_id": "mock-finance-preview_before"
+}

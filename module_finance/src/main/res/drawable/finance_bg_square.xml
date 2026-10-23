@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 成本构成图例色块 10 dp、圆角 3 dp（颜色由代码设置 backgroundTint） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="3dp" />
+    <size android:width="10dp" android:height="10dp" />
+    <solid android:color="@color/zm_primary" />
+</shape>

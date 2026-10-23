@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E05 子类行（56 dp）：子类名与一级分类主文字对齐（x 88 dp），尾部 edit、delete -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Widget.Zmt.Card.ListItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="72dp"
+        android:paddingEnd="@dimen/base_space_1">
+
+        <TextView
+            android:id="@+id/finance_sub_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+            android:textColor="?attr/colorOnSurface" />
+
+        <ImageButton
+            android:id="@+id/finance_sub_edit"
+            style="@style/Widget.Zmt.Button.Icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/finance_cd_rename"
+            android:src="@drawable/ic_edit" />
+
+        <ImageButton
+            android:id="@+id/finance_sub_delete"
+            style="@style/Widget.Zmt.Button.Icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/finance_cd_delete"
+            android:src="@drawable/ic_delete" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E10 顶部栏 receipt_long：E04 筛选关联该批次的收支 -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/finance_menu_records"
+        android:icon="@drawable/ic_receipt_long"
+        android:title="@string/finance_cd_records"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+</menu>

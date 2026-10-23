@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E10 批次核算（图 10-14）：批次信息卡（锁定标签）、补录确认横幅、批次盈亏卡、单头指标卡、成本构成卡（堆叠条 + 明细） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/finance_top_bar"
+        layout="@layout/base_include_top_app_bar" />
+
+    <com.zhimu.slmp.base.widget.StateLayout
+        android:id="@+id/finance_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:stateErrorTitle="@string/finance_error_title"
+        app:stateNoPermissionTitle="@string/finance_no_permission_title"
+        app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/finance_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/finance_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_2"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_4">
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Zmt.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="@dimen/base_space_4">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/finance_batch_no"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:textAppearance="@style/TextAppearance.Zmt.TitleLarge.Number"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <com.zhimu.slmp.base.widget.StatusTagView
+                                    android:id="@+id/finance_lock_tag"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/finance_batch_line"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_2"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <TextView
+                                android:id="@+id/finance_count_line"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/finance_supplement_notice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:visibility="gone"
+                        app:noticeIcon="@drawable/ic_info" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Zmt.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="@dimen/base_space_4">
+
+                            <TextView
+                                android:id="@+id/finance_profit_label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/finance_e10_profit"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <TextView
+                                android:id="@+id/finance_profit"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Zmt.DisplaySmall.Number" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_4"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <include
+                                    android:id="@+id/finance_col_income"
+                                    layout="@layout/finance_view_column" />
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_marginStart="@dimen/base_space_2"
+                                    android:layout_marginEnd="@dimen/base_space_2"
+                                    android:importantForAccessibility="no"
+                                    android:src="@drawable/finance_ic_remove"
+                                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                                <include
+                                    android:id="@+id/finance_col_cost"
+                                    layout="@layout/finance_view_column" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/finance_income_note"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_3"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Zmt.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="@dimen/base_space_4">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:baselineAligned="false"
+                                android:orientation="horizontal">
+
+                                <include
+                                    android:id="@+id/finance_col_cost_head"
+                                    layout="@layout/finance_view_column" />
+
+                                <include
+                                    android:id="@+id/finance_col_profit_head"
+                                    layout="@layout/finance_view_column" />
+
+                                <include
+                                    android:id="@+id/finance_col_fcr"
+                                    layout="@layout/finance_view_column" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/finance_per_head_note"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_3"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Zmt.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="@dimen/base_space_4">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/finance_e10_costs"
+                                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <TextView
+                                    android:id="@+id/finance_cost_total"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+
+                            <com.zhimu.slmp.finance.widget.CostStackBarView
+                                android:id="@+id/finance_cost_bar"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_4" />
+
+                            <LinearLayout
+                                android:id="@+id/finance_cost_legend"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_2"
+                                android:orientation="vertical" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </com.zhimu.slmp.base.widget.StateLayout>
+</LinearLayout>

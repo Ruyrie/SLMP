@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 登记收款底部面板（图 10-11，E07、E09 共用）：摘要、收款金额、收款日期、收款方式、说明横幅、取消 / 确认收款 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="form"
+            type="com.zhimu.slmp.finance.util.ReceiptFormDelegate" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/base_sheet_padding_horizontal"
+        android:paddingEnd="@dimen/base_sheet_padding_horizontal"
+        android:paddingBottom="@dimen/base_space_6">
+
+        <TextView
+            android:id="@+id/finance_receipt_summary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+            android:id="@+id/finance_receipt_amount_layout"
+            style="@style/Widget.Zmt.TextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_4"
+            android:hint="@string/finance_receipt_amount"
+            app:helperTextEnabled="true"
+            app:suffixText="@string/finance_unit_yuan">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/finance_receipt_amount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:maxLength="12"
+                android:text="@={form.amountText}" />
+        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+            android:id="@+id/finance_receipt_date_layout"
+            style="@style/Widget.Zmt.TextInputLayout.Picker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:hint="@string/finance_receipt_date"
+            app:endIconDrawable="@drawable/finance_ic_event"
+            app:endIconMode="custom">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/finance_receipt_date"
+                style="@style/Widget.Zmt.TextInputEditText.Picker"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:text="@string/finance_receipt_method"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/finance_receipt_methods"
+            style="@style/Widget.Zmt.ChipGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_1"
+            app:selectionRequired="true"
+            app:singleSelection="true" />
+
+        <com.zhimu.slmp.base.widget.NoticeView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            app:noticeIcon="@drawable/ic_receipt_long"
+            app:noticeText="@string/finance_receipt_notice" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_4"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/finance_receipt_cancel"
+                style="@style/Widget.Zmt.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/finance_cancel" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/finance_receipt_confirm"
+                style="@style/Widget.Zmt.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:text="@string/finance_receipt_confirm" />
+        </LinearLayout>
+    </LinearLayout>
+</layout>

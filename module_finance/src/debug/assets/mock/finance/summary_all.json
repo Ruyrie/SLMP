@@ -1,0 +1,67 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "period_start": "2026-10-01",
+    "period_end": "2026-10-19",
+    "is_current_month": true,
+    "income": 636000,
+    "expense_amount": 510900,
+    "balance_amount": 125100,
+    "prev_income": 570000,
+    "prev_expense_amount": 473600,
+    "prev_balance_amount": 96400,
+    "income_comparable": true,
+    "expense_comparable": true,
+    "balance_comparable": true,
+    "income_mom_rate": 0.116,
+    "expense_mom_rate": 0.079,
+    "balance_mom_rate": 0.298,
+    "record_count": 81,
+    "auto_count": 30,
+    "manual_count": 51,
+    "manageable_farm_count": 2,
+    "expense_shares": null,
+    "income_shares": null,
+    "farms": [
+      {
+        "farm_id": 1001,
+        "farm_name": "东山猪场",
+        "role": "OWNER",
+        "role_text": "所有者",
+        "main_category_name": "育肥猪",
+        "income": 400000,
+        "expense_amount": 312400,
+        "balance_amount": 87600,
+        "income_mom_rate": 0.111,
+        "expense_mom_rate": 0.064,
+        "balance_mom_rate": 0.321,
+        "income_comparable": true,
+        "expense_comparable": true,
+        "balance_comparable": true,
+        "income_share_rate": 0.629
+      },
+      {
+        "farm_id": 1002,
+        "farm_name": "西岭鸡场",
+        "role": "MANAGER",
+        "role_text": "场长",
+        "main_category_name": "白羽肉鸡",
+        "income": 236000,
+        "expense_amount": 198500,
+        "balance_amount": 37500,
+        "income_mom_rate": 0.124,
+        "expense_mom_rate": 0.103,
+        "balance_mom_rate": 0.25,
+        "income_comparable": true,
+        "expense_comparable": true,
+        "balance_comparable": true,
+        "income_share_rate": 0.371
+      }
+    ],
+    "staff_farm_names": [
+      "南坡羊场"
+    ]
+  },
+  "trace_id": "mock-finance-summary_all"
+}

@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 通用 -->
+    <string name="finance_unit_yuan">元</string>
+    <string name="finance_dash">—</string>
+    <string name="finance_no_permission_title">无权查看</string>
+    <string name="finance_error_title">加载失败，请检查网络后重试</string>
+    <string name="finance_list_load_failed">加载失败，点按重试</string>
+    <string name="finance_list_end">没有更多记录了</string>
+    <string name="finance_discard_title">放弃填写的内容？</string>
+    <string name="finance_cancel">取消</string>
+    <string name="finance_view">查看</string>
+    <string name="finance_regenerate">重新生成</string>
+    <string name="finance_tab_business">经营</string>
+
+    <!-- E01 -->
+    <string name="finance_e01_title">经营</string>
+    <string name="finance_e01_balance">本月结余</string>
+    <string name="finance_e01_receivable">待收款合计</string>
+    <string name="finance_e01_price_default">出栏价</string>
+    <string name="finance_e01_tools">经营工具</string>
+    <string name="finance_e01_tool_finance">收支记账</string>
+    <string name="finance_e01_tool_sale">出栏与核算</string>
+    <string name="finance_e01_tool_market">市场行情</string>
+    <string name="finance_e01_tool_market_sub">出栏价 · 种苗价</string>
+    <string name="finance_e01_tool_report">经营报表</string>
+    <string name="finance_e01_tool_report_sub">周报 · 月报</string>
+    <string name="finance_e01_todos">需要处理</string>
+    <string name="finance_e01_todos_all">全部</string>
+
+    <!-- E02 -->
+    <string name="finance_e02_title">收支记账</string>
+    <string name="finance_e02_all_farms">全部养殖场合计</string>
+    <string name="finance_e02_balance">本月结余</string>
+    <string name="finance_e02_balance_all">合计结余</string>
+    <string name="finance_e02_income">收入</string>
+    <string name="finance_e02_expense">支出</string>
+    <string name="finance_e02_income_all">合计收入</string>
+    <string name="finance_e02_expense_all">合计支出</string>
+    <string name="finance_e02_share">分类占比</string>
+    <string name="finance_e02_share_unit">单位：元</string>
+    <string name="finance_e02_share_empty">%1$s还没有收支记录。点“记一笔”记录开销，物资入库勾选同步记账后也会自动生成。</string>
+    <string name="finance_e02_records">收支流水</string>
+    <string name="finance_e02_by_farm">按养殖场 · %1$d 个</string>
+    <string name="finance_e02_by_farm_note">先相加收入和支出，再算结余</string>
+    <string name="finance_e02_fab">记一笔</string>
+    <string name="finance_cd_records">收支流水</string>
+    <string name="finance_cd_categories">支出分类</string>
+    <string name="finance_cd_prev_month">上一月</string>
+    <string name="finance_cd_next_month">下一月</string>
+
+    <!-- E03 -->
+    <string name="finance_e03_title">记一笔</string>
+    <string name="finance_e03_title_edit">修改记录</string>
+    <string name="finance_e03_title_view">收支记录</string>
+    <string name="finance_e03_edit_note">手工记录 · 保存后保留修改记录</string>
+    <string name="finance_e03_amount">金额</string>
+    <string name="finance_e03_amount_helper">必须大于 0</string>
+    <string name="finance_e03_duplicate_title">可能重复记账：</string>
+    <string name="finance_e03_category">分类</string>
+    <string name="finance_e03_sub_title">%1$s下的子类</string>
+    <string name="finance_e03_add_sub">添加子类</string>
+    <string name="finance_e03_income_note">出栏收款会自动生成收入记录，不用再手工记一笔</string>
+    <string name="finance_e03_note">说明（选填）</string>
+    <string name="finance_e03_date">日期</string>
+    <string name="finance_e03_date_helper">不能晚于今天</string>
+    <string name="finance_e03_batch">关联批次</string>
+    <string name="finance_e03_batch_none">不关联</string>
+    <string name="finance_e03_vouchers">凭证照片</string>
+    <string name="finance_e03_vouchers_rule">JPG 或 PNG，单张不超过 5MB</string>
+    <string name="finance_e03_save">保存</string>
+    <string name="finance_sub_name">子类名称</string>
+    <string name="finance_sub_add_title">添加子类</string>
+    <string name="finance_sub_add">添加</string>
+    <string name="finance_sub_rename_title">修改子类</string>
+    <string name="finance_sub_save">保存</string>
+
+    <!-- E04 -->
+    <string name="finance_e04_title">收支流水</string>
+    <string name="finance_e04_search_hint">搜索分类、说明、批次号或金额</string>
+    <string name="finance_e04_type_all">全部</string>
+    <string name="finance_e04_type_expense">支出</string>
+    <string name="finance_e04_type_income">收入</string>
+    <string name="finance_e04_type_auto">自动生成</string>
+    <string name="finance_e04_type_manual">手工记录</string>
+    <string name="finance_e04_source">原单据</string>
+    <string name="finance_e04_auto_lock">自动生成，不能单独修改</string>
+    <string name="finance_e04_voided">已作废</string>
+    <string name="finance_e04_menu_edit">修改</string>
+    <string name="finance_e04_menu_log">查看修改记录</string>
+    <string name="finance_e04_menu_void">作废</string>
+    <string name="finance_e04_void_title">作废这条记录？</string>
+    <string name="finance_e04_void_message">作废后不再计入月度汇总和批次成本，记录仍保留在流水中。</string>
+    <string name="finance_e04_empty">%1$s还没有收支记录。点“记一笔”开始记账。</string>
+    <string name="finance_e04_empty_filter">没有符合条件的记录，换个筛选条件试试。</string>
+    <string name="finance_e04_filter_title">筛选</string>
+    <string name="finance_e04_filter_categories">一级分类</string>
+    <string name="finance_e04_filter_voucher">只看有凭证的记录</string>
+    <string name="finance_e04_filter_reset">重置</string>
+    <string name="finance_e04_filter_apply">应用</string>
+    <string name="finance_log_title">修改记录</string>
+    <string name="finance_log_empty">这条记录还没有修改过</string>
+    <string name="finance_month_title">选择月份</string>
+    <string name="finance_cd_search">搜索</string>
+    <string name="finance_cd_filter">筛选</string>
+    <string name="finance_cd_clear">清空</string>
+
+    <!-- E05 -->
+    <string name="finance_e05_title">支出分类</string>
+    <string name="finance_e05_notice">一级分类由平台统一维护，不能修改，你可以在下面添加自己的子类。平台停用的一级分类，记账时不再显示，已有账目保留原分类。</string>
+    <string name="finance_e05_group">一级分类 · %1$d 个</string>
+    <string name="finance_e05_new">新子类</string>
+    <string name="finance_e05_delete_title">删除子类“%1$s”？</string>
+    <string name="finance_e05_delete_message">已有账目保留原子类名称，记账时不再显示这个子类。</string>
+    <string name="finance_e05_delete">删除</string>
+    <string name="finance_cd_rename">修改</string>
+    <string name="finance_cd_delete">删除</string>
+
+    <!-- E06 -->
+    <string name="finance_e06_title">登记出栏单</string>
+    <string name="finance_e06_title_edit">修改出栏单</string>
+    <string name="finance_e06_batch">批次</string>
+    <string name="finance_e06_batch_hint">选择批次</string>
+    <string name="finance_e06_go_entry">去入栏</string>
+    <string name="finance_e06_sale_date">出栏日期</string>
+    <string name="finance_e06_quantity">数量</string>
+    <string name="finance_e06_quantity_hint">输入数量</string>
+    <string name="finance_e06_weight">总重</string>
+    <string name="finance_e06_weight_hint">输入总重</string>
+    <string name="finance_e06_pens">各栏舍出栏数</string>
+    <string name="finance_e06_pricing">计价方式</string>
+    <string name="finance_e06_by_weight">按重量</string>
+    <string name="finance_e06_by_head">按头</string>
+    <string name="finance_e06_price">单价</string>
+    <string name="finance_e06_price_hint">输入单价</string>
+    <string name="finance_e06_buyer">收购商</string>
+    <string name="finance_e06_due">约定收款日期</string>
+    <string name="finance_e06_due_hint">选择日期</string>
+    <string name="finance_e06_amount_label">销售金额 · 自动计算</string>
+    <string name="finance_e06_submit">提交</string>
+    <string name="finance_e06_save">保存修改</string>
+    <string name="finance_e06_batch_sheet">选择批次</string>
+    <string name="finance_kg">千克</string>
+
+    <!-- E07 -->
+    <string name="finance_e07_title">出栏单详情</string>
+    <string name="finance_e07_sale_amount">销售金额</string>
+    <string name="finance_e07_received">已收 %1$s</string>
+    <string name="finance_e07_unpaid">未收 %1$s</string>
+    <string name="finance_e07_receipts">收款记录 · %1$d 笔</string>
+    <string name="finance_e07_receipts_empty">还没有收款记录</string>
+    <string name="finance_e07_receipt_income">已生成收入</string>
+    <string name="finance_e07_notice_receipt">这张出栏单已有收款。修改数量、单价或作废，需要提交修改申请，管理员审核通过后生效，审核期间原单照常有效。</string>
+    <string name="finance_e07_info">出栏信息</string>
+    <string name="finance_e07_pricing">计价方式</string>
+    <string name="finance_e07_avg">平均体重</string>
+    <string name="finance_e07_buyer">收购商</string>
+    <string name="finance_e07_pens">出栏栏舍</string>
+    <string name="finance_e07_registrant">登记人</string>
+    <string name="finance_e07_void_reason">作废原因</string>
+    <string name="finance_e07_settlement">查看批次核算</string>
+    <string name="finance_e07_receive">登记收款</string>
+    <string name="finance_e07_menu_apply">提交修改申请</string>
+    <string name="finance_e07_menu_log">查看修改记录</string>
+    <string name="finance_e07_menu_edit">修改</string>
+    <string name="finance_e07_menu_void">作废</string>
+    <string name="finance_e07_void_title">作废这张出栏单？</string>
+    <string name="finance_e07_void_label">作废原因</string>
+    <string name="finance_e07_void_positive">作废</string>
+    <string name="finance_receipt_title">登记收款</string>
+    <string name="finance_receipt_amount">收款金额</string>
+    <string name="finance_receipt_date">收款日期</string>
+    <string name="finance_receipt_method">收款方式</string>
+    <string name="finance_receipt_notice">每笔收款会自动生成一条收入记录（出栏销售），可在收支记账中查看。收齐后出栏单变为“已收款”，待收款提醒自动完成。</string>
+    <string name="finance_receipt_confirm">确认收款</string>
+
+    <!-- E08 -->
+    <string name="finance_e08_title">提交修改申请</string>
+    <string name="finance_e08_mode">修改内容</string>
+    <string name="finance_e08_mode_price">修改单价</string>
+    <string name="finance_e08_mode_quantity">修改数量</string>
+    <string name="finance_e08_mode_void">作废</string>
+    <string name="finance_e08_new_price">新单价</string>
+    <string name="finance_e08_new_quantity">新数量</string>
+    <string name="finance_e08_new_weight">新总重</string>
+    <string name="finance_e08_after">审核通过后</string>
+    <string name="finance_e08_estimate">预计结果</string>
+    <string name="finance_e08_row_amount">销售金额</string>
+    <string name="finance_e08_row_unpaid">未收金额</string>
+    <string name="finance_e08_row_profit">批次盈亏</string>
+    <string name="finance_e08_reason">修改原因（必填）</string>
+    <string name="finance_e08_reason_helper">管理员根据原因审核</string>
+    <string name="finance_e08_flow">审核期间原出栏单照常有效。审核通过后系统按申请修改，自动重新计算销售金额和批次盈亏，审核结果通过消息中心通知提交人和所有者。</string>
+    <string name="finance_e08_submit">提交申请</string>
+
+    <!-- E09 -->
+    <string name="finance_e09_title">待收款</string>
+    <string name="finance_e09_all_orders">全部出栏单</string>
+    <string name="finance_e09_total">应收合计</string>
+    <string name="finance_e09_empty">没有待收款的出栏单。登记出栏单后，未收齐的款项会显示在这里；已收齐的可以点“全部出栏单”查看。</string>
+    <string name="finance_e09_empty_overdue">没有已逾期的出栏单</string>
+    <string name="finance_e09_empty_7d">7 天内没有到期的出栏单</string>
+    <string name="finance_card_receive">登记收款</string>
+    <string name="finance_card_sale_amount">销售金额</string>
+    <string name="finance_card_received">已收</string>
+    <string name="finance_card_unpaid">未收</string>
+    <string name="finance_card_paid_off">收齐</string>
+    <string name="finance_card_due">约定收款</string>
+    <string name="finance_card_sale">出栏</string>
+    <string name="finance_card_pending">待审核</string>
+    <string name="finance_cd_pending">修改申请待审核</string>
+
+    <!-- E10 -->
+    <string name="finance_e10_title">批次核算</string>
+    <string name="finance_e10_locked">已结算并锁定</string>
+    <string name="finance_e10_to_date">截至今天</string>
+    <string name="finance_e10_profit">批次盈亏</string>
+    <string name="finance_e10_profit_to_date">截至今天盈亏</string>
+    <string name="finance_e10_income">销售收入</string>
+    <string name="finance_e10_cost_total">总成本</string>
+    <string name="finance_e10_income_note">销售收入按出栏单金额计算，不论货款是否收齐（已收 %1$s）</string>
+    <string name="finance_e10_cost_per_head">单头成本</string>
+    <string name="finance_e10_profit_per_head">单头盈亏</string>
+    <string name="finance_e10_fcr">料肉比</string>
+    <string name="finance_e10_fcr_tip">料肉比是批次累计消耗的饲料量与净增重的比值，数值越低越省料。</string>
+    <string name="finance_e10_costs">成本构成</string>
+    <string name="finance_e10_cost_total_value">总成本 %1$s</string>
+    <string name="finance_e10_confirm">去确认</string>
+    <string name="finance_e10_confirm_positive">确认并重算</string>
+
+    <!-- E11 -->
+    <string name="finance_e11_title">市场行情</string>
+    <string name="finance_e11_slaughter">出栏价</string>
+    <string name="finance_e11_seedling">种苗价</string>
+    <string name="finance_e11_reset">恢复默认</string>
+    <string name="finance_e11_updated">%1$s更新</string>
+    <string name="finance_e11_compare">较 %1$s %2$s 元</string>
+    <string name="finance_e11_range_7">7 天</string>
+    <string name="finance_e11_range_30">30 天</string>
+    <string name="finance_e11_range_90">90 天</string>
+    <string name="finance_e11_max">最高 · %1$s</string>
+    <string name="finance_e11_min">最低 · %1$s</string>
+    <string name="finance_e11_avg">平均</string>
+    <string name="finance_e11_daily">每日价格 · %1$s</string>
+    <string name="finance_e11_corrected">已更正</string>
+    <string name="finance_e11_fab">AI 出栏建议</string>
+    <string name="finance_e11_pick_province">选择地区</string>
+    <string name="finance_e11_pick_category">选择品类</string>
+    <string name="finance_e11_pick_breed">选择品种</string>
+
+    <!-- E12 -->
+    <string name="finance_e12_title">AI 出栏建议</string>
+    <string name="finance_e12_batch">在栏批次</string>
+    <string name="finance_e12_card_title">AI 出栏建议 · %1$s</string>
+    <string name="finance_e12_generating">正在生成</string>
+    <string name="finance_e12_reasons">理由</string>
+    <string name="finance_e12_risks">风险</string>
+    <string name="finance_e12_key_withdrawal">休药</string>
+    <string name="finance_e12_key_age">日龄</string>
+    <string name="finance_e12_key_weight">体重</string>
+    <string name="finance_e12_key_price">价格</string>
+    <string name="finance_e12_register">登记出栏单</string>
+    <string name="finance_e12_disclaimer">仅供参考，不构成交易建议</string>
+    <string name="finance_e12_failed">出栏建议暂时无法生成，请稍后重新生成。</string>
+    <string name="finance_e12_history">历史建议</string>
+    <string name="finance_e12_history_empty">还没有历史建议</string>
+    <string name="finance_e12_no_batch">当前养殖场没有在养批次，入栏后才能获取出栏建议。</string>
+
+    <!-- E13 -->
+    <string name="finance_e13_title">经营报表</string>
+    <string name="finance_e13_export_xlsx">导出表格</string>
+    <string name="finance_e13_export_pdf">导出文档</string>
+    <string name="finance_e13_share">分享报表</string>
+    <string name="finance_e13_weekly">周报</string>
+    <string name="finance_e13_monthly">月报</string>
+    <string name="finance_e13_to_date">本期至今</string>
+    <string name="finance_e13_check_title">数据待核对：</string>
+    <string name="finance_e13_check_action">查看批次记录</string>
+    <string name="finance_e13_all_notice">只合计你担任所有者或场长的养殖场。</string>
+    <string name="finance_e13_owned_notice">注销前导出：统计你担任所有者的养殖场，可导出表格或文档留存。</string>
+    <string name="finance_e13_ai_title">AI 分析摘要 · %1$s</string>
+    <string name="finance_e13_key_highlight">亮点</string>
+    <string name="finance_e13_key_problem">问题</string>
+    <string name="finance_e13_key_suggestion">建议</string>
+    <string name="finance_e13_ai_disclaimer">由 AI 生成，仅供参考</string>
+    <string name="finance_e13_ai_failed">AI 摘要生成失败，报表数据不受影响。</string>
+    <string name="finance_e13_metric_stock">期末存栏</string>
+    <string name="finance_e13_metric_mortality">死亡率</string>
+    <string name="finance_e13_metric_feed">饲料用量</string>
+    <string name="finance_e13_metric_balance">收支结余</string>
+    <string name="finance_e13_profits">批次盈亏对比</string>
+    <string name="finance_e13_profits_empty">本期没有结束的批次</string>
+    <string name="finance_e13_empty">本期还没有经营数据。记账、登记出栏或批次入栏后，报表会自动更新。</string>
+    <string name="finance_e13_share_chooser">分享经营报表</string>
+    <string name="finance_e13_open_chooser">打开经营报表</string>
+    <string name="finance_e13_pick_farm">选择养殖场</string>
+    <string name="finance_e13_pick_range">统计范围</string>
+    <string name="finance_e13_pick_category">选择品类</string>
+    <string name="finance_e13_pick_batch">选择批次</string>
+    <string name="finance_e13_pick_period">选择期次</string>
+    <string name="finance_e13_pick_check">选择差异批次</string>
+    <string name="finance_e13_no_app">没有可以打开这个文件的应用</string>
+
+    <!-- E14 -->
+    <string name="finance_e14_title">出栏单</string>
+    <string name="finance_e14_search_hint">搜索批次号或收购商</string>
+    <string name="finance_e14_fab">登记出栏单</string>
+    <string name="finance_e14_search_all">在全部出栏单中搜索</string>
+</resources>

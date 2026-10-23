@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 二级页顶部栏 more_vert（E07 菜单项由 MoreMenuHelper 按 actions 动态生成） -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/finance_menu_more"
+        android:icon="@drawable/ic_more_vert"
+        android:title="@string/base_cd_more"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+</menu>

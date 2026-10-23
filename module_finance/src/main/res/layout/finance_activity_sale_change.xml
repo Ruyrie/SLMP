@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E08 出栏单修改申请（图 10-12）：原单据卡、修改内容（单价 / 数量 / 作废）、新值、审核通过后的预计结果、修改原因、流程横幅、“提交申请” -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.finance.ui.salechange.SaleChangeRequestViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/finance_top_bar"
+            layout="@layout/base_include_top_app_bar" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/finance_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/finance_error_title"
+            app:stateNoPermissionTitle="@string/finance_no_permission_title"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/finance_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_2"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <com.zhimu.slmp.base.widget.ListRowView
+                        android:id="@+id/finance_original"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:leadingTone="secondary"
+                        app:rowLeadingIcon="@drawable/ic_local_shipping" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/base_space_1"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:text="@string/finance_e08_mode"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                    <com.zhimu.slmp.base.widget.ConnectedButtonGroup
+                        android:id="@+id/finance_mode_group"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_1"
+                        app:checkedButton="@id/finance_mode_price"
+                        app:selectionRequired="true"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/finance_mode_price"
+                            style="@style/Widget.Zmt.Button.Connected"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/finance_e08_mode_price" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/finance_mode_quantity"
+                            style="@style/Widget.Zmt.Button.Connected"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/finance_e08_mode_quantity" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/finance_mode_void"
+                            style="@style/Widget.Zmt.Button.Connected"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/finance_e08_mode_void" />
+                    </com.zhimu.slmp.base.widget.ConnectedButtonGroup>
+
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                        android:id="@+id/finance_price_layout"
+                        style="@style/Widget.Zmt.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:hint="@string/finance_e08_new_price"
+                        app:helperTextEnabled="true">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/finance_price"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="numberDecimal"
+                            android:maxLength="9"
+                            android:text="@={vm.newUnitPriceText}" />
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                    <LinearLayout
+                        android:id="@+id/finance_quantity_box"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                            android:id="@+id/finance_quantity_layout"
+                            style="@style/Widget.Zmt.TextInputLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="@string/finance_e08_new_quantity"
+                            app:helperTextEnabled="true">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/finance_quantity"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:maxLength="7"
+                                android:text="@={vm.newQuantityText}" />
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                            android:id="@+id/finance_weight_layout"
+                            style="@style/Widget.Zmt.TextInputLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/base_space_3"
+                            android:layout_weight="1"
+                            android:hint="@string/finance_e08_new_weight"
+                            app:helperTextEnabled="true"
+                            app:suffixText="@string/finance_kg">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/finance_weight"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="numberDecimal"
+                                android:maxLength="11"
+                                android:text="@={vm.newTotalWeightText}" />
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+                    </LinearLayout>
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/finance_void_notice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:visibility="gone"
+                        app:noticeIcon="@drawable/ic_warning"
+                        app:noticeLevel="warning" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Zmt.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="@dimen/base_space_4">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/finance_e08_after"
+                                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <com.zhimu.slmp.base.widget.StatusTagView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/finance_e08_estimate"
+                                    app:tagType="neutral" />
+                            </LinearLayout>
+
+                            <com.zhimu.slmp.base.widget.KeyValueRowView
+                                android:id="@+id/finance_row_amount"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_2"
+                                app:kvKey="@string/finance_e08_row_amount"
+                                app:kvValueAlign="end" />
+
+                            <com.zhimu.slmp.base.widget.KeyValueRowView
+                                android:id="@+id/finance_row_unpaid"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:kvKey="@string/finance_e08_row_unpaid"
+                                app:kvValueAlign="end" />
+
+                            <com.zhimu.slmp.base.widget.KeyValueRowView
+                                android:id="@+id/finance_row_profit"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:kvKey="@string/finance_e08_row_profit"
+                                app:kvValueAlign="end" />
+
+                            <TextView
+                                android:id="@+id/finance_preview_note"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/base_space_2"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                        android:id="@+id/finance_reason_layout"
+                        style="@style/Widget.Zmt.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:hint="@string/finance_e08_reason"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="200"
+                        app:helperText="@string/finance_e08_reason_helper"
+                        app:helperTextEnabled="true">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/finance_reason"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="top"
+                            android:inputType="textMultiLine"
+                            android:minLines="2"
+                            android:text="@={vm.reason}" />
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        app:noticeIcon="@drawable/ic_info"
+                        app:noticeText="@string/finance_e08_flow" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/finance_bottom_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:tag="snackbar_anchor"
+            app:barPrimaryText="@string/finance_e08_submit" />
+    </LinearLayout>
+</layout>

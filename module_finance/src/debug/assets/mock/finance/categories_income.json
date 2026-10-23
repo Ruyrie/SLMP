@@ -1,0 +1,55 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 201,
+      "code": "SALE",
+      "name": "出栏销售",
+      "icon": "payments",
+      "direction": "INCOME",
+      "sort_no": 1,
+      "auto_source": true,
+      "mark_only": false,
+      "is_fallback": false,
+      "subcategories": []
+    },
+    {
+      "id": 202,
+      "code": "BYPRODUCT",
+      "name": "副产品",
+      "icon": "storefront",
+      "direction": "INCOME",
+      "sort_no": 2,
+      "auto_source": false,
+      "mark_only": false,
+      "is_fallback": false,
+      "subcategories": []
+    },
+    {
+      "id": 203,
+      "code": "SUBSIDY",
+      "name": "补贴",
+      "icon": "account_balance",
+      "direction": "INCOME",
+      "sort_no": 3,
+      "auto_source": false,
+      "mark_only": false,
+      "is_fallback": false,
+      "subcategories": []
+    },
+    {
+      "id": 204,
+      "code": "OTHER_INCOME",
+      "name": "其他",
+      "icon": "category",
+      "direction": "INCOME",
+      "sort_no": 4,
+      "auto_source": false,
+      "mark_only": false,
+      "is_fallback": true,
+      "subcategories": []
+    }
+  ],
+  "trace_id": "mock-finance-categories_income"
+}

@@ -1,0 +1,13 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "status": "SUCCESS",
+    "highlight": "本期 2 个批次结束，合计盈利 17,008 元；结余 87,600 元，较上月同期增长 32.1%。",
+    "problem": "死亡率 2.50%，比上月同期高 0.4 个百分点，期间死淘 30 头。",
+    "suggestion": "核查死淘较多栏舍的通风、饲喂和巡检记录。",
+    "generated_at": "2026-10-19 06:10:00",
+    "outdated": false
+  },
+  "trace_id": "mock-finance-summary_to_date"
+}

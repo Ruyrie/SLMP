@@ -1,0 +1,12 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "export_id": 8802,
+    "file_id": 9902,
+    "file_name": "东山猪场经营报表_10月1日-19日.pdf",
+    "download_url": "file:///android_asset/mock/finance/export/report_sample.pdf",
+    "expire_at": "2026-10-26 10:00:00"
+  },
+  "trace_id": "mock-finance-export_pdf"
+}

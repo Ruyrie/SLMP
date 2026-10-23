@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 搜索栏（E04、E14 搜索态）：arrow_back 退出搜索 + 56 dp 高、圆角 28 的 surface-container-high 输入框 + close 清空 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="4dp"
+    android:paddingTop="4dp"
+    android:paddingEnd="@dimen/base_page_margin"
+    android:paddingBottom="4dp">
+
+    <ImageButton
+        android:id="@+id/finance_search_back"
+        style="@style/Widget.Zmt.Button.Icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:contentDescription="@string/base_cd_back"
+        android:src="@drawable/ic_arrow_back" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="4dp"
+        android:layout_weight="1"
+        android:background="@drawable/finance_bg_search"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_space_4">
+
+        <EditText
+            android:id="@+id/finance_search_input"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null"
+            android:imeOptions="actionSearch"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:maxLength="30"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant" />
+
+        <ImageButton
+            android:id="@+id/finance_search_clear"
+            style="@style/Widget.Zmt.Button.Icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/finance_cd_clear"
+            android:src="@drawable/ic_close"
+            android:visibility="gone"
+            app:tint="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+</LinearLayout>

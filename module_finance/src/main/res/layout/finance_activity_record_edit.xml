@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E03 记一笔（图 10-4、10-5）：支出 / 收入、金额、疑似重复横幅、分类与子类（支出）或说明（收入）、日期 + 关联批次、凭证照片、底部“保存” -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.finance.ui.record.FinanceRecordEditViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/finance_top_bar"
+            layout="@layout/base_include_top_app_bar" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/finance_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/finance_error_title"
+            app:stateNoPermissionTitle="@string/finance_no_permission_title"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/finance_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_5"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_6">
+
+                    <com.zhimu.slmp.base.widget.ConnectedButtonGroup
+                        android:id="@+id/finance_type_group"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:checkedButton="@id/finance_type_expense"
+                        app:selectionRequired="true"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/finance_type_expense"
+                            style="@style/Widget.Zmt.Button.Connected"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/finance_e04_type_expense" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/finance_type_income"
+                            style="@style/Widget.Zmt.Button.Connected"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/finance_e04_type_income" />
+                    </com.zhimu.slmp.base.widget.ConnectedButtonGroup>
+
+                    <TextView
+                        android:id="@+id/finance_edit_note"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_2"
+                        android:text="@string/finance_e03_edit_note"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:visibility="gone" />
+
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                        android:id="@+id/finance_amount_layout"
+                        style="@style/Widget.Zmt.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:hint="@string/finance_e03_amount"
+                        app:helperText="@string/finance_e03_amount_helper"
+                        app:helperTextEnabled="true"
+                        app:suffixText="@string/finance_unit_yuan">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/finance_amount"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="numberDecimal"
+                            android:maxLength="14"
+                            android:text="@={vm.amountText}"
+                            android:textAppearance="@style/TextAppearance.Zmt.TitleLarge.Number" />
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                    <com.zhimu.slmp.base.widget.NoticeView
+                        android:id="@+id/finance_duplicate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_4"
+                        android:visibility="gone"
+                        app:noticeIcon="@drawable/ic_content_copy"
+                        app:noticeLevel="warning"
+                        app:noticeTitle="@string/finance_e03_duplicate_title" />
+
+                    <TextView
+                        style="@style/Widget.Zmt.TextView.FieldLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:text="@string/finance_e03_category" />
+
+                    <TextView
+                        android:id="@+id/finance_category_error"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorError"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/finance_categories"
+                        style="@style/Widget.Zmt.ChipGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_2"
+                        app:singleSelection="true" />
+
+                    <TextView
+                        android:id="@+id/finance_sub_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/finance_subcategories"
+                        style="@style/Widget.Zmt.ChipGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_1"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/finance_income_note"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_2"
+                        android:text="@string/finance_e03_income_note"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:visibility="gone" />
+
+                    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                        android:id="@+id/finance_note_layout"
+                        style="@style/Widget.Zmt.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        android:hint="@string/finance_e03_note"
+                        android:visibility="gone"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="30">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/finance_note"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:maxLines="1"
+                            android:text="@={vm.note}" />
+                    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                            android:id="@+id/finance_date_layout"
+                            style="@style/Widget.Zmt.TextInputLayout.Picker"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="@string/finance_e03_date"
+                            app:endIconDrawable="@drawable/ic_calendar_month"
+                            app:endIconMode="custom"
+                            app:helperText="@string/finance_e03_date_helper"
+                            app:helperTextEnabled="true">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/finance_date"
+                                style="@style/Widget.Zmt.TextInputEditText.Picker"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                            android:id="@+id/finance_batch_layout"
+                            style="@style/Widget.Zmt.TextInputLayout.Dropdown"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/base_space_3"
+                            android:layout_weight="1"
+                            android:hint="@string/finance_e03_batch"
+                            app:helperTextEnabled="true">
+
+                            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                                android:id="@+id/finance_batch"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none" />
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        style="@style/Widget.Zmt.TextView.FieldLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_5"
+                        android:text="@string/finance_e03_vouchers" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/finance_e03_vouchers_rule"
+                        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                    <com.zhimu.slmp.media.picker.MediaPickerView
+                        android:id="@+id/finance_vouchers"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_2" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/finance_bottom_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:tag="snackbar_anchor"
+            app:barPrimaryIcon="@drawable/ic_check"
+            app:barPrimaryText="@string/finance_e03_save" />
+    </LinearLayout>
+</layout>

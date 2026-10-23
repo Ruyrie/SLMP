@@ -1,0 +1,88 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "settlement_id": 6009,
+    "status": "LOCKED",
+    "settled_at": "2026-10-13 16:40:00",
+    "calc_at": "2026-10-19 10:50:00",
+    "profit": 2560,
+    "sale_income": 188160,
+    "received_amount": 100000,
+    "cost_total": 185600,
+    "per_head_basis": "SOLD",
+    "per_head_count": 98,
+    "version": 3,
+    "batch": {
+      "batch_id": 3009,
+      "batch_no": "ZM2609-012",
+      "pen_name": "5 号育肥舍",
+      "breed_name": "杜长大",
+      "category_name": "育肥猪",
+      "count_unit_text": "头",
+      "day_age": 168,
+      "entry_count": 100,
+      "death_count": 2,
+      "sold_count": 98,
+      "current_count": 0,
+      "end_date": "2026-10-13"
+    },
+    "cost_per_head": 1893.88,
+    "profit_per_head": 26.12,
+    "fcr": 2.8,
+    "feed_kg": 25930,
+    "net_gain_kg": 9260,
+    "costs": [
+      {
+        "cost_group": "FEED",
+        "cost_group_text": "饲料",
+        "amount": 120000,
+        "share_rate": 0.647,
+        "note": null
+      },
+      {
+        "cost_group": "SEEDLING",
+        "cost_group_text": "引种",
+        "amount": 50000,
+        "share_rate": 0.269,
+        "note": "100 头 × 500 元"
+      },
+      {
+        "cost_group": "DRUG",
+        "cost_group_text": "兽药疫苗",
+        "amount": 8000,
+        "share_rate": 0.043,
+        "note": null
+      },
+      {
+        "cost_group": "OTHER",
+        "cost_group_text": "其他费用",
+        "amount": 7600,
+        "share_rate": 0.041,
+        "note": "人工、水电、运输等"
+      }
+    ],
+    "sale_orders": [
+      {
+        "id": 9102,
+        "sale_date": "2026-10-13",
+        "quantity": 98,
+        "total_weight": 11760,
+        "unit_price": 16.0,
+        "payment_status": "PARTIAL",
+        "sale_amount": 188160
+      }
+    ],
+    "supplements": [],
+    "preview_after": null,
+    "recent_cost_records": [
+      {
+        "title": "运输费",
+        "biz_date": "2026-10-17",
+        "amount": 600,
+        "cost_group_text": "其他费用"
+      }
+    ]
+  },
+  "trace_id": "mock-finance-settlement_3009_confirmed"
+}

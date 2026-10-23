@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E09 卡片右下 tonal 按钮“登记收款”（32 dp 高） -->
+<com.google.android.material.button.MaterialButton xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Widget.Zmt.Button.Tonal.Small"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/finance_card_receive" />

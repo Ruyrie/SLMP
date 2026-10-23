@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E01 经营页（图 10-1）：一级页顶部栏 + 大标题 + 本月结余重点卡 + 待收款合计 / 出栏价两张指标卡 + 经营工具宫格 + 需要处理 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <com.zhimu.slmp.common.widget.FirstLevelTopBar
+        android:id="@+id/finance_top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/base_top_bar_height" />
+
+    <com.zhimu.slmp.base.widget.StateLayout
+        android:id="@+id/finance_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:stateErrorTitle="@string/finance_error_title"
+        app:stateNoPermissionTitle="@string/finance_no_permission_title"
+        app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/finance_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/finance_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_4">
+
+                    <TextView
+                        style="@style/Widget.Zmt.TextView.PageTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/finance_e01_title" />
+
+                    <TextView
+                        android:id="@+id/finance_date_note"
+                        style="@style/Widget.Zmt.TextView.PageSubtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <com.zhimu.slmp.base.widget.StatCardView
+                        android:id="@+id/finance_card_balance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_3"
+                        app:statEmphasis="true"
+                        app:statIcon="@drawable/ic_account_balance_wallet"
+                        app:statLabel="@string/finance_e01_balance"
+                        app:statSize="large"
+                        app:statUnit="@string/finance_unit_yuan" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_2"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <com.zhimu.slmp.base.widget.StatCardView
+                            android:id="@+id/finance_card_receivable"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            app:statIcon="@drawable/ic_pending_actions"
+                            app:statLabel="@string/finance_e01_receivable"
+                            app:statUnit="@string/finance_unit_yuan" />
+
+                        <com.zhimu.slmp.base.widget.StatCardView
+                            android:id="@+id/finance_card_price"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/base_space_2"
+                            android:layout_weight="1"
+                            app:statIcon="@drawable/ic_trending_up"
+                            app:statLabel="@string/finance_e01_price_default" />
+                    </LinearLayout>
+
+                    <com.zhimu.slmp.base.widget.SectionHeaderView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_section_gap"
+                        app:sectionTitle="@string/finance_e01_tools" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/finance_tool_finance"
+                            layout="@layout/finance_view_tool" />
+
+                        <Space
+                            android:layout_width="@dimen/base_space_2"
+                            android:layout_height="1dp" />
+
+                        <include
+                            android:id="@+id/finance_tool_sale"
+                            layout="@layout/finance_view_tool" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_space_2"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/finance_tool_market"
+                            layout="@layout/finance_view_tool" />
+
+                        <Space
+                            android:layout_width="@dimen/base_space_2"
+                            android:layout_height="1dp" />
+
+                        <include
+                            android:id="@+id/finance_tool_report"
+                            layout="@layout/finance_view_tool" />
+                    </LinearLayout>
+
+                    <com.zhimu.slmp.base.widget.SectionHeaderView
+                        android:id="@+id/finance_todo_header"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/base_section_gap"
+                        android:visibility="gone"
+                        app:sectionTitle="@string/finance_e01_todos" />
+
+                    <com.zhimu.slmp.base.widget.GroupedListLayout
+                        android:id="@+id/finance_todos"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </com.zhimu.slmp.base.widget.StateLayout>
+</LinearLayout>

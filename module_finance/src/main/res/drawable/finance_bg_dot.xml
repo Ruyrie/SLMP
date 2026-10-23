@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 图例圆点 8 dp（颜色由代码设置 backgroundTint） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <size android:width="8dp" android:height="8dp" />
+    <solid android:color="@color/zm_primary" />
+</shape>

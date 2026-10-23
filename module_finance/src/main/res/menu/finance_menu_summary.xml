@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E02 顶部栏：收支流水、支出分类 -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/finance_menu_records"
+        android:icon="@drawable/ic_receipt_long"
+        android:title="@string/finance_cd_records"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/finance_menu_categories"
+        android:icon="@drawable/ic_category"
+        android:title="@string/finance_cd_categories"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+</menu>

@@ -1,0 +1,30 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 7102,
+    "batch_id": 3002,
+    "batch_no": "ZM2610-019",
+    "pen_name": "4 号育肥舍",
+    "status": "SUCCESS",
+    "conclusion": "KEEP_FEEDING",
+    "conclusion_text": "建议继续饲养",
+    "in_withdrawal": false,
+    "basis_insufficient": true,
+    "generated_at": "2026-10-05 09:10:00",
+    "window_start": "2026-10-15",
+    "window_end": "2026-10-30",
+    "sellable_date": null,
+    "withdrawal_days_left": null,
+    "reasons": {
+      "withdrawal": "不在休药期，可以出栏。",
+      "age": "68 日龄，存栏 170 头。",
+      "weight": "10月1日称重，平均体重 98.2 千克，低于出栏体重。",
+      "price": "近 30 天价格平稳。"
+    },
+    "risks": [],
+    "basis_note": "依据不足：最近一次称重是 10月1日，体重数据偏旧。",
+    "batch_end_date": null
+  },
+  "trace_id": "mock-finance-advice_7102"
+}
