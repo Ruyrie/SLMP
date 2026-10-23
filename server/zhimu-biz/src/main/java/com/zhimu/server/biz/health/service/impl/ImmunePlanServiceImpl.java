@@ -186,6 +186,11 @@ public class ImmunePlanServiceImpl implements ImmunePlanService {
         Map<Long, BatchInfo> batchCache = new HashMap<>();
         List<ImmunePlanOptionVO> all = new ArrayList<>();
         for (ImmunePlan plan : plans) {
+            // 员工下拉只含负责栏舍的 PENDING、POSTPONED（漏免需所有者、场长补录）
+            if (member.isStaff() && !List.of(HealthCodes.PLAN_PENDING, HealthCodes.PLAN_POSTPONED)
+                    .contains(plan.getStatus())) {
+                continue;
+            }
             BatchInfo batch = plan.getBatchId() == null ? null : batchCache.computeIfAbsent(plan.getBatchId(),
                     support::requireBatch);
             Long penId = batch == null ? plan.getPenId() : support.mainPenId(batch);
