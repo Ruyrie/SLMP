@@ -140,10 +140,12 @@ class FeedTaskServiceTest {
         task.setMealNo(mealNo);
         task.setMealCode("BREAKFAST");
         task.setMealName(mealName);
-        task.setFeedTime(LocalTime.parse(time));
+        LocalTime feedTime = LocalTime.parse(time);
+        LocalDateTime feedAt = LocalDateTime.of(2026, 10, 19, feedTime);
+        task.setFeedTime(feedTime);
         task.setTaskDate(LocalDate.of(2026, 10, 19));
-        task.setFeedAt(LocalDateTime.of(2026, 10, 19, 7, 0));
-        task.setDeadlineAt(LocalDateTime.of(2026, 10, 19, 9, 0));
+        task.setFeedAt(feedAt);
+        task.setDeadlineAt(feedAt.plusHours(2));
         task.setBackfillEndAt(LocalDateTime.of(2026, 10, 21, 0, 0));
         task.setPlanQty(new BigDecimal(planQty).setScale(2));
         task.setHeadCount(200);
