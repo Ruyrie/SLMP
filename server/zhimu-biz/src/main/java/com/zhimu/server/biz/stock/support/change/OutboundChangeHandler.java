@@ -171,6 +171,21 @@ public class OutboundChangeHandler implements ChangeRequestHandler {
                     "超过当前可用结存 " + StockChangeSupport.qtyText(available) + " " + unitText(outbound)
                             + "，出库后库存不能为负数");
         }
+        if (!StockCodes.isFeed(outbound.getMaterialType())) {
+            DrugLot lot = support.lot(outbound.getDrugLotId());
+            if (lot == null) {
+                throw new BizException(ErrorCode.LOT_UNAVAILABLE, "该批号已过期或已停用，请换一个批号");
+            }
+            if (lot.getRecallId() != null || lot.getRecalledAt() != null) {
+                throw new BizException(ErrorCode.LOT_UNAVAILABLE,
+                        "批号 " + lot.getLotNo() + " 已被平台停用，不能出库，只能登记报废");
+            }
+            if (lot.getExpireDate() != null && outbound.getOutDate() != null
+                    && lot.getExpireDate().isBefore(outbound.getOutDate())) {
+                throw new BizException(ErrorCode.LOT_UNAVAILABLE,
+                        "批号 " + lot.getLotNo() + " 已过期，不能出库，只能登记报废");
+            }
+        }
     }
 
     @Override

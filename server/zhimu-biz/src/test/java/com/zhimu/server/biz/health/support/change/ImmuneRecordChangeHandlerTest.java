@@ -63,6 +63,7 @@ class ImmuneRecordChangeHandlerTest {
     @Mock private DrugMapper drugMapper;
     @Mock private DrugLotMapper drugLotMapper;
     @Mock private DrugStockPort drugStockPort;
+    @Mock private com.zhimu.server.admin.base.api.DrugCatalogQueryService drugCatalogQueryService;
     @Mock private HealthChangeSupport support;
 
     private ImmuneRecordChangeHandler handler;
@@ -73,7 +74,7 @@ class ImmuneRecordChangeHandlerTest {
     void setUp() {
         BeijingTime.setClock(CLOCK);
         handler = new ImmuneRecordChangeHandler(recordMapper, planMapper, drugMapper, drugLotMapper,
-                drugStockPort, support);
+                drugStockPort, drugCatalogQueryService, support);
         record = new ImmuneRecord();
         record.setId(5201L);
         record.setFarmId(1001L);
