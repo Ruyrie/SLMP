@@ -1,0 +1,6 @@
+{
+  "code": 42204,
+  "message": "批号 2025033 已过期，不能出库，只能登记报废",
+  "data": null,
+  "trace_id": "mock-stock-err_42204_outbound"
+}

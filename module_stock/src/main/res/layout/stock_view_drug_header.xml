@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- M05 列表头部：停用 Notice → 单选筛选 Chip（全部 / 兽药 / 疫苗 / 消毒剂）→ 药品库存不足横幅 → 结存规则说明 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/base_space_1">
+
+    <com.zhimu.slmp.base.widget.NoticeView
+        android:id="@+id/stock_readonly_notice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/base_space_3"
+        android:visibility="gone"
+        app:noticeIcon="@drawable/ic_info"
+        app:noticeLevel="normal" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/stock_category_chips"
+        style="@style/Widget.Zmt.ChipGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:selectionRequired="true"
+        app:singleLine="true"
+        app:singleSelection="true" />
+
+    <com.zhimu.slmp.base.widget.NoticeView
+        android:id="@+id/stock_low_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_3"
+        android:visibility="gone"
+        app:noticeIcon="@drawable/ic_warning"
+        app:noticeLevel="warning" />
+
+    <TextView
+        android:id="@+id/stock_near_rule"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_3"
+        android:paddingStart="@dimen/base_space_1"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+</LinearLayout>

@@ -1,0 +1,6 @@
+{
+  "code": 40303,
+  "message": "你没有物资库存的查看权限。入库、盘点和报废由所有者或场长处理。",
+  "data": null,
+  "trace_id": "mock-stock-err_40303"
+}

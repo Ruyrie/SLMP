@@ -1,0 +1,36 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "drug_id": 5201,
+    "category": "VET_DRUG",
+    "catalog_id": 7201,
+    "name": "阿莫西林可溶性粉",
+    "catalog_source_text": "兽药目录",
+    "spec": "10% · 500 克/袋",
+    "unit": "G",
+    "pack_unit": "袋",
+    "pack_unit_options": [
+      "袋"
+    ],
+    "pack_size": 500,
+    "pack_size_locked": true,
+    "min_stock": 15,
+    "usable": {
+      "value": 6000,
+      "unit": "G",
+      "unit_text": "克",
+      "pack_unit": "袋",
+      "pack_size": 500,
+      "pack_count": 12,
+      "rest_value": 0
+    },
+    "unit_locked": true,
+    "banned": false,
+    "near_days": 30,
+    "version": 2,
+    "updated_at": "2026-10-05 09:00:00",
+    "updated_by_name": "王建国"
+  },
+  "trace_id": "mock-stock-drug_5201"
+}

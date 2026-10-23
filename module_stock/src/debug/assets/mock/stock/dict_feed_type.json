@@ -1,0 +1,52 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 3101,
+      "code": "COMPLETE",
+      "name": "全价料",
+      "description": null,
+      "remark_required": false,
+      "is_system": false,
+      "sort_no": 1
+    },
+    {
+      "id": 3102,
+      "code": "NURSERY",
+      "name": "保育料",
+      "description": null,
+      "remark_required": false,
+      "is_system": false,
+      "sort_no": 2
+    },
+    {
+      "id": 3103,
+      "code": "CONCENTRATE",
+      "name": "浓缩料",
+      "description": null,
+      "remark_required": false,
+      "is_system": false,
+      "sort_no": 3
+    },
+    {
+      "id": 3104,
+      "code": "PREMIX",
+      "name": "预混料",
+      "description": null,
+      "remark_required": false,
+      "is_system": false,
+      "sort_no": 4
+    },
+    {
+      "id": 3105,
+      "code": "RAW",
+      "name": "原料",
+      "description": null,
+      "remark_required": false,
+      "is_system": false,
+      "sort_no": 5
+    }
+  ],
+  "trace_id": "mock-stock-dict_feed_type"
+}

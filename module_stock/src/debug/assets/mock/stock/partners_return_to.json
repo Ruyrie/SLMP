@@ -1,0 +1,9 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    "松山区康牧兽药店",
+    "北山动保经销部"
+  ],
+  "trace_id": "mock-stock-partners_return_to"
+}

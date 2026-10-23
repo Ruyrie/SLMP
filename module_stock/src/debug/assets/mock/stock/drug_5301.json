@@ -1,0 +1,36 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "drug_id": 5301,
+    "category": "DISINFECTANT",
+    "catalog_id": 7301,
+    "name": "聚维酮碘溶液",
+    "catalog_source_text": "消毒剂字典",
+    "spec": "5 升/桶",
+    "unit": "L",
+    "pack_unit": "桶",
+    "pack_unit_options": [
+      "桶"
+    ],
+    "pack_size": 5,
+    "pack_size_locked": true,
+    "min_stock": null,
+    "usable": {
+      "value": 40,
+      "unit": "L",
+      "unit_text": "升",
+      "pack_unit": "桶",
+      "pack_size": 5,
+      "pack_count": 8,
+      "rest_value": 0
+    },
+    "unit_locked": true,
+    "banned": false,
+    "near_days": 30,
+    "version": 1,
+    "updated_at": "2026-09-25 14:00:00",
+    "updated_by_name": "刘芳"
+  },
+  "trace_id": "mock-stock-drug_5301"
+}

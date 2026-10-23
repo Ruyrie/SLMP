@@ -1,0 +1,13 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "items": [],
+    "banned_hit": {
+      "banned_drug_id": 9901,
+      "name": "盐酸克仑特罗",
+      "message": "盐酸克仑特罗为禁用药，不能入库"
+    }
+  },
+  "trace_id": "mock-stock-catalog_banned"
+}

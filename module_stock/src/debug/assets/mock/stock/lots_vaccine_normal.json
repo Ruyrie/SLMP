@@ -1,0 +1,63 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "lot_id": 6001,
+        "drug_id": 5001,
+        "drug_name": "猪瘟活疫苗",
+        "category": "VACCINE",
+        "category_text": "疫苗",
+        "lot_no": "2025081",
+        "expire_date": "2026-12-30",
+        "stock": {
+          "value": 400,
+          "unit": "DOSE",
+          "unit_text": "头份",
+          "pack_unit": "瓶",
+          "pack_size": 10,
+          "pack_count": 40,
+          "rest_value": 0
+        },
+        "lot_status": "NORMAL",
+        "lot_status_text": "正常",
+        "days_to_expire": 72,
+        "priority_out": true,
+        "status_note": null
+      },
+      {
+        "lot_id": 6002,
+        "drug_id": 5001,
+        "drug_name": "猪瘟活疫苗",
+        "category": "VACCINE",
+        "category_text": "疫苗",
+        "lot_no": "2025113",
+        "expire_date": "2027-03-15",
+        "stock": {
+          "value": 600,
+          "unit": "DOSE",
+          "unit_text": "头份",
+          "pack_unit": "瓶",
+          "pack_size": 10,
+          "pack_count": 60,
+          "rest_value": 0
+        },
+        "lot_status": "NORMAL",
+        "lot_status_text": "正常",
+        "days_to_expire": 147,
+        "priority_out": false,
+        "status_note": null
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "ATTENTION": 1,
+      "NORMAL": 2
+    }
+  },
+  "trace_id": "mock-stock-lots_vaccine_normal"
+}

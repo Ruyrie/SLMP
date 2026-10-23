@@ -1,0 +1,9 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [],
+    "banned_hint": "盐酸克仑特罗为禁用药，不能入库"
+  },
+  "trace_id": "mock-stock-drug_options_banned"
+}

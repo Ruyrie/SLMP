@@ -1,0 +1,55 @@
+{
+  "code": 0,
+  "message": "已登记报损 10 千克育肥全价料",
+  "data": {
+    "loss_id": 6403,
+    "loss_type": "FEED_LOSS",
+    "loss_type_text": "报损",
+    "material_name": "育肥全价料",
+    "drug_lot_id": null,
+    "lot_no": null,
+    "qty": {
+      "value": 10,
+      "unit": "KG",
+      "unit_text": "千克",
+      "pack_unit": null,
+      "pack_size": null,
+      "pack_count": null,
+      "rest_value": null
+    },
+    "remaining": {
+      "value": 490,
+      "unit": "KG",
+      "unit_text": "千克",
+      "pack_unit": null,
+      "pack_size": null,
+      "pack_count": null,
+      "rest_value": null
+    },
+    "reason": "MILDEW",
+    "reason_text": "霉变",
+    "remark": "3 号育肥舍料塔底部结块",
+    "loss_date": "2026-10-19",
+    "status": "NORMAL",
+    "unit_price": 3.2,
+    "amount": 32.0,
+    "actions": {
+      "can_edit": false,
+      "edit_deadline": null,
+      "pending_request_id": null,
+      "edit_state": "REQUEST_ONLY",
+      "can_void": false,
+      "can_request_change": true
+    },
+    "created_by": {
+      "user_id": 10001,
+      "name": "王建国",
+      "avatar_url": null,
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "created_at": "2026-10-19 11:10:00",
+    "version": 1
+  },
+  "trace_id": "mock-stock-loss_created"
+}

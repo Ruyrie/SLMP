@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 登记报损面板内容：报损数量（自动聚焦）→ 报损原因单选 Chip → 说明（原因为“其他”时必填）→ 右对齐“取消”“登记报损” -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/base_sheet_padding_horizontal"
+    android:paddingTop="@dimen/base_space_3"
+    android:paddingEnd="@dimen/base_sheet_padding_horizontal"
+    android:paddingBottom="@dimen/base_space_4">
+
+    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+        android:id="@+id/stock_loss_qty_layout"
+        style="@style/Widget.Zmt.TextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/stock_field_loss_qty">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/stock_loss_qty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:digits="0123456789.,"
+            android:inputType="numberDecimal"
+            android:maxLength="14"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_4"
+        android:text="@string/stock_field_loss_reason"
+        android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+        android:textColor="?attr/colorOnSurface" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/stock_loss_reasons"
+        style="@style/Widget.Zmt.ChipGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_2"
+        app:singleSelection="true" />
+
+    <TextView
+        android:id="@+id/stock_loss_reason_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_space_4"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+        android:textColor="?attr/colorError"
+        android:visibility="gone" />
+
+    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+        android:id="@+id/stock_loss_remark_layout"
+        style="@style/Widget.Zmt.TextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_3"
+        android:hint="@string/stock_field_remark_optional">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/stock_loss_remark"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine"
+            android:maxLength="100"
+            android:maxLines="3" />
+    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_5"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/stock_loss_cancel"
+            style="@style/Widget.Zmt.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/stock_action_cancel" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/stock_loss_submit"
+            style="@style/Widget.Zmt.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_2"
+            android:text="@string/stock_loss_action" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- M04 饲料盘点卡：名称 + “账面结存 500 千克”+ “登记报损”；实盘数量框；结果条（盘亏 / 盘盈 / 账实相符 + 按均价折合） -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Zmt.Card.ListItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        android:orientation="vertical"
+        android:padding="@dimen/base_space_4">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/stock_take_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <TextView
+                    android:id="@+id/stock_take_book"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/stock_take_loss"
+                style="@style/Widget.Zmt.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/base_touch_target"
+                android:text="@string/stock_loss_action"
+                app:icon="@drawable/stock_ic_delete_sweep" />
+        </LinearLayout>
+
+        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+            android:id="@+id/stock_take_actual_layout"
+            style="@style/Widget.Zmt.TextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:hint="@string/stock_field_actual">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/stock_take_actual"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:digits="0123456789.,"
+                android:imeOptions="actionNext"
+                android:inputType="numberDecimal"
+                android:maxLength="14"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+        <LinearLayout
+            android:id="@+id/stock_take_result"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:background="@drawable/stock_bg_result"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/base_space_3"
+            android:paddingEnd="@dimen/base_space_3"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/stock_take_result_icon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:importantForAccessibility="no"
+                app:tint="?attr/colorOnSurface" />
+
+            <TextView
+                android:id="@+id/stock_take_result_qty"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_2"
+                android:layout_weight="1"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                android:textColor="?attr/colorOnSurface" />
+
+            <TextView
+                android:id="@+id/stock_take_result_amount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium.Number"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

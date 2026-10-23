@@ -1,4 +1,129 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 模块09 饲料与兽药疫苗库存：M01–M11 按页面编号 action 打开；流水、盘点记录、单据只读页、修改记录为组件内页面 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+
+        <activity
+            android:name=".ui.feedstock.FeedStockActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.M01" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.feedarchive.FeedArchiveActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.M02" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.feedinbound.FeedInboundActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.M03" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.stocktake.StocktakeActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.M04" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.drugstock.DrugStockActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.M05" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.druglot.DrugLotDetailActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.M06" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.drugscrap.DrugScrapActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.M07" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.druginbound.DrugInboundActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.M08" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.drugarchive.DrugArchiveActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.M09" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.otherout.FeedOtherOutActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.M10" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.drugoutbound.DrugOutboundActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.M11" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.flow.StockFlowListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.stocktake.StocktakeHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.record.StockRecordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.common.ChangeLogActivity"
+            android:exported="false" />
+    </application>
 
 </manifest>

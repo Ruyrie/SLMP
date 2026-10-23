@@ -1,0 +1,71 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "feed_id": 5101,
+        "name": "育肥全价料",
+        "spec": "40 千克/袋",
+        "feed_type_code": "COMPLETE",
+        "feed_type_text": "全价料",
+        "category_text": "育肥猪",
+        "stock": {
+          "value": 500,
+          "unit": "KG",
+          "unit_text": "千克",
+          "pack_unit": null,
+          "pack_size": null,
+          "pack_count": null,
+          "rest_value": null
+        },
+        "remaining_days": 1,
+        "remaining_basis": "USAGE_7D",
+        "daily_use_qty": 480,
+        "usage_qty": 3360,
+        "usage_days": 7,
+        "avg_price": 3.2,
+        "stock_amount": 1600,
+        "min_stock": 800,
+        "warn_days": 7,
+        "low_stock": true,
+        "low_stock_reason": "BELOW_DAYS",
+        "low_stock_reason_text": "低于预警天数"
+      },
+      {
+        "feed_id": 5102,
+        "name": "保育料",
+        "spec": "20 千克/袋",
+        "feed_type_code": "NURSERY",
+        "feed_type_text": "保育料",
+        "category_text": "保育猪",
+        "stock": {
+          "value": 1850,
+          "unit": "KG",
+          "unit_text": "千克",
+          "pack_unit": null,
+          "pack_size": null,
+          "pack_count": null,
+          "rest_value": null
+        },
+        "remaining_days": 12,
+        "remaining_basis": "USAGE_7D",
+        "daily_use_qty": 150,
+        "usage_qty": 1050,
+        "usage_days": 7,
+        "avg_price": 4.2,
+        "stock_amount": 7770,
+        "min_stock": null,
+        "warn_days": 7,
+        "low_stock": false,
+        "low_stock_reason": null,
+        "low_stock_reason_text": null
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-stock-feeds_page"
+}

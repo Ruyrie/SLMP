@@ -1,0 +1,45 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "flow_id": 9270,
+        "flow_type": "OTHER_OUT",
+        "flow_type_text": "其他出库",
+        "direction": "OUT",
+        "material_type": "FEED",
+        "material_name": "保育料",
+        "lot_no": null,
+        "qty": {
+          "value": 50,
+          "unit": "KG",
+          "unit_text": "千克",
+          "pack_unit": null,
+          "pack_size": null,
+          "pack_count": null,
+          "rest_value": null
+        },
+        "stock_qty_after": 900,
+        "related_desc": "退回供应商",
+        "batch_id": null,
+        "batch_no": null,
+        "pen_name": null,
+        "operator_name": "王建国",
+        "occur_at": "2026-10-16 10:05:00",
+        "biz_date": "2026-10-16",
+        "status": "NORMAL",
+        "status_text": "正常",
+        "biz_type": "OUTBOUND",
+        "biz_id": 6501,
+        "unit_price": 4.2,
+        "amount": 210.0
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-stock-feed_flows_other_out"
+}

@@ -1,0 +1,6 @@
+{
+  "code": 42204,
+  "message": "批号 2025047 已被平台停用，不能入库",
+  "data": null,
+  "trace_id": "mock-stock-err_42204_inbound"
+}

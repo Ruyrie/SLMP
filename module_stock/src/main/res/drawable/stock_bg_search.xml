@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- M05 搜索栏：高 56 dp，圆角 28，surface-container-high -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="28dp" />
+    <solid android:color="?attr/colorSurfaceContainerHigh" />
+</shape>

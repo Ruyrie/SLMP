@@ -1,0 +1,36 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "lot_id": 5201,
+        "drug_id": 5003,
+        "drug_name": "口蹄疫灭活疫苗",
+        "category": "VACCINE",
+        "category_text": "疫苗",
+        "lot_no": "2025047",
+        "expire_date": "2027-04-20",
+        "stock": {
+          "value": 300,
+          "unit": "DOSE",
+          "unit_text": "头份",
+          "pack_unit": "瓶",
+          "pack_size": 10,
+          "pack_count": 30,
+          "rest_value": 0
+        },
+        "lot_status": "RECALLED",
+        "lot_status_text": "已停用",
+        "days_to_expire": 183,
+        "priority_out": false,
+        "status_note": "平台停用，只能报废"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-stock-lots_search_fmd"
+}

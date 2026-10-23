@@ -1,0 +1,16 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [],
+    "total": 0,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": {
+      "ATTENTION": 1,
+      "NORMAL": 0
+    }
+  },
+  "trace_id": "mock-stock-lots_dis_normal"
+}

@@ -1,0 +1,25 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "total_amount": 90.0,
+    "unit_price": 45.0,
+    "rows": [
+      {
+        "batch_id": 3002,
+        "batch_no": "ZM2610-019",
+        "head_count": 150,
+        "ratio": 0.625,
+        "amount": 56.25
+      },
+      {
+        "batch_id": 3005,
+        "batch_no": "ZM2610-058",
+        "head_count": 90,
+        "ratio": 0.375,
+        "amount": 33.75
+      }
+    ]
+  },
+  "trace_id": "mock-stock-alloc_pen"
+}

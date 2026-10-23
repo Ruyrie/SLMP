@@ -1,0 +1,6 @@
+{
+  "code": 42201,
+  "message": "超过当前结存 500 千克，出库后库存不能为负数",
+  "data": null,
+  "trace_id": "mock-stock-err_42201_loss"
+}

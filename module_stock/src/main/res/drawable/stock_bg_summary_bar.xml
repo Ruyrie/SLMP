@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 金额汇总条、同步记账卡、成本分摊卡：圆角 16 dp，surface-container-low -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="16dp" />
+    <solid android:color="?attr/colorSurfaceContainerLow" />
+</shape>

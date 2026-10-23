@@ -1,0 +1,84 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "outbound_id": 6513,
+    "outbound_no": "CK26106513",
+    "out_type": "USE",
+    "out_type_text": "领用",
+    "material_type": "DRUG",
+    "material_name": "聚维酮碘溶液",
+    "category": "DISINFECTANT",
+    "feed_id": null,
+    "drug_id": 5301,
+    "drug_lot_id": 6301,
+    "lot_no": "2025033",
+    "expire_date": "2026-11-08",
+    "input_qty": 2,
+    "input_unit": "PACK",
+    "qty": {
+      "value": 10,
+      "unit": "L",
+      "unit_text": "升",
+      "pack_unit": "桶",
+      "pack_size": 5,
+      "pack_count": 2,
+      "rest_value": 0
+    },
+    "max_qty": 8,
+    "destination": null,
+    "destination_text": null,
+    "target_type": "BATCH",
+    "batch": {
+      "batch_id": 3001,
+      "batch_no": "ZM2610-031",
+      "breed_text": "杜长大",
+      "day_age": 96,
+      "head_count": 200,
+      "pen_name": "3 号育肥舍"
+    },
+    "pen": null,
+    "receiver": {
+      "user_id": 10001,
+      "name": "王建国",
+      "avatar_url": null,
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "return_to": null,
+    "return_reason": null,
+    "return_reason_text": null,
+    "remark": null,
+    "out_date": "2026-10-19",
+    "status": "NORMAL",
+    "unit_price": 45.0,
+    "amount": 90.0,
+    "allocations": [
+      {
+        "batch_id": 3001,
+        "batch_no": "ZM2610-031",
+        "head_count": 200,
+        "ratio": 1,
+        "amount": 90.0
+      }
+    ],
+    "actions": {
+      "can_edit": true,
+      "edit_deadline": "2026-10-19 23:59:59",
+      "pending_request_id": null,
+      "edit_state": "EDITABLE",
+      "can_void": true,
+      "can_request_change": false
+    },
+    "created_by": {
+      "user_id": 10001,
+      "name": "王建国",
+      "avatar_url": null,
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "created_at": "2026-10-19 11:30:00",
+    "version": 1
+  },
+  "trace_id": "mock-stock-outbound_6513"
+}

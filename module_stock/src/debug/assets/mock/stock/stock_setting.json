@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "near_days_vet": 30,
+    "near_days_vaccine": 30,
+    "near_days_disinfectant": 30,
+    "version": 1
+  },
+  "trace_id": "mock-stock-stock_setting"
+}

@@ -1,0 +1,18 @@
+{
+  "code": 40902,
+  "message": "账面结存已变化，请刷新后重新核对",
+  "data": {
+    "items": [
+      {
+        "feed_id": 5101,
+        "feed_name": "育肥全价料",
+        "unit_text": "千克",
+        "book_qty": 490,
+        "stock_version": 13,
+        "low_stock": true,
+        "avg_price": 3.2
+      }
+    ]
+  },
+  "trace_id": "mock-stock-err_40902_stocktake"
+}

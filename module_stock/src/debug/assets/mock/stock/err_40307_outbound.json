@@ -1,0 +1,6 @@
+{
+  "code": 40307,
+  "message": "这条记录已不是今天登记的，修改需要提交修改申请，由管理员审核",
+  "data": null,
+  "trace_id": "mock-stock-err_40307_outbound"
+}

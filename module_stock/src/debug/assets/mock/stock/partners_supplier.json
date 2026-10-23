@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    "松山区丰禾饲料经销部",
+    "正大饲料东山站",
+    "金穗饲料商行"
+  ],
+  "trace_id": "mock-stock-partners_supplier"
+}

@@ -1,0 +1,40 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "items": [
+      {
+        "id": 7301,
+        "name": "聚维酮碘溶液",
+        "alias": null,
+        "drug_category": "DISINFECTANT",
+        "spec": "5 升/桶",
+        "measure_unit": "L",
+        "pack_unit": "桶",
+        "pack_size": 5
+      },
+      {
+        "id": 7302,
+        "name": "戊二醛溶液",
+        "alias": null,
+        "drug_category": "DISINFECTANT",
+        "spec": "5 升/桶",
+        "measure_unit": "L",
+        "pack_unit": "桶",
+        "pack_size": 5
+      },
+      {
+        "id": 7303,
+        "name": "过氧乙酸溶液",
+        "alias": null,
+        "drug_category": "DISINFECTANT",
+        "spec": "1 升/瓶",
+        "measure_unit": "L",
+        "pack_unit": "瓶",
+        "pack_size": 1
+      }
+    ],
+    "banned_hit": null
+  },
+  "trace_id": "mock-stock-catalog_dis"
+}

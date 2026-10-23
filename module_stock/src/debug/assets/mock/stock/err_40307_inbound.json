@@ -1,0 +1,6 @@
+{
+  "code": 40307,
+  "message": "已发生出库，需要提交修改申请",
+  "data": null,
+  "trace_id": "mock-stock-err_40307_inbound"
+}

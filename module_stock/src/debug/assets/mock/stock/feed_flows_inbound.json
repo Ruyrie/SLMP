@@ -1,0 +1,77 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "flow_id": 9290,
+        "flow_type": "INBOUND",
+        "flow_type_text": "入库",
+        "direction": "IN",
+        "material_type": "FEED",
+        "material_name": "保育料",
+        "lot_no": null,
+        "qty": {
+          "value": 2000,
+          "unit": "KG",
+          "unit_text": "千克",
+          "pack_unit": null,
+          "pack_size": null,
+          "pack_count": null,
+          "rest_value": null
+        },
+        "stock_qty_after": 2150,
+        "related_desc": "松山区丰禾饲料经销部",
+        "batch_id": null,
+        "batch_no": null,
+        "pen_name": null,
+        "operator_name": "王建国",
+        "occur_at": "2026-10-18 09:30:00",
+        "biz_date": "2026-10-18",
+        "status": "NORMAL",
+        "status_text": "正常",
+        "biz_type": "INBOUND",
+        "biz_id": 6202,
+        "unit_price": 4.2,
+        "amount": 8400.0
+      },
+      {
+        "flow_id": 9240,
+        "flow_type": "INBOUND",
+        "flow_type_text": "入库",
+        "direction": "IN",
+        "material_type": "FEED",
+        "material_name": "育肥全价料",
+        "lot_no": null,
+        "qty": {
+          "value": 2000,
+          "unit": "KG",
+          "unit_text": "千克",
+          "pack_unit": null,
+          "pack_size": null,
+          "pack_count": null,
+          "rest_value": null
+        },
+        "stock_qty_after": 2110,
+        "related_desc": "松山区丰禾饲料经销部",
+        "batch_id": null,
+        "batch_no": null,
+        "pen_name": null,
+        "operator_name": "王建国",
+        "occur_at": "2026-10-12 09:00:00",
+        "biz_date": "2026-10-12",
+        "status": "NORMAL",
+        "status_text": "正常",
+        "biz_type": "INBOUND",
+        "biz_id": 6201,
+        "unit_price": 3.2,
+        "amount": 6400.0
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-stock-feed_flows_inbound"
+}

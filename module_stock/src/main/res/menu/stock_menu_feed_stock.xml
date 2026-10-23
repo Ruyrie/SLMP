@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- M01：receipt_long（盘点与报损）+ more_vert -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/stock_menu_stocktake"
+        android:icon="@drawable/ic_receipt_long"
+        android:title="@string/stock_stocktake_title"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always"
+        app:tooltipText="@string/stock_stocktake_title" />
+    <item
+        android:id="@+id/stock_menu_more"
+        android:icon="@drawable/ic_more_vert"
+        android:title="@string/stock_menu_more"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+</menu>

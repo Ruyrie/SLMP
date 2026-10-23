@@ -1,0 +1,63 @@
+{
+  "code": 0,
+  "message": "已登记其他出库 200 千克保育料",
+  "data": {
+    "outbound_id": 6502,
+    "outbound_no": "CK26106502",
+    "out_type": "OTHER_OUT",
+    "out_type_text": "其他出库",
+    "material_type": "FEED",
+    "material_name": "保育料",
+    "category": null,
+    "feed_id": 5102,
+    "drug_id": null,
+    "drug_lot_id": null,
+    "lot_no": null,
+    "expire_date": null,
+    "input_qty": 200,
+    "input_unit": "MEASURE",
+    "qty": {
+      "value": 200,
+      "unit": "KG",
+      "unit_text": "千克",
+      "pack_unit": null,
+      "pack_size": null,
+      "pack_count": null,
+      "rest_value": null
+    },
+    "max_qty": 1850,
+    "destination": "RETURN_SUPPLIER",
+    "destination_text": "退回供应商",
+    "target_type": null,
+    "batch": null,
+    "pen": null,
+    "receiver": null,
+    "return_to": null,
+    "return_reason": null,
+    "return_reason_text": null,
+    "remark": "保育批次已转群，余料退回经销部",
+    "out_date": "2026-10-19",
+    "status": "NORMAL",
+    "unit_price": 4.2,
+    "amount": 840.0,
+    "allocations": [],
+    "actions": {
+      "can_edit": true,
+      "edit_deadline": "2026-10-19 23:59:59",
+      "pending_request_id": null,
+      "edit_state": "EDITABLE",
+      "can_void": true,
+      "can_request_change": false
+    },
+    "created_by": {
+      "user_id": 10001,
+      "name": "王建国",
+      "avatar_url": null,
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "created_at": "2026-10-19 10:05:00",
+    "version": 1
+  },
+  "trace_id": "mock-stock-outbound_6502"
+}

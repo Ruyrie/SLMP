@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    M03 饲料入库：饲料（库存不足标签 + 结存）→ 数量 / 单价 → 入库金额 → 生产日期 / 保质期至 → 供应商（最近 5 个）→
+    入库日期 → 同步记账卡；底部“确认入库”。只读状态（入库单）为分组列表 + “已同步记账 · 在收支流水中查看”，菜单按 actions。
+-->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="com.zhimu.slmp.stock.ui.common.FormMode" />
+
+        <variable
+            name="vm"
+            type="com.zhimu.slmp.stock.ui.feedinbound.FeedInboundViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/stock_top_bar"
+            layout="@layout/base_include_top_app_bar" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/stock_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateErrorTitle="@string/stock_error_title"
+            app:stateNoPermissionTitle="@string/stock_no_permission_title"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/stock_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingTop="@dimen/base_space_5"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_space_4">
+
+                    <!-- 登记 / 修改表单 -->
+                    <LinearLayout
+                        android:id="@+id/stock_form"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:visibleIf="@{!FormMode.VIEW.equals(vm.mode)}">
+
+                        <FrameLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                                android:id="@+id/stock_feed_layout"
+                                style="@style/Widget.Zmt.TextInputLayout.Picker"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:enabled="@{FormMode.NEW.equals(vm.mode)}"
+                                android:hint="@string/stock_field_feed"
+                                app:endIconDrawable="@drawable/ic_arrow_drop_down"
+                                app:stockError="@{vm.fieldErrors[`feed_id`]}"
+                                app:stockHelper="@{vm.feedHint}">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/stock_feed_input"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/stock_pick_feed"
+                                    android:paddingEnd="104dp"
+                                    android:text="@{vm.feedName}" />
+                            </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                            <com.zhimu.slmp.base.widget.StatusTagView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="top|end"
+                                android:layout_marginTop="21dp"
+                                android:layout_marginEnd="48dp"
+                                android:text="@string/stock_tag_low_stock"
+                                app:tagType="warning"
+                                app:visibleIf="@{vm.selectedFeed != null &amp;&amp; vm.selectedFeed.lowStock}" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            android:baselineAligned="false"
+                            android:orientation="horizontal">
+
+                            <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                                android:id="@+id/stock_qty_layout"
+                                style="@style/Widget.Zmt.TextInputLayout"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:hint="@string/stock_field_qty"
+                                app:helperText="@string/stock_helper_gt_zero"
+                                app:helperTextEnabled="true"
+                                app:stockError="@{vm.fieldErrors[`input_qty`]}"
+                                app:suffixText="@{vm.unitText}">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/stock_qty_input"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:digits="0123456789.,"
+                                    android:inputType="numberDecimal"
+                                    android:maxLength="14"
+                                    android:text="@={vm.inputQty}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+                            </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                            <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                                android:id="@+id/stock_price_layout"
+                                style="@style/Widget.Zmt.TextInputLayout"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/base_space_3"
+                                android:layout_weight="1"
+                                android:hint="@string/stock_field_price"
+                                app:helperText="@string/stock_helper_gt_zero"
+                                app:helperTextEnabled="true"
+                                app:stockError="@{vm.fieldErrors[`unit_price`]}"
+                                app:suffixText="@{@string/stock_price_unit(vm.unitText)}">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/stock_price_input"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:digits="0123456789.,"
+                                    android:inputType="numberDecimal"
+                                    android:maxLength="11"
+                                    android:text="@={vm.unitPrice}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+                            </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+                        </LinearLayout>
+
+                        <include
+                            layout="@layout/stock_view_amount_bar"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            app:amount="@{vm.amountText}"
+                            app:label="@{@string/stock_amount_inbound}" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            android:baselineAligned="false"
+                            android:orientation="horizontal">
+
+                            <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                                android:id="@+id/stock_production_layout"
+                                style="@style/Widget.Zmt.TextInputLayout.Picker"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:hint="@string/stock_field_production_date"
+                                app:stockError="@{vm.fieldErrors[`production_date`]}">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/stock_production_input"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{vm.productionDate}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+                            </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                            <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                                android:id="@+id/stock_shelf_layout"
+                                style="@style/Widget.Zmt.TextInputLayout.Picker"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/base_space_3"
+                                android:layout_weight="1"
+                                android:hint="@string/stock_field_shelf_life"
+                                app:helperText="@string/stock_shelf_helper"
+                                app:helperTextEnabled="true"
+                                app:stockError="@{vm.fieldErrors[`shelf_life_date`]}">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/stock_shelf_input"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{vm.shelfLifeDate}"
+                                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge.Number" />
+                            </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+                        </LinearLayout>
+
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                            android:id="@+id/stock_supplier_layout"
+                            style="@style/Widget.Zmt.TextInputLayout.Dropdown"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            android:hint="@string/stock_field_supplier"
+                            app:helperText="@string/stock_supplier_helper"
+                            app:helperTextEnabled="true"
+                            app:stockError="@{vm.fieldErrors[`supplier_name`]}">
+
+                            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                                android:id="@+id/stock_supplier_input"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:completionThreshold="0"
+                                android:inputType="text"
+                                android:maxLength="30"
+                                android:text="@={vm.supplierName}" />
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                            android:id="@+id/stock_date_layout"
+                            style="@style/Widget.Zmt.TextInputLayout.Picker"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_4"
+                            android:hint="@string/stock_field_inbound_date"
+                            app:stockError="@{vm.fieldErrors[`inbound_date`]}">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/stock_date_input"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:dateText="@{vm.inboundDate}"
+                                app:dateWithWeek="@{true}" />
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                        <include
+                            android:id="@+id/stock_sync"
+                            layout="@layout/stock_view_sync_card"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_5"
+                            app:checked="@{vm.syncFinance}"
+                            app:text="@{vm.syncText}" />
+                    </LinearLayout>
+
+                    <!-- 只读：入库单 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        app:visibleIf="@{FormMode.VIEW.equals(vm.mode)}">
+
+                        <com.zhimu.slmp.base.widget.GroupedListLayout
+                            android:id="@+id/stock_readonly_rows"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <com.zhimu.slmp.base.widget.ListRowView
+                            android:id="@+id/stock_finance_row"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_3"
+                            app:leadingTone="secondary"
+                            app:rowLeadingIcon="@drawable/ic_account_balance_wallet"
+                            app:rowTitle="@string/stock_synced_title"
+                            app:visibleIf="@{vm.record != null &amp;&amp; vm.record.syncFinance}" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <com.zhimu.slmp.base.widget.BottomActionBar
+            android:id="@+id/stock_action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+</layout>

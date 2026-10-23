@@ -1,0 +1,45 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "flow_id": 9507,
+        "flow_type": "INBOUND",
+        "flow_type_text": "入库",
+        "direction": "IN",
+        "material_type": "DRUG",
+        "material_name": "猪瘟活疫苗",
+        "lot_no": "2025113",
+        "qty": {
+          "value": 600,
+          "unit": "DOSE",
+          "unit_text": "头份",
+          "pack_unit": "瓶",
+          "pack_size": 10,
+          "pack_count": 60,
+          "rest_value": 0
+        },
+        "stock_qty_after": null,
+        "related_desc": null,
+        "batch_id": null,
+        "batch_no": null,
+        "pen_name": null,
+        "operator_name": "王建国",
+        "occur_at": "2026-10-16 15:20:00",
+        "biz_date": "2026-10-16",
+        "status": "NORMAL",
+        "status_text": "正常",
+        "biz_type": "INBOUND",
+        "biz_id": 6211,
+        "unit_price": 2.4,
+        "amount": 1440.0
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-stock-dflows_6002"
+}

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- M04 盘点与报损：盘点日期与盘点人 → 每种饲料一张盘点卡（分组列表）→ 规则说明；底部“确认盘点” -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/stock_top_bar"
+        layout="@layout/base_include_top_app_bar" />
+
+    <com.zhimu.slmp.base.widget.StateLayout
+        android:id="@+id/stock_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:stateErrorTitle="@string/stock_error_title"
+        app:stateNoPermissionTitle="@string/stock_no_permission_title"
+        app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/stock_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/base_page_margin"
+                android:paddingTop="@dimen/base_space_1"
+                android:paddingEnd="@dimen/base_page_margin"
+                android:paddingBottom="@dimen/base_space_4">
+
+                <TextView
+                    android:id="@+id/stock_take_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="@dimen/base_space_2"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/base_space_1"
+                    android:paddingTop="@dimen/base_space_1"
+                    android:paddingBottom="@dimen/base_space_3"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    app:drawableStartCompat="@drawable/stock_ic_event"
+                    app:drawableTint="?attr/colorOnSurfaceVariant" />
+
+                <com.zhimu.slmp.base.widget.GroupedListLayout
+                    android:id="@+id/stock_take_cards"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <com.zhimu.slmp.base.widget.NoticeView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/base_space_3"
+                    app:noticeIcon="@drawable/ic_info"
+                    app:noticeLevel="normal"
+                    app:noticeText="@string/stock_stocktake_notice" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+    </com.zhimu.slmp.base.widget.StateLayout>
+
+    <com.zhimu.slmp.base.widget.BottomActionBar
+        android:id="@+id/stock_action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:barPrimaryIcon="@drawable/ic_check"
+        app:barPrimaryText="@string/stock_stocktake_confirm" />
+</LinearLayout>

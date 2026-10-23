@@ -1,0 +1,88 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "outbound_id": 6511,
+    "outbound_no": "CK26106511",
+    "out_type": "USE",
+    "out_type_text": "领用",
+    "material_type": "DRUG",
+    "material_name": "聚维酮碘溶液",
+    "category": "DISINFECTANT",
+    "feed_id": null,
+    "drug_id": 5301,
+    "drug_lot_id": 6301,
+    "lot_no": "2025033",
+    "expire_date": "2026-11-08",
+    "input_qty": 2,
+    "input_unit": "PACK",
+    "qty": {
+      "value": 10,
+      "unit": "L",
+      "unit_text": "升",
+      "pack_unit": "桶",
+      "pack_size": 5,
+      "pack_count": 2,
+      "rest_value": 0
+    },
+    "max_qty": 8,
+    "destination": null,
+    "destination_text": null,
+    "target_type": "PEN",
+    "batch": null,
+    "pen": {
+      "pen_id": 2004,
+      "name": "4 号育肥舍",
+      "pen_type_text": "育肥舍"
+    },
+    "receiver": {
+      "user_id": 10004,
+      "name": "张伟",
+      "avatar_url": null,
+      "role": "STAFF",
+      "role_text": "员工"
+    },
+    "return_to": null,
+    "return_reason": null,
+    "return_reason_text": null,
+    "remark": "伤口处理和器具消毒",
+    "out_date": "2026-10-19",
+    "status": "NORMAL",
+    "unit_price": 45.0,
+    "amount": 90.0,
+    "allocations": [
+      {
+        "batch_id": 3002,
+        "batch_no": "ZM2610-019",
+        "head_count": 150,
+        "ratio": 0.625,
+        "amount": 56.25
+      },
+      {
+        "batch_id": 3005,
+        "batch_no": "ZM2610-058",
+        "head_count": 90,
+        "ratio": 0.375,
+        "amount": 33.75
+      }
+    ],
+    "actions": {
+      "can_edit": true,
+      "edit_deadline": "2026-10-19 23:59:59",
+      "pending_request_id": null,
+      "edit_state": "EDITABLE",
+      "can_void": true,
+      "can_request_change": false
+    },
+    "created_by": {
+      "user_id": 10001,
+      "name": "王建国",
+      "avatar_url": null,
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "created_at": "2026-10-19 09:40:00",
+    "version": 1
+  },
+  "trace_id": "mock-stock-outbound_6511"
+}

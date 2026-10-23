@@ -1,0 +1,60 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "items": [
+      {
+        "id": 7201,
+        "name": "阿莫西林可溶性粉",
+        "alias": null,
+        "drug_category": "VET_DRUG",
+        "spec": "10% · 500 克/袋",
+        "measure_unit": "G",
+        "pack_unit": "袋",
+        "pack_size": 500
+      },
+      {
+        "id": 7202,
+        "name": "氟苯尼考粉",
+        "alias": null,
+        "drug_category": "VET_DRUG",
+        "spec": "100 克/袋",
+        "measure_unit": "G",
+        "pack_unit": "袋",
+        "pack_size": 100
+      },
+      {
+        "id": 7204,
+        "name": "恩诺沙星注射液",
+        "alias": null,
+        "drug_category": "VET_DRUG",
+        "spec": "10 毫升/支",
+        "measure_unit": "ML",
+        "pack_unit": "支",
+        "pack_size": 10
+      },
+      {
+        "id": 7205,
+        "name": "硫酸新霉素可溶性粉",
+        "alias": null,
+        "drug_category": "VET_DRUG",
+        "spec": "5% · 100 克/袋",
+        "measure_unit": "G",
+        "pack_unit": "袋",
+        "pack_size": 100
+      },
+      {
+        "id": 7206,
+        "name": "替米考星预混剂",
+        "alias": null,
+        "drug_category": "VET_DRUG",
+        "spec": "20% · 1 千克/袋",
+        "measure_unit": "G",
+        "pack_unit": "袋",
+        "pack_size": 1000
+      }
+    ],
+    "banned_hit": null
+  },
+  "trace_id": "mock-stock-catalog_vet"
+}

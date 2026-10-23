@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- M11 成本分摊卡（圆角 16，surface-container-low）：“领用成本 90.00 元”→ 分隔线 → 每个批次一行“ZM2610-019 · 存栏 150 头 · 62.5%”“56.25 元” -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:animateLayoutChanges="true"
+    android:background="@drawable/stock_bg_summary_bar"
+    android:orientation="vertical"
+    android:padding="@dimen/base_space_4">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/stock_amount_use_cost"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <TextView
+            android:id="@+id/stock_alloc_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Zmt.TitleLarge.Number"
+            android:textColor="?attr/colorOnSurface" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_1"
+            android:text="@string/stock_unit_yuan"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/stock_alloc_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:background="?attr/colorOutlineVariant" />
+
+    <LinearLayout
+        android:id="@+id/stock_alloc_rows"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+</LinearLayout>
