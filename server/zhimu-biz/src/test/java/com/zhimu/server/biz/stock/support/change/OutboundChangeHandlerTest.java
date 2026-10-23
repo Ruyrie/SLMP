@@ -206,6 +206,33 @@ class OutboundChangeHandlerTest {
     }
 
     @Test
+    void validateForApproveRejectsExpiredDrugLot() {
+        outbound.setMaterialType("DRUG");
+        outbound.setFeedId(null);
+        outbound.setDrugId(5201L);
+        outbound.setDrugLotId(5601L);
+        outbound.setQty(new BigDecimal("10"));
+        outbound.setInputQty(new BigDecimal("10"));
+        com.zhimu.server.biz.stock.entity.Drug drug = new com.zhimu.server.biz.stock.entity.Drug();
+        drug.setId(5201L);
+        drug.setName("氟苯尼考粉");
+        drug.setUnit("G");
+        when(drugMapper.selectById(5201L)).thenReturn(drug);
+        com.zhimu.server.biz.stock.entity.DrugLot lot = new com.zhimu.server.biz.stock.entity.DrugLot();
+        lot.setId(5601L);
+        lot.setLotNo("FF20260901");
+        lot.setExpireDate(LocalDate.of(2026, 10, 1));
+        lot.setStockQty(new BigDecimal("100"));
+        when(drugLotMapper.selectById(5601L)).thenReturn(lot);
+        ChangeRequest request = request("UPDATE", "{\"after\":{\"input_qty\":{\"value\":\"8\"}}}");
+
+        assertThatThrownBy(() -> handler.validateForApprove(request,
+                handler.loadRecord(BizType.OUTBOUND, 6501L)))
+                .isInstanceOf(BizException.class)
+                .hasMessageContaining("已过期");
+    }
+
+    @Test
     void applyUpdateAdjustsStockAndFlow() {
         ChangeRequest request = request("UPDATE", "{\"after\":{\"input_qty\":{\"value\":\"60\"}}}");
 

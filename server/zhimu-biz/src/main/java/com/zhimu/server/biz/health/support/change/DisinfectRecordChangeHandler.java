@@ -10,6 +10,7 @@ import com.zhimu.server.biz.common.change.ChangeRequestHandler;
 import com.zhimu.server.biz.common.change.ChangeRequestJson;
 import com.zhimu.server.biz.common.change.ChangeValidation;
 import com.zhimu.server.biz.common.entity.ChangeRequest;
+import com.zhimu.server.admin.base.api.DrugCatalogQueryService;
 import com.zhimu.server.biz.health.entity.DisinfectRecord;
 import com.zhimu.server.biz.health.entity.DisinfectTask;
 import com.zhimu.server.biz.health.mapper.DisinfectRecordMapper;
@@ -57,6 +58,7 @@ public class DisinfectRecordChangeHandler implements ChangeRequestHandler {
     private final DrugMapper drugMapper;
     private final DrugLotMapper drugLotMapper;
     private final DrugStockPort drugStockPort;
+    private final DrugCatalogQueryService drugCatalogQueryService;
     private final HealthChangeSupport support;
 
     @Override
@@ -183,6 +185,10 @@ public class DisinfectRecordChangeHandler implements ChangeRequestHandler {
             throw new BizException(ErrorCode.STOCK_NOT_ENOUGH,
                     "消毒剂库存不足，批号 " + lot.getLotNo() + " 当前可用 "
                             + HealthChangeSupport.display(available, unit) + "，请先补充入库");
+        }
+        Drug drug = drugMapper.selectById(row.getDrugId());
+        if (drug != null) {
+            drugCatalogQueryService.assertNotBanned(drug.getCatalogId(), null);
         }
     }
 

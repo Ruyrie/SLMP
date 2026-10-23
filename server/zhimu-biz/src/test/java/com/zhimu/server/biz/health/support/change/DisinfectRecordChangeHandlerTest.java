@@ -59,6 +59,7 @@ class DisinfectRecordChangeHandlerTest {
     @Mock private DrugMapper drugMapper;
     @Mock private DrugLotMapper drugLotMapper;
     @Mock private DrugStockPort drugStockPort;
+    @Mock private com.zhimu.server.admin.base.api.DrugCatalogQueryService drugCatalogQueryService;
     @Mock private HealthChangeSupport support;
 
     private DisinfectRecordChangeHandler handler;
@@ -69,7 +70,7 @@ class DisinfectRecordChangeHandlerTest {
     void setUp() {
         BeijingTime.setClock(CLOCK);
         handler = new DisinfectRecordChangeHandler(recordMapper, taskMapper, drugMapper, drugLotMapper,
-                drugStockPort, support);
+                drugStockPort, drugCatalogQueryService, support);
         record = new DisinfectRecord();
         record.setId(5301L);
         record.setFarmId(1001L);
