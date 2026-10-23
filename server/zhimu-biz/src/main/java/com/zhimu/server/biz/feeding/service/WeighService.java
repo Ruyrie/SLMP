@@ -481,11 +481,11 @@ public class WeighService {
         return new PageVO<>(list, paged.getTotal(), page, size);
     }
 
-    /** G26 对比批次选项 */
+    /** G26 对比批次选项：同品种、有称重记录的其他批次，按最近一次称重日期倒序 */
     public List<WeighVO.CompareOption> compareOptions(Long batchId) {
         BatchInfo batch = lookup.requireOwnedBatch(batchId);
         lookup.checkBatchScope(batch);
-        List<WeighVO.CompareOption> options = new ArrayList<>();
+        List<CompareRow> rows = new ArrayList<>();
         for (FeedBatchRow candidate : lookup.farmBatches(true)) {
             if (candidate.getBatchId().equals(batchId) || !candidate.getBreedId().equals(batch.breedId())) {
                 continue;
@@ -495,16 +495,23 @@ public class WeighService {
                 continue;
             }
             WeighRecord latest = latestRecord(candidate.getBatchId());
+            if (latest == null) {
+                // 没有称重记录的批次没有曲线可对比（App Mock 只列出有称重数据的批次）
+                continue;
+            }
             WeighVO.CompareOption vo = new WeighVO.CompareOption();
             vo.setBatchId(candidate.getBatchId());
             vo.setBatchNo(candidate.getBatchNo());
             vo.setPenNames(lookup.penNames(penIds));
             vo.setStatus(candidate.getStatus());
-            vo.setLatestAvgWeight(latest == null ? null : latest.getAvgWeight());
-            vo.setLatestDayAge(latest == null ? null : latest.getDayAge());
-            options.add(vo);
+            vo.setLatestAvgWeight(latest.getAvgWeight());
+            vo.setLatestDayAge(latest.getDayAge());
+            rows.add(new CompareRow(vo, latest.getWeighDate()));
         }
-        return options;
+        rows.sort(Comparator
+                .comparing(CompareRow::lastWeighDate, Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(row -> row.vo().getBatchNo(), Comparator.nullsLast(Comparator.naturalOrder())));
+        return rows.stream().map(CompareRow::vo).toList();
     }
 
     private void comp(BatchInfo batch, String compareBatchIds, WeighVO.Curve vo) {
@@ -897,6 +904,9 @@ public class WeighService {
     }
 
     private record Standards(Long versionId, BigDecimal tolerance, List<WeighVO.StdPoint> points) {
+    }
+
+    private record CompareRow(WeighVO.CompareOption vo, LocalDate lastWeighDate) {
     }
 
     private record Measurement(String mode, int sampleCount, BigDecimal totalWeight, BigDecimal avgWeight,

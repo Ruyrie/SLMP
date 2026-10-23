@@ -112,7 +112,8 @@ public class FeedExecutionService {
         vo.setAbnormalCount(under + over);
         vo.setUnderCount(under);
         vo.setOverCount(over);
-        vo.setAbnormalSameRatio(same && sameRatio != null ? sameRatio : null);
+        // 同比例偏差：所有异常餐次的偏差比例一致时给出该比例的绝对值（App 显示“同比例偏差 12.5%”）
+        vo.setAbnormalSameRatio(same && sameRatio != null ? sameRatio.abs() : null);
         vo.setPlanLineType(lineType(range, tasks));
         vo.setPlanDailyQty(singlePlanDaily(range, tasks));
         vo.setDaily(daily(range, tasks, records));

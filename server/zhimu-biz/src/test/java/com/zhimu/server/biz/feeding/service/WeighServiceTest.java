@@ -34,6 +34,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -92,6 +93,32 @@ class WeighServiceTest {
     }
 
     @Test
+    void compareOptionsSkipsBatchesWithoutWeighAndSortsByLatest() {
+        when(lookup.requireOwnedBatch(3001L)).thenReturn(batch());
+        when(lookup.farmBatches(true)).thenReturn(List.of(
+                row(3002L, "ZM2610-019", "ACTIVE"),
+                row(3003L, "ZM2610-045", "ACTIVE"),
+                row(3004L, "ZM2609-038", "ACTIVE"),
+                row(3009L, "ZM2609-012", "ENDED")));
+        when(lookup.batchPenIds(anyLong())).thenReturn(List.of(2004L));
+        when(lookup.staffCanSeePens(any())).thenReturn(true);
+        when(lookup.penNames(any())).thenReturn("4 号育肥舍");
+        // 3002 最近 10-12、3004 最近 10-10；3003/3009 没有称重记录
+        when(recordMapper.selectList(any())).thenReturn(
+                List.of(weigh(3310L, 3002L, "2026-10-12", 75, "44.90")),
+                List.of(),
+                List.of(weigh(3304L, 3004L, "2026-10-10", 54, "23.00")),
+                List.of());
+
+        List<WeighVO.CompareOption> options = service.compareOptions(3001L);
+
+        assertThat(options).extracting(WeighVO.CompareOption::getBatchId)
+                .containsExactly(3002L, 3004L);
+        assertThat(options.get(0).getLatestAvgWeight()).isEqualByComparingTo("44.90");
+        assertThat(options.get(1).getLatestDayAge()).isEqualTo(54);
+    }
+
+    @Test
     void staffChangingCycleGets40303() {
         doThrow(FeedErrors.roleForbidden("你没有修改称重周期的权限")).when(lookup).requireManager(anyString());
         WeighCycleRequest request = new WeighCycleRequest();
@@ -106,6 +133,32 @@ class WeighServiceTest {
     private static BatchInfo batch() {
         return new BatchInfo(1001L, 3001L, "ZM2610-031", 1101L, 101L,
                 LocalDate.of(2026, 10, 1), 200, "ACTIVE", List.of(2003L), 78, 205, 5, 0, 2003L);
+    }
+
+    private static com.zhimu.server.biz.feeding.support.FeedBatchRow row(Long batchId, String batchNo,
+                                                                          String status) {
+        var row = new com.zhimu.server.biz.feeding.support.FeedBatchRow();
+        row.setBatchId(batchId);
+        row.setBatchNo(batchNo);
+        row.setBreedId(1101L);
+        row.setCategoryId(101L);
+        row.setEntryDate(LocalDate.of(2026, 10, 1));
+        row.setEntryAgeDays(68);
+        row.setCurrentCount(150);
+        row.setStatus(status);
+        return row;
+    }
+
+    private static com.zhimu.server.biz.feeding.entity.WeighRecord weigh(Long id, Long batchId, String date,
+                                                                         int dayAge, String avgWeight) {
+        var record = new com.zhimu.server.biz.feeding.entity.WeighRecord();
+        record.setId(id);
+        record.setFarmId(1001L);
+        record.setBatchId(batchId);
+        record.setWeighDate(LocalDate.parse(date));
+        record.setDayAge(dayAge);
+        record.setAvgWeight(new java.math.BigDecimal(avgWeight));
+        return record;
     }
 
     private static BatchGrowth growth() {

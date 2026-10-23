@@ -97,7 +97,8 @@ class FeedExecutionServiceTest {
         assertThat(summary.getDeviationDirection()).isEqualTo("LESS");
         assertThat(summary.getAbnormalCount()).isEqualTo(1);
         assertThat(summary.getUnderCount()).isEqualTo(1);
-        assertThat(summary.getAbnormalSameRatio()).isEqualByComparingTo("-0.0625");
+        // 同比例偏差取绝对值（App Mock exec_3001_7 为 0.125 正数）
+        assertThat(summary.getAbnormalSameRatio()).isEqualByComparingTo("0.0625");
         assertThat(summary.getDaily()).hasSize(7);
         assertThat(summary.getHasData()).isTrue();
         assertThat(summary.getBatchCount()).isEqualTo(1);
