@@ -5,12 +5,14 @@ import com.zhimu.server.admin.base.entity.Breed;
 import com.zhimu.server.admin.base.entity.Category;
 import com.zhimu.server.admin.base.entity.DictItemScope;
 import com.zhimu.server.admin.base.entity.FeedStdVersion;
+import com.zhimu.server.admin.base.entity.ImmuneTemplate;
 import com.zhimu.server.admin.base.entity.InspectTemplate;
 import com.zhimu.server.admin.base.entity.StdWeightVersion;
 import com.zhimu.server.admin.base.mapper.BreedMapper;
 import com.zhimu.server.admin.base.mapper.CategoryMapper;
 import com.zhimu.server.admin.base.mapper.DictItemScopeMapper;
 import com.zhimu.server.admin.base.mapper.FeedStdVersionMapper;
+import com.zhimu.server.admin.base.mapper.ImmuneTemplateMapper;
 import com.zhimu.server.admin.base.mapper.InspectTemplateMapper;
 import com.zhimu.server.admin.base.mapper.StdWeightVersionMapper;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,7 @@ public class BaseDataReadSupport {
     private final StdWeightVersionMapper stdWeightVersionMapper;
     private final FeedStdVersionMapper feedStdVersionMapper;
     private final InspectTemplateMapper inspectTemplateMapper;
+    private final ImmuneTemplateMapper immuneTemplateMapper;
     private final DictItemScopeMapper dictItemScopeMapper;
 
     public List<Category> categories() {
@@ -90,12 +93,14 @@ public class BaseDataReadSupport {
         return ids;
     }
 
-    /**
-     * 是否有已发布免疫模板。3A 没有免疫模板表（V1_23_1 归 3B），本批按 App Mock 返回 true，
-     * 3B 落地后改为查 t_immune_template.online_version_no。
-     */
+    /** 是否有已发布免疫模板：t_immune_template.online_version_no 非空（V1_23_1 由 3B 提供）。 */
     public boolean hasImmuneTemplate(Long breedId) {
-        return breedId != null;
+        if (breedId == null) {
+            return false;
+        }
+        return immuneTemplateMapper.selectCount(Wrappers.<ImmuneTemplate>lambdaQuery()
+                .eq(ImmuneTemplate::getBreedId, breedId)
+                .isNotNull(ImmuneTemplate::getOnlineVersionNo)) > 0;
     }
 
     public Map<Long, List<DictItemScope>> scopesByItem(Collection<Long> itemIds) {
