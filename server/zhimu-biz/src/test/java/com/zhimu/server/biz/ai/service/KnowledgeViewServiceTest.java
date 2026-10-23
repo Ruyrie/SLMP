@@ -162,6 +162,7 @@ class KnowledgeViewServiceTest {
         knowledge.setEmbeddedCourseId(6301L);
         knowledge.setShareUrl("https://web.test/knowledge/8101");
         knowledge.setUpdatedAt(AiFixtures.NOW.minusDays(7));
+        knowledge.setPublishedAt(AiFixtures.NOW.minusDays(30));
         return knowledge;
     }
 

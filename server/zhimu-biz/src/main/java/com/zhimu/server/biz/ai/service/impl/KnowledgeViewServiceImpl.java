@@ -47,6 +47,9 @@ public class KnowledgeViewServiceImpl implements KnowledgeViewService {
     @Override
     public KnowledgeDetailVO detail(Long userId, Long knowledgeId, Long citationId) {
         AiKnowledge knowledge = Asserts.found(knowledgeMapper.selectById(knowledgeId));
+        if (knowledge.getPublishedAt() == null) {
+            throw AiErrors.notFound();
+        }
         if ("OFF_SHELF".equals(knowledge.getStatus())) {
             throw AiErrors.offShelf("这条知识已下架，不能查看原文");
         }
