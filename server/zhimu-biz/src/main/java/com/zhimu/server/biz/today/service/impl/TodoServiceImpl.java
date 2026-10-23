@@ -238,10 +238,8 @@ public class TodoServiceImpl implements TodoService, TodoQueryService {
         List<WeeklyDayVO> days = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
             LocalDate date = query.getWeekStart().plusDays(i);
-            List<Todo> todos = byDay.getOrDefault(date, List.of());
-            if (todos.isEmpty()) {
-                continue;
-            }
+            List<Todo> todos = new ArrayList<>(byDay.getOrDefault(date, List.of()));
+            // 周视图固定返回 7 天（没有待办的天也返回 0/空），App 按天渲染周分组
             todos.sort(dayComparator());
             WeeklyDayVO day = new WeeklyDayVO();
             day.setDate(date.toString());

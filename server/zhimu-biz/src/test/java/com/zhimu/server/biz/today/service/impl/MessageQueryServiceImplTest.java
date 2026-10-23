@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.today.service.impl;
 
+import com.zhimu.server.biz.today.TodayTableInfo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhimu.server.biz.farm.api.FarmQueryService;
@@ -57,6 +58,7 @@ class MessageQueryServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        TodayTableInfo.ensure();
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-19T01:30:00Z"), ZoneId.of("Asia/Shanghai")));
         service = new MessageQueryServiceImpl(messageMapper, todoMapper, new MessageConvert(todoMapper),
                 farmQueryService, memberLoader, todoScope, todoLinks);

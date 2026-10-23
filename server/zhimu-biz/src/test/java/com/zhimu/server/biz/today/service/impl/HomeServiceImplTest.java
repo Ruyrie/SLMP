@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.today.service.impl;
 
+import com.zhimu.server.biz.today.TodayTableInfo;
 import com.zhimu.server.biz.account.api.AccountBrief;
 import com.zhimu.server.biz.account.api.AccountQueryService;
 import com.zhimu.server.biz.farm.api.FarmQueryService;
@@ -56,6 +57,7 @@ class HomeServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        TodayTableInfo.ensure();
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-19T01:30:00Z"), ZoneId.of("Asia/Shanghai")));
         service = new HomeServiceImpl(farmQueryService, accountQueryService, todoMapper, messageMapper,
                 todoScope, todoLinks, List.of());
