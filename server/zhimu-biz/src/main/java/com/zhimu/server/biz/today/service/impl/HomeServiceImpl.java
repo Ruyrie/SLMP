@@ -120,7 +120,7 @@ public class HomeServiceImpl implements HomeService {
             if (isTodayList(todo, today, now)) {
                 todayCount++;
             }
-            boolean overdue = todo.getOverdueAt() != null && now.isAfter(todo.getOverdueAt());
+            boolean overdue = isOverdue(todo, now);
             if (overdue) {
                 overdueCount++;
             }
@@ -149,13 +149,13 @@ public class HomeServiceImpl implements HomeService {
         vo.setWarningNames(warningNames);
         vo.setReceivableOverdueCount(receivableCount);
         vo.setReceivableMaxOverdueDays(maxOverdueDays);
-        vo.setReceivableAmount(receivableCount == 0 && receivableAmount.signum() == 0
-                ? null : receivableAmount.setScale(2, RoundingMode.HALF_UP));
+        vo.setReceivableAmount(receivableAmount.setScale(2, RoundingMode.HALF_UP));
 
-        // 待模块04：存栏数、批次数、栏舍占用率（provider 注册后自动补）
+        // 待模块04：存栏数、批次数、栏舍占用率（provider 注册后自动补）；未接入时返回 0，字段保持齐全
         vo.setStockCount(stockCount(member.farmId()));
         vo.setBatchCount(batchCount(member.farmId()));
-        vo.setPenOccupancyRate(penOccupancyRate(member.farmId()));
+        BigDecimal occupancy = penOccupancyRate(member.farmId());
+        vo.setPenOccupancyRate(occupancy == null ? BigDecimal.ZERO : occupancy);
         String unit = countUnit(member.farmId());
         String unitText = countUnitText(member.farmId());
         if (unit == null) {
@@ -184,7 +184,7 @@ public class HomeServiceImpl implements HomeService {
             if (isTodayList(todo, today, now)) {
                 todayCount++;
             }
-            if (todo.getOverdueAt() != null && now.isAfter(todo.getOverdueAt())) {
+            if (isOverdue(todo, now)) {
                 overdueCount++;
                 if (overdueFirst == null) {
                     overdueFirst = todo.getTitle();
@@ -216,7 +216,7 @@ public class HomeServiceImpl implements HomeService {
             HomeMetricProvider.PenMetric metric = extra.get(penId);
             MyPenVO vo = new MyPenVO();
             vo.setPenId(penId);
-            vo.setPenName(metric == null ? null : metric.penName());
+            vo.setPenName(metric == null ? penNameOf(pending, penId) : metric.penName());
             vo.setPenTypeText(metric == null ? null : metric.penTypeText());
             vo.setCapacity(metric == null ? 0 : metric.capacity());
             List<String> todoNames = new ArrayList<>();
@@ -252,6 +252,15 @@ public class HomeServiceImpl implements HomeService {
             pens.add(vo);
         }
         return pens;
+    }
+
+    private static String penNameOf(List<Todo> todos, Long penId) {
+        for (Todo todo : todos) {
+            if (penId.equals(todo.getPenId()) && todo.getPenName() != null) {
+                return todo.getPenName();
+            }
+        }
+        return null;
     }
 
     private List<MyPenVO.Batch> batches(HomeMetricProvider.PenMetric metric) {

@@ -140,7 +140,8 @@ public class MessageConvert {
         Map<String, Object> extra = TodayJson.readMap(message.getExtraJson());
         MessageActionVO action = new MessageActionVO();
         action.setActionType(invite ? "INVITE" : "TRANSFER");
-        action.setActionId(message.getBizId() == null ? 0L : message.getBizId());
+        Long bizId = message.getBizId() != null ? message.getBizId() : TodayJson.lng(extra, "invite_id");
+        action.setActionId(bizId == null ? 0L : bizId);
         String status = TodayJson.str(extra, "status");
         if (status == null || status.isBlank()) {
             status = message.getReadAt() == null ? "PENDING" : "PENDING";

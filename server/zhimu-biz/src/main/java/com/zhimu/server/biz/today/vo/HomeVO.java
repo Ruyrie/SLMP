@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.today.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.zhimu.server.common.vo.FarmBriefVO;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,6 +33,7 @@ public class HomeVO {
     private String aiHint;
     private List<MyPenVO> myPens;
 
+    @JsonIgnore
     public boolean isFarmBlocked() {
         return "PENDING".equals(farmStatus) || "REJECTED".equals(farmStatus);
     }
