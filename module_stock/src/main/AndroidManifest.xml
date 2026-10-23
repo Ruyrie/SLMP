@@ -121,9 +121,6 @@
         <activity
             android:name=".ui.record.StockRecordActivity"
             android:exported="false" />
-        <activity
-            android:name=".ui.common.ChangeLogActivity"
-            android:exported="false" />
     </application>
 
 </manifest>

@@ -3,9 +3,7 @@ package com.zhimu.slmp.inspect.data;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.zhimu.slmp.common.data.BaseDataRepository;
 import com.zhimu.slmp.common.di.FeatureScope;
-import com.zhimu.slmp.common.model.vo.RecordLogVO;
 import com.zhimu.slmp.inspect.model.request.AbnormalReportCreateRequest;
 import com.zhimu.slmp.inspect.model.request.HandleSaveRequest;
 import com.zhimu.slmp.inspect.model.vo.DiagnosisDetailVO;
@@ -28,16 +26,13 @@ import io.reactivex.rxjava3.core.Single;
 @FeatureScope
 public class AbnormalReportRepository {
 
-    public static final String BIZ_DIAGNOSIS_HANDLE = "DIAGNOSIS_HANDLE";
     public static final String BIZ_ABNORMAL_REPORT = "ABNORMAL_REPORT";
 
     private final InspectApi api;
-    private final BaseDataRepository baseData;
 
     @Inject
-    public AbnormalReportRepository(@NonNull InspectApi api, @NonNull BaseDataRepository baseData) {
+    public AbnormalReportRepository(@NonNull InspectApi api) {
         this.api = api;
-        this.baseData = baseData;
     }
 
     /** API-I14 */
@@ -86,11 +81,5 @@ public class AbnormalReportRepository {
     @NonNull
     public Single<HandleSaveResultVO> saveHandle(long reportId, @NonNull HandleSaveRequest request) {
         return api.saveHandle(reportId, request).compose(RxResult.unwrap());
-    }
-
-    /** API-U14 处理结果的修改记录（biz_type = DIAGNOSIS_HANDLE） */
-    @NonNull
-    public Single<List<RecordLogVO>> getRecordLogs(long handleId) {
-        return baseData.getRecordLogs(BIZ_DIAGNOSIS_HANDLE, handleId);
     }
 }

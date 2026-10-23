@@ -57,11 +57,6 @@
             </intent-filter>
         </activity>
 
-        <!-- 查看修改记录（本组件内，显式打开） -->
-        <activity
-            android:name=".ui.archive.ChangeLogActivity"
-            android:exported="false" />
-
         <!-- B02 待产与待出雏 -->
         <activity
             android:name=".ui.due.BreedDueActivity"

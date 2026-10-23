@@ -18,6 +18,7 @@ import com.zhimu.slmp.base.dialog.ConfirmDialogFragment;
 import com.zhimu.slmp.base.dialog.MoreMenuHelper;
 import com.zhimu.slmp.base.dialog.OptionSheetDialogFragment;
 import com.zhimu.slmp.base.widget.TopAppBarHelper;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
 import com.zhimu.slmp.finance.R;
 import com.zhimu.slmp.finance.databinding.FinanceActivityRecordListBinding;
 import com.zhimu.slmp.finance.di.FinanceInjector;
@@ -30,7 +31,6 @@ import com.zhimu.slmp.finance.ui.common.FinancePageActivity;
 import com.zhimu.slmp.finance.ui.common.FinanceViews;
 import com.zhimu.slmp.finance.ui.common.FooterLoadStateAdapter;
 import com.zhimu.slmp.finance.ui.common.ListStateBinder;
-import com.zhimu.slmp.finance.ui.common.RecordLogBottomSheet;
 import com.zhimu.slmp.finance.util.FinanceFormat;
 
 import java.util.ArrayList;
@@ -127,8 +127,8 @@ public class FinanceRecordListActivity extends FinancePageActivity {
                     .positive(getString(R.string.finance_e04_menu_void)).negative(getString(R.string.finance_cancel))
                     .danger(true).extras(extras).build().showSafely(getSupportFragmentManager());
         });
-        vm.getShowLogSheet().observe(this, logs -> RecordLogBottomSheet.show(getSupportFragmentManager(), logs,
-                getString(R.string.finance_log_title)));
+        vm.getShowLogSheet().observe(this, id -> RecordLogSheet.show(getSupportFragmentManager(),
+                FinanceConst.LOG_FINANCE_RECORD, id, null, getString(R.string.finance_log_empty)));
         setupSearch();
     }
 

@@ -17,6 +17,8 @@ import com.zhimu.slmp.base.mvvm.UiState;
 import com.zhimu.slmp.base.ui.BaseActivity;
 import com.zhimu.slmp.base.widget.StatusTagView;
 import com.zhimu.slmp.base.widget.TopAppBarHelper;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
+import com.zhimu.slmp.feed.FeedExtras;
 import com.zhimu.slmp.feed.R;
 import com.zhimu.slmp.feed.databinding.FeedActivityPlanBinding;
 import com.zhimu.slmp.feed.di.FeedInjector;
@@ -117,8 +119,8 @@ public class FeedPlanActivity extends BaseActivity {
         vm.getShowTimePicker().observe(this, this::showTimePicker);
         vm.getShowThresholdSheet().observe(this, v -> FeedThresholdSheet.newInstance(
                 getString(R.string.feed_plan_threshold_title)).showSafely(getSupportFragmentManager()));
-        vm.getShowHistorySheet().observe(this, v -> FeedPlanHistorySheet.newInstance(
-                getString(R.string.feed_plan_history_title)).showSafely(getSupportFragmentManager()));
+        vm.getShowHistorySheet().observe(this, planId -> RecordLogSheet.show(getSupportFragmentManager(),
+                FeedExtras.BIZ_FEED_PLAN, planId, null));
         vm.getShowDiscardDialog().observe(this, v -> FeedViews.showDiscard(this, REQ_DISCARD));
         vm.getShowBatchSheet().observe(this, v -> showBatchSheet());
 

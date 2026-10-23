@@ -22,6 +22,8 @@ import com.zhimu.slmp.base.util.DateFormatter;
 import com.zhimu.slmp.base.widget.GroupedListDecoration;
 import com.zhimu.slmp.base.widget.TopAppBarHelper;
 import com.zhimu.slmp.common.router.Router;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
+import com.zhimu.slmp.inspect.InspectExtras;
 import com.zhimu.slmp.inspect.R;
 import com.zhimu.slmp.inspect.data.HistoryQuery;
 import com.zhimu.slmp.inspect.databinding.InspectActivityHistoryBinding;
@@ -142,8 +144,8 @@ public class InspectHistoryActivity extends BaseActivity {
                     : id == R.id.inspect_history_off_site ? HistoryQuery.OFF_SITE : HistoryQuery.ALL);
         });
         vm.getNavEvent().observe(this, t -> InspectNav.open(this, childLauncher, t));
-        vm.getShowRecordLogs().observe(this, v -> RecordLogBottomSheet.newInstance(InspectHistoryViewModel.class)
-                .showSafely(getSupportFragmentManager()));
+        vm.getShowRecordLogs().observe(this, id -> RecordLogSheet.show(getSupportFragmentManager(),
+                InspectExtras.BIZ_INSPECTION, id, null));
     }
 
     @NonNull

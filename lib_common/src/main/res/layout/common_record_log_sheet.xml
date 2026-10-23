@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 修改记录底部面板内容（U14）：加载中骨架屏 / 空 / 加载失败 / 无权查看由 StateLayout 切换；
+     列表为分组列表，每项主文字“修改时间 · 修改人”，辅助文字为操作、字段前后值、原因、修改申请编号 -->
+<com.zhimu.slmp.base.widget.StateLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/common_record_log_state"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:stateEmptyIcon="@drawable/ic_history"
+    app:stateEmptyTitle="@string/common_record_log_empty"
+    app:stateErrorTitle="@string/common_record_log_error"
+    app:stateNoPermissionActionText="@string/common_record_log_close"
+    app:stateNoPermissionTitle="@string/common_record_log_no_permission"
+    app:stateSkeletonLayout="@layout/common_record_log_skeleton">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/common_record_log_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.zhimu.slmp.base.widget.GroupedListLayout
+            android:id="@+id/common_record_log_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/base_sheet_padding_horizontal"
+            android:paddingEnd="@dimen/base_sheet_padding_horizontal"
+            android:paddingBottom="@dimen/base_space_6" />
+    </androidx.core.widget.NestedScrollView>
+</com.zhimu.slmp.base.widget.StateLayout>

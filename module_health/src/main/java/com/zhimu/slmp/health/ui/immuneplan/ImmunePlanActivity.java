@@ -23,6 +23,7 @@ import com.zhimu.slmp.base.widget.GroupedListDecoration;
 import com.zhimu.slmp.base.widget.TopAppBarHelper;
 import com.zhimu.slmp.common.router.Router;
 import com.zhimu.slmp.common.router.RouterPath;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
 import com.zhimu.slmp.health.HealthExtras;
 import com.zhimu.slmp.health.R;
 import com.zhimu.slmp.health.databinding.HealthActivityImmunePlanBinding;
@@ -34,7 +35,6 @@ import com.zhimu.slmp.health.model.vo.ImmunePlanVO;
 import com.zhimu.slmp.health.model.vo.MedicationTargetVO;
 import com.zhimu.slmp.health.ui.common.FooterLoadStateAdapter;
 import com.zhimu.slmp.health.ui.common.HealthNav;
-import com.zhimu.slmp.health.ui.common.RecordLogBottomSheet;
 import com.zhimu.slmp.health.ui.common.SingleViewAdapter;
 import com.zhimu.slmp.health.ui.immuneitem.ImmuneItemEditViewModel;
 import com.zhimu.slmp.health.util.HealthFormat;
@@ -89,8 +89,8 @@ public class ImmunePlanActivity extends BaseActivity {
         TopAppBarHelper.tintMenu(binding.healthToolbar);
         binding.healthToolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.health_menu_history) {
-                vm.loadLogs();
-                RecordLogBottomSheet.newInstance(ImmunePlanViewModel.class).showSafely(getSupportFragmentManager());
+                RecordLogSheet.show(getSupportFragmentManager(), HealthExtras.BIZ_IMMUNE_PLAN,
+                        vm.getBatchId() == null ? 0L : vm.getBatchId(), null);
                 return true;
             }
             return false;

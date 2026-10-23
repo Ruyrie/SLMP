@@ -17,6 +17,8 @@ import com.zhimu.slmp.base.widget.StatusTagView;
 import com.zhimu.slmp.base.widget.TopAppBarHelper;
 import com.zhimu.slmp.common.model.vo.UserBriefVO;
 import com.zhimu.slmp.common.router.Router;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
+import com.zhimu.slmp.herd.HerdExtras;
 import com.zhimu.slmp.herd.R;
 import com.zhimu.slmp.herd.databinding.HerdActivityPenDetailBinding;
 import com.zhimu.slmp.herd.di.HerdInjector;
@@ -82,8 +84,8 @@ public class PenDetailActivity extends BaseActivity {
                 vm.confirmDisable();
             }
         });
-        vm.getChangeLogEvent().observe(this, v -> new PenChangeLogBottomSheet()
-                .showSafely(getSupportFragmentManager()));
+        vm.getChangeLogEvent().observe(this, penId -> RecordLogSheet.show(getSupportFragmentManager(),
+                HerdExtras.BIZ_PEN, penId, null));
         vm.getNavEvent().observe(this, t -> HerdNav.open(this, childLauncher, t));
     }
 

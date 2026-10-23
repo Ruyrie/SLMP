@@ -26,6 +26,7 @@ import com.zhimu.slmp.base.widget.TopAppBarHelper;
 import com.zhimu.slmp.common.di.CoreInjector;
 import com.zhimu.slmp.common.router.Router;
 import com.zhimu.slmp.common.router.RouterPath;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
 import com.zhimu.slmp.health.HealthExtras;
 import com.zhimu.slmp.health.R;
 import com.zhimu.slmp.health.databinding.HealthActivityMedicationArchiveBinding;
@@ -37,7 +38,6 @@ import com.zhimu.slmp.health.model.vo.MedicationTargetVO;
 import com.zhimu.slmp.health.model.vo.WithdrawalVO;
 import com.zhimu.slmp.health.ui.common.FooterLoadStateAdapter;
 import com.zhimu.slmp.health.ui.common.HealthNav;
-import com.zhimu.slmp.health.ui.common.RecordLogBottomSheet;
 import com.zhimu.slmp.health.ui.common.SingleViewAdapter;
 import com.zhimu.slmp.health.util.HealthFormat;
 import com.zhimu.slmp.health.util.HealthFormRules;
@@ -168,8 +168,8 @@ public class MedicationArchiveActivity extends BaseActivity {
             }
             Router.open(this, RouterPath.U02, extras);
         });
-        vm.getShowLogs().observe(this, v -> RecordLogBottomSheet.newInstance(MedicationArchiveViewModel.class)
-                .showSafely(getSupportFragmentManager()));
+        vm.getShowLogs().observe(this, id -> RecordLogSheet.show(getSupportFragmentManager(),
+                HealthExtras.BIZ_MEDICATION_RECORD, id, null));
 
         // 删除：普通确认（NO_CHANGE_TODAY）
         vm.getShowDeleteConfirm().observe(this, impact -> ConfirmDialogFragment.builder(REQ_DELETE_CONFIRM)

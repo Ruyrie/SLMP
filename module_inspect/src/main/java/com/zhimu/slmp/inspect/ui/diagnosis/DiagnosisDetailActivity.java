@@ -30,6 +30,8 @@ import com.zhimu.slmp.base.widget.StatusTagView;
 import com.zhimu.slmp.base.widget.TopAppBarHelper;
 import com.zhimu.slmp.common.model.vo.MediaItemVO;
 import com.zhimu.slmp.common.router.Router;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
+import com.zhimu.slmp.inspect.InspectExtras;
 import com.zhimu.slmp.inspect.databinding.InspectActivityDiagnosisBinding;
 import com.zhimu.slmp.inspect.di.InspectInjector;
 import com.zhimu.slmp.inspect.model.vo.DiagnosisDetailVO;
@@ -37,7 +39,6 @@ import com.zhimu.slmp.inspect.model.vo.DiagnosisResultVO;
 import com.zhimu.slmp.inspect.model.vo.HandleVO;
 import com.zhimu.slmp.inspect.ui.common.InspectFormat;
 import com.zhimu.slmp.inspect.ui.common.InspectNav;
-import com.zhimu.slmp.inspect.ui.history.RecordLogBottomSheet;
 import com.zhimu.slmp.media.ui.viewer.MediaViewer;
 import com.zhimu.slmp.media.util.MediaGlide;
 
@@ -87,8 +88,8 @@ public class DiagnosisDetailActivity extends BaseActivity {
         vm.getDiagnosis().observe(this, d -> renderAi());
         vm.getRediagnosing().observe(this, r -> renderActions());
         vm.getNavEvent().observe(this, t -> InspectNav.open(this, handleLauncher, t));
-        vm.getShowRecordLogs().observe(this, v -> RecordLogBottomSheet.newInstance(DiagnosisDetailViewModel.class)
-                .showSafely(getSupportFragmentManager()));
+        vm.getShowRecordLogs().observe(this, id -> RecordLogSheet.show(getSupportFragmentManager(),
+                InspectExtras.BIZ_DIAGNOSIS_HANDLE, id, null));
         ClickThrottle.setOnClickListener(binding.inspectReportFooter, v -> {
             expanded = !expanded;
             binding.inspectReportExpand.setVisibility(expanded ? View.VISIBLE : View.GONE);

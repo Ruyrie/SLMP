@@ -3,9 +3,7 @@ package com.zhimu.slmp.inspect.data;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.zhimu.slmp.common.data.BaseDataRepository;
 import com.zhimu.slmp.common.di.FeatureScope;
-import com.zhimu.slmp.common.model.vo.RecordLogVO;
 import com.zhimu.slmp.inspect.model.request.InspectionBackfillRequest;
 import com.zhimu.slmp.inspect.model.request.InspectionSettingRequest;
 import com.zhimu.slmp.inspect.model.request.InspectionSubmitRequest;
@@ -39,12 +37,10 @@ public class InspectionRepository {
     public static final String BIZ_INSPECTION = "INSPECTION";
 
     private final InspectApi api;
-    private final BaseDataRepository baseData;
 
     @Inject
-    public InspectionRepository(@NonNull InspectApi api, @NonNull BaseDataRepository baseData) {
+    public InspectionRepository(@NonNull InspectApi api) {
         this.api = api;
-        this.baseData = baseData;
     }
 
     /** API-I01 */
@@ -133,11 +129,5 @@ public class InspectionRepository {
     @NonNull
     public Single<InspectionSubmitResultVO> findByRequest(@NonNull String clientRequestId) {
         return api.findByRequest(clientRequestId).compose(RxResult.unwrap());
-    }
-
-    /** API-U14 修改记录（biz_type = INSPECTION） */
-    @NonNull
-    public Single<List<RecordLogVO>> getRecordLogs(@NonNull String bizType, long bizId) {
-        return baseData.getRecordLogs(bizType, bizId);
     }
 }

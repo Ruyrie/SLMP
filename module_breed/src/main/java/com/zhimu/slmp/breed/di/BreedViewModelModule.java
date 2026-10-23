@@ -6,7 +6,6 @@ import com.zhimu.slmp.base.mvvm.ViewModelFactoryModule;
 import com.zhimu.slmp.base.mvvm.ViewModelKey;
 import com.zhimu.slmp.breed.ui.archive.AnimalArchiveViewModel;
 import com.zhimu.slmp.breed.ui.archive.AnimalFormViewModel;
-import com.zhimu.slmp.breed.ui.archive.ChangeLogViewModel;
 import com.zhimu.slmp.breed.ui.due.BreedDueViewModel;
 import com.zhimu.slmp.breed.ui.farrowing.FarrowingRegisterViewModel;
 import com.zhimu.slmp.breed.ui.home.BreedHomeViewModel;
@@ -43,11 +42,6 @@ public abstract class BreedViewModelModule {
     @IntoMap
     @ViewModelKey(AnimalArchiveViewModel.class)
     abstract ViewModel bindArchive(AnimalArchiveViewModel vm);
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(ChangeLogViewModel.class)
-    abstract ViewModel bindChangeLog(ChangeLogViewModel vm);
 
     @Binds
     @IntoMap

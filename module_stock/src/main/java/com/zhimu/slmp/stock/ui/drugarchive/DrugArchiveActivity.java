@@ -28,7 +28,7 @@ import com.zhimu.slmp.stock.databinding.StockActivityDrugArchiveBinding;
 import com.zhimu.slmp.stock.di.StockInjector;
 import com.zhimu.slmp.stock.model.StockEnums;
 import com.zhimu.slmp.stock.model.vo.DrugDetailVO;
-import com.zhimu.slmp.stock.ui.common.ChangeLogActivity;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
 import com.zhimu.slmp.stock.ui.common.PickerData;
 import com.zhimu.slmp.stock.ui.common.PickerHost;
 import com.zhimu.slmp.stock.ui.common.PickerSheet;
@@ -137,8 +137,8 @@ public class DrugArchiveActivity extends BaseActivity implements PickerHost, Nea
             setResult(Activity.RESULT_OK, new Intent().putExtra(StockExtras.RESULT_DRUG_ID, d == null ? 0L : d.drugId));
             finish();
         });
-        vm.getOpenChangeLog().observe(this, id -> startActivity(ChangeLogActivity.intent(this,
-                StockEnums.BIZ_DRUG, id)));
+        vm.getOpenChangeLog().observe(this, id -> RecordLogSheet.show(getSupportFragmentManager(),
+                StockEnums.BIZ_DRUG, id, null));
         vm.getShowNearDays().observe(this, v -> NearDaysSheet.newInstance(getString(R.string.stock_near_days_title),
                 NearDaysSheet.description(this), vm.getCategory().getValue())
                 .showSafely(getSupportFragmentManager(), NearDaysSheet.TAG));

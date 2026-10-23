@@ -26,7 +26,7 @@ import com.zhimu.slmp.stock.databinding.StockViewLotHeaderBinding;
 import com.zhimu.slmp.stock.di.StockInjector;
 import com.zhimu.slmp.stock.model.StockEnums;
 import com.zhimu.slmp.stock.model.vo.DrugLotDetailVO;
-import com.zhimu.slmp.stock.ui.common.ChangeLogActivity;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
 import com.zhimu.slmp.stock.ui.common.FooterLoadStateAdapter;
 import com.zhimu.slmp.stock.ui.common.RowPagingAdapter;
 import com.zhimu.slmp.stock.ui.common.SingleViewAdapter;
@@ -132,8 +132,8 @@ public class DrugLotDetailActivity extends BaseActivity {
         });
         vm.getOpenChangeRequest().observe(this, id -> Router.open(this, RouterPath.U01,
                 StockNav.changeArgs(StockEnums.BIZ_INBOUND, id)));
-        vm.getOpenChangeLog().observe(this, id -> startActivity(ChangeLogActivity.intent(this,
-                StockEnums.BIZ_INBOUND, id)));
+        vm.getOpenChangeLog().observe(this, id -> RecordLogSheet.show(getSupportFragmentManager(),
+                StockEnums.BIZ_INBOUND, id, null));
         vm.getOpenRecord().observe(this, f -> StockNav.openFlow(this, childLauncher, f));
         vm.getRecordGone().observe(this, msg -> {
             Bundle b = new Bundle();

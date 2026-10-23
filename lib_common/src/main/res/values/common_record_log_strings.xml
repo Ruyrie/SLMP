@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- U14 查看修改记录（common.ui.recordlog.RecordLogSheet） -->
+<resources>
+    <string name="common_record_log_title">修改记录</string>
+    <string name="common_record_log_empty">还没有修改记录</string>
+    <string name="common_record_log_error">修改记录加载失败</string>
+    <string name="common_record_log_no_permission">你没有修改记录的查看权限</string>
+    <string name="common_record_log_close">关闭</string>
+</resources>

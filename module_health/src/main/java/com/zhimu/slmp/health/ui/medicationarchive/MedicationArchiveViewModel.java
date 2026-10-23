@@ -16,7 +16,6 @@ import com.zhimu.slmp.base.mvvm.UiMessage;
 import com.zhimu.slmp.base.mvvm.UiState;
 import com.zhimu.slmp.base.util.IdemKey;
 import com.zhimu.slmp.common.farm.FarmContext;
-import com.zhimu.slmp.common.model.vo.RecordLogVO;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.common.ui.change.model.request.ChangeRequestSubmitRequest;
 import com.zhimu.slmp.health.HealthExtras;
@@ -27,7 +26,6 @@ import com.zhimu.slmp.health.model.vo.DeleteImpactVO;
 import com.zhimu.slmp.health.model.vo.MedicationRecordVO;
 import com.zhimu.slmp.health.model.vo.MedicationTargetVO;
 import com.zhimu.slmp.health.model.vo.WithdrawalVO;
-import com.zhimu.slmp.health.ui.common.RecordLogHost;
 import com.zhimu.slmp.health.util.HealthFormRules;
 import com.zhimu.slmp.health.util.HealthFormat;
 import com.zhimu.slmp.network.model.PageVO;
@@ -45,7 +43,7 @@ import io.reactivex.rxjava3.core.Single;
  * 养殖户 NO_CHANGE_TODAY 直接删除（API-D26）；ADVANCE / NO_CHANGE_EARLIER / LOCKED 填写申请原因（200 字）提交修改申请（API-U01 → U02）；
  * 员工只能“通知场长”（API-D27）。
  */
-public class MedicationArchiveViewModel extends BaseListViewModel<Long, MedicationRecordVO> implements RecordLogHost {
+public class MedicationArchiveViewModel extends BaseListViewModel<Long, MedicationRecordVO> {
 
     public static final String IMPACT_ADVANCE = "ADVANCE";
     public static final String IMPACT_NO_CHANGE_TODAY = "NO_CHANGE_TODAY";
@@ -62,7 +60,6 @@ public class MedicationArchiveViewModel extends BaseListViewModel<Long, Medicati
     private final MutableLiveData<Boolean> isManager = new MutableLiveData<>(false);
     private final MutableLiveData<String> deleteReason = new MutableLiveData<>("");
     private final MutableLiveData<Boolean> submitting = new MutableLiveData<>(false);
-    private final MutableLiveData<List<RecordLogVO>> logs = new MutableLiveData<>();
     private final MutableLiveData<Integer> recordTotal = new MutableLiveData<>();
 
     private final SingleLiveEvent<DeleteImpactVO> showDeleteConfirm = new SingleLiveEvent<>();
@@ -73,7 +70,8 @@ public class MedicationArchiveViewModel extends BaseListViewModel<Long, Medicati
     private final SingleLiveEvent<Long> openRegister = new SingleLiveEvent<>();
     private final SingleLiveEvent<Long> openChangeRequest = new SingleLiveEvent<>();
     private final SingleLiveEvent<Long> openRequest = new SingleLiveEvent<>();
-    private final SingleLiveEvent<Void> showLogs = new SingleLiveEvent<>();
+    /** 打开修改记录面板（U14），值为用药记录 ID */
+    private final SingleLiveEvent<Long> showLogs = new SingleLiveEvent<>();
     private final SingleLiveEvent<Void> showTip = new SingleLiveEvent<>();
     private final SingleLiveEvent<List<MedicationTargetVO>> pickBatch = new SingleLiveEvent<>();
 
@@ -125,9 +123,6 @@ public class MedicationArchiveViewModel extends BaseListViewModel<Long, Medicati
 
     public LiveData<Boolean> getSubmitting() { return submitting; }
 
-    @Override
-    public LiveData<List<RecordLogVO>> getLogs() { return logs; }
-
     public SingleLiveEvent<DeleteImpactVO> getShowDeleteConfirm() { return showDeleteConfirm; }
 
     public SingleLiveEvent<DeleteImpactVO> getShowDeleteRequest() { return showDeleteRequest; }
@@ -144,7 +139,7 @@ public class MedicationArchiveViewModel extends BaseListViewModel<Long, Medicati
 
     public SingleLiveEvent<Long> getOpenRequest() { return openRequest; }
 
-    public SingleLiveEvent<Void> getShowLogs() { return showLogs; }
+    public SingleLiveEvent<Long> getShowLogs() { return showLogs; }
 
     public SingleLiveEvent<Void> getShowTip() { return showTip; }
 
@@ -245,8 +240,7 @@ public class MedicationArchiveViewModel extends BaseListViewModel<Long, Medicati
                 openRequest.setValue(r.getChangeState() == null ? null : r.getChangeState().getPendingRequestId());
                 break;
             case HealthExtras.ACTION_VIEW_LOG:
-                loadLogs(r);
-                showLogs.call();
+                showLogs.setValue(r.getId());
                 break;
             default:
                 break;
@@ -406,14 +400,6 @@ public class MedicationArchiveViewModel extends BaseListViewModel<Long, Medicati
     @Override
     protected void onDataChanged(@NonNull ApiException e) {
         refresh();
-    }
-
-    // ===== 修改记录 =====
-
-    public void loadLogs(@NonNull MedicationRecordVO r) {
-        logs.setValue(null);
-        launch(shared.getRecordLogs(HealthExtras.BIZ_MEDICATION_RECORD, r.getId()), logs::setValue,
-                e -> logs.setValue(Collections.emptyList()));
     }
 
     @Nullable

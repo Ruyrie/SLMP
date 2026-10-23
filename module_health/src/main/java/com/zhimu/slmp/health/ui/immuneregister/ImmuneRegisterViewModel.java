@@ -15,7 +15,6 @@ import com.zhimu.slmp.base.mvvm.UiMessage;
 import com.zhimu.slmp.base.util.DateFormatter;
 import com.zhimu.slmp.common.farm.FarmContext;
 import com.zhimu.slmp.common.model.vo.DictItemVO;
-import com.zhimu.slmp.common.model.vo.RecordLogVO;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.common.service.ITodoService;
 import com.zhimu.slmp.common.service.ServiceHub;
@@ -32,7 +31,6 @@ import com.zhimu.slmp.health.model.vo.ImmuneRecordVO;
 import com.zhimu.slmp.health.model.vo.ImmuneRegisterFormVO;
 import com.zhimu.slmp.health.model.vo.MemberItemVO;
 import com.zhimu.slmp.health.model.vo.VaccineOptionVO;
-import com.zhimu.slmp.health.ui.common.RecordLogHost;
 import com.zhimu.slmp.health.util.HealthFormRules;
 import com.zhimu.slmp.health.util.HealthFormat;
 import com.zhimu.slmp.health.util.LotPicker;
@@ -57,7 +55,7 @@ import io.reactivex.rxjava3.disposables.Disposable;
  * 剂量、接种数量（不超过存栏）、接种方式、接种日期（补录时计划日期至今天）、实际执行人（员工不显示、不提交）。
  * 提交 API-D14（Idempotency-Key，超时用 API-D41 确认），修改 API-D16。
  */
-public class ImmuneRegisterViewModel extends BaseViewModel implements RecordLogHost {
+public class ImmuneRegisterViewModel extends BaseViewModel {
 
     public static final String MODE_REGISTER = "REGISTER";
     public static final String MODE_BACKFILL = "BACKFILL";
@@ -98,7 +96,6 @@ public class ImmuneRegisterViewModel extends BaseViewModel implements RecordLogH
     private final MutableLiveData<String> methodCode = new MutableLiveData<>();
     private final MutableLiveData<String> vaccinateDate = new MutableLiveData<>(DateFormatter.todayString());
     private final MediatorLiveData<String> deductText = new MediatorLiveData<>();
-    private final MutableLiveData<List<RecordLogVO>> logs = new MutableLiveData<>();
     private final MutableLiveData<Map<String, String>> fieldErrors = new MutableLiveData<>(Collections.emptyMap());
     private final MutableLiveData<Boolean> submitting = new MutableLiveData<>(false);
     private final MediatorLiveData<Boolean> canSubmit = new MediatorLiveData<>();
@@ -200,9 +197,6 @@ public class ImmuneRegisterViewModel extends BaseViewModel implements RecordLogH
     public MutableLiveData<String> getVaccinateDate() { return vaccinateDate; }
 
     public LiveData<String> getDeductText() { return deductText; }
-
-    @Override
-    public LiveData<List<RecordLogVO>> getLogs() { return logs; }
 
     public LiveData<Map<String, String>> getFieldErrors() { return fieldErrors; }
 
@@ -969,16 +963,6 @@ public class ImmuneRegisterViewModel extends BaseViewModel implements RecordLogH
         if (r != null) {
             openChangeRequest.setValue(r.getId());
         }
-    }
-
-    /** API-U14（IMMUNE_RECORD） */
-    public void loadLogs() {
-        if (recordId == null) {
-            return;
-        }
-        logs.setValue(null);
-        launch(shared.getRecordLogs(HealthExtras.BIZ_IMMUNE_RECORD, recordId), logs::setValue,
-                e -> logs.setValue(Collections.emptyList()));
     }
 
     /** 返回键：新登记且改动过时询问“放弃这次登记？” */

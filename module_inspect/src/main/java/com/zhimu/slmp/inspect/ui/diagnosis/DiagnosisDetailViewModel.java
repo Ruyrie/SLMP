@@ -13,7 +13,6 @@ import com.zhimu.slmp.base.error.ApiException;
 import com.zhimu.slmp.base.mvvm.BaseViewModel;
 import com.zhimu.slmp.base.mvvm.SingleLiveEvent;
 import com.zhimu.slmp.base.util.DateFormatter;
-import com.zhimu.slmp.common.model.vo.RecordLogVO;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.inspect.InspectExtras;
 import com.zhimu.slmp.inspect.ai.DirectDiagnosisInput;
@@ -30,8 +29,6 @@ import com.zhimu.slmp.network.GsonFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -47,8 +44,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
  * 测试直连：I05 发起的直连诊断（{@link DirectDiagnosisRepository}）完成后用其结果替换诊断与上报信息并标注“测试直连”；
  * 直连失败时走原有接口。参数：report_id、poll_interval_sec、poll_max_sec、ai_state。
  */
-public class DiagnosisDetailViewModel extends BaseViewModel
-        implements com.zhimu.slmp.inspect.ui.common.RecordLogHost {
+public class DiagnosisDetailViewModel extends BaseViewModel {
 
     /** AI 卡状态 */
     public static final int AI_PLACEHOLDER = 0;
@@ -74,10 +70,10 @@ public class DiagnosisDetailViewModel extends BaseViewModel
     private final MutableLiveData<DiagnosisDetailVO.DiagnosisPermissions> permissions = new MutableLiveData<>();
     private final MutableLiveData<Boolean> polling = new MutableLiveData<>(false);
     private final MutableLiveData<Boolean> rediagnosing = new MutableLiveData<>(false);
-    private final MutableLiveData<List<RecordLogVO>> recordLogs = new MutableLiveData<>(Collections.emptyList());
     private final MutableLiveData<String> sourceLabel = new MutableLiveData<>();
     private final SingleLiveEvent<NavTarget> navEvent = new SingleLiveEvent<>();
-    private final SingleLiveEvent<Void> showRecordLogs = new SingleLiveEvent<>();
+    /** 打开修改记录面板（U14），值为记录 ID */
+    private final SingleLiveEvent<Long> showRecordLogs = new SingleLiveEvent<>();
 
     private long reportId;
     private int pollInterval = 3;
@@ -337,16 +333,12 @@ public class DiagnosisDetailViewModel extends BaseViewModel
 
     public LiveData<Boolean> getRediagnosing() { return rediagnosing; }
 
-    @NonNull
-    @Override
-    public LiveData<List<RecordLogVO>> getRecordLogs() { return recordLogs; }
-
     /** 测试直连的来源说明（“测试直连 · 通义千问 qwen3.8-max”），服务端结果为 null */
     public LiveData<String> getSourceLabel() { return sourceLabel; }
 
     public SingleLiveEvent<NavTarget> getNavEvent() { return navEvent; }
 
-    public SingleLiveEvent<Void> getShowRecordLogs() { return showRecordLogs; }
+    public SingleLiveEvent<Long> getShowRecordLogs() { return showRecordLogs; }
 
     public long getReportId() { return reportId; }
 
@@ -377,17 +369,13 @@ public class DiagnosisDetailViewModel extends BaseViewModel
                 .put(RouterPath.EXTRA_LOCATE_DATE, at == null ? null : at.substring(0, Math.min(10, at.length()))));
     }
 
-    /** 更多菜单“查看修改记录” */
+    /** 更多菜单“查看修改记录”：打开公共修改记录面板（U14，biz_type = DIAGNOSIS_HANDLE） */
     public void loadRecordLogs() {
         HandleVO h = handle.getValue();
         if (h == null) {
             return;
         }
-        recordLogs.setValue(Collections.emptyList());
-        showRecordLogs.call();
-        launch(repository.getRecordLogs(h.getHandleId()),
-                list -> recordLogs.setValue(list == null ? Collections.emptyList() : list),
-                e -> showMessage(e.getMessage()));
+        showRecordLogs.setValue(h.getHandleId());
     }
 
     @Override
