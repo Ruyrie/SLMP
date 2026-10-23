@@ -336,6 +336,9 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional
     public ProgressResultVO reportProgress(Long userId, Long courseId, CourseProgressRequest request) {
+        if (request == null) {
+            throw AiErrors.invalid("参数不正确");
+        }
         validateProgress(request);
         Course course = courseMapper.selectById(courseId);
         if (course == null || "DRAFT".equals(course.getStatus())) {
