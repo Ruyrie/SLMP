@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.biz.common.mapper.ChangeRequestMapper">
+
+    <!-- 我的修改申请：跨养殖场聚合本人提交的申请（U03），默认过滤 CANCELED -->
+    <sql id="mineWhere">
+        submitted_by = #{submittedBy}
+        <choose>
+            <when test="status != null">
+                AND status = #{status}
+            </when>
+            <otherwise>
+                AND status &lt;&gt; 'CANCELED'
+            </otherwise>
+        </choose>
+        <if test="bizType != null">
+            AND biz_type = #{bizType}
+        </if>
+        <if test="farmId != null">
+            AND farm_id = #{farmId}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND record_locator LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+    </sql>
+
+    <select id="selectMine" resultType="com.zhimu.server.biz.common.entity.ChangeRequest">
+        SELECT * FROM t_change_request
+        WHERE <include refid="mineWhere"/>
+        ORDER BY submitted_at DESC, id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countMine" resultType="long">
+        SELECT COUNT(*) FROM t_change_request WHERE <include refid="mineWhere"/>
+    </select>
+
+    <select id="countMineByStatus" resultType="long">
+        SELECT COUNT(*) FROM t_change_request
+        WHERE submitted_by = #{submittedBy}
+          AND status = #{status}
+        <if test="bizType != null">
+            AND biz_type = #{bizType}
+        </if>
+        <if test="farmId != null">
+            AND farm_id = #{farmId}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND record_locator LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+    </select>
+</mapper>
