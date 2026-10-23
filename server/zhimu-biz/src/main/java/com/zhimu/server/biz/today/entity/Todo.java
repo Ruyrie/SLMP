@@ -31,6 +31,11 @@ public class Todo extends AuditEntity {
     private String penName;
     /** 批次号快照 */
     private String batchNo;
+    /** 详情“关联批次”快照：可与列表项的 batch_id 不同（例如消毒任务关联批次） */
+    private Long relatedBatchId;
+    private String relatedBatchNo;
+    private String relatedBatchDesc;
+    private String relatedBatchTag;
     /** BIZ_TYPE */
     private String bizType;
     private Long bizId;

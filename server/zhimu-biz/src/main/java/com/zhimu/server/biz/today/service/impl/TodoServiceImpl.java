@@ -243,6 +243,8 @@ public class TodoServiceImpl implements TodoService, TodoQueryService {
             }
             todos.sort(dayComparator());
             WeeklyDayVO day = new WeeklyDayVO();
+            day.setDate(date.toString());
+            day.setIsToday(date.equals(today));
             fillCalendarDay(day, date, today, now, todos);
             List<TodoItemVO> items = new ArrayList<>();
             for (Todo todo : todos.subList(0, Math.min(perDay, todos.size()))) {
@@ -301,11 +303,12 @@ public class TodoServiceImpl implements TodoService, TodoQueryService {
     @Transactional
     public TodoDetailVO complete(Long todoId, TodoCompleteRequest request, Long userId) {
         Todo todo = loadTodo(todoId);
-        FarmContext.FarmMember member = requireReadable(todo, userId);
+        FarmContext.FarmMember member = requireWriteMember(todo, userId);
         todoScope.checkWritable(member);
         if (member.isStaff()) {
             throw new BizException(ErrorCode.ROLE_FORBIDDEN, "只有所有者和场长可以标记完成");
         }
+        todoScope.checkViewable(todo, member);
         if (!TodoCategory.WORK.name().equals(todo.getCategory())) {
             throw new BizException(ErrorCode.STATE_NOT_ALLOWED,
                     "经营类和预警类待办只能在登记对应记录后自动完成，不能手动标记完成。");
@@ -346,11 +349,12 @@ public class TodoServiceImpl implements TodoService, TodoQueryService {
     @Transactional
     public TodoDetailVO ignore(Long todoId, TodoIgnoreRequest request, Long userId) {
         Todo todo = loadTodo(todoId);
-        FarmContext.FarmMember member = requireReadable(todo, userId);
+        FarmContext.FarmMember member = requireWriteMember(todo, userId);
         todoScope.checkWritable(member);
         if (member.isStaff()) {
             throw new BizException(ErrorCode.ROLE_FORBIDDEN, "只有所有者和场长可以忽略待办");
         }
+        todoScope.checkViewable(todo, member);
         String reason = TodayText.trim(request == null ? null : request.getReason());
         if (reason == null || reason.isEmpty()) {
             throw new BizException(ErrorCode.REASON_EMPTY, "请填写忽略原因");
@@ -417,6 +421,17 @@ public class TodoServiceImpl implements TodoService, TodoQueryService {
     }
 
     private FarmContext.FarmMember requireReadable(Todo todo, Long userId) {
+        FarmContext.FarmMember member = requireMemberOfTodoFarm(todo, userId);
+        todoScope.checkViewable(todo, member);
+        return member;
+    }
+
+    /** 写操作先只校验成员与养殖场状态，角色判断（员工 40303）在看得见范围之前 */
+    private FarmContext.FarmMember requireWriteMember(Todo todo, Long userId) {
+        return requireMemberOfTodoFarm(todo, userId);
+    }
+
+    private FarmContext.FarmMember requireMemberOfTodoFarm(Todo todo, Long userId) {
         FarmContext.FarmMember member = todoScope.memberFor(todo.getFarmId(), userId);
         if (member == null) {
             throw new BizException(ErrorCode.NOT_FARM_MEMBER);
@@ -430,7 +445,6 @@ public class TodoServiceImpl implements TodoService, TodoQueryService {
             throw new BizException(ErrorCode.FARM_STATUS_FORBIDDEN,
                     member.farmName() + "还在审核，审核通过后才能查看待办");
         }
-        todoScope.checkViewable(todo, member);
         return member;
     }
 
