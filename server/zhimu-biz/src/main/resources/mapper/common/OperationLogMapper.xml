@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.biz.common.mapper.OperationLogMapper">
+
+    <!-- U14：只取用户端日志，按时间倒序，最多 200 条 -->
+    <select id="selectUserLogs" resultType="com.zhimu.server.biz.common.query.RecordLogRow">
+        SELECT o.id,
+               o.operator_id,
+               o.operator_name,
+               o.operator_role,
+               o.op_action,
+               o.reason,
+               o.before_json,
+               o.after_json,
+               o.farm_id,
+               o.change_request_id,
+               cr.request_no AS change_request_no,
+               o.created_at
+        FROM t_operation_log o
+                 LEFT JOIN t_change_request cr ON cr.id = o.change_request_id
+        WHERE o.operator_type = 'USER'
+          AND o.biz_type = #{bizType}
+          AND o.biz_id = #{bizId}
+        ORDER BY o.created_at DESC, o.id DESC
+        LIMIT #{limit}
+    </select>
+</mapper>
