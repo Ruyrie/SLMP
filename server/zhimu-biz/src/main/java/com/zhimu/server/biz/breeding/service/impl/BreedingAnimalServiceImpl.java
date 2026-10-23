@@ -593,6 +593,10 @@ public class BreedingAnimalServiceImpl implements BreedingAnimalService {
         Comparator<BreedingAnimalOptionVO> comparator = switch (purpose) {
             case "MATING" -> Comparator
                     .comparingInt((BreedingAnimalOptionVO vo) -> "EMPTY".equals(vo.getStatus()) ? 0 : 1)
+                    .thenComparing(BreedingAnimalOptionVO::getLastWeanDate,
+                            Comparator.nullsLast(Comparator.reverseOrder()))
+                    .thenComparing(BreedingAnimalOptionVO::getFirstMatingDate,
+                            Comparator.nullsLast(Comparator.naturalOrder()))
                     .thenComparing(BreedingAnimalOptionVO::getEarTag, Comparator.nullsLast(Comparator.naturalOrder()));
             case "FARROWING" -> Comparator
                     .comparing(BreedingAnimalOptionVO::getExpectedDueDate,
