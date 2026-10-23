@@ -162,7 +162,9 @@ class InspectControllerMockMvcTest {
                         .param("page", "1").param("size", "20").header("Authorization", AUTH))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.list[0].tags[0]").value("ABNORMAL"))
-                .andExpect(jsonPath("$.data.list[0].inspect_date").value("2026-10-19"));
+                .andExpect(jsonPath("$.data.list[0].inspect_date").value("2026-10-19"))
+                // App mock history_2003.json 的键是 backfill_expired（不是 is_backfill_expired）
+                .andExpect(jsonPath("$.data.list[0].backfill_expired").value(false));
 
         mvc.perform(get("/api/v1/pens/2003/inspection-overview").param("to", "2026-10-19")
                         .header("Authorization", AUTH))
@@ -384,6 +386,7 @@ class InspectControllerMockMvcTest {
         row.setInspectionId(50121L);
         row.setInspectDate("2026-10-19");
         row.setTags(List.of("ABNORMAL", "ON_SITE"));
+        row.setBackfillExpired(false);
         lenient().when(inspectionService.penHistory(anyLong(), any()))
                 .thenReturn(PageVO.of(List.of(row), 1, 1, 20));
 

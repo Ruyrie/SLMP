@@ -35,6 +35,7 @@ public class Feed extends AuditEntity {
     private BigDecimal stockAmount;
     /** 移动加权平均成本（元/千克） */
     private BigDecimal avgPrice;
+    /** 近 7 个完整自然日领用量；列名是 usage_7d_qty，MP 默认会映射成 usage7d_qty，必须显式指定 */
     @TableField("usage_7d_qty")
     private BigDecimal usage7dQty;
     private Integer usageDays;

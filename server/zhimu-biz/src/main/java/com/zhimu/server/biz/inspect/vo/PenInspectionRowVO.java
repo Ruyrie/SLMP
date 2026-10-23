@@ -26,7 +26,10 @@ public class PenInspectionRowVO {
     private boolean hasRevisions;
     private boolean canBackfill;
     private String backfillUntil;
-    @JsonProperty("backfill_expired")
-    private Boolean isBackfillExpired;
+    /**
+     * 补录期限已过。App 的字段是 backfillExpired（JSON backfill_expired，见 mock history_2003.json）；
+     * 命名成 isBackfillExpired 会被 Jackson 输出成 is_backfill_expired，与 App 契约不一致。
+     */
+    private Boolean backfillExpired;
     private String resultSummary;
 }

@@ -16,6 +16,8 @@ import com.zhimu.server.biz.inspect.mapper.AiDiagnosisMapper;
 import com.zhimu.server.biz.inspect.mapper.InspectionItemResultMapper;
 import com.zhimu.server.biz.inspect.mapper.InspectionMapper;
 import com.zhimu.server.biz.inspect.support.InspectSupport;
+import com.zhimu.server.common.error.BizException;
+import com.zhimu.server.common.error.ErrorCode;
 import com.zhimu.server.common.util.BeijingTime;
 import com.zhimu.server.common.vo.MediaItemVO;
 import com.zhimu.server.integration.ai.AiChatRequest;
@@ -147,6 +149,24 @@ class DiagnosisServiceImplTest {
         service.execute(9901L);
 
         verify(writer).failure(eq(9901L), eq("SERVICE_UNAVAILABLE"), eq(0L), eq(null));
+    }
+
+    @Test
+    void gateway50201WritesServiceUnavailable() {
+        when(aiGateway.chat(any(AiChatRequest.class))).thenThrow(new BizException(ErrorCode.AI_UNAVAILABLE));
+
+        service.execute(9901L);
+
+        verify(writer).failure(eq(9901L), eq("SERVICE_UNAVAILABLE"), anyLong(), any());
+    }
+
+    @Test
+    void gateway50401WritesTimeout() {
+        when(aiGateway.chat(any(AiChatRequest.class))).thenThrow(new BizException(ErrorCode.AI_TIMEOUT));
+
+        service.execute(9901L);
+
+        verify(writer).failure(eq(9901L), eq("TIMEOUT"), anyLong(), any());
     }
 
     @Test

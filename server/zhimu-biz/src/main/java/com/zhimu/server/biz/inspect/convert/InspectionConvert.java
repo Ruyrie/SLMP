@@ -212,10 +212,10 @@ public final class InspectionConvert {
         vo.setCanChangeRequest(canChangeRequest);
         vo.setHasRevisions(false);
         vo.setCanBackfill(canBackfill);
-        vo.setIsBackfillExpired(false);
+        vo.setBackfillExpired(false);
         if (InspectRules.MISSED.equals(inspection.getInspectStatus()) && inspection.getInspectDate() != null) {
             vo.setBackfillUntil(BeijingTime.format(InspectRules.backfillUntil(inspection.getInspectDate())));
-            vo.setIsBackfillExpired(InspectRules.backfillExpired(inspection.getInspectDate()));
+            vo.setBackfillExpired(InspectRules.backfillExpired(inspection.getInspectDate()));
         }
         vo.setResultSummary(resultSummary);
         return vo;
