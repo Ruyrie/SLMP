@@ -187,7 +187,7 @@ public class DisinfectRecordChangeHandler implements ChangeRequestHandler {
                             + HealthChangeSupport.display(available, unit) + "，请先补充入库");
         }
         Drug drug = drugMapper.selectById(row.getDrugId());
-        if (drug != null) {
+        if (drug != null && drug.getCatalogId() != null) {
             drugCatalogQueryService.assertNotBanned(drug.getCatalogId(), null);
         }
     }
