@@ -15,12 +15,21 @@ import com.zhimu.server.biz.herd.entity.BatchTimeline;
 import com.zhimu.server.biz.herd.entity.Pen;
 import com.zhimu.server.biz.herd.mapper.BatchEventMapper;
 import com.zhimu.server.biz.herd.mapper.BatchMapper;
+import com.zhimu.server.biz.herd.mapper.BatchPenMapper;
 import com.zhimu.server.biz.herd.mapper.BatchTimelineMapper;
+import com.zhimu.server.biz.herd.mapper.PenMapper;
 import com.zhimu.server.biz.herd.query.BatchListQuery;
 import com.zhimu.server.biz.herd.query.BatchLookupQuery;
 import com.zhimu.server.biz.herd.query.TimelineQuery;
+import com.zhimu.server.biz.herd.request.BatchCreateRequest;
+import com.zhimu.server.biz.herd.request.DeathCreateRequest;
+import com.zhimu.server.biz.herd.request.DeathUpdateRequest;
+import com.zhimu.server.biz.herd.request.EntryUpdateRequest;
+import com.zhimu.server.biz.herd.request.TransferCreateRequest;
+import com.zhimu.server.biz.herd.request.TransferUpdateRequest;
 import com.zhimu.server.biz.herd.service.BatchService;
 import com.zhimu.server.biz.herd.support.BatchAccess;
+import com.zhimu.server.biz.herd.support.BatchNoGenerator;
 import com.zhimu.server.biz.herd.support.HerdErrors;
 import com.zhimu.server.biz.herd.support.HerdSupport;
 import com.zhimu.server.biz.herd.support.QrCodes;
@@ -37,7 +46,9 @@ import com.zhimu.server.biz.herd.vo.TimelineItemVO;
 import com.zhimu.server.biz.herd.vo.TransferResultVO;
 import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.common.context.FarmContext;
+import com.zhimu.server.common.context.UserContext;
 import com.zhimu.server.common.enums.BizType;
+import com.zhimu.server.common.enums.FileScene;
 import com.zhimu.server.common.enums.FarmRole;
 import com.zhimu.server.common.enums.FarmStatus;
 import com.zhimu.server.common.error.BizException;
@@ -47,13 +58,18 @@ import com.zhimu.server.common.vo.ChangeRequestStateVO;
 import com.zhimu.server.common.vo.PenBriefVO;
 import com.zhimu.server.common.vo.UserBriefVO;
 import com.zhimu.server.framework.mybatis.TenantSkip;
+import com.zhimu.server.framework.oplog.OperationLogEntry;
+import com.zhimu.server.framework.oplog.OperationLogRecorder;
 import com.zhimu.server.framework.security.cache.FarmMemberCache;
 import com.zhimu.server.framework.security.interceptor.FarmContextInterceptor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -79,11 +95,14 @@ public class BatchServiceImpl implements BatchService {
     private final BatchMapper batchMapper;
     private final BatchEventMapper eventMapper;
     private final BatchTimelineMapper timelineMapper;
+    private final BatchPenMapper batchPenMapper;
+    private final PenMapper penMapper;
+    private final BatchNoGenerator batchNoGenerator;
     private final FarmLookup farmLookup;
     private final FarmMemberCache memberCache;
     private final BizMediaService bizMediaService;
-    private final List<BatchTimelineProvider> timelineProviders;
-
+    private final OperationLogRecorder operationLogRecorder;
+    private final ObjectProvider<BatchTimelineProvider> timelineProviders;
     @Override
     public PageVO<BatchListItemVO> list(BatchListQuery query) {
         FarmContext.FarmMember member = support.context();
@@ -300,8 +319,10 @@ public class BatchServiceImpl implements BatchService {
             applyTimelineAction(item, batch, row, member, manager, hasFollowUp);
             items.add(item);
         }
-        if (timelineProviders != null) {
-            for (BatchTimelineProvider provider : timelineProviders) {
+        List<BatchTimelineProvider> providers = timelineProviders == null
+                ? List.of() : timelineProviders.orderedStream().toList();
+        if (!providers.isEmpty()) {
+            for (BatchTimelineProvider provider : providers) {
                 List<TimelineItemVO> extra = provider.extraRecords(batch.getFarmId(), batchId);
                 if (extra != null && !extra.isEmpty()) {
                     extra.stream().filter(row -> matchType(type, row.getRecordType())).forEach(items::add);
@@ -372,7 +393,9 @@ public class BatchServiceImpl implements BatchService {
         vo.setExecutor(userBrief(event.getExecutorUserId()));
         vo.setRegistrant(userBrief(event.getCreatedBy()));
         vo.setLastEditor(userBrief(event.getUpdatedBy()));
-        vo.setPhotos(bizMediaService.list(mediaType(event.getEventType()), event.getId()));
+        List<com.zhimu.server.common.vo.MediaItemVO> photos =
+                bizMediaService.list(mediaType(event.getEventType()), event.getId());
+        vo.setPhotos(photos == null ? List.of() : photos);
         vo.setChangeState(changeState(event, member, batch));
         if ("ENTRY".equals(event.getEventType())) {
             BatchEventDetailVO.EntryInfo entryInfo = new BatchEventDetailVO.EntryInfo();
@@ -413,6 +436,928 @@ public class BatchServiceImpl implements BatchService {
             vo.setResult(resultOf(event, batch));
         }
         return vo;
+    }
+
+    // ===== 写接口 =====
+
+    @Override
+    @Transactional
+    public BatchEntryResultVO create(BatchCreateRequest request, String requestKey) {
+        FarmContext.FarmMember member = support.context();
+        Long farmId = member.farmId();
+        Pen pen = requirePenInFarm(farmId, request.getPenId(), "pen_id", "请选择栏舍");
+        if (!"ENABLED".equals(pen.getStatus())) {
+            throw HerdErrors.penDisabled("这个栏舍已停用，不能入栏");
+        }
+        BreedQueryService.BreedInfo breed = support.breed(request.getBreedId());
+        if (breed == null || !breed.enabled()) {
+            throw HerdErrors.fieldInvalid("breed_id", "请选择品种");
+        }
+        CategoryInfo category = support.category(breed.categoryId());
+        if (category == null) {
+            throw HerdErrors.fieldInvalid("breed_id", "请选择品种");
+        }
+        String source = upper(request.getSource());
+        if (!"PURCHASED".equals(source) && !"SELF_BRED".equals(source)) {
+            throw HerdErrors.fieldInvalid("source", "请选择来源");
+        }
+        LocalDate entryDate = request.getEntryDate();
+        if (entryDate == null) {
+            throw HerdErrors.fieldInvalid("entry_date", "请选择入栏日期");
+        }
+        if (entryDate.isAfter(BeijingTime.today())) {
+            throw HerdErrors.fieldInvalid("entry_date", "入栏日期不能晚于今天");
+        }
+        int age = requireEntryAge(request.getEntryAgeDays());
+        int count = requireCount(request.getEntryCount(), "entry_count");
+        BigDecimal weight = validateWeight(request.getEntryAvgWeight());
+        BigDecimal price = validatePrice(request.getIntroUnitPrice(), source);
+        String purpose = request.getPurpose() == null || request.getPurpose().isBlank()
+                ? (Boolean.TRUE.equals(category.isBreeding()) ? "BREEDING" : "COMMERCIAL")
+                : request.getPurpose().toUpperCase();
+        if (!"COMMERCIAL".equals(purpose) && !"BREEDING".equals(purpose)) {
+            throw HerdErrors.fieldInvalid("purpose", "请选择用途");
+        }
+        ensurePenCategory(pen, category.id(), null);
+        int before = pen.getStockCount() == null ? 0 : pen.getStockCount();
+        int after = before + count;
+        int over = Math.max(0, after - capacityOf(pen));
+        if (over > 0 && !Boolean.TRUE.equals(request.getCapacityConfirmed())) {
+            throw HerdErrors.capacityConfirm(pen.getId(), pen.getPenName(), "入栏", capacityOf(pen), before, after, over);
+        }
+
+        BatchNoGenerator.Generated generated = batchNoGenerator.next();
+        Batch batch = new Batch();
+        batch.setFarmId(farmId);
+        batch.setBatchNo(generated.batchNo());
+        batch.setNoMonth(generated.month());
+        batch.setNoSeq(generated.seq());
+        batch.setQrToken(QrCodes.nextToken());
+        batch.setCategoryId(category.id());
+        batch.setBreedId(breed.id());
+        batch.setPurpose(purpose);
+        batch.setSource(source);
+        batch.setEntryPenId(pen.getId());
+        batch.setEntryDate(entryDate);
+        batch.setEntryAgeDays(age);
+        batch.setEntryCount(count);
+        batch.setEntryAvgWeight(weight);
+        batch.setIntroUnitPrice("PURCHASED".equals(source) ? price : null);
+        batch.setCurrentCount(count);
+        batch.setDeathCount(0);
+        batch.setSoldCount(0);
+        batch.setStatus("ACTIVE");
+        batch.setClientRequestId(requestKey);
+        batch.setVersion(0);
+        batch.setDeleted(false);
+        batch.setUpdatedBy(member.userId());
+        batchMapper.insert(batch);
+
+        BatchPen batchPen = new BatchPen();
+        batchPen.setFarmId(farmId);
+        batchPen.setBatchId(batch.getId());
+        batchPen.setPenId(pen.getId());
+        batchPen.setStockCount(count);
+        batchPen.setFirstInDate(entryDate);
+        batchPenMapper.insert(batchPen);
+
+        BatchEvent event = new BatchEvent();
+        event.setFarmId(farmId);
+        event.setBatchId(batch.getId());
+        event.setEventType("ENTRY");
+        event.setEventDate(entryDate);
+        event.setPenId(pen.getId());
+        event.setQuantity(count);
+        event.setExecutorUserId(member.userId());
+        event.setCapacityConfirmed(over > 0);
+        event.setOverCapacityCount(over);
+        event.setStatus("EFFECTIVE");
+        event.setClientRequestId(requestKey);
+        event.setVersion(0);
+        event.setDeleted(false);
+        eventMapper.insert(event);
+
+        penMapper.addStock(pen.getId(), count, BeijingTime.now());
+        writeTimeline(batch, pen.getId(), "ENTRY", BizType.BATCH_ENTRY.name(), event.getId(), entryDate,
+                "入栏 " + count + " 头", sourceText(source) + " · 入栏日龄 " + age + " 天 · " + member.farmName(),
+                detail("登记人", support.userName(member.userId()), "登记时间", BeijingTime.format(entryDate),
+                        "入栏平均体重", weight == null ? null : weight.stripTrailingZeros().toPlainString() + " 千克"),
+                member.userId());
+
+        BatchEntryResultVO vo = new BatchEntryResultVO();
+        vo.setBatchId(batch.getId());
+        vo.setPenId(pen.getId());
+        vo.setBatchNo(batch.getBatchNo());
+        vo.setQrContent(QrCodes.content(batch.getQrToken()));
+        vo.setFarmName(member.farmName());
+        vo.setPenName(pen.getPenName());
+        vo.setBreedName(support.breedName(breed.id()));
+        vo.setPurpose(purpose);
+        vo.setEntryDate(BeijingTime.format(entryDate));
+        vo.setEntryCount(count);
+        vo.setEntryAgeDays(age);
+        vo.setPenStockAfter(after);
+        vo.setCapacity(capacityOf(pen));
+        vo.setOverCapacityCount(over);
+        vo.setUnitText(support.unitText(support.farmUnit(farmId)));
+        vo.setLabelText(member.farmName() + " · " + pen.getPenName() + " · " + vo.getBreedName());
+        return vo;
+    }
+
+    @Override
+    @Transactional
+    public BatchDetailVO updateEntry(Long batchId, EntryUpdateRequest request) {
+        FarmContext.FarmMember member = support.context();
+        Batch batch = access.require(batchId);
+        if (!"ACTIVE".equals(batch.getStatus())) {
+            throw HerdErrors.batchEnded();
+        }
+        if (batchMapper.countFollowUpEvents(batchId) > 0) {
+            throw HerdErrors.changeRequired("这条入栏记录已有后续记录，需要提交修改申请");
+        }
+        if (request.getVersion() == null || !request.getVersion().equals(batch.getVersion())) {
+            throw HerdErrors.versionConflict();
+        }
+        Pen newPen = requirePenInFarm(member.farmId(), request.getPenId(), "pen_id", "请选择栏舍");
+        if (!"ENABLED".equals(newPen.getStatus())) {
+            throw HerdErrors.penDisabled("这个栏舍已停用，不能入栏");
+        }
+        BreedQueryService.BreedInfo breed = support.breed(request.getBreedId());
+        if (breed == null || !breed.enabled()) {
+            throw HerdErrors.fieldInvalid("breed_id", "请选择品种");
+        }
+        CategoryInfo category = support.category(breed.categoryId());
+        if (category == null) {
+            throw HerdErrors.fieldInvalid("breed_id", "请选择品种");
+        }
+        LocalDate entryDate = request.getEntryDate();
+        if (entryDate == null || entryDate.isAfter(BeijingTime.today())) {
+            throw HerdErrors.fieldInvalid("entry_date", "入栏日期不能晚于今天");
+        }
+        int age = requireEntryAge(request.getEntryAgeDays());
+        int newCount = requireCount(request.getEntryCount(), "entry_count");
+        BigDecimal weight = validateWeight(request.getEntryAvgWeight());
+        String source = batch.getSource();
+        BigDecimal price = validatePrice(request.getIntroUnitPrice(), source);
+        ensurePenCategory(newPen, category.id(), batchId);
+
+        List<BatchPen> rows = support.positivePensOfBatch(batchId);
+        BatchPen current = rows.isEmpty() ? null : rows.get(0);
+        Long oldPenId = current == null ? batch.getEntryPenId() : current.getPenId();
+        int oldStock = current == null ? 0 : current.getStockCount();
+        boolean samePen = newPen.getId().equals(oldPenId);
+        int penBefore = (newPen.getStockCount() == null ? 0 : newPen.getStockCount()) - (samePen ? oldStock : 0);
+        int after = penBefore + newCount;
+        int over = Math.max(0, after - capacityOf(newPen));
+        if (over > 0 && !Boolean.TRUE.equals(request.getCapacityConfirmed())) {
+            throw HerdErrors.capacityConfirm(newPen.getId(), newPen.getPenName(), "入栏", capacityOf(newPen), penBefore,
+                    after, over);
+        }
+        int oldEntryCount = batch.getEntryCount() == null ? 0 : batch.getEntryCount();
+        int newCurrent = (batch.getCurrentCount() == null ? 0 : batch.getCurrentCount()) + (newCount - oldEntryCount);
+        if (newCurrent < 0) {
+            throw HerdErrors.countExceeded(newPen.getPenName(), oldEntryCount, null);
+        }
+        if (samePen) {
+            int delta = newCount - oldStock;
+            if (current == null) {
+                if (batchPenMapper.addStock(batchId, newPen.getId(), newCount, entryDate, BeijingTime.now()) == 0) {
+                    insertBatchPen(batch, newPen.getId(), newCount, entryDate);
+                }
+            } else {
+                current.setStockCount(newCount);
+                batchPenMapper.updateById(current);
+            }
+            if (delta != 0) {
+                penMapper.addStock(newPen.getId(), delta, BeijingTime.now());
+            }
+        } else {
+            if (current != null) {
+                current.setStockCount(0);
+                current.setLastOutDate(entryDate);
+                batchPenMapper.updateById(current);
+                penMapper.addStock(oldPenId, -oldStock, BeijingTime.now());
+            }
+            if (batchPenMapper.addStock(batchId, newPen.getId(), newCount, entryDate, BeijingTime.now()) == 0) {
+                insertBatchPen(batch, newPen.getId(), newCount, entryDate);
+            }
+            penMapper.addStock(newPen.getId(), newCount, BeijingTime.now());
+        }
+        int rowsUpdated = batchMapper.update(null, Wrappers.<Batch>lambdaUpdate()
+                .eq(Batch::getId, batchId)
+                .eq(Batch::getVersion, request.getVersion())
+                .set(Batch::getEntryPenId, newPen.getId())
+                .set(Batch::getEntryDate, entryDate)
+                .set(Batch::getEntryAgeDays, age)
+                .set(Batch::getEntryCount, newCount)
+                .set(Batch::getEntryAvgWeight, weight)
+                .set(Batch::getIntroUnitPrice, "PURCHASED".equals(source) ? price : null)
+                .set(Batch::getBreedId, breed.id())
+                .set(Batch::getCategoryId, category.id())
+                .set(Batch::getCurrentCount, newCurrent)
+                .set(Batch::getVersion, request.getVersion() + 1)
+                .set(Batch::getUpdatedBy, member.userId())
+                .set(Batch::getUpdatedAt, BeijingTime.now()));
+        if (rowsUpdated == 0) {
+            throw HerdErrors.versionConflict();
+        }
+        BatchEvent entry = eventMapper.selectEntry(batchId);
+        if (entry != null) {
+            eventMapper.update(null, Wrappers.<BatchEvent>lambdaUpdate()
+                    .eq(BatchEvent::getId, entry.getId())
+                    .set(BatchEvent::getPenId, newPen.getId())
+                    .set(BatchEvent::getEventDate, entryDate)
+                    .set(BatchEvent::getQuantity, newCount)
+                    .set(BatchEvent::getOverCapacityCount, over)
+                    .set(BatchEvent::getVersion, entry.getVersion() + 1)
+                    .set(BatchEvent::getUpdatedBy, member.userId())
+                    .set(BatchEvent::getUpdatedAt, BeijingTime.now()));
+            updateEntryTimeline(batch, entry.getId(), newPen.getId(), entryDate, newCount);
+            logRecord("UPDATE", BizType.BATCH_ENTRY.name(), batch, entry.getId(), batch.getBatchNo(),
+                    "修改入栏记录为 " + newCount + " 头");
+        }
+        return detail(batchId);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long batchId, int version) {
+        FarmContext.FarmMember member = support.context();
+        Batch batch = access.require(batchId);
+        if (!"ACTIVE".equals(batch.getStatus())) {
+            throw HerdErrors.stateNotAllowed("该批次已结束，不能删除");
+        }
+        if (batchMapper.countFollowUpEvents(batchId) > 0) {
+            throw HerdErrors.changeRequired("这个批次已有后续记录，不能删除");
+        }
+        if (batch.getSourceRecordType() != null) {
+            throw HerdErrors.stateNotAllowed("这个批次由产仔或出雏转入，请在繁育记录中处理");
+        }
+        if (version != (batch.getVersion() == null ? 0 : batch.getVersion())) {
+            throw HerdErrors.versionConflict();
+        }
+        for (BatchPen row : support.pensOfBatch(batchId)) {
+            if (row.getStockCount() != null && row.getStockCount() > 0) {
+                penMapper.addStock(row.getPenId(), -row.getStockCount(), BeijingTime.now());
+            }
+            batchPenMapper.deleteById(row.getId());
+        }
+        eventMapper.delete(Wrappers.<BatchEvent>lambdaQuery().eq(BatchEvent::getBatchId, batchId));
+        timelineMapper.delete(Wrappers.<BatchTimeline>lambdaQuery().eq(BatchTimeline::getBatchId, batchId));
+        batchMapper.deleteById(batchId);
+        logRecord("DELETE", BizType.BATCH.name(), batch, batchId, batch.getBatchNo(), "删除批次");
+    }
+
+    @Override
+    @Transactional
+    public TransferResultVO createTransfer(TransferCreateRequest request, String requestKey) {
+        FarmContext.FarmMember member = support.context();
+        Batch batch = access.require(request.getBatchId());
+        if (!"ACTIVE".equals(batch.getStatus())) {
+            throw HerdErrors.batchEnded();
+        }
+        if (request.getFromPenId() == null || request.getToPenId() == null) {
+            throw HerdErrors.fieldInvalid("to_pen_id", "请选择转入栏舍");
+        }
+        if (request.getFromPenId().equals(request.getToPenId())) {
+            throw HerdErrors.fieldInvalid("to_pen_id", "转入栏舍不能与转出栏舍相同");
+        }
+        int quantity = requireCount(request.getQuantity());
+        Pen fromPen = requirePenInFarm(member.farmId(), request.getFromPenId(), "from_pen_id", "请选择栏舍");
+        Pen toPen = requirePenInFarm(member.farmId(), request.getToPenId(), "to_pen_id", "请选择转入栏舍");
+        if (!"ENABLED".equals(toPen.getStatus())) {
+            throw HerdErrors.penDisabled("这个栏舍已停用，不能转入");
+        }
+        LocalDate eventDate = requireEventDate(request.getEventDate(), batch, fromPen.getId(), "转栏");
+        validateRemark(request.getRemark(), 100, "remark");
+        ensurePenCategory(toPen, batch.getCategoryId(), batch.getId());
+        BatchPen fromRow = findBatchPen(batch.getId(), fromPen.getId());
+        int fromStock = fromRow == null ? 0 : fromRow.getStockCount();
+        if (fromStock < quantity) {
+            throw HerdErrors.countExceeded(fromPen.getId(), fromPen.getPenName(), fromStock, request.getSeenStockCount());
+        }
+        int toBefore = toPen.getStockCount() == null ? 0 : toPen.getStockCount();
+        int after = toBefore + quantity;
+        int over = Math.max(0, after - capacityOf(toPen));
+        if (over > 0 && !Boolean.TRUE.equals(request.getCapacityConfirmed())) {
+            throw HerdErrors.capacityConfirm(toPen.getId(), toPen.getPenName(), "转入", capacityOf(toPen), toBefore, after,
+                    over);
+        }
+        if (batchPenMapper.deduct(batch.getId(), fromPen.getId(), quantity, eventDate, BeijingTime.now()) == 0) {
+            int latest = latestStock(batch.getId(), fromPen.getId());
+            throw HerdErrors.countExceeded(fromPen.getId(), fromPen.getPenName(), latest, request.getSeenStockCount());
+        }
+        if (batchPenMapper.addStock(batch.getId(), toPen.getId(), quantity, eventDate, BeijingTime.now()) == 0) {
+            insertBatchPen(batch, toPen.getId(), quantity, eventDate);
+        }
+        penMapper.addStock(fromPen.getId(), -quantity, BeijingTime.now());
+        penMapper.addStock(toPen.getId(), quantity, BeijingTime.now());
+        bumpBatchVersion(batch);
+
+        BatchEvent event = new BatchEvent();
+        event.setFarmId(member.farmId());
+        event.setBatchId(batch.getId());
+        event.setEventType("TRANSFER");
+        event.setEventDate(eventDate);
+        event.setPenId(fromPen.getId());
+        event.setToPenId(toPen.getId());
+        event.setQuantity(quantity);
+        event.setRemark(request.getRemark());
+        event.setExecutorUserId(member.userId());
+        event.setCapacityConfirmed(over > 0);
+        event.setOverCapacityCount(over);
+        event.setStatus("EFFECTIVE");
+        event.setClientRequestId(requestKey);
+        event.setVersion(0);
+        event.setDeleted(false);
+        eventMapper.insert(event);
+        writeTimeline(batch, fromPen.getId(), "TRANSFER", BizType.BATCH_TRANSFER.name(), event.getId(), eventDate,
+                "转栏 · " + quantity + " 头", fromPen.getPenName() + " → " + toPen.getPenName() + " · "
+                        + support.userName(member.userId()),
+                detail("登记人", support.userName(member.userId()), "登记时间", BeijingTime.format(eventDate)),
+                member.userId());
+        return transferResult(batch, event, fromPen.getPenName(), toPen.getPenName(),
+                fromStock - quantity, toBefore + quantity);
+    }
+
+    @Override
+    @Transactional
+    public TransferResultVO updateTransfer(Long eventId, TransferUpdateRequest request) {
+        FarmContext.FarmMember member = support.context();
+        BatchEvent event = requireEvent(eventId, "TRANSFER");
+        Batch batch = access.require(event.getBatchId());
+        if (!"ACTIVE".equals(batch.getStatus())) {
+            throw HerdErrors.batchEnded();
+        }
+        if (request.getVersion() == null || !request.getVersion().equals(event.getVersion())) {
+            throw HerdErrors.versionConflict();
+        }
+        if (request.getFromPenId() == null || request.getToPenId() == null
+                || request.getFromPenId().equals(request.getToPenId())) {
+            throw HerdErrors.fieldInvalid("to_pen_id", "请选择转入栏舍");
+        }
+        int quantity = requireCount(request.getQuantity());
+        Pen fromPen = requirePenInFarm(member.farmId(), request.getFromPenId(), "from_pen_id", "请选择栏舍");
+        Pen toPen = requirePenInFarm(member.farmId(), request.getToPenId(), "to_pen_id", "请选择转入栏舍");
+        if (!"ENABLED".equals(toPen.getStatus())) {
+            throw HerdErrors.penDisabled("这个栏舍已停用，不能转入");
+        }
+        LocalDate eventDate = requireEventDate(request.getEventDate(), batch, fromPen.getId(), "转栏");
+        validateRemark(request.getRemark(), 100, "remark");
+        ensurePenCategory(toPen, batch.getCategoryId(), batch.getId());
+
+        // 先撤销原记录：转出栏舍加回、转入栏舍扣回
+        BatchPen oldFrom = findBatchPen(batch.getId(), event.getPenId());
+        BatchPen oldTo = findBatchPen(batch.getId(), event.getToPenId());
+        if (oldTo != null && oldTo.getStockCount() < event.getQuantity()) {
+            throw HerdErrors.countExceeded(oldTo.getPenId(), penName(oldTo.getPenId()),
+                    oldTo.getStockCount() == null ? 0 : oldTo.getStockCount(), null);
+        }
+        if (batchPenMapper.addStock(batch.getId(), event.getPenId(), event.getQuantity(), event.getEventDate(),
+                BeijingTime.now()) == 0) {
+            insertBatchPen(batch, event.getPenId(), event.getQuantity(), event.getEventDate());
+        }
+        if (event.getToPenId() != null) {
+            batchPenMapper.deduct(batch.getId(), event.getToPenId(), event.getQuantity(), event.getEventDate(),
+                    BeijingTime.now());
+        }
+        penMapper.addStock(event.getPenId(), event.getQuantity(), BeijingTime.now());
+        if (event.getToPenId() != null) {
+            penMapper.addStock(event.getToPenId(), -event.getQuantity(), BeijingTime.now());
+        }
+        // 再按新值执行
+        BatchPen newFrom = findBatchPen(batch.getId(), fromPen.getId());
+        int newFromStock = newFrom == null ? 0 : newFrom.getStockCount();
+        if (newFromStock < quantity) {
+            throw HerdErrors.countExceeded(fromPen.getId(), fromPen.getPenName(), newFromStock, null);
+        }
+        if (batchPenMapper.deduct(batch.getId(), fromPen.getId(), quantity, eventDate, BeijingTime.now()) == 0) {
+            throw HerdErrors.countExceeded(fromPen.getId(), fromPen.getPenName(),
+                    latestStock(batch.getId(), fromPen.getId()), null);
+        }
+        if (batchPenMapper.addStock(batch.getId(), toPen.getId(), quantity, eventDate, BeijingTime.now()) == 0) {
+            insertBatchPen(batch, toPen.getId(), quantity, eventDate);
+        }
+        penMapper.addStock(fromPen.getId(), -quantity, BeijingTime.now());
+        penMapper.addStock(toPen.getId(), quantity, BeijingTime.now());
+        int toBefore = (toPen.getStockCount() == null ? 0 : toPen.getStockCount())
+                - (oldTo != null && toPen.getId().equals(oldTo.getPenId()) ? oldTo.getStockCount() : 0);
+        int over = Math.max(0, toBefore + quantity - capacityOf(toPen));
+        eventMapper.update(null, Wrappers.<BatchEvent>lambdaUpdate()
+                .eq(BatchEvent::getId, eventId)
+                .eq(BatchEvent::getVersion, request.getVersion())
+                .set(BatchEvent::getPenId, fromPen.getId())
+                .set(BatchEvent::getToPenId, toPen.getId())
+                .set(BatchEvent::getQuantity, quantity)
+                .set(BatchEvent::getEventDate, eventDate)
+                .set(BatchEvent::getRemark, request.getRemark())
+                .set(BatchEvent::getCapacityConfirmed, Boolean.TRUE.equals(request.getCapacityConfirmed()))
+                .set(BatchEvent::getOverCapacityCount, over)
+                .set(BatchEvent::getVersion, request.getVersion() + 1)
+                .set(BatchEvent::getUpdatedBy, member.userId())
+                .set(BatchEvent::getUpdatedAt, BeijingTime.now()));
+        bumpBatchVersion(batch);
+        updateTimeline(batch.getId(), BizType.BATCH_TRANSFER.name(), eventId, fromPen.getId(), eventDate,
+                "转栏 · " + quantity + " 头", fromPen.getPenName() + " → " + toPen.getPenName() + " · "
+                        + support.userName(member.userId()));
+        logRecord("UPDATE", BizType.BATCH_TRANSFER.name(), batch, eventId, batch.getBatchNo(),
+                "修改转栏记录为 " + quantity + " 头");
+        return transferResult(batch, event, fromPen.getPenName(), toPen.getPenName(),
+                newFromStock - quantity, toBefore + quantity);
+    }
+
+    @Override
+    @Transactional
+    public DeathResultVO createDeath(DeathCreateRequest request, String requestKey) {
+        FarmContext.FarmMember member = support.context();
+        Batch batch = access.require(request.getBatchId());
+        if (!"ACTIVE".equals(batch.getStatus())) {
+            throw HerdErrors.batchEnded();
+        }
+        int quantity = requireCount(request.getQuantity());
+        List<BatchPen> rows = support.positivePensOfBatch(batch.getId());
+        Long penId = request.getPenId();
+        if (penId == null) {
+            if (rows.size() == 1) {
+                penId = rows.get(0).getPenId();
+            } else {
+                throw HerdErrors.fieldInvalid("pen_id", "请选择栏舍");
+            }
+        }
+        BatchPen row = findBatchPen(batch.getId(), penId);
+        if (row == null || row.getStockCount() == null || row.getStockCount() <= 0) {
+            throw HerdErrors.countExceeded(penId, penName(penId), 0, request.getSeenStockCount());
+        }
+        if (row.getStockCount() < quantity) {
+            throw HerdErrors.countExceeded(penId, penName(penId), row.getStockCount(), request.getSeenStockCount());
+        }
+        access.requireOperatePen(penId);
+        String reason = requireReason(request.getReasonCode(), request.getRemark());
+        LocalDate eventDate = requireEventDate(request.getEventDate(), batch, penId, "死淘");
+        validateRemark(request.getRemark(), 200, "remark");
+        List<Long> fileIds = validatePhotos(request.getFileIds());
+        if (!fileIds.isEmpty()) {
+            bizMediaService.validateForBind(fileIds, FileScene.DEATH, member.userId(), "file_ids");
+        }
+        Long executorId = resolveExecutor(member, penId, request.getExecutorUserId());
+        if (batchPenMapper.deduct(batch.getId(), penId, quantity, eventDate, BeijingTime.now()) == 0) {
+            throw HerdErrors.countExceeded(penId, penName(penId), latestStock(batch.getId(), penId),
+                    request.getSeenStockCount());
+        }
+        penMapper.addStock(penId, -quantity, BeijingTime.now());
+        int newCurrent = (batch.getCurrentCount() == null ? 0 : batch.getCurrentCount()) - quantity;
+        int newDeath = (batch.getDeathCount() == null ? 0 : batch.getDeathCount()) + quantity;
+        updateBatchCounters(batch, newCurrent, newDeath, eventDate);
+
+        BatchEvent event = new BatchEvent();
+        event.setFarmId(member.farmId());
+        event.setBatchId(batch.getId());
+        event.setEventType("DEATH");
+        event.setEventDate(eventDate);
+        event.setPenId(penId);
+        event.setQuantity(quantity);
+        event.setReasonCode(reason);
+        event.setRemark(request.getRemark());
+        event.setExecutorUserId(executorId);
+        event.setStatus("EFFECTIVE");
+        event.setClientRequestId(requestKey);
+        event.setVersion(0);
+        event.setDeleted(false);
+        eventMapper.insert(event);
+        if (!fileIds.isEmpty()) {
+            bizMediaService.replace(BizType.BATCH_DEATH, event.getId(), member.farmId(), fileIds);
+        }
+        writeTimeline(batch, penId, "DEATH", BizType.BATCH_DEATH.name(), event.getId(), eventDate,
+                deathTitle(quantity, reason), penName(penId) + " · " + executionText(executorId, member.userId()),
+                detail("登记人", support.userName(member.userId()), "实际执行人", support.userName(executorId),
+                        "登记时间", BeijingTime.format(eventDate), "说明", request.getRemark()),
+                member.userId());
+        return deathResult(batch, event, quantity);
+    }
+
+    @Override
+    @Transactional
+    public DeathResultVO updateDeath(Long eventId, DeathUpdateRequest request) {
+        FarmContext.FarmMember member = support.context();
+        BatchEvent event = requireEvent(eventId, "DEATH");
+        Batch batch = access.require(event.getBatchId());
+        if (request.getVersion() == null || !request.getVersion().equals(event.getVersion())) {
+            throw HerdErrors.versionConflict();
+        }
+        if (member.isStaff()) {
+            boolean ownToday = member.userId().equals(event.getCreatedBy())
+                    && BeijingTime.today().equals(event.getEventDate());
+            if (!ownToday) {
+                throw HerdErrors.roleForbidden("超过当天的记录由所有者或场长修改");
+            }
+            access.requireOperatePen(event.getPenId());
+        }
+        int quantity = requireCount(request.getQuantity());
+        Long penId = request.getPenId() == null ? event.getPenId() : request.getPenId();
+        String reason = requireReason(request.getReasonCode(), request.getRemark());
+        LocalDate eventDate = requireEventDate(request.getEventDate(), batch, penId, "死淘");
+        validateRemark(request.getRemark(), 200, "remark");
+        List<Long> fileIds = validatePhotos(request.getFileIds());
+        if (!fileIds.isEmpty()) {
+            bizMediaService.validateForBind(fileIds, FileScene.DEATH, member.userId(), "file_ids");
+        }
+        Long executorId = resolveExecutor(member, penId, request.getExecutorUserId());
+        access.requireOperatePen(penId);
+
+        // 撤销原扣减
+        if (batchPenMapper.addStock(batch.getId(), event.getPenId(), event.getQuantity(), event.getEventDate(),
+                BeijingTime.now()) == 0) {
+            insertBatchPen(batch, event.getPenId(), event.getQuantity(), event.getEventDate());
+        }
+        penMapper.addStock(event.getPenId(), event.getQuantity(), BeijingTime.now());
+        int restoredCurrent = (batch.getCurrentCount() == null ? 0 : batch.getCurrentCount()) + event.getQuantity();
+        int restoredDeath = Math.max(0, (batch.getDeathCount() == null ? 0 : batch.getDeathCount()) - event.getQuantity());
+        // 再按新值扣减
+        BatchPen row = findBatchPen(batch.getId(), penId);
+        int stock = row == null ? 0 : row.getStockCount();
+        if (stock < quantity) {
+            throw HerdErrors.countExceeded(penId, penName(penId), stock, null);
+        }
+        if (batchPenMapper.deduct(batch.getId(), penId, quantity, eventDate, BeijingTime.now()) == 0) {
+            throw HerdErrors.countExceeded(penId, penName(penId), latestStock(batch.getId(), penId), null);
+        }
+        penMapper.addStock(penId, -quantity, BeijingTime.now());
+        int newCurrent = restoredCurrent - quantity;
+        int newDeath = restoredDeath + quantity;
+        updateBatchCounters(batch, newCurrent, newDeath, eventDate);
+        eventMapper.update(null, Wrappers.<BatchEvent>lambdaUpdate()
+                .eq(BatchEvent::getId, eventId)
+                .eq(BatchEvent::getVersion, request.getVersion())
+                .set(BatchEvent::getPenId, penId)
+                .set(BatchEvent::getQuantity, quantity)
+                .set(BatchEvent::getReasonCode, reason)
+                .set(BatchEvent::getEventDate, eventDate)
+                .set(BatchEvent::getRemark, request.getRemark())
+                .set(BatchEvent::getExecutorUserId, executorId)
+                .set(BatchEvent::getVersion, request.getVersion() + 1)
+                .set(BatchEvent::getUpdatedBy, member.userId())
+                .set(BatchEvent::getUpdatedAt, BeijingTime.now()));
+        bizMediaService.replace(BizType.BATCH_DEATH, eventId, member.farmId(), fileIds);
+        updateTimeline(batch.getId(), BizType.BATCH_DEATH.name(), eventId, penId, eventDate,
+                deathTitle(quantity, reason), penName(penId) + " · " + executionText(executorId, member.userId()));
+        logRecord("UPDATE", BizType.BATCH_DEATH.name(), batch, eventId, batch.getBatchNo(),
+                "修改死淘记录为 " + quantity + " 头");
+        return deathResult(batch, event, quantity);
+    }
+
+    private BatchEvent requireEvent(Long eventId, String type) {
+        if (eventId == null) {
+            throw HerdErrors.notFound();
+        }
+        BatchEvent event = eventMapper.selectById(eventId);
+        if (event == null) {
+            throw HerdErrors.notFound();
+        }
+        if (!type.equals(event.getEventType())) {
+            throw HerdErrors.stateNotAllowed("记录类型不允许该操作");
+        }
+        return event;
+    }
+
+    private Pen requirePenInFarm(Long farmId, Long penId, String field, String message) {
+        if (penId == null) {
+            throw HerdErrors.fieldInvalid(field, message);
+        }
+        return support.pensOfFarm(farmId).stream().filter(pen -> penId.equals(pen.getId())).findFirst()
+                .orElseThrow(HerdErrors::notFound);
+    }
+
+    private void ensurePenCategory(Pen pen, Long categoryId, Long excludeBatchId) {
+        for (Batch other : support.activeBatches(pen.getFarmId())) {
+            if (other.getId().equals(excludeBatchId) || !other.getCategoryId().equals(categoryId)) {
+                continue;
+            }
+            boolean inPen = support.positivePensOfBatch(other.getId()).stream()
+                    .anyMatch(row -> pen.getId().equals(row.getPenId()));
+            if (!inPen) {
+                continue;
+            }
+            throw HerdErrors.penCategoryConflict(pen.getPenName() + "已有其他品类的批次在栏，同一栏舍只能放同一品类");
+        }
+    }
+
+    private LocalDate requireEventDate(LocalDate eventDate, Batch batch, Long penId, String action) {
+        if (eventDate == null) {
+            throw HerdErrors.fieldInvalid("event_date", "请选择" + action + "日期");
+        }
+        if (eventDate.isAfter(BeijingTime.today())) {
+            throw HerdErrors.fieldInvalid("event_date", action + "日期不能晚于今天");
+        }
+        if (batch.getEntryDate() != null && eventDate.isBefore(batch.getEntryDate())) {
+            throw HerdErrors.fieldInvalid("event_date", action + "日期不能早于入栏日期 "
+                    + BeijingTime.format(batch.getEntryDate()));
+        }
+        BatchPen row = findBatchPen(batch.getId(), penId);
+        if (row != null && row.getFirstInDate() != null && eventDate.isBefore(row.getFirstInDate())) {
+            throw HerdErrors.fieldInvalid("event_date", action + "日期不能早于进入该栏舍的日期 "
+                    + BeijingTime.format(row.getFirstInDate()));
+        }
+        return eventDate;
+    }
+
+    private static int requireEntryAge(Integer age) {
+        if (age == null) {
+            throw HerdErrors.fieldInvalid("entry_age_days", "请填写入栏日龄");
+        }
+        if (age < 0 || age > 3650) {
+            throw HerdErrors.fieldInvalid("entry_age_days", "入栏日龄需为 0 或正整数");
+        }
+        return age;
+    }
+
+    private static int requireCount(Integer count) {
+        return requireCount(count, "quantity");
+    }
+
+    private static int requireCount(Integer count, String field) {
+        if (count == null || count <= 0) {
+            throw HerdErrors.fieldInvalid(field, "数量需为大于 0 的整数");
+        }
+        return count;
+    }
+
+    private static BigDecimal validateWeight(BigDecimal weight) {
+        if (weight == null) {
+            return null;
+        }
+        if (weight.signum() <= 0 || weight.compareTo(new BigDecimal("9999.99")) > 0 || weight.scale() > 2) {
+            throw HerdErrors.fieldInvalid("entry_avg_weight", "请输入大于 0 的数字，最多保留 2 位小数");
+        }
+        return weight;
+    }
+
+    private static BigDecimal validatePrice(BigDecimal price, String source) {
+        if ("PURCHASED".equals(source) && price == null) {
+            throw HerdErrors.fieldInvalid("intro_unit_price", "请填写引种单价");
+        }
+        if (price == null) {
+            return null;
+        }
+        if (price.signum() < 0 || price.compareTo(new BigDecimal("999999.99")) > 0 || price.scale() > 2) {
+            throw HerdErrors.fieldInvalid("intro_unit_price", "引种单价最多保留 2 位小数");
+        }
+        return price;
+    }
+
+    private String requireReason(String code, String remark) {
+        String reason = upper(code);
+        if (reason == null || !List.of("SICK", "CULL", "ACCIDENT", "OTHER").contains(reason)) {
+            throw HerdErrors.fieldInvalid("reason_code", "请选择死淘原因");
+        }
+        if ("OTHER".equals(reason) && (remark == null || remark.isBlank())) {
+            throw HerdErrors.fieldInvalid("remark", "选择“其他”时请写明原因");
+        }
+        return reason;
+    }
+
+    private static void validateRemark(String remark, int max, String field) {
+        if (remark != null && remark.codePointCount(0, remark.length()) > max) {
+            throw HerdErrors.fieldInvalid(field, "文字不能超过 " + max + " 个字");
+        }
+    }
+
+    private static List<Long> validatePhotos(List<Long> fileIds) {
+        if (fileIds == null || fileIds.isEmpty()) {
+            return List.of();
+        }
+        if (fileIds.size() > 6) {
+            throw HerdErrors.fieldInvalid("file_ids", "最多添加 6 张照片");
+        }
+        return fileIds;
+    }
+
+    private Long resolveExecutor(FarmContext.FarmMember member, Long penId, Long requested) {
+        if (member.isStaff()) {
+            return member.userId();
+        }
+        if (requested == null || requested.equals(member.userId())) {
+            return member.userId();
+        }
+        boolean assigned = farmLookup.pensOfFarm(member.farmId()).stream()
+                .anyMatch(row -> row.getUserId().equals(requested) && row.getPenId().equals(penId));
+        if (!assigned) {
+            throw HerdErrors.fieldInvalid("executor_user_id", "请选择实际执行人");
+        }
+        return requested;
+    }
+
+    private void updateBatchCounters(Batch batch, int current, int death, LocalDate eventDate) {
+        boolean ended = current <= 0;
+        int rows = batchMapper.update(null, Wrappers.<Batch>lambdaUpdate()
+                .eq(Batch::getId, batch.getId())
+                .eq(Batch::getVersion, batch.getVersion())
+                .set(Batch::getCurrentCount, Math.max(0, current))
+                .set(Batch::getDeathCount, Math.max(0, death))
+                .set(Batch::getStatus, ended ? "ENDED" : "ACTIVE")
+                .set(Batch::getEndType, ended ? "ALL_DEAD" : null)
+                .set(Batch::getEndDate, ended ? eventDate : null)
+                .set(Batch::getEndedAt, ended ? BeijingTime.now() : null)
+                .set(Batch::getVersion, batch.getVersion() + 1)
+                .set(Batch::getUpdatedAt, BeijingTime.now()));
+        if (rows == 0) {
+            throw HerdErrors.versionConflict();
+        }
+        batch.setCurrentCount(Math.max(0, current));
+        batch.setDeathCount(Math.max(0, death));
+        batch.setStatus(ended ? "ENDED" : "ACTIVE");
+        batch.setVersion(batch.getVersion() + 1);
+        if (ended) {
+            batch.setEndType("ALL_DEAD");
+            batch.setEndDate(eventDate);
+        } else {
+            batch.setEndType(null);
+            batch.setEndDate(null);
+        }
+    }
+
+    private void bumpBatchVersion(Batch batch) {
+        int rows = batchMapper.update(null, Wrappers.<Batch>lambdaUpdate()
+                .eq(Batch::getId, batch.getId())
+                .eq(Batch::getVersion, batch.getVersion())
+                .set(Batch::getVersion, batch.getVersion() + 1)
+                .set(Batch::getUpdatedAt, BeijingTime.now()));
+        if (rows == 0) {
+            throw HerdErrors.versionConflict();
+        }
+        batch.setVersion(batch.getVersion() + 1);
+    }
+
+    private BatchPen findBatchPen(Long batchId, Long penId) {
+        if (penId == null) {
+            return null;
+        }
+        List<BatchPen> rows = batchPenMapper.selectList(Wrappers.<BatchPen>lambdaQuery()
+                .eq(BatchPen::getBatchId, batchId)
+                .eq(BatchPen::getPenId, penId)
+                .last("LIMIT 1"));
+        return rows.isEmpty() ? null : rows.get(0);
+    }
+
+    private int latestStock(Long batchId, Long penId) {
+        BatchPen row = findBatchPen(batchId, penId);
+        return row == null || row.getStockCount() == null ? 0 : row.getStockCount();
+    }
+
+    private void insertBatchPen(Batch batch, Long penId, int quantity, LocalDate eventDate) {
+        BatchPen row = new BatchPen();
+        row.setFarmId(batch.getFarmId());
+        row.setBatchId(batch.getId());
+        row.setPenId(penId);
+        row.setStockCount(quantity);
+        row.setFirstInDate(eventDate);
+        batchPenMapper.insert(row);
+    }
+
+    private String penName(Long penId) {
+        return support.pensByIds(List.of(penId)).stream().findFirst().map(Pen::getPenName).orElse("栏舍");
+    }
+
+    private static int capacityOf(Pen pen) {
+        return pen.getCapacity() == null ? 0 : pen.getCapacity();
+    }
+
+    private TransferResultVO transferResult(Batch batch, BatchEvent event, String fromName, String toName,
+                                            int fromStock, int toStock) {
+        TransferResultVO vo = new TransferResultVO();
+        vo.setEventId(event.getId());
+        vo.setBatchId(batch.getId());
+        vo.setQuantity(event.getQuantity());
+        vo.setOverCapacityCount(event.getOverCapacityCount());
+        BatchPenItem from = new BatchPenItem();
+        from.setPenId(event.getPenId());
+        from.setPenName(fromName);
+        from.setStockCount(fromStock);
+        BatchPenItem to = new BatchPenItem();
+        to.setPenId(event.getToPenId());
+        to.setPenName(toName);
+        to.setStockCount(toStock);
+        vo.setFromPen(from);
+        vo.setToPen(to);
+        vo.setMessage("已转栏 " + event.getQuantity() + " 头到 " + toName);
+        return vo;
+    }
+
+    private DeathResultVO deathResult(Batch batch, BatchEvent event, int quantity) {
+        DeathResultVO vo = new DeathResultVO();
+        vo.setEventId(event.getId());
+        vo.setBatchId(batch.getId());
+        vo.setQuantity(quantity);
+        vo.setCurrentCount(batch.getCurrentCount());
+        vo.setDeathCount(batch.getDeathCount());
+        vo.setMortalityRate(HerdSupport.mortality(batch.getDeathCount(), batch.getEntryCount()));
+        vo.setBatchStatus(batch.getStatus());
+        vo.setMessage("已登记死淘 " + quantity + " 头，存栏已更新");
+        vo.setBatchEnded("ENDED".equals(batch.getStatus()));
+        return vo;
+    }
+
+    private void writeTimeline(Batch batch, Long penId, String recordType, String bizType, Long bizId,
+                               LocalDate bizDate, String title, String subtitle, List<Map<String, String>> detail,
+                               Long operatorUserId) {
+        BatchTimeline row = new BatchTimeline();
+        row.setFarmId(batch.getFarmId());
+        row.setBatchId(batch.getId());
+        row.setPenId(penId);
+        row.setRecordType(recordType);
+        row.setBizType(bizType);
+        row.setBizId(bizId);
+        row.setBizDate(bizDate);
+        row.setOccurredAt(BeijingTime.now());
+        row.setTitle(title);
+        row.setSubtitle(subtitle);
+        row.setDetailJson(toJson(detail));
+        row.setOperatorUserId(operatorUserId);
+        row.setDeleted(false);
+        timelineMapper.insert(row);
+    }
+
+    private void updateTimeline(Long batchId, String bizType, Long bizId, Long penId, LocalDate bizDate,
+                                String title, String subtitle) {
+        timelineMapper.update(null, Wrappers.<BatchTimeline>lambdaUpdate()
+                .eq(BatchTimeline::getBatchId, batchId)
+                .eq(BatchTimeline::getBizType, bizType)
+                .eq(BatchTimeline::getBizId, bizId)
+                .set(BatchTimeline::getPenId, penId)
+                .set(BatchTimeline::getBizDate, bizDate)
+                .set(BatchTimeline::getTitle, title)
+                .set(BatchTimeline::getSubtitle, subtitle)
+                .set(BatchTimeline::getUpdatedAt, BeijingTime.now()));
+    }
+
+    private void updateEntryTimeline(Batch batch, Long eventId, Long penId, LocalDate entryDate, int count) {
+        timelineMapper.update(null, Wrappers.<BatchTimeline>lambdaUpdate()
+                .eq(BatchTimeline::getBatchId, batch.getId())
+                .eq(BatchTimeline::getBizType, BizType.BATCH_ENTRY.name())
+                .eq(BatchTimeline::getBizId, eventId)
+                .set(BatchTimeline::getPenId, penId)
+                .set(BatchTimeline::getBizDate, entryDate)
+                .set(BatchTimeline::getTitle, "入栏 " + count + " 头")
+                .set(BatchTimeline::getUpdatedAt, BeijingTime.now()));
+    }
+
+    private static String toJson(List<Map<String, String>> detail) {
+        try {
+            return JSON.writeValueAsString(detail);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static List<Map<String, String>> detail(String... values) {
+        List<Map<String, String>> result = new ArrayList<>();
+        for (int i = 0; i + 1 < values.length; i += 2) {
+            if (values[i + 1] == null) {
+                continue;
+            }
+            Map<String, String> item = new LinkedHashMap<>();
+            item.put("key", values[i]);
+            item.put("value", values[i + 1]);
+            result.add(item);
+        }
+        return result;
+    }
+
+    private static String deathTitle(int quantity, String reason) {
+        return "死淘 · " + quantity + " 头 · " + switch (reason) {
+            case "SICK" -> "病死";
+            case "CULL" -> "淘汰";
+            case "ACCIDENT" -> "意外";
+            default -> "其他";
+        };
+    }
+
+    private String executionText(Long executorId, Long registrantId) {
+        if (executorId == null || executorId.equals(registrantId)) {
+            return support.userName(registrantId);
+        }
+        return "实际执行人 " + support.userName(executorId);
+    }
+
+    private static String sourceText(String source) {
+        return "SELF_BRED".equals(source) ? "自繁" : "外购";
+    }
+
+    private void logRecord(String action, String bizType, Batch batch, Long bizId, String targetName, String extra) {
+        operationLogRecorder.record(OperationLogEntry.builder()
+                .operatorType("USER")
+                .opType("RECORD_EDIT")
+                .opAction(action)
+                .bizType(bizType)
+                .bizId(bizId)
+                .targetName(targetName)
+                .farmId(batch.getFarmId())
+                .searchText(batch.getBatchNo())
+                .extraText(extra)
+                .build());
+    }
+
+    private static String upper(String value) {
+        return value == null || value.isBlank() ? null : value.trim().toUpperCase();
     }
 
     private Object resultOf(BatchEvent event, Batch batch) {
@@ -476,12 +1421,20 @@ public class BatchServiceImpl implements BatchService {
         }
         boolean active = "ACTIVE".equals(batch.getStatus());
         boolean death = "DEATH".equals(row.getRecordType());
+        boolean transfer = "TRANSFER".equals(row.getRecordType());
+        boolean entry = "ENTRY".equals(row.getRecordType());
         boolean ownTodayDeath = member.isStaff() && death && Boolean.TRUE.equals(item.getIsToday())
                 && member.userId().equals(row.getOperatorUserId());
         if (manager) {
-            boolean editable = active || death;
-            editable = editable && !hasFollowUp
-                    && BeijingTime.withinEditWindow(row.getBizDate(), 3);
+            boolean editable;
+            if (entry) {
+                editable = active && !hasFollowUp;
+            } else if (transfer) {
+                editable = active;
+            } else {
+                editable = death;
+            }
+            editable = editable && BeijingTime.withinEditWindow(row.getBizDate(), 3);
             item.setAction(editable ? TimelineItemVO.ACTION_EDIT : TimelineItemVO.ACTION_CHANGE_REQUEST);
             if (editable) {
                 item.setChangeState(ChangeRequestStateVO.builder().canEdit(true)
@@ -501,9 +1454,13 @@ public class BatchServiceImpl implements BatchService {
 
     private ChangeRequestStateVO changeState(BatchEvent event, FarmContext.FarmMember member, Batch batch) {
         boolean manager = HerdSupport.isManager(member);
-        boolean editable = manager && BeijingTime.withinEditWindow(event.getEventDate(), 3)
-                && ("ACTIVE".equals(batch.getStatus()) || "DEATH".equals(event.getEventType()));
-        boolean ownTodayDeath = member.isStaff() && "DEATH".equals(event.getEventType())
+        boolean entry = "ENTRY".equals(event.getEventType());
+        boolean death = "DEATH".equals(event.getEventType());
+        boolean editable = manager
+                && (entry ? "ACTIVE".equals(batch.getStatus()) && batchMapper.countFollowUpEvents(batch.getId()) == 0
+                : death || "ACTIVE".equals(batch.getStatus()))
+                && BeijingTime.withinEditWindow(event.getEventDate(), 3);
+        boolean ownTodayDeath = member.isStaff() && death
                 && BeijingTime.today().equals(event.getEventDate())
                 && member.userId().equals(event.getCreatedBy());
         return ChangeRequestStateVO.builder()
