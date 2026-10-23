@@ -185,7 +185,6 @@
 - 03 号第二节把 WorkManager 列为“导出下载”知识点 — 改用系统 DownloadManager。
 - `IFinanceService` — 未建；在 `FinanceModuleEntry` 中监听登录状态，清理导出文件。
 - 金额输入框 — 未做输入时实时加千分位。
-- E04“原单据”打开 M03 / M06 的参数未约定 — 同时带 `biz_id`、`record_id`、`inbound_id`、`lot_id`。
 - E12 测试直连 — 不读称重记录，生成的建议都标“依据不足”。
 
 ### 模块11 AI 养殖助手与养殖课堂
