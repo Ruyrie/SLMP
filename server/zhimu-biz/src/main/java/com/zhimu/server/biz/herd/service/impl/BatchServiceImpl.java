@@ -543,8 +543,6 @@ public class BatchServiceImpl implements BatchService {
                 detail("登记人", support.userName(member.userId()), "登记时间", BeijingTime.format(entryDate),
                         "入栏平均体重", weight == null ? null : weight.stripTrailingZeros().toPlainString() + " 千克"),
                 member.userId());
-        logRecord("CREATE", BizType.BATCH_ENTRY.name(), batch, event.getId(), batch.getBatchNo(),
-                "入栏 " + count + " 头");
 
         BatchEntryResultVO vo = new BatchEntryResultVO();
         vo.setBatchId(batch.getId());
@@ -778,8 +776,6 @@ public class BatchServiceImpl implements BatchService {
                         + support.userName(member.userId()),
                 detail("登记人", support.userName(member.userId()), "登记时间", BeijingTime.format(eventDate)),
                 member.userId());
-        logRecord("CREATE", BizType.BATCH_TRANSFER.name(), batch, event.getId(), batch.getBatchNo(),
-                "转栏 " + quantity + " 头");
         return transferResult(batch, event, fromPen.getPenName(), toPen.getPenName(),
                 fromStock - quantity, toBefore + quantity);
     }
@@ -936,8 +932,6 @@ public class BatchServiceImpl implements BatchService {
                 detail("登记人", support.userName(member.userId()), "实际执行人", support.userName(executorId),
                         "登记时间", BeijingTime.format(eventDate), "说明", request.getRemark()),
                 member.userId());
-        logRecord("CREATE", BizType.BATCH_DEATH.name(), batch, event.getId(), batch.getBatchNo(),
-                "死淘 " + quantity + " 头");
         return deathResult(batch, event, quantity);
     }
 
