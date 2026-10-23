@@ -1,0 +1,24 @@
+{
+  "code": 0,
+  "message": "已新增饲料",
+  "data": {
+    "feed_id": {{seq}},
+    "name": "新增饲料",
+    "feed_type_code": "NURSERY",
+    "feed_type_text": "保育料",
+    "spec": "20 千克/袋",
+    "unit": "KG",
+    "unit_text": "千克",
+    "pack_unit": "袋",
+    "pack_size": 20,
+    "category_id": null,
+    "category_text": "保育猪",
+    "min_stock": null,
+    "warn_days": 7,
+    "unit_locked": false,
+    "edit_version": 1,
+    "updated_at": "2026-10-19 10:00:00",
+    "updated_by_name": "王建国"
+  },
+  "trace_id": "mock-stock-feed_created"
+}

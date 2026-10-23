@@ -1,0 +1,60 @@
+{
+  "code": 0,
+  "message": "已确认盘点，结存已更新",
+  "data": {
+    "stocktake_id": 6310,
+    "stocktake_no": "PD2610190001",
+    "stocktake_date": "2026-10-19",
+    "operator": {
+      "user_id": 10001,
+      "name": "王建国",
+      "avatar_url": null,
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "item_count": 2,
+    "gain_count": 1,
+    "loss_count": 1,
+    "gain_amount": 25.2,
+    "loss_amount": 38.4,
+    "items": [
+      {
+        "item_id": 1,
+        "feed_id": 5101,
+        "feed_name": "育肥全价料",
+        "unit_text": "千克",
+        "book_qty": 500,
+        "actual_qty": 488,
+        "diff_qty": -12,
+        "result": "LOSS",
+        "result_text": "盘亏",
+        "avg_price": 3.2,
+        "diff_amount": -38.4
+      },
+      {
+        "item_id": 2,
+        "feed_id": 5102,
+        "feed_name": "保育料",
+        "unit_text": "千克",
+        "book_qty": 1850,
+        "actual_qty": 1856,
+        "diff_qty": 6,
+        "result": "GAIN",
+        "result_text": "盘盈",
+        "avg_price": 4.2,
+        "diff_amount": 25.2
+      }
+    ],
+    "actions": {
+      "can_edit": false,
+      "edit_deadline": null,
+      "pending_request_id": null,
+      "edit_state": "REQUEST_ONLY",
+      "can_void": false,
+      "can_request_change": true
+    },
+    "created_at": "2026-10-19 11:00:00",
+    "version": 1
+  },
+  "trace_id": "mock-stock-stocktake_created"
+}

@@ -1,0 +1,63 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "lot_id": 6002,
+    "drug_id": 5001,
+    "drug_name": "猪瘟活疫苗",
+    "category": "VACCINE",
+    "category_text": "疫苗",
+    "lot_no": "2025113",
+    "expire_date": "2027-03-15",
+    "stock": {
+      "value": 600,
+      "unit": "DOSE",
+      "unit_text": "头份",
+      "pack_unit": "瓶",
+      "pack_size": 10,
+      "pack_count": 60,
+      "rest_value": 0
+    },
+    "lot_status": "NORMAL",
+    "lot_status_text": "正常",
+    "days_to_expire": 147,
+    "priority_out": false,
+    "status_note": null,
+    "stock_amount": 1440.0,
+    "avg_price": 2.4,
+    "pack_price": 24.0,
+    "first_inbound": {
+      "inbound_id": 6211,
+      "inbound_date": "2026-10-16",
+      "qty": {
+        "value": 600,
+        "unit": "DOSE",
+        "unit_text": "头份",
+        "pack_unit": "瓶",
+        "pack_size": 10,
+        "pack_count": 60,
+        "rest_value": 0
+      },
+      "unit_price": 24.0
+    },
+    "inbound_count": 1,
+    "has_outbound": false,
+    "drug_banned": false,
+    "actions": {
+      "can_edit": true,
+      "edit_deadline": null,
+      "pending_request_id": null,
+      "edit_state": "EDITABLE",
+      "can_void": true,
+      "can_request_change": false,
+      "can_scrap": true,
+      "can_out": true
+    },
+    "recalled_at": null,
+    "recall_operator_text": null,
+    "recall_reason": null,
+    "recall_message_id": null,
+    "stock_version": 5
+  },
+  "trace_id": "mock-stock-lot_6002"
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- M05：search（展开搜索栏）+ more_vert -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/stock_menu_search"
+        android:icon="@drawable/ic_search"
+        android:title="@string/stock_drug_search_hint"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/stock_menu_more"
+        android:icon="@drawable/ic_more_vert"
+        android:title="@string/stock_menu_more"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:showAsAction="always" />
+</menu>

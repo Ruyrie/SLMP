@@ -1,0 +1,36 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "lot_id": 6301,
+        "drug_id": 5301,
+        "drug_name": "聚维酮碘溶液",
+        "category": "DISINFECTANT",
+        "category_text": "消毒剂",
+        "lot_no": "2025033",
+        "expire_date": "2026-11-08",
+        "stock": {
+          "value": 40,
+          "unit": "L",
+          "unit_text": "升",
+          "pack_unit": "桶",
+          "pack_size": 5,
+          "pack_count": 8,
+          "rest_value": 0
+        },
+        "lot_status": "NEAR_EXPIRY",
+        "lot_status_text": "临期",
+        "days_to_expire": 20,
+        "priority_out": true,
+        "status_note": null
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-stock-lots_search_pvp"
+}

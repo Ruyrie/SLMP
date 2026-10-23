@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 通用 -->
+    <string name="stock_list_load_failed">加载失败，点按重试</string>
+    <string name="stock_discard_title">放弃这次填写？</string>
+    <string name="stock_discard_message">已填写的内容不会保存。</string>
+    <string name="stock_action_keep_editing">继续填写</string>
+    <string name="stock_action_discard">放弃</string>
+    <string name="stock_action_cancel">取消</string>
+    <string name="stock_action_confirm">确认</string>
+    <string name="stock_action_save">保存</string>
+    <string name="stock_action_save_edit">保存修改</string>
+    <string name="stock_action_refresh">刷新</string>
+    <string name="stock_action_void">作废</string>
+    <string name="stock_action_stock_in">去入库</string>
+    <string name="stock_action_inbound">入库</string>
+    <string name="stock_need_review">需审核</string>
+    <string name="stock_menu_edit">修改</string>
+    <string name="stock_menu_void">作废</string>
+    <string name="stock_menu_change_log">查看修改记录</string>
+    <string name="stock_menu_request_change">提交修改申请</string>
+    <string name="stock_menu_view_request">查看修改申请</string>
+    <string name="stock_tag_pending">待审核</string>
+    <string name="stock_tag_voided">已作废</string>
+    <string name="stock_tag_low_stock">库存不足</string>
+    <string name="stock_tag_priority">优先出库</string>
+    <string name="stock_no_permission_title">你没有物资库存的查看权限</string>
+    <string name="stock_error_title">库存数据加载失败</string>
+    <string name="stock_conflict_title">内容已更新，请刷新后再修改</string>
+    <string name="stock_unit_yuan">元</string>
+    <string name="stock_unit_day">天</string>
+    <string name="stock_unit_kg">千克</string>
+    <string name="stock_change_log_title">修改记录</string>
+    <string name="stock_change_log_empty">还没有修改记录</string>
+    <string name="stock_field_remark_optional">说明（选填）</string>
+    <string name="stock_field_remark">说明</string>
+    <string name="stock_menu_more">更多</string>
+
+    <!-- M01 饲料库存 -->
+    <string name="stock_feed_title">饲料库存</string>
+    <string name="stock_feed_empty">还没有饲料档案。先新增一种饲料，再登记入库。</string>
+    <string name="stock_feed_add">新增饲料</string>
+    <string name="stock_feed_section_stock">结存</string>
+    <string name="stock_feed_section_note">可用天数按近 7 天日均用量估算</string>
+    <string name="stock_feed_section_recent">最近出入库</string>
+    <string name="stock_feed_all_flows">全部流水</string>
+    <string name="stock_feed_flow_empty">还没有出入库记录。登记入库后会显示在这里。</string>
+    <string name="stock_feed_label_stock">结存</string>
+    <string name="stock_feed_label_remaining">剩余可用</string>
+    <string name="stock_feed_label_amount">库存金额</string>
+    <string name="stock_feed_flows">流水</string>
+    <string name="stock_stat_feed">饲料</string>
+    <string name="stock_stat_amount">库存金额</string>
+    <string name="stock_stat_warn">库存预警</string>
+    <string name="stock_other_out_menu">其他出库</string>
+
+    <!-- M02 饲料档案 -->
+    <string name="stock_feed_archive_title">饲料档案</string>
+    <string name="stock_field_name">名称</string>
+    <string name="stock_field_feed_type">类型</string>
+    <string name="stock_feed_type_helper">从平台的饲料类型字典中选择</string>
+    <string name="stock_field_spec_optional">规格</string>
+    <string name="stock_field_unit">单位</string>
+    <string name="stock_field_category">适用品类</string>
+    <string name="stock_field_min_stock">库存下限</string>
+    <string name="stock_min_helper">低于下限时提醒</string>
+    <string name="stock_field_warn_days">预警天数</string>
+    <string name="stock_warn_helper">默认 7 天，可以修改</string>
+    <string name="stock_feed_archive_rule">修改后系统保留修改记录。库存低于下限，或剩余可用天数低于预警天数时，提醒所有者和场长一次，补货后解除。</string>
+
+    <!-- M03 饲料入库 -->
+    <string name="stock_inbound_title">饲料入库</string>
+    <string name="stock_inbound_record_title">入库单</string>
+    <string name="stock_inbound_edit_title">修改入库单</string>
+    <string name="stock_inbound_confirm">确认入库</string>
+    <string name="stock_field_feed">饲料</string>
+    <string name="stock_pick_feed">选择饲料</string>
+    <string name="stock_pick_feed_title">选择饲料</string>
+    <string name="stock_field_qty">数量</string>
+    <string name="stock_helper_gt_zero">必须大于 0</string>
+    <string name="stock_field_price">单价</string>
+    <string name="stock_price_unit">元/%1$s</string>
+    <string name="stock_amount_inbound">入库金额</string>
+    <string name="stock_field_production_date">生产日期</string>
+    <string name="stock_field_shelf_life">保质期至</string>
+    <string name="stock_shelf_helper">必须晚于生产日期</string>
+    <string name="stock_field_supplier">供应商</string>
+    <string name="stock_supplier_helper">可从最近使用的供应商中选择，也可以直接输入</string>
+    <string name="stock_field_inbound_date">入库日期</string>
+    <string name="stock_sync_title">同步记账</string>
+    <string name="stock_synced_title">已同步记账 · 在收支流水中查看</string>
+    <string name="stock_inbound_void_title">作废这张入库单？</string>
+    <string name="stock_need_request_message">修改需要提交修改申请，由管理员审核。</string>
+
+    <!-- 出入库流水 -->
+    <string name="stock_flow_all_title">出入库流水</string>
+    <string name="stock_flow_menu">全部出入库流水</string>
+    <string name="stock_flow_empty">还没有出入库记录。登记入库后会显示在这里。</string>
+    <string name="stock_flow_empty_group">没有这类出入库记录</string>
+
+    <!-- M04 盘点与报损 -->
+    <string name="stock_stocktake_title">盘点与报损</string>
+    <string name="stock_stocktake_confirm">确认盘点</string>
+    <string name="stock_stocktake_confirm_title">确认这次盘点？</string>
+    <string name="stock_stocktake_book">账面结存 %1$s</string>
+    <string name="stock_stocktake_notice">确认后按实盘数量更新结存，并自动生成盘盈、盘亏记录。已确认的盘点结果需要提交修改申请才能更改。</string>
+    <string name="stock_stocktake_history_title">盘点记录</string>
+    <string name="stock_stocktake_history_empty">还没有盘点记录</string>
+    <string name="stock_field_actual">实盘数量</string>
+    <string name="stock_loss_action">登记报损</string>
+    <string name="stock_field_loss_qty">报损数量</string>
+    <string name="stock_field_loss_reason">报损原因</string>
+
+    <!-- M05 兽药与疫苗库存 -->
+    <string name="stock_drug_title">兽药与疫苗库存</string>
+    <string name="stock_drug_search_hint">输入药品名称或批号</string>
+    <string name="stock_drug_empty">还没有兽药和疫苗库存。登记入库后，这里按批号显示结存和有效期。</string>
+    <string name="stock_drug_archive_title">药品档案</string>
+    <string name="stock_drug_archive_new">新增药品档案</string>
+    <string name="stock_drug_menu_outbound">领用或退货</string>
+    <string name="stock_near_days_title">临期天数设置</string>
+    <string name="stock_near_days_desc">到期前多少天标为临期，并提醒所有者和场长一次</string>
+    <string name="stock_cat_vet">兽药</string>
+    <string name="stock_cat_vaccine">疫苗</string>
+    <string name="stock_cat_disinfectant">消毒剂</string>
+
+    <!-- M06 批号详情 -->
+    <string name="stock_lot_title">批号详情</string>
+    <string name="stock_lot_info">批号信息</string>
+    <string name="stock_lot_flows">出入库流水</string>
+    <string name="stock_lot_flows_note">报废损失不计入批次成本</string>
+    <string name="stock_lot_recall_notice">停用通知</string>
+    <string name="stock_lot_view_message">在消息中心查看</string>
+    <string name="stock_lot_out">出库</string>
+    <string name="stock_lot_edit_inbound">修改入库信息</string>
+    <string name="stock_scrap_action">登记报废</string>
+
+    <!-- M07 登记报废 -->
+    <string name="stock_field_scrap_qty">报废数量</string>
+    <string name="stock_field_scrap_reason">报废原因</string>
+    <string name="stock_field_scrap_date">报废日期</string>
+    <string name="stock_amount_scrap">报废损失</string>
+    <string name="stock_scrap_confirm">报废</string>
+
+    <!-- M08 兽药与疫苗入库 -->
+    <string name="stock_drug_inbound_title">兽药与疫苗入库</string>
+    <string name="stock_field_drug">药品</string>
+    <string name="stock_drug_helper">只能从兽药目录中选择，禁用药不能入库</string>
+    <string name="stock_field_lot_no">生产批号</string>
+    <string name="stock_field_expire">有效期至</string>
+    <string name="stock_pick_drug_title">选择药品</string>
+    <string name="stock_search_name_hint">输入名称搜索</string>
+    <string name="stock_drug_archive_create">新建药品档案</string>
+
+    <!-- M09 药品档案 -->
+    <string name="stock_drug_banned_notice">该药品已被列为禁用药：不能再入库和领用，现有库存只能登记报废。</string>
+    <string name="stock_field_drug_category">类别</string>
+    <string name="stock_name_placeholder">从兽药目录中选择</string>
+    <string name="stock_name_placeholder_dis">从消毒剂字典中选择</string>
+    <string name="stock_drug_locked_helper">已有出入库记录，类别和名称不能修改</string>
+    <string name="stock_field_stock_unit">库存单位</string>
+    <string name="stock_drug_min_helper">可用批号的结存合计低于下限时提醒；不填则不提醒</string>
+    <string name="stock_drug_archive_rule">修改后系统保留修改记录。可用批号的结存合计低于库存下限时，提醒所有者和场长一次，补货前不重复提醒。</string>
+    <string name="stock_pick_name_title">选择药品名称</string>
+    <string name="stock_pick_disinfectant_title">选择消毒剂</string>
+    <string name="stock_pick_name_first">先选择名称，再选择库存单位</string>
+
+    <!-- M10 饲料其他出库 -->
+    <string name="stock_other_out_title">饲料其他出库</string>
+    <string name="stock_other_out_record">其他出库</string>
+    <string name="stock_other_out_edit">修改其他出库</string>
+    <string name="stock_other_out_confirm">确认出库</string>
+    <string name="stock_field_out_qty">出库数量</string>
+    <string name="stock_field_destination">出库去向</string>
+    <string name="stock_field_out_date">出库日期</string>
+    <string name="stock_amount_avg">按均价折合</string>
+    <string name="stock_other_out_rule">其他出库不计入批次成本，也不计入饲料用量。登记当天可以修改或作废，之后修改需要提交修改申请。</string>
+    <string name="stock_out_void_title">作废这条出库记录？</string>
+    <string name="stock_not_today_title">这条记录已不是今天登记的</string>
+
+    <!-- M11 兽药与疫苗出库 -->
+    <string name="stock_outbound_title">兽药与疫苗出库</string>
+    <string name="stock_outbound_use_record">领用记录</string>
+    <string name="stock_outbound_return_record">退货记录</string>
+    <string name="stock_outbound_use_edit">修改领用</string>
+    <string name="stock_outbound_return_edit">修改退货</string>
+    <string name="stock_outbound_use_confirm">确认领用</string>
+    <string name="stock_outbound_return_confirm">确认退货</string>
+    <string name="stock_out_type_use">领用</string>
+    <string name="stock_out_type_return">退货</string>
+    <string name="stock_out_use_notice">领用不会生成接种、用药或消毒记录，也不计算休药期。用于免疫、治疗和计划消毒的，请在 D03、D04、D08 登记，系统会自动扣减库存。</string>
+    <string name="stock_out_return_notice">退货不计入批次成本，也不会自动记账。收到退款时，请在 E03 记一笔中登记收入。</string>
+    <string name="stock_field_stock_lot">库存批号</string>
+    <string name="stock_pick_lot">选择库存批号</string>
+    <string name="stock_pick_return_lot">选择要退回的批号</string>
+    <string name="stock_pick_lot_title">选择批号</string>
+    <string name="stock_pick_drug_first">请先选择药品</string>
+    <string name="stock_field_use_qty">领用数量</string>
+    <string name="stock_field_return_qty">退货数量</string>
+    <string name="stock_field_target">关联对象</string>
+    <string name="stock_target_batch">批次</string>
+    <string name="stock_target_pen">栏舍</string>
+    <string name="stock_pen_empty">空栏，不能关联</string>
+    <string name="stock_field_return_to">退回对象</string>
+    <string name="stock_return_to_helper">填写供应商或经销商名称</string>
+    <string name="stock_field_return_reason">退货原因</string>
+    <string name="stock_field_use_date">领用日期</string>
+    <string name="stock_field_return_date">退货日期</string>
+    <string name="stock_field_receiver">领用人</string>
+    <string name="stock_amount_use_cost">领用成本</string>
+    <string name="stock_amount_return">退货金额</string>
+
+    <!-- 单据只读页 -->
+    <string name="stock_record_items">盘点明细</string>
+    <string name="stock_record_rule">报损不计入批次成本和饲料用量。报损记录确认后，修改需要提交修改申请。</string>
+    <string name="stock_scrap_rule">报废损失不计入批次成本。报废记录确认后，修改需要提交修改申请。</string>
+    <string name="stock_stocktake_rule">已确认的盘点结果需要提交修改申请才能更改。</string>
+</resources>

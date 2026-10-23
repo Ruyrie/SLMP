@@ -1,0 +1,82 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "drug_id": 5301,
+        "name": "聚维酮碘溶液",
+        "category": "DISINFECTANT",
+        "spec": "5 升/桶",
+        "unit": "L",
+        "pack_unit": "桶",
+        "pack_size": 5,
+        "usable": {
+          "value": 40,
+          "unit": "L",
+          "unit_text": "升",
+          "pack_unit": "桶",
+          "pack_size": 5,
+          "pack_count": 8,
+          "rest_value": 0
+        }
+      },
+      {
+        "drug_id": 5201,
+        "name": "阿莫西林可溶性粉",
+        "category": "VET_DRUG",
+        "spec": "10% · 500 克/袋",
+        "unit": "G",
+        "pack_unit": "袋",
+        "pack_size": 500,
+        "usable": {
+          "value": 6000,
+          "unit": "G",
+          "unit_text": "克",
+          "pack_unit": "袋",
+          "pack_size": 500,
+          "pack_count": 12,
+          "rest_value": 0
+        }
+      },
+      {
+        "drug_id": 5202,
+        "name": "氟苯尼考粉",
+        "category": "VET_DRUG",
+        "spec": "100 克/袋",
+        "unit": "G",
+        "pack_unit": "袋",
+        "pack_size": 100,
+        "usable": {
+          "value": 1800,
+          "unit": "G",
+          "unit_text": "克",
+          "pack_unit": "袋",
+          "pack_size": 100,
+          "pack_count": 18,
+          "rest_value": 0
+        }
+      },
+      {
+        "drug_id": 5001,
+        "name": "猪瘟活疫苗",
+        "category": "VACCINE",
+        "spec": "10 头份/瓶",
+        "unit": "DOSE",
+        "pack_unit": "瓶",
+        "pack_size": 10,
+        "usable": {
+          "value": 1000,
+          "unit": "DOSE",
+          "unit_text": "头份",
+          "pack_unit": "瓶",
+          "pack_size": 10,
+          "pack_count": 100,
+          "rest_value": 0
+        }
+      }
+    ],
+    "banned_hint": null
+  },
+  "trace_id": "mock-stock-drug_options_outbound"
+}

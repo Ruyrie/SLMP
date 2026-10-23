@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 列表内的一行空状态文字（“还没有出入库记录。登记入库后会显示在这里。”、筛选后为空） -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/stock_empty_text"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    android:paddingStart="@dimen/base_space_4"
+    android:paddingTop="@dimen/base_space_6"
+    android:paddingEnd="@dimen/base_space_4"
+    android:paddingBottom="@dimen/base_space_6"
+    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+    android:textColor="?attr/colorOnSurfaceVariant" />

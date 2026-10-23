@@ -1,0 +1,47 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "stocktake_id": 6290,
+    "stocktake_no": "PD2609010001",
+    "stocktake_date": "2026-09-01",
+    "operator": {
+      "user_id": 10002,
+      "name": "刘芳",
+      "avatar_url": null,
+      "role": "MANAGER",
+      "role_text": "场长"
+    },
+    "item_count": 1,
+    "gain_count": 0,
+    "loss_count": 0,
+    "gain_amount": 0,
+    "loss_amount": 0,
+    "items": [
+      {
+        "item_id": 3,
+        "feed_id": 5102,
+        "feed_name": "保育料",
+        "unit_text": "千克",
+        "book_qty": 900,
+        "actual_qty": 900,
+        "diff_qty": 0,
+        "result": "MATCH",
+        "result_text": "账实相符",
+        "avg_price": 4.1,
+        "diff_amount": 0
+      }
+    ],
+    "actions": {
+      "can_edit": false,
+      "edit_deadline": null,
+      "pending_request_id": null,
+      "edit_state": "REQUEST_ONLY",
+      "can_void": false,
+      "can_request_change": true
+    },
+    "created_at": "2026-09-01 18:00:00",
+    "version": 1
+  },
+  "trace_id": "mock-stock-stocktake_6290"
+}

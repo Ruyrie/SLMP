@@ -1,0 +1,41 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "lot_counts": {
+      "all": 7,
+      "vet_drug": 3,
+      "vaccine": 3,
+      "disinfectant": 1
+    },
+    "near_days": {
+      "vet": 30,
+      "vaccine": 30,
+      "disinfectant": 30
+    },
+    "low_stock_banner": {
+      "drugs": [
+        {
+          "drug_id": 5201,
+          "name": "阿莫西林可溶性粉",
+          "usable": {
+            "value": 6000,
+            "unit": "G",
+            "unit_text": "克",
+            "pack_unit": "袋",
+            "pack_size": 500,
+            "pack_count": 12,
+            "rest_value": 0
+          },
+          "min_stock": 15
+        }
+      ],
+      "preselect_drug_id": 5201
+    },
+    "attention_count": 3,
+    "normal_count": 4,
+    "has_any_lot": true,
+    "farm_readonly": false
+  },
+  "trace_id": "mock-stock-drug_overview"
+}

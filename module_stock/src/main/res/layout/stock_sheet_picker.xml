@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    选择面板内容（饲料、药品、批号、目录名称、药品档案）：可选搜索框（圆角 28，surface-container-high）→
+    error 色说明行（命中禁用药）→ 单选列表（可分组）→ 空状态文字 → 末尾文字按钮（“新增饲料”“新建药品档案”）→ 底部说明。
+-->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/base_sheet_padding_horizontal"
+        android:paddingEnd="@dimen/base_sheet_padding_horizontal"
+        android:paddingBottom="@dimen/base_space_4">
+
+        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+            android:id="@+id/stock_picker_search_layout"
+            style="@style/Widget.Zmt.TextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:visibility="gone"
+            app:boxCornerRadiusBottomEnd="28dp"
+            app:boxCornerRadiusBottomStart="28dp"
+            app:boxCornerRadiusTopEnd="28dp"
+            app:boxCornerRadiusTopStart="28dp"
+            app:startIconDrawable="@drawable/ic_search">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/stock_picker_search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:maxLength="40" />
+        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+        <TextView
+            android:id="@+id/stock_picker_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorError"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/stock_picker_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:nestedScrollingEnabled="false"
+            android:overScrollMode="never" />
+
+        <TextView
+            android:id="@+id/stock_picker_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/base_space_5"
+            android:paddingBottom="@dimen/base_space_5"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/stock_picker_footer"
+            style="@style/Widget.Zmt.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_2"
+            android:minHeight="@dimen/base_touch_target"
+            android:visibility="gone"
+            app:icon="@drawable/ic_add" />
+
+        <TextView
+            android:id="@+id/stock_picker_footnote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:drawablePadding="@dimen/base_space_1"
+            android:gravity="center_vertical"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

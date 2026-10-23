@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "status": "NOT_FOUND",
+    "biz_type": null,
+    "biz_id": null
+  },
+  "trace_id": "mock-stock-request_not_found"
+}

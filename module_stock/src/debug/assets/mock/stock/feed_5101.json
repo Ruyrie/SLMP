@@ -1,0 +1,24 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "feed_id": 5101,
+    "name": "育肥全价料",
+    "feed_type_code": "COMPLETE",
+    "feed_type_text": "全价料",
+    "spec": "40 千克/袋",
+    "unit": "KG",
+    "unit_text": "千克",
+    "pack_unit": "袋",
+    "pack_size": 40,
+    "category_id": 101,
+    "category_text": "育肥猪",
+    "min_stock": 800,
+    "warn_days": 7,
+    "unit_locked": true,
+    "edit_version": 3,
+    "updated_at": "2026-10-10 09:15:00",
+    "updated_by_name": "王建国"
+  },
+  "trace_id": "mock-stock-feed_5101"
+}

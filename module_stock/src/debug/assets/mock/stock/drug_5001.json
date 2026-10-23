@@ -1,0 +1,36 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "drug_id": 5001,
+    "category": "VACCINE",
+    "catalog_id": 7001,
+    "name": "猪瘟活疫苗",
+    "catalog_source_text": "兽药目录",
+    "spec": "10 头份/瓶",
+    "unit": "DOSE",
+    "pack_unit": "瓶",
+    "pack_unit_options": [
+      "瓶"
+    ],
+    "pack_size": 10,
+    "pack_size_locked": true,
+    "min_stock": null,
+    "usable": {
+      "value": 1000,
+      "unit": "DOSE",
+      "unit_text": "头份",
+      "pack_unit": "瓶",
+      "pack_size": 10,
+      "pack_count": 100,
+      "rest_value": 0
+    },
+    "unit_locked": true,
+    "banned": false,
+    "near_days": 30,
+    "version": 1,
+    "updated_at": "2026-09-10 10:00:00",
+    "updated_by_name": "王建国"
+  },
+  "trace_id": "mock-stock-drug_5001"
+}

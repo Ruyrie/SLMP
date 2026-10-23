@@ -1,0 +1,44 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "biz_type": "OUTBOUND",
+    "biz_id": 6501,
+    "biz_type_text": "其他出库",
+    "record_locator": "CK26106501 · 10月16日",
+    "record_title": "其他出库 · 保育料",
+    "record_subtitle": "10月16日 · 王建国登记",
+    "record_version": "1",
+    "record_card": [
+      {
+        "label": "出库数量",
+        "value": "50 千克"
+      },
+      {
+        "label": "出库去向",
+        "value": "退回供应商"
+      }
+    ],
+    "fields": [
+      {
+        "field_code": "input_qty",
+        "field_name": "出库数量",
+        "value": "50",
+        "value_unit": "千克",
+        "input_type": "NUMBER",
+        "options": [],
+        "min": 0,
+        "max": 1900
+      }
+    ],
+    "linked_rules": [
+      "修改出库数量会重新计算结存"
+    ],
+    "review_tip": "这条记录会影响库存和成本统计，需要管理员审核。审核期间原记录照常有效，审核通过后才会修改并重新计算。",
+    "pending_request_id": null,
+    "void_allowed": false,
+    "recalc_tags": {},
+    "field_hints": {}
+  },
+  "trace_id": "mock-stock-change_form_outbound"
+}

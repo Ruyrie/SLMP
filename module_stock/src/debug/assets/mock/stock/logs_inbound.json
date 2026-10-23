@@ -1,0 +1,29 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 7321,
+      "operator": {
+        "user_id": 10001,
+        "name": "王建国",
+        "avatar_url": null,
+        "role": "OWNER",
+        "role_text": "所有者"
+      },
+      "op_action": "UPDATE",
+      "op_action_text": "修改入库单",
+      "changes": [
+        {
+          "field_name": "单价",
+          "before": "24.50 元/瓶",
+          "after": "24.00 元/瓶"
+        }
+      ],
+      "reason": null,
+      "change_request_no": null,
+      "created_at": "2026-10-16 16:00:00"
+    }
+  ],
+  "trace_id": "mock-stock-logs_inbound"
+}

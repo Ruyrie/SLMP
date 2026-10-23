@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 金额汇总条（380 × 54 dp，圆角 16，surface-container-low）：左 14 sp 名称，右 22 sp 等宽金额 + 14 sp“元”，只读 -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+        <variable
+            name="label"
+            type="String" />
+
+        <variable
+            name="amount"
+            type="String" />
+    </data>
+
+    <LinearLayout
+        android:id="@+id/stock_amount_bar"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:background="@drawable/stock_bg_summary_bar"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_space_4"
+        android:paddingEnd="@dimen/base_space_4">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@{label}"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{amount}"
+            android:textAppearance="@style/TextAppearance.Zmt.TitleLarge.Number"
+            android:textColor="?attr/colorOnSurface" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_1"
+            android:text="@string/stock_unit_yuan"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+</layout>

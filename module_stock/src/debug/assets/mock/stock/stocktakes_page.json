@@ -1,0 +1,51 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "stocktake_id": 6301,
+        "stocktake_no": "PD2610010001",
+        "stocktake_date": "2026-10-01",
+        "operator": {
+          "user_id": 10001,
+          "name": "王建国",
+          "avatar_url": null,
+          "role": "OWNER",
+          "role_text": "所有者"
+        },
+        "item_count": 2,
+        "gain_count": 1,
+        "loss_count": 1,
+        "gain_amount": 25.2,
+        "loss_amount": 38.4,
+        "created_at": "2026-10-01 18:00:00",
+        "version": 1
+      },
+      {
+        "stocktake_id": 6290,
+        "stocktake_no": "PD2609010001",
+        "stocktake_date": "2026-09-01",
+        "operator": {
+          "user_id": 10002,
+          "name": "刘芳",
+          "avatar_url": null,
+          "role": "MANAGER",
+          "role_text": "场长"
+        },
+        "item_count": 1,
+        "gain_count": 0,
+        "loss_count": 0,
+        "gain_amount": 0,
+        "loss_amount": 0,
+        "created_at": "2026-09-01 18:00:00",
+        "version": 1
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-stock-stocktakes_page"
+}

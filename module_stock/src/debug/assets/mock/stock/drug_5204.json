@@ -1,0 +1,37 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "drug_id": 5204,
+    "category": "VET_DRUG",
+    "catalog_id": 7204,
+    "name": "恩诺沙星注射液",
+    "catalog_source_text": "兽药目录",
+    "spec": "10 毫升/支",
+    "unit": "ML",
+    "pack_unit": "支",
+    "pack_unit_options": [
+      "支",
+      "盒"
+    ],
+    "pack_size": 10,
+    "pack_size_locked": false,
+    "min_stock": null,
+    "usable": {
+      "value": 0,
+      "unit": "ML",
+      "unit_text": "毫升",
+      "pack_unit": "支",
+      "pack_size": 10,
+      "pack_count": 0,
+      "rest_value": 0
+    },
+    "unit_locked": false,
+    "banned": false,
+    "near_days": 30,
+    "version": 1,
+    "updated_at": "2026-10-19 10:50:00",
+    "updated_by_name": "王建国"
+  },
+  "trace_id": "mock-stock-drug_5204"
+}

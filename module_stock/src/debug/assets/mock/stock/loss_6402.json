@@ -1,0 +1,55 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "loss_id": 6402,
+    "loss_type": "DRUG_SCRAP",
+    "loss_type_text": "报废",
+    "material_name": "口蹄疫灭活疫苗",
+    "drug_lot_id": 5201,
+    "lot_no": "2025047",
+    "qty": {
+      "value": 300,
+      "unit": "DOSE",
+      "unit_text": "头份",
+      "pack_unit": "瓶",
+      "pack_size": 10,
+      "pack_count": 30,
+      "rest_value": 0
+    },
+    "remaining": {
+      "value": 0,
+      "unit": "DOSE",
+      "unit_text": "头份",
+      "pack_unit": "瓶",
+      "pack_size": 10,
+      "pack_count": 0,
+      "rest_value": 0
+    },
+    "reason": "PLATFORM_RECALL",
+    "reason_text": "平台停用",
+    "remark": "生产企业召回，抽检效价不合格",
+    "loss_date": "2026-10-19",
+    "status": "NORMAL",
+    "unit_price": 2.8,
+    "amount": 840.0,
+    "actions": {
+      "can_edit": false,
+      "edit_deadline": null,
+      "pending_request_id": null,
+      "edit_state": "REQUEST_ONLY",
+      "can_void": false,
+      "can_request_change": true
+    },
+    "created_by": {
+      "user_id": 10001,
+      "name": "王建国",
+      "avatar_url": null,
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "created_at": "2026-10-19 11:20:00",
+    "version": 1
+  },
+  "trace_id": "mock-stock-loss_6402"
+}

@@ -1,0 +1,50 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "items": [
+      {
+        "id": 7001,
+        "name": "猪瘟活疫苗",
+        "alias": null,
+        "drug_category": "VACCINE",
+        "spec": "10 头份/瓶",
+        "measure_unit": "DOSE",
+        "pack_unit": "瓶",
+        "pack_size": 10
+      },
+      {
+        "id": 7002,
+        "name": "猪伪狂犬病活疫苗",
+        "alias": null,
+        "drug_category": "VACCINE",
+        "spec": "10 头份/瓶",
+        "measure_unit": "DOSE",
+        "pack_unit": "瓶",
+        "pack_size": 10
+      },
+      {
+        "id": 7003,
+        "name": "口蹄疫灭活疫苗",
+        "alias": null,
+        "drug_category": "VACCINE",
+        "spec": "10 头份/瓶",
+        "measure_unit": "DOSE",
+        "pack_unit": "瓶",
+        "pack_size": 10
+      },
+      {
+        "id": 7004,
+        "name": "猪细小病毒灭活疫苗",
+        "alias": null,
+        "drug_category": "VACCINE",
+        "spec": "20 头份/瓶",
+        "measure_unit": "DOSE",
+        "pack_unit": "瓶",
+        "pack_size": 20
+      }
+    ],
+    "banned_hit": null
+  },
+  "trace_id": "mock-stock-catalog_vaccine"
+}

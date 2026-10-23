@@ -1,0 +1,36 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "drug_id": 5202,
+    "category": "VET_DRUG",
+    "catalog_id": 7202,
+    "name": "氟苯尼考粉",
+    "catalog_source_text": "兽药目录",
+    "spec": "100 克/袋",
+    "unit": "G",
+    "pack_unit": "袋",
+    "pack_unit_options": [
+      "袋"
+    ],
+    "pack_size": 100,
+    "pack_size_locked": true,
+    "min_stock": 10,
+    "usable": {
+      "value": 1800,
+      "unit": "G",
+      "unit_text": "克",
+      "pack_unit": "袋",
+      "pack_size": 100,
+      "pack_count": 18,
+      "rest_value": 0
+    },
+    "unit_locked": true,
+    "banned": false,
+    "near_days": 30,
+    "version": 3,
+    "updated_at": "2026-10-12 14:30:00",
+    "updated_by_name": "刘芳"
+  },
+  "trace_id": "mock-stock-drug_5202"
+}

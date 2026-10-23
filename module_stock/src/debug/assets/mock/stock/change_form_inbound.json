@@ -1,0 +1,54 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "biz_type": "INBOUND",
+    "biz_id": 6201,
+    "biz_type_text": "饲料入库",
+    "record_locator": "RK26106201 · 10月12日",
+    "record_title": "饲料入库 · 育肥全价料",
+    "record_subtitle": "10月12日 · 王建国登记",
+    "record_version": "1",
+    "record_card": [
+      {
+        "label": "入库数量",
+        "value": "2,000 千克"
+      },
+      {
+        "label": "单价",
+        "value": "3.20 元/千克"
+      }
+    ],
+    "fields": [
+      {
+        "field_code": "input_qty",
+        "field_name": "入库数量",
+        "value": "2000",
+        "value_unit": "千克",
+        "input_type": "NUMBER",
+        "options": [],
+        "min": 0,
+        "max": 99999999
+      },
+      {
+        "field_code": "unit_price",
+        "field_name": "单价",
+        "value": "3.20",
+        "value_unit": "元/千克",
+        "input_type": "NUMBER",
+        "options": [],
+        "min": 0,
+        "max": 999999
+      }
+    ],
+    "linked_rules": [
+      "修改入库数量或单价会重新计算均价和已出库的批次成本"
+    ],
+    "review_tip": "这条记录会影响库存和成本统计，需要管理员审核。审核期间原记录照常有效，审核通过后才会修改并重新计算。",
+    "pending_request_id": null,
+    "void_allowed": false,
+    "recalc_tags": {},
+    "field_hints": {}
+  },
+  "trace_id": "mock-stock-change_form_inbound"
+}

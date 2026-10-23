@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    M05 兽药与疫苗库存：顶部栏（search、more_vert；搜索时换成搜索栏）→ 列表（头部：停用 Notice、类别 Chip、库存不足横幅、结存规则说明；
+    “需要处理”“正常”两组批号）；右下角扩展 FAB“入库”。
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/stock_top_bar"
+            layout="@layout/base_include_top_app_bar" />
+
+        <LinearLayout
+            android:id="@+id/stock_search_bar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/base_top_bar_height"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/base_space_2"
+            android:paddingEnd="@dimen/base_page_margin"
+            android:visibility="gone">
+
+            <ImageButton
+                android:id="@+id/stock_search_back"
+                android:layout_width="@dimen/base_touch_target"
+                android:layout_height="@dimen/base_touch_target"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/stock_action_cancel"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="?attr/colorOnSurfaceVariant" />
+
+            <EditText
+                android:id="@+id/stock_search_input"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:background="@drawable/stock_bg_search"
+                android:hint="@string/stock_drug_search_hint"
+                android:imeOptions="actionSearch"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:maxLength="40"
+                android:paddingStart="@dimen/base_space_5"
+                android:paddingEnd="@dimen/base_space_5"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyLarge" />
+        </LinearLayout>
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/stock_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <com.zhimu.slmp.base.widget.StateLayout
+                android:id="@+id/stock_state"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:stateErrorTitle="@string/stock_error_title"
+                app:stateNoPermissionTitle="@string/stock_no_permission_title">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/stock_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingStart="@dimen/base_page_margin"
+                    android:paddingEnd="@dimen/base_page_margin"
+                    android:paddingBottom="@dimen/base_fab_list_bottom_space" />
+            </com.zhimu.slmp.base.widget.StateLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/stock_fab"
+        style="@style/Widget.Zmt.ExtendedFloatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/base_space_4"
+        android:text="@string/stock_action_inbound"
+        android:visibility="gone"
+        app:icon="@drawable/ic_add" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

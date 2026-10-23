@@ -1,0 +1,44 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "biz_type": "STOCKTAKE",
+    "biz_id": 6301,
+    "biz_type_text": "盘点结果",
+    "record_locator": "PD2610010001 · 10月1日",
+    "record_title": "盘点 · 10月1日",
+    "record_subtitle": "10月1日 · 王建国盘点",
+    "record_version": "1",
+    "record_card": [
+      {
+        "label": "育肥全价料",
+        "value": "实盘 488 千克"
+      },
+      {
+        "label": "保育料",
+        "value": "实盘 1,856 千克"
+      }
+    ],
+    "fields": [
+      {
+        "field_code": "actual_qty",
+        "field_name": "育肥全价料实盘数量",
+        "value": "488",
+        "value_unit": "千克",
+        "input_type": "NUMBER",
+        "options": [],
+        "min": 0,
+        "max": 99999999
+      }
+    ],
+    "linked_rules": [
+      "修改实盘数量会重新生成盘盈、盘亏记录"
+    ],
+    "review_tip": "这条记录会影响库存和成本统计，需要管理员审核。审核期间原记录照常有效，审核通过后才会修改并重新计算。",
+    "pending_request_id": null,
+    "void_allowed": false,
+    "recalc_tags": {},
+    "field_hints": {}
+  },
+  "trace_id": "mock-stock-change_form_stocktake"
+}

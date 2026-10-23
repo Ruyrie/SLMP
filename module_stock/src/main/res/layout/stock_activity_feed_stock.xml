@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    M01 饲料库存：停用 Notice → 库存不足横幅（去入库）→ 三张指标卡 → “结存”饲料卡分组 → “最近出入库”（全部流水）；
+    右下角扩展 FAB“入库”，列表下滑收起；底部留 88 dp。
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/stock_top_bar"
+            layout="@layout/base_include_top_app_bar" />
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/stock_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <com.zhimu.slmp.base.widget.StateLayout
+                android:id="@+id/stock_state"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:stateErrorTitle="@string/stock_error_title"
+                app:stateNoPermissionTitle="@string/stock_no_permission_title">
+
+                <androidx.core.widget.NestedScrollView
+                    android:id="@+id/stock_scroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="@dimen/base_page_margin"
+                        android:paddingTop="@dimen/base_space_1"
+                        android:paddingEnd="@dimen/base_page_margin"
+                        android:paddingBottom="@dimen/base_fab_list_bottom_space">
+
+                        <com.zhimu.slmp.base.widget.NoticeView
+                            android:id="@+id/stock_readonly_notice"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/base_space_3"
+                            android:visibility="gone"
+                            app:noticeIcon="@drawable/ic_info"
+                            app:noticeLevel="normal" />
+
+                        <com.zhimu.slmp.base.widget.NoticeView
+                            android:id="@+id/stock_banner"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/base_space_3"
+                            android:visibility="gone"
+                            app:noticeActionText="@string/stock_action_stock_in"
+                            app:noticeIcon="@drawable/ic_warning"
+                            app:noticeLevel="warning" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:baselineAligned="false"
+                            android:orientation="horizontal">
+
+                            <com.zhimu.slmp.base.widget.StatCardView
+                                android:id="@+id/stock_stat_count"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="110"
+                                app:statLabel="@string/stock_stat_feed" />
+
+                            <com.zhimu.slmp.base.widget.StatCardView
+                                android:id="@+id/stock_stat_amount"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/base_space_2"
+                                android:layout_weight="144"
+                                app:statLabel="@string/stock_stat_amount" />
+
+                            <com.zhimu.slmp.base.widget.StatCardView
+                                android:id="@+id/stock_stat_warn"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/base_space_2"
+                                android:layout_weight="110"
+                                app:statLabel="@string/stock_stat_warn" />
+                        </LinearLayout>
+
+                        <include
+                            android:id="@+id/stock_section_feeds"
+                            layout="@layout/stock_item_section" />
+
+                        <com.zhimu.slmp.base.widget.GroupedListLayout
+                            android:id="@+id/stock_feed_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <include
+                            android:id="@+id/stock_section_flows"
+                            layout="@layout/stock_item_section" />
+
+                        <com.zhimu.slmp.base.widget.GroupedListLayout
+                            android:id="@+id/stock_flow_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:id="@+id/stock_flow_empty"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingTop="@dimen/base_space_3"
+                            android:paddingBottom="@dimen/base_space_3"
+                            android:text="@string/stock_feed_flow_empty"
+                            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:visibility="gone" />
+                    </LinearLayout>
+                </androidx.core.widget.NestedScrollView>
+            </com.zhimu.slmp.base.widget.StateLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/stock_fab"
+        style="@style/Widget.Zmt.ExtendedFloatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/base_space_4"
+        android:text="@string/stock_action_inbound"
+        android:visibility="gone"
+        app:icon="@drawable/ic_add" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

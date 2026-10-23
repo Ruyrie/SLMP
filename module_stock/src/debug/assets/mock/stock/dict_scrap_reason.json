@@ -1,0 +1,43 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 3201,
+      "code": "PLATFORM_RECALL",
+      "name": "平台停用",
+      "description": null,
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 1
+    },
+    {
+      "id": 3202,
+      "code": "EXPIRED",
+      "name": "已过期",
+      "description": null,
+      "remark_required": false,
+      "is_system": true,
+      "sort_no": 2
+    },
+    {
+      "id": 3203,
+      "code": "DAMAGED",
+      "name": "破损",
+      "description": null,
+      "remark_required": false,
+      "is_system": false,
+      "sort_no": 3
+    },
+    {
+      "id": 3204,
+      "code": "OTHER",
+      "name": "其他",
+      "description": null,
+      "remark_required": true,
+      "is_system": false,
+      "sort_no": 4
+    }
+  ],
+  "trace_id": "mock-stock-dict_scrap_reason"
+}

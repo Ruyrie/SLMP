@@ -1,0 +1,64 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "feed_id": 5102,
+      "name": "保育料",
+      "stock": {
+        "value": 1850,
+        "unit": "KG",
+        "unit_text": "千克",
+        "pack_unit": null,
+        "pack_size": null,
+        "pack_count": null,
+        "rest_value": null
+      },
+      "remaining_days": 12,
+      "low_stock": false,
+      "selectable": true,
+      "disabled_reason": null,
+      "avg_price": 4.2,
+      "stock_version": 8
+    },
+    {
+      "feed_id": 5101,
+      "name": "育肥全价料",
+      "stock": {
+        "value": 500,
+        "unit": "KG",
+        "unit_text": "千克",
+        "pack_unit": null,
+        "pack_size": null,
+        "pack_count": null,
+        "rest_value": null
+      },
+      "remaining_days": 1,
+      "low_stock": true,
+      "selectable": true,
+      "disabled_reason": null,
+      "avg_price": 3.2,
+      "stock_version": 12
+    },
+    {
+      "feed_id": 5103,
+      "name": "哺乳仔猪教槽料",
+      "stock": {
+        "value": 0,
+        "unit": "KG",
+        "unit_text": "千克",
+        "pack_unit": null,
+        "pack_size": null,
+        "pack_count": null,
+        "rest_value": null
+      },
+      "remaining_days": 0,
+      "low_stock": true,
+      "selectable": false,
+      "disabled_reason": "结存 0 千克，不能出库",
+      "avg_price": null,
+      "stock_version": 1
+    }
+  ],
+  "trace_id": "mock-stock-feed_options_other_out"
+}

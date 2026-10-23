@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- M06 批号详情：顶部栏 more_vert → 列表（头部 + 出入库流水分页）→ 底部“登记报废”（正常、临期批号另有“出库”） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/stock_top_bar"
+        layout="@layout/base_include_top_app_bar" />
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/stock_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/stock_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:stateErrorTitle="@string/stock_error_title"
+            app:stateNoPermissionTitle="@string/stock_no_permission_title"
+            app:stateSkeletonLayout="@layout/base_skeleton_detail">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/stock_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingStart="@dimen/base_page_margin"
+                android:paddingEnd="@dimen/base_page_margin"
+                android:paddingBottom="@dimen/base_space_6" />
+        </com.zhimu.slmp.base.widget.StateLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <com.zhimu.slmp.base.widget.BottomActionBar
+        android:id="@+id/stock_action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+</LinearLayout>

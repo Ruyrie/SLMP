@@ -1,0 +1,33 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "selectable": [
+      {
+        "lot_id": 6111,
+        "lot_no": "2025062",
+        "expire_date": "2027-06-30",
+        "days_to_expire": 254,
+        "lot_status": "NORMAL",
+        "lot_status_text": "正常",
+        "stock": {
+          "value": 1800,
+          "unit": "G",
+          "unit_text": "克",
+          "pack_unit": "袋",
+          "pack_size": 100,
+          "pack_count": 18,
+          "rest_value": 0
+        },
+        "priority_out": true,
+        "insufficient": false,
+        "can_go_scrap": false,
+        "avg_price": 0.12,
+        "stock_version": 5
+      }
+    ],
+    "unselectable": [],
+    "default_lot_id": null
+  },
+  "trace_id": "mock-stock-lotopt_5202_return"
+}

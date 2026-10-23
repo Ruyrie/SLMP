@@ -1,0 +1,57 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "inbound_id": 6211,
+    "inbound_no": "RK26106211",
+    "material_type": "DRUG",
+    "material_name": "猪瘟活疫苗",
+    "category": "VACCINE",
+    "category_text": "疫苗",
+    "feed_id": null,
+    "drug_id": 5001,
+    "drug_lot_id": 6002,
+    "lot_no": "2025113",
+    "input_qty": 60,
+    "input_unit": "PACK",
+    "qty": {
+      "value": 600,
+      "unit": "DOSE",
+      "unit_text": "头份",
+      "pack_unit": "瓶",
+      "pack_size": 10,
+      "pack_count": 60,
+      "rest_value": 0
+    },
+    "unit_price": 24.0,
+    "amount": 1440.0,
+    "supplier_name": null,
+    "production_date": null,
+    "shelf_life_date": null,
+    "expire_date": "2027-03-15",
+    "inbound_date": "2026-10-16",
+    "sync_finance": true,
+    "finance_record_id": 8601,
+    "status": "NORMAL",
+    "has_outbound": false,
+    "near_expiry_days": null,
+    "actions": {
+      "can_edit": true,
+      "edit_deadline": "2026-10-19 23:59:59",
+      "pending_request_id": null,
+      "edit_state": "EDITABLE",
+      "can_void": true,
+      "can_request_change": false
+    },
+    "created_by": {
+      "user_id": 10001,
+      "name": "王建国",
+      "avatar_url": null,
+      "role": "OWNER",
+      "role_text": "所有者"
+    },
+    "created_at": "2026-10-16 15:20:00",
+    "version": 1
+  },
+  "trace_id": "mock-stock-inbound_6211"
+}

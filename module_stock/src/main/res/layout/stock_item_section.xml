@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 分组标题：左 14 sp primary；右侧 12 sp 说明或 14 sp 文字按钮。与上一块内容间距 20 dp、与本组首项间距 12 dp -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="32dp"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/base_space_1"
+    android:paddingTop="@dimen/base_space_5"
+    android:paddingBottom="@dimen/base_space_2">
+
+    <TextView
+        android:id="@+id/stock_section_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+        android:textColor="?attr/colorPrimary" />
+
+    <TextView
+        android:id="@+id/stock_section_note"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/stock_section_action"
+        style="@style/Widget.Zmt.Button.Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+</LinearLayout>

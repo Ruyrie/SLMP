@@ -1,0 +1,1218 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-stock/overview",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-stock/overview",
+    "file": "feed_overview.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feeds/options",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feeds/options",
+    "when": {
+      "query": {
+        "purpose": "OTHER_OUT"
+      }
+    },
+    "file": "feed_options_other_out.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feeds/options",
+    "file": "feed_options_inbound.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feeds",
+    "file": "feeds_page.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feeds/{id}",
+    "when": {
+      "path": {
+        "id": "5102"
+      }
+    },
+    "file": "feed_5102.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feeds/{id}",
+    "file": "feed_5101.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/feeds",
+    "when": {
+      "body": "\"name\":\"育肥全价料\""
+    },
+    "file": "err_40905_feed.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/feeds",
+    "file": "feed_created.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/feeds/{id}",
+    "when": {
+      "body": "\"edit_version\":1"
+    },
+    "file": "err_40902_feed.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/feeds/{id}",
+    "file": "feed_updated.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/feed-inbounds",
+    "file": "inbound_created_feed.json",
+    "delay": 600
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-inbounds/{id}",
+    "when": {
+      "path": {
+        "id": "6202"
+      }
+    },
+    "file": "inbound_6202.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-inbounds/{id}",
+    "when": {
+      "path": {
+        "id": "6210"
+      }
+    },
+    "file": "inbound_6210.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-inbounds/{id}",
+    "when": {
+      "path": {
+        "id": "6211"
+      }
+    },
+    "file": "inbound_6211.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-inbounds/{id}",
+    "when": {
+      "path": {
+        "id": "6230"
+      }
+    },
+    "file": "inbound_6230.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-inbounds/{id}",
+    "when": {
+      "path": {
+        "id": "6231"
+      }
+    },
+    "file": "inbound_6231.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-inbounds/{id}",
+    "file": "inbound_6201.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/stock-inbounds/{id}",
+    "when": {
+      "path": {
+        "id": "6201"
+      }
+    },
+    "file": "err_40307_inbound.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/stock-inbounds/{id}",
+    "file": "inbound_6211_updated.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/stock-inbounds/{id}/void",
+    "file": "void_ok.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-partners/recent",
+    "when": {
+      "query": {
+        "kind": "RETURN_TO"
+      }
+    },
+    "file": "partners_return_to.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-partners/recent",
+    "file": "partners_supplier.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-flows",
+    "when": {
+      "query": {
+        "feed_id": "5101",
+        "flow_group": "ALL"
+      }
+    },
+    "file": "feed_flows_5101.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-flows",
+    "when": {
+      "query": {
+        "feed_id": "5102",
+        "flow_group": "ALL"
+      }
+    },
+    "file": "feed_flows_5102.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-flows",
+    "when": {
+      "query": {
+        "flow_group": "INBOUND"
+      }
+    },
+    "file": "feed_flows_inbound.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-flows",
+    "when": {
+      "query": {
+        "flow_group": "FEED_USE"
+      }
+    },
+    "file": "feed_flows_feed_use.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-flows",
+    "when": {
+      "query": {
+        "flow_group": "OTHER_OUT"
+      }
+    },
+    "file": "feed_flows_other_out.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-flows",
+    "when": {
+      "query": {
+        "flow_group": "LOSS"
+      }
+    },
+    "file": "feed_flows_loss.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-flows",
+    "when": {
+      "query": {
+        "flow_group": "STOCKTAKE"
+      }
+    },
+    "file": "feed_flows_stocktake.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/feed-flows",
+    "file": "feed_flows_all.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stocktakes/sheet",
+    "file": "stocktake_sheet.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/stocktakes",
+    "when": {
+      "body": "\"actual_qty\":999"
+    },
+    "file": "err_40902_stocktake.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/stocktakes",
+    "file": "stocktake_created.json",
+    "delay": 600
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stocktakes",
+    "file": "stocktakes_page.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stocktakes/{id}",
+    "when": {
+      "path": {
+        "id": "6290"
+      }
+    },
+    "file": "stocktake_6290.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stocktakes/{id}",
+    "file": "stocktake_6301.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/feed-losses",
+    "when": {
+      "body": "\"input_qty\":600"
+    },
+    "file": "err_42201_loss.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/feed-losses",
+    "file": "loss_created.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-losses/{id}",
+    "when": {
+      "path": {
+        "id": "6402"
+      }
+    },
+    "file": "loss_6402.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-losses/{id}",
+    "file": "loss_6401.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/feed-other-outbounds",
+    "file": "outbound_6502.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-outbounds/{id}",
+    "when": {
+      "path": {
+        "id": "6501"
+      }
+    },
+    "file": "outbound_6501.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-outbounds/{id}",
+    "when": {
+      "path": {
+        "id": "6511"
+      }
+    },
+    "file": "outbound_6511.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-outbounds/{id}",
+    "when": {
+      "path": {
+        "id": "6512"
+      }
+    },
+    "file": "outbound_6512.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-outbounds/{id}",
+    "when": {
+      "path": {
+        "id": "6513"
+      }
+    },
+    "file": "outbound_6513.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-outbounds/{id}",
+    "file": "outbound_6502.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/stock-outbounds/{id}",
+    "when": {
+      "path": {
+        "id": "6501"
+      }
+    },
+    "file": "err_40307_outbound.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/stock-outbounds/{id}",
+    "when": {
+      "path": {
+        "id": "6511"
+      }
+    },
+    "file": "outbound_6511.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/stock-outbounds/{id}",
+    "when": {
+      "path": {
+        "id": "6512"
+      }
+    },
+    "file": "outbound_6512.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/stock-outbounds/{id}",
+    "file": "outbound_6502.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/stock-outbounds/{id}/void",
+    "file": "void_ok.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-stock/overview",
+    "when": {
+      "header": {
+        "Authorization": "Bearer mock-staff"
+      }
+    },
+    "file": "err_40303.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-stock/overview",
+    "file": "drug_overview.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots",
+    "when": {
+      "query": {
+        "group": "ATTENTION",
+        "category": "VET_DRUG"
+      }
+    },
+    "file": "lots_vet_attention.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots",
+    "when": {
+      "query": {
+        "group": "NORMAL",
+        "category": "VET_DRUG"
+      }
+    },
+    "file": "lots_vet_normal.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots",
+    "when": {
+      "query": {
+        "group": "ATTENTION",
+        "category": "VACCINE"
+      }
+    },
+    "file": "lots_vaccine_attention.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots",
+    "when": {
+      "query": {
+        "group": "NORMAL",
+        "category": "VACCINE"
+      }
+    },
+    "file": "lots_vaccine_normal.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots",
+    "when": {
+      "query": {
+        "group": "ATTENTION",
+        "category": "DISINFECTANT"
+      }
+    },
+    "file": "lots_dis_attention.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots",
+    "when": {
+      "query": {
+        "group": "NORMAL",
+        "category": "DISINFECTANT"
+      }
+    },
+    "file": "lots_dis_normal.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots",
+    "when": {
+      "query": {
+        "group": "ATTENTION"
+      }
+    },
+    "file": "lots_attention.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots",
+    "when": {
+      "query": {
+        "group": "NORMAL"
+      }
+    },
+    "file": "lots_normal.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots",
+    "when": {
+      "query": {
+        "group": "ALL",
+        "keyword": "口蹄疫"
+      }
+    },
+    "file": "lots_search_fmd.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots",
+    "when": {
+      "query": {
+        "group": "ALL",
+        "keyword": "聚维酮碘"
+      }
+    },
+    "file": "lots_search_pvp.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots",
+    "when": {
+      "query": {
+        "group": "ALL"
+      }
+    },
+    "file": "page_empty.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5301",
+        "purpose": "USE"
+      }
+    },
+    "file": "lotopt_5301_use.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5301",
+        "purpose": "RETURN"
+      }
+    },
+    "file": "lotopt_5301_return.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5201",
+        "purpose": "USE"
+      }
+    },
+    "file": "lotopt_5201_use.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5201",
+        "purpose": "RETURN"
+      }
+    },
+    "file": "lotopt_5201_return.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5001",
+        "purpose": "USE"
+      }
+    },
+    "file": "lotopt_5001_use.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5001",
+        "purpose": "RETURN"
+      }
+    },
+    "file": "lotopt_5001_return.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5202",
+        "purpose": "USE"
+      }
+    },
+    "file": "lotopt_5202_use.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5202",
+        "purpose": "RETURN"
+      }
+    },
+    "file": "lotopt_5202_return.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5003",
+        "purpose": "USE"
+      }
+    },
+    "file": "lotopt_5003_use.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/options",
+    "when": {
+      "query": {
+        "drug_id": "5003",
+        "purpose": "RETURN"
+      }
+    },
+    "file": "lotopt_5003_return.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/{id}",
+    "when": {
+      "path": {
+        "id": "5201"
+      }
+    },
+    "file": "lot_5201.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/{id}",
+    "when": {
+      "path": {
+        "id": "6103"
+      }
+    },
+    "file": "lot_6103.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/{id}",
+    "when": {
+      "path": {
+        "id": "6301"
+      }
+    },
+    "file": "lot_6301.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/{id}",
+    "when": {
+      "path": {
+        "id": "6001"
+      }
+    },
+    "file": "lot_6001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/{id}",
+    "when": {
+      "path": {
+        "id": "6002"
+      }
+    },
+    "file": "lot_6002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/{id}",
+    "when": {
+      "path": {
+        "id": "6111"
+      }
+    },
+    "file": "lot_6111.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/{id}",
+    "when": {
+      "path": {
+        "id": "6101"
+      }
+    },
+    "file": "lot_6101.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-lots/{id}",
+    "when": {
+      "path": {
+        "id": "5188"
+      }
+    },
+    "file": "lot_5188.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-flows",
+    "when": {
+      "query": {
+        "drug_lot_id": "5201"
+      }
+    },
+    "file": "dflows_5201.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-flows",
+    "when": {
+      "query": {
+        "drug_lot_id": "6301"
+      }
+    },
+    "file": "dflows_6301.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-flows",
+    "when": {
+      "query": {
+        "drug_lot_id": "6101"
+      }
+    },
+    "file": "dflows_6101.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-flows",
+    "when": {
+      "query": {
+        "drug_lot_id": "6002"
+      }
+    },
+    "file": "dflows_6002.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-flows",
+    "when": {
+      "query": {
+        "flow_group": "INBOUND"
+      }
+    },
+    "file": "dflows_inbound.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-flows",
+    "when": {
+      "query": {
+        "flow_group": "USE"
+      }
+    },
+    "file": "dflows_use.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-flows",
+    "when": {
+      "query": {
+        "flow_group": "RETURN"
+      }
+    },
+    "file": "dflows_return.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-flows",
+    "when": {
+      "query": {
+        "flow_group": "SCRAP"
+      }
+    },
+    "file": "dflows_scrap.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-flows",
+    "file": "dflows_all.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/drug-inbounds",
+    "when": {
+      "body": "\"lot_no\":\"2025047\""
+    },
+    "file": "err_42204_inbound.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/drug-inbounds",
+    "when": {
+      "body": [
+        "\"lot_no\":\"2025081\"",
+        "\"expire_date\":\"2026-12-30\""
+      ]
+    },
+    "file": "inbound_6231.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/drug-inbounds",
+    "when": {
+      "body": "\"lot_no\":\"2025081\""
+    },
+    "file": "err_40001_expire.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/drug-inbounds",
+    "file": "inbound_created_drug.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/drug-scraps",
+    "file": "scrap_created.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/drug-outbounds",
+    "when": {
+      "body": "\"input_qty\":7"
+    },
+    "file": "err_42204_outbound.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/drug-outbounds",
+    "when": {
+      "body": "\"out_type\":\"RETURN\""
+    },
+    "file": "outbound_6512.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/drug-outbounds",
+    "when": {
+      "body": "\"target_type\":\"PEN\""
+    },
+    "file": "outbound_6511.json",
+    "delay": 600
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/drug-outbounds",
+    "file": "outbound_6513.json",
+    "delay": 600
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-outbounds/allocation-preview",
+    "when": {
+      "query": {
+        "target_type": "BATCH"
+      }
+    },
+    "file": "alloc_batch.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-outbounds/allocation-preview",
+    "when": {
+      "query": {
+        "target_type": "PEN",
+        "pen_id": "2003"
+      }
+    },
+    "file": "alloc_pen_2003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-outbounds/allocation-preview",
+    "when": {
+      "query": {
+        "target_type": "PEN",
+        "pen_id": "2001"
+      }
+    },
+    "file": "alloc_pen_2001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drug-outbounds/allocation-preview",
+    "file": "alloc_pen.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drugs",
+    "file": "drugs_archive.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drugs/options",
+    "when": {
+      "query": {
+        "keyword": "克仑特罗"
+      }
+    },
+    "file": "drug_options_banned.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drugs/options",
+    "when": {
+      "query": {
+        "purpose": "OUTBOUND"
+      }
+    },
+    "file": "drug_options_outbound.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drugs/options",
+    "file": "drug_options_inbound.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drugs/{id}",
+    "when": {
+      "path": {
+        "id": "5201"
+      }
+    },
+    "file": "drug_5201.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drugs/{id}",
+    "when": {
+      "path": {
+        "id": "5001"
+      }
+    },
+    "file": "drug_5001.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drugs/{id}",
+    "when": {
+      "path": {
+        "id": "5003"
+      }
+    },
+    "file": "drug_5003.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drugs/{id}",
+    "when": {
+      "path": {
+        "id": "5301"
+      }
+    },
+    "file": "drug_5301.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drugs/{id}",
+    "when": {
+      "path": {
+        "id": "5204"
+      }
+    },
+    "file": "drug_5204.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/drugs/{id}",
+    "file": "drug_5202.json"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/drugs",
+    "when": {
+      "body": "\"catalog_id\":7202"
+    },
+    "file": "err_40905_drug.json",
+    "delay": 500
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/drugs",
+    "file": "drug_5204.json",
+    "delay": 500
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/drugs/{id}",
+    "file": "drug_5202.json",
+    "delay": 500
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-settings",
+    "file": "stock_setting.json"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/stock-settings",
+    "file": "setting_saved.json",
+    "delay": 400
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stock-requests/{request_id}",
+    "file": "request_not_found.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/base/drug-catalog",
+    "when": {
+      "query": {
+        "keyword": "克仑特罗"
+      }
+    },
+    "file": "catalog_banned.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/base/drug-catalog",
+    "when": {
+      "query": {
+        "drug_category": "VET_DRUG"
+      }
+    },
+    "file": "catalog_vet.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/base/drug-catalog",
+    "when": {
+      "query": {
+        "drug_category": "VACCINE"
+      }
+    },
+    "file": "catalog_vaccine.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/base/drug-catalog",
+    "when": {
+      "query": {
+        "drug_category": "DISINFECTANT"
+      }
+    },
+    "file": "catalog_dis.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/base/dicts/{dict_type}",
+    "when": {
+      "path": {
+        "dict_type": "FEED_TYPE"
+      }
+    },
+    "file": "dict_feed_type.json",
+    "delay": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/base/dicts/{dict_type}",
+    "when": {
+      "path": {
+        "dict_type": "SCRAP_REASON"
+      }
+    },
+    "file": "dict_scrap_reason.json",
+    "delay": 200
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "FEED"
+      }
+    },
+    "file": "logs_feed.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "DRUG"
+      }
+    },
+    "file": "logs_drug.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "INBOUND"
+      }
+    },
+    "file": "logs_inbound.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "OUTBOUND"
+      }
+    },
+    "file": "logs_outbound.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "INBOUND"
+      }
+    },
+    "file": "change_form_inbound.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "OUTBOUND"
+      }
+    },
+    "file": "change_form_outbound.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "LOSS"
+      }
+    },
+    "file": "change_form_loss.json"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/change-requests/form",
+    "when": {
+      "query": {
+        "biz_type": "STOCKTAKE"
+      }
+    },
+    "file": "change_form_stocktake.json"
+  }
+]

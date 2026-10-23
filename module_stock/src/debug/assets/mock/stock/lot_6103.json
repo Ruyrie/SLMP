@@ -1,0 +1,63 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "lot_id": 6103,
+    "drug_id": 5201,
+    "drug_name": "阿莫西林可溶性粉",
+    "category": "VET_DRUG",
+    "category_text": "兽药",
+    "lot_no": "2024118",
+    "expire_date": "2026-10-12",
+    "stock": {
+      "value": 1500,
+      "unit": "G",
+      "unit_text": "克",
+      "pack_unit": "袋",
+      "pack_size": 500,
+      "pack_count": 3,
+      "rest_value": 0
+    },
+    "lot_status": "EXPIRED",
+    "lot_status_text": "已过期",
+    "days_to_expire": -7,
+    "priority_out": false,
+    "status_note": null,
+    "stock_amount": 45.0,
+    "avg_price": 0.03,
+    "pack_price": 15.0,
+    "first_inbound": {
+      "inbound_id": 6203,
+      "inbound_date": "2025-10-20",
+      "qty": {
+        "value": 3000,
+        "unit": "G",
+        "unit_text": "克",
+        "pack_unit": "袋",
+        "pack_size": 500,
+        "pack_count": 6,
+        "rest_value": 0
+      },
+      "unit_price": 15.0
+    },
+    "inbound_count": 1,
+    "has_outbound": true,
+    "drug_banned": false,
+    "actions": {
+      "can_edit": false,
+      "edit_deadline": null,
+      "pending_request_id": null,
+      "edit_state": "REQUEST_ONLY",
+      "can_void": false,
+      "can_request_change": true,
+      "can_scrap": true,
+      "can_out": false
+    },
+    "recalled_at": null,
+    "recall_operator_text": null,
+    "recall_reason": null,
+    "recall_message_id": null,
+    "stock_version": 5
+  },
+  "trace_id": "mock-stock-lot_6103"
+}
