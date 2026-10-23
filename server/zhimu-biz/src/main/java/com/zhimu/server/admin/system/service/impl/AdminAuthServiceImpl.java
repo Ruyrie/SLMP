@@ -112,7 +112,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         String ip = RequestContext.ip();
         String region = resolveRegion(ip);
         int tokenVersion = admin.getTokenVersion() == null ? 0 : admin.getTokenVersion();
-        attemptService.persistSuccess(admin.getId(), ip, region, loginLog(admin, "SUCCESS", null));
+        attemptService.persistSuccess(admin.getId(), ip, region, loginLog(admin, username, "SUCCESS", null));
 
         String token = sessionService.create(admin.getId(), tokenVersion);
         AdminRole role = adminRoleMapper.selectById(admin.getRoleId());
@@ -202,11 +202,11 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         if (count >= AdminLoginAttemptService.MAX_FAILURES) {
             attemptService.clear(username);
             LocalDateTime lockedUntil = now.plus(AdminLoginAttemptService.LOCK_DURATION);
-            attemptService.persistFailure(null, 0, null, loginLog(null, "FAIL", "账号不存在，第 5 次错误锁定"));
+            attemptService.persistFailure(null, 0, null, loginLog(null, username, "FAIL", "账号不存在，第 5 次错误锁定"));
             throw locked(lockedUntil);
         }
         attemptService.persistFailure(null, count, null,
-                loginLog(null, "FAIL", "账号不存在或密码错误，还可以再试 " + (AdminLoginAttemptService.MAX_FAILURES - count) + " 次"));
+                loginLog(null, username, "FAIL", "账号不存在或密码错误，还可以再试 " + (AdminLoginAttemptService.MAX_FAILURES - count) + " 次"));
         throw passwordWrong(AdminLoginAttemptService.MAX_FAILURES - count);
     }
 
@@ -216,11 +216,11 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             attemptService.clear(username);
             LocalDateTime lockedUntil = now.plus(AdminLoginAttemptService.LOCK_DURATION);
             attemptService.persistFailure(admin.getId(), 0, lockedUntil,
-                    loginLog(admin, "FAIL", "密码连续错误 5 次，锁定至 " + BeijingTime.format(lockedUntil)));
+                    loginLog(admin, username, "FAIL", "密码连续错误 5 次，锁定至 " + BeijingTime.format(lockedUntil)));
             throw locked(lockedUntil);
         }
         attemptService.persistFailure(admin.getId(), count, null,
-                loginLog(admin, "FAIL", "密码错误，还可以再试 " + (AdminLoginAttemptService.MAX_FAILURES - count) + " 次"));
+                loginLog(admin, username, "FAIL", "密码错误，还可以再试 " + (AdminLoginAttemptService.MAX_FAILURES - count) + " 次"));
         throw passwordWrong(AdminLoginAttemptService.MAX_FAILURES - count);
     }
 
@@ -236,17 +236,17 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                 .with("locked_until", lockedUntil);
     }
 
-    private static OperationLogEntry loginLog(Admin admin, String result, String extraText) {
+    private static OperationLogEntry loginLog(Admin admin, String username, String result, String extraText) {
         return OperationLogEntry.builder()
                 .operatorType("ADMIN")
                 .operatorId(admin == null ? null : admin.getId())
-                .operatorName(admin == null ? null : admin.getName())
+                .operatorName(admin == null ? username : admin.getName())
                 .opType("LOGIN")
                 .opAction("LOGIN")
                 .result(result)
                 .bizType("ADMIN")
                 .bizId(admin == null ? null : admin.getId())
-                .targetName(admin == null ? null : admin.getName() + "（" + admin.getUsername() + "）")
+                .targetName(admin == null ? username : admin.getName() + "（" + admin.getUsername() + "）")
                 .extraText(extraText)
                 .build();
     }

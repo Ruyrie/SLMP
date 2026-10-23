@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @RequiredArgsConstructor
-public class OperationLogServiceImpl implements OperationLogService {
+public class AdminOperationLogServiceImpl implements OperationLogService {
 
     private final OperationLogRecorder operationLogRecorder;
 
