@@ -1,0 +1,41 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 1031,
+        "title": "3 号育肥舍有两头猪咳嗽怎么办",
+        "topic": "DISEASE",
+        "topic_text": null,
+        "batch_no": "ZM2610-031",
+        "round_count": 2,
+        "last_asked_at": "2026-10-19 08:20:00",
+        "date_group": "TODAY",
+        "date_group_text": "今天",
+        "has_correction": false,
+        "context_truncated": false,
+        "has_epidemic_alert": false
+      },
+      {
+        "id": 1032,
+        "title": "4 号育肥舍每天喂几次料",
+        "topic": "FEEDING",
+        "topic_text": null,
+        "batch_no": "ZM2610-019",
+        "round_count": 1,
+        "last_asked_at": "2026-10-16 07:45:00",
+        "date_group": "LAST_7_DAYS",
+        "date_group_text": "近 7 天",
+        "has_correction": false,
+        "context_truncated": false,
+        "has_epidemic_alert": false
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-ai-0017"
+}

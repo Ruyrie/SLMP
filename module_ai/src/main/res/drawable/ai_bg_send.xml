@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 发送 / 停止：36dp 圆形，按下水波纹 -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="?attr/colorControlHighlight">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/ai_send_container" />
+        </shape>
+    </item>
+</ripple>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- K01 AI 回答（无气泡）：左侧 32dp AI 头像，回答列 x 60–396。
+     禁用药标签 → 正在思考（三点动画）→ 正文（角标）→ 来源 Chip → 状态行（已停止 / 中断 / 超时 / 不可用 / 发送失败）
+     → 声明与操作行（有用 / 没用 / 复制）→ 平台更正说明卡 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/base_page_margin"
+    android:paddingTop="16dp"
+    android:paddingEnd="@dimen/base_page_margin"
+    android:paddingBottom="8dp">
+
+    <FrameLayout
+        android:id="@+id/ai_answer_avatar"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/ai_bg_avatar"
+        android:contentDescription="@string/ai_chat_ai_avatar">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_auto_awesome"
+            app:tint="?attr/colorTertiary" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <com.zhimu.slmp.base.widget.StatusTagView
+            android:id="@+id/ai_answer_banned"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/ai_chat_banned_drug"
+            android:visibility="gone"
+            app:tagIcon="@drawable/ic_block"
+            app:tagType="error" />
+
+        <LinearLayout
+            android:id="@+id/ai_answer_thinking"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <com.zhimu.slmp.ai.ui.chat.ThinkingDotsView
+                android:id="@+id/ai_answer_dots"
+                android:layout_width="wrap_content"
+                android:layout_height="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/ai_chat_thinking"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/ai_answer_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:lineSpacingExtra="6sp"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+            android:textColor="?attr/colorOnSurface"
+            android:textIsSelectable="false"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/ai_answer_sources"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/ai_answer_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/ai_answer_status_icon"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_marginEnd="8dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_error"
+                app:tint="?attr/colorError" />
+
+            <TextView
+                android:id="@+id/ai_answer_status_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="?attr/colorError" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/ai_answer_regenerate"
+                style="@style/Widget.Zmt.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:text="@string/ai_chat_regenerate"
+                android:visibility="gone"
+                app:icon="@drawable/ic_refresh"
+                app:iconSize="18dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/ai_answer_retry"
+                style="@style/Widget.Zmt.Button.Outlined.Small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/ai_chat_retry"
+                android:visibility="gone"
+                app:icon="@drawable/ic_refresh"
+                app:iconSize="20dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ai_answer_footer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:minHeight="40dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_info"
+                app:tint="?attr/colorOnSurfaceVariant" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:text="@string/ai_chat_disclaimer"
+                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <ImageButton
+                android:id="@+id/ai_answer_up"
+                android:layout_width="38dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/ai_chat_useful"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_thumb_up"
+                app:tint="@color/ai_rating_icon" />
+
+            <ImageButton
+                android:id="@+id/ai_answer_down"
+                android:layout_width="38dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/ai_chat_useless"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_thumb_down"
+                app:tint="@color/ai_rating_icon" />
+
+            <ImageButton
+                android:id="@+id/ai_answer_copy"
+                android:layout_width="38dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/ai_chat_copy"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_content_copy"
+                app:tint="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ai_answer_correction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/ai_bg_card_16"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/ai_answer_correction_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawablePadding="6dp"
+                android:gravity="center_vertical"
+                android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+                android:textColor="?attr/colorOnSurface"
+                app:drawableStartCompat="@drawable/ic_verified"
+                app:drawableTint="?attr/colorPrimary" />
+
+            <TextView
+                android:id="@+id/ai_answer_correction_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="4sp"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="?attr/colorOnSurface" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

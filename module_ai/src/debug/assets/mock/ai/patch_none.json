@@ -1,0 +1,17 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 1021,
+    "title": "氟苯尼考粉用于猪多久可以出栏",
+    "round_count": 1,
+    "has_correction": true,
+    "context_truncated": false,
+    "has_epidemic_alert": false,
+    "batch_link_state": "NONE",
+    "last_round_no": 1,
+    "batch": null,
+    "invalid_batch_no": null
+  },
+  "trace_id": "mock-ai-0015"
+}

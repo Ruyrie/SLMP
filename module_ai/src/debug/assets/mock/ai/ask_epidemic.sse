@@ -1,0 +1,26 @@
+event: meta
+data: {"message_id": {{seq}}, "session_id": 0, "round_no": 1, "session_created": false, "batch_link_state": "VALID"}
+
+: ping
+
+event: delta
+data: {"text": "高烧、皮肤发紫并出现死亡，"}
+
+event: delta
+data: {"text": "可能与非洲猪瘟等重大动物疫病有关[^1]，"}
+
+event: delta
+data: {"text": "需要尽快由执业兽医确认。\n\n"}
+
+event: delta
+data: {"text": "兽医到场前：隔离发病猪，停止调运和出售，"}
+
+event: delta
+data: {"text": "不要自行剖检，死猪不要随意丢弃。"}
+
+event: citation
+data: {"citations": [{"id": 9904, "seq_no": 1, "knowledge_id": 8104, "title": "常见病症 · 非洲猪瘟", "category_name": "疾病防治", "source_type": "DISEASE", "icon_type": "STANDARD"}]}
+
+event: done
+data: {"answer_type": "EPIDEMIC", "finish_reason": "STOP", "message": {"id": {{seq}}, "session_id": 0, "round_no": 1, "asked_at": "2026-10-19 09:30:00", "question_text": null, "images": null, "batch_id": null, "batch_no": null, "context_course_title": null, "status": "ANSWERED", "answer_type": "EPIDEMIC", "answer_text": "高烧、皮肤发紫并出现死亡，可能与非洲猪瘟等重大动物疫病有关[^1]，需要尽快由执业兽医确认。\n\n兽医到场前：隔离发病猪，停止调运和出售，不要自行剖检，死猪不要随意丢弃。", "citations": [{"id": 9904, "seq_no": 1, "knowledge_id": 8104, "title": "常见病症 · 非洲猪瘟", "category_name": "疾病防治", "source_type": "DISEASE", "icon_type": "STANDARD"}], "rating": null, "rated_at": null, "can_rate": true, "can_copy": true, "in_context": true, "correction": null, "error_code": null, "error_message": null, "answered_at": "2026-10-19 09:30:20"}}
+

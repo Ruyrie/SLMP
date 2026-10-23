@@ -1,0 +1,29 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 5590,
+    "session_id": 0,
+    "round_no": 1,
+    "asked_at": "2026-10-19 09:30:00",
+    "question_text": null,
+    "images": null,
+    "batch_id": null,
+    "batch_no": null,
+    "context_course_title": null,
+    "status": "INTERRUPTED",
+    "answer_type": null,
+    "answer_text": "按平台休药期标准，氟苯尼考粉用于猪的",
+    "citations": [],
+    "rating": null,
+    "rated_at": null,
+    "can_rate": false,
+    "can_copy": false,
+    "in_context": true,
+    "correction": null,
+    "error_code": null,
+    "error_message": "回答中断，点按重新生成",
+    "answered_at": null
+  },
+  "trace_id": "mock-ai-0023"
+}

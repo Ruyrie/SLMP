@@ -1,0 +1,63 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 8102,
+    "title": "兽药休药期标准 · 氟苯尼考粉",
+    "category_name": "用药规范",
+    "source_type": "DRUG_CATALOG",
+    "source_type_text": "兽药目录",
+    "version_no": 4,
+    "updated_at": "2026-10-16 09:00:00",
+    "share_url": "https://web.zhimutong.example.com/knowledge/8102",
+    "embedded_video": null,
+    "blocks": [
+      {
+        "para_key": "p1",
+        "para_type": "TEXT",
+        "text": "氟苯尼考粉为兽用处方药，用于猪细菌性呼吸道感染等。按说明书剂量混饲或混饮，连用 3 至 5 天。",
+        "content_html": null,
+        "image_url": null
+      },
+      {
+        "para_key": "p2",
+        "para_type": "QUOTE",
+        "text": "休药期：猪 20 天。",
+        "content_html": null,
+        "image_url": null
+      },
+      {
+        "para_key": "p3",
+        "para_type": "TEXT",
+        "text": "妊娠母猪慎用；与其他抗菌药合用时以休药期较长者为准。",
+        "content_html": null,
+        "image_url": null
+      }
+    ],
+    "related_items": [
+      {
+        "id": 8101,
+        "title": "休药期计算与出栏",
+        "category_name": "用药规范",
+        "source_type": "PLATFORM",
+        "source_type_text": null,
+        "version_no": 3,
+        "icon_type": "ARTICLE"
+      },
+      {
+        "id": 8103,
+        "title": "禁用兽药与禁用物质清单",
+        "category_name": "用药规范",
+        "source_type": "PLATFORM",
+        "source_type_text": null,
+        "version_no": 5,
+        "icon_type": "STANDARD"
+      }
+    ],
+    "highlight_para_key": "p2",
+    "cited_version_no": 3,
+    "updated_after_answer": true,
+    "citing_answer": null
+  },
+  "trace_id": "mock-ai-0030"
+}

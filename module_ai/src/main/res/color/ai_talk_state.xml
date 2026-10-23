@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 按住时叠加 10% on-surface（取消区 10% on-error-container） -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:alpha="0.10" android:color="?attr/colorOnErrorContainer" android:state_activated="true" android:state_pressed="true" />
+    <item android:alpha="0.10" android:color="?attr/colorOnSurface" android:state_pressed="true" />
+    <item android:color="@android:color/transparent" />
+</selector>

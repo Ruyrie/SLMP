@@ -33,11 +33,15 @@ public final class AiChatRequest {
     private final Double temperature;
     @NonNull
     private final String tag;
+    /** 多轮对话的历史消息（模块11 追加，默认为空，不影响单轮调用） */
+    @NonNull
+    private final List<AiTurn> history;
 
     private AiChatRequest(@NonNull Builder b) {
         this.system = b.system;
         this.user = b.user == null ? "" : b.user;
         this.images = Collections.unmodifiableList(new ArrayList<>(b.images));
+        this.history = Collections.unmodifiableList(new ArrayList<>(b.history));
         this.maxTokens = b.maxTokens;
         this.temperature = b.temperature;
         this.tag = b.tag;
@@ -78,6 +82,12 @@ public final class AiChatRequest {
         return tag;
     }
 
+    /** 历史消息（按时间顺序，放在本次提问之前） */
+    @NonNull
+    public List<AiTurn> getHistory() {
+        return history;
+    }
+
     /** 图片总字节数（日志用） */
     public int imageBytes() {
         int n = 0;
@@ -98,8 +108,16 @@ public final class AiChatRequest {
         private Double temperature;
         @NonNull
         private String tag = "chat";
+        private final List<AiTurn> history = new ArrayList<>();
 
         private Builder() {
+        }
+
+        /** 追加历史消息（多轮对话；按时间顺序） */
+        @NonNull
+        public Builder history(@NonNull List<AiTurn> turns) {
+            history.addAll(turns);
+            return this;
         }
 
         @NonNull

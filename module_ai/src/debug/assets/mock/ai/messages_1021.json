@@ -1,0 +1,56 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 5501,
+        "session_id": 1021,
+        "round_no": 1,
+        "asked_at": "2026-10-19 09:12:00",
+        "question_text": "氟苯尼考粉用于猪，多久可以出栏？",
+        "images": null,
+        "batch_id": 3001,
+        "batch_no": "ZM2610-031",
+        "context_course_title": null,
+        "status": "ANSWERED",
+        "answer_type": "NORMAL",
+        "answer_text": "按平台休药期标准，氟苯尼考粉用于猪的休药期为 20 天[^1]，从末次用药日起算。\n\n你关联的批次 ZM2610-031 末次用药是 10月9日，最早 10月29日 可以出栏，还剩 10 天[^2]。休药期内不能登记出栏。",
+        "citations": [
+          {
+            "id": 9901,
+            "seq_no": 1,
+            "knowledge_id": 8102,
+            "title": "兽药休药期标准 · 氟苯尼考粉",
+            "category_name": "用药规范",
+            "source_type": "DRUG_CATALOG",
+            "icon_type": "STANDARD"
+          },
+          {
+            "id": 9902,
+            "seq_no": 2,
+            "knowledge_id": 8101,
+            "title": "休药期计算与出栏",
+            "category_name": "用药规范",
+            "source_type": "PLATFORM",
+            "icon_type": "ARTICLE"
+          }
+        ],
+        "rating": null,
+        "rated_at": null,
+        "can_rate": true,
+        "can_copy": true,
+        "in_context": true,
+        "correction": {
+          "content": "同一批次用过多种兽药时，可出栏日期按休药期最晚结束的一种计算，请以批次档案中的日期为准。",
+          "display_time": "10月19日 09:40"
+        },
+        "error_code": null,
+        "error_message": null,
+        "answered_at": "2026-10-19 09:12:18"
+      }
+    ],
+    "has_more": false
+  },
+  "trace_id": "mock-ai-0004"
+}

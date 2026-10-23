@@ -1,0 +1,47 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 8104,
+    "title": "常见病症 · 非洲猪瘟",
+    "category_name": "疾病防治",
+    "source_type": "DISEASE",
+    "source_type_text": "常见病症",
+    "version_no": 2,
+    "updated_at": "2026-10-01 10:00:00",
+    "share_url": "https://web.zhimutong.example.com/knowledge/8104",
+    "embedded_video": null,
+    "blocks": [
+      {
+        "para_key": "p1",
+        "para_type": "TEXT",
+        "text": "非洲猪瘟是重大动物疫病，典型症状为高热、皮肤发绀、出血和急性死亡，传播快、致死率高。",
+        "content_html": null,
+        "image_url": null
+      },
+      {
+        "para_key": "p2",
+        "para_type": "TEXT",
+        "text": "发现疑似病例：立即隔离，停止调运和出售，不要自行剖检，及时报告当地动物防疫机构并联系执业兽医。",
+        "content_html": null,
+        "image_url": null
+      }
+    ],
+    "related_items": [
+      {
+        "id": 8101,
+        "title": "休药期计算与出栏",
+        "category_name": "用药规范",
+        "source_type": "PLATFORM",
+        "source_type_text": null,
+        "version_no": 3,
+        "icon_type": "ARTICLE"
+      }
+    ],
+    "highlight_para_key": "p2",
+    "cited_version_no": 2,
+    "updated_after_answer": false,
+    "citing_answer": null
+  },
+  "trace_id": "mock-ai-0033"
+}

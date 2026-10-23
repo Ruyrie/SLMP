@@ -1,0 +1,32 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 5101,
+      "name": "饲养管理",
+      "sort_no": 1
+    },
+    {
+      "id": 5102,
+      "name": "疾病防治",
+      "sort_no": 2
+    },
+    {
+      "id": 5103,
+      "name": "用药规范",
+      "sort_no": 3
+    },
+    {
+      "id": 5104,
+      "name": "繁育",
+      "sort_no": 4
+    },
+    {
+      "id": 5105,
+      "name": "免疫接种",
+      "sort_no": 5
+    }
+  ],
+  "trace_id": "mock-ai-0035"
+}

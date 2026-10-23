@@ -1,0 +1,83 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 6302,
+        "title": "带猪消毒的操作要点",
+        "cover_url": "file:///android_asset/mock/media/death_photo.jpg",
+        "duration_sec": 362,
+        "published_at": "2026-10-18 10:00:00",
+        "category_name": "疾病防治",
+        "learn_status": "LEARNING",
+        "position_sec": 163,
+        "progress_ratio": 0.4503,
+        "topic_id": null,
+        "topic_name": null,
+        "section_no": null
+      },
+      {
+        "id": 6102,
+        "title": "仔猪腹泻的日常防控",
+        "cover_url": "file:///android_asset/mock/media/farm_env.jpg",
+        "duration_sec": 222,
+        "published_at": "2026-10-16 10:00:00",
+        "category_name": "疾病防治",
+        "learn_status": "LEARNING",
+        "position_sec": 84,
+        "progress_ratio": 0.3784,
+        "topic_id": 7001,
+        "topic_name": "仔猪腹泻防控",
+        "section_no": 2
+      },
+      {
+        "id": 6101,
+        "title": "腹泻的常见原因",
+        "cover_url": "file:///android_asset/mock/media/inspection.jpg",
+        "duration_sec": 178,
+        "published_at": "2026-10-15 10:00:00",
+        "category_name": "疾病防治",
+        "learn_status": "COMPLETED",
+        "position_sec": 178,
+        "progress_ratio": 1,
+        "topic_id": 7001,
+        "topic_name": "仔猪腹泻防控",
+        "section_no": 1
+      },
+      {
+        "id": 6103,
+        "title": "发病后的隔离与上报",
+        "cover_url": "file:///android_asset/mock/media/qual_license.jpg",
+        "duration_sec": 245,
+        "published_at": "2026-10-13 10:00:00",
+        "category_name": "疾病防治",
+        "learn_status": "NOT_STARTED",
+        "position_sec": 0,
+        "progress_ratio": 0.0,
+        "topic_id": 7001,
+        "topic_name": "仔猪腹泻防控",
+        "section_no": 3
+      },
+      {
+        "id": 6105,
+        "title": "腹泻仔猪的补液护理",
+        "cover_url": "file:///android_asset/mock/media/farm_env.jpg",
+        "duration_sec": 192,
+        "published_at": "2026-10-12 10:00:00",
+        "category_name": "疾病防治",
+        "learn_status": "NOT_STARTED",
+        "position_sec": 0,
+        "progress_ratio": 0.0,
+        "topic_id": 7001,
+        "topic_name": "仔猪腹泻防控",
+        "section_no": 5
+      }
+    ],
+    "total": 5,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-ai-0038"
+}

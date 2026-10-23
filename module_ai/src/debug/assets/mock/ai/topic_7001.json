@@ -1,0 +1,108 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 7001,
+    "name": "仔猪腹泻防控",
+    "category_name": "疾病防治",
+    "cover_url": "file:///android_asset/mock/media/farm_env.jpg",
+    "course_count": 6,
+    "total_duration_sec": 1318,
+    "learned_count": 2,
+    "last_learned_at": "2026-10-18 20:15:00",
+    "intro": "从腹泻的常见原因讲起，覆盖日常防控、保育舍温度与通风、补液护理、发病后的隔离上报和相关用药，适合保育阶段的饲养员和技术员。",
+    "action": "CONTINUE",
+    "resume": {
+      "course_id": 6102,
+      "section_no": 2,
+      "position_sec": 84
+    },
+    "courses": [
+      {
+        "id": 6101,
+        "title": "腹泻的常见原因",
+        "cover_url": "file:///android_asset/mock/media/inspection.jpg",
+        "duration_sec": 178,
+        "published_at": "2026-10-15 10:00:00",
+        "category_name": "疾病防治",
+        "learn_status": "COMPLETED",
+        "position_sec": 178,
+        "progress_ratio": 1,
+        "topic_id": 7001,
+        "topic_name": "仔猪腹泻防控",
+        "section_no": 1
+      },
+      {
+        "id": 6102,
+        "title": "仔猪腹泻的日常防控",
+        "cover_url": "file:///android_asset/mock/media/farm_env.jpg",
+        "duration_sec": 222,
+        "published_at": "2026-10-16 10:00:00",
+        "category_name": "疾病防治",
+        "learn_status": "LEARNING",
+        "position_sec": 84,
+        "progress_ratio": 0.3784,
+        "topic_id": 7001,
+        "topic_name": "仔猪腹泻防控",
+        "section_no": 2
+      },
+      {
+        "id": 6103,
+        "title": "发病后的隔离与上报",
+        "cover_url": "file:///android_asset/mock/media/qual_license.jpg",
+        "duration_sec": 245,
+        "published_at": "2026-10-13 10:00:00",
+        "category_name": "疾病防治",
+        "learn_status": "NOT_STARTED",
+        "position_sec": 0,
+        "progress_ratio": 0.0,
+        "topic_id": 7001,
+        "topic_name": "仔猪腹泻防控",
+        "section_no": 3
+      },
+      {
+        "id": 6104,
+        "title": "保育舍的温度与通风",
+        "cover_url": "file:///android_asset/mock/media/death_photo.jpg",
+        "duration_sec": 210,
+        "published_at": "2026-10-14 10:00:00",
+        "category_name": "饲养管理",
+        "learn_status": "COMPLETED",
+        "position_sec": 210,
+        "progress_ratio": 1,
+        "topic_id": 7001,
+        "topic_name": "仔猪腹泻防控",
+        "section_no": 4
+      },
+      {
+        "id": 6105,
+        "title": "腹泻仔猪的补液护理",
+        "cover_url": "file:///android_asset/mock/media/farm_env.jpg",
+        "duration_sec": 192,
+        "published_at": "2026-10-12 10:00:00",
+        "category_name": "疾病防治",
+        "learn_status": "NOT_STARTED",
+        "position_sec": 0,
+        "progress_ratio": 0.0,
+        "topic_id": 7001,
+        "topic_name": "仔猪腹泻防控",
+        "section_no": 5
+      },
+      {
+        "id": 6106,
+        "title": "腹泻相关用药与休药期",
+        "cover_url": "file:///android_asset/mock/media/inspection.jpg",
+        "duration_sec": 271,
+        "published_at": "2026-10-11 10:00:00",
+        "category_name": "用药规范",
+        "learn_status": "NOT_STARTED",
+        "position_sec": 0,
+        "progress_ratio": 0.0,
+        "topic_id": 7001,
+        "topic_name": "仔猪腹泻防控",
+        "section_no": 6
+      }
+    ]
+  },
+  "trace_id": "mock-ai-0043"
+}

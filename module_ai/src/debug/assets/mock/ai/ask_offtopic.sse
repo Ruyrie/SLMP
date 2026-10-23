@@ -1,0 +1,14 @@
+event: meta
+data: {"message_id": {{seq}}, "session_id": 0, "round_no": 1, "session_created": false, "batch_link_state": "VALID"}
+
+: ping
+
+event: delta
+data: {"text": "这个问题与畜禽养殖无关，"}
+
+event: delta
+data: {"text": "我不能回答。"}
+
+event: done
+data: {"answer_type": "OFF_TOPIC", "finish_reason": "STOP", "message": {"id": {{seq}}, "session_id": 0, "round_no": 1, "asked_at": "2026-10-19 09:30:00", "question_text": null, "images": null, "batch_id": null, "batch_no": null, "context_course_title": null, "status": "ANSWERED", "answer_type": "OFF_TOPIC", "answer_text": "这个问题与畜禽养殖无关，我不能回答。", "citations": [], "rating": null, "rated_at": null, "can_rate": false, "can_copy": false, "in_context": true, "correction": null, "error_code": null, "error_message": null, "answered_at": "2026-10-19 09:30:20"}}
+

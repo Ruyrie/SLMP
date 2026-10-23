@@ -1,0 +1,59 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "batches": [
+      {
+        "batch_id": 3001,
+        "batch_no": "ZM2610-031",
+        "category_name": "生猪",
+        "stage_name": "育肥猪",
+        "breed_name": "杜长大",
+        "pen_id": 2003,
+        "pen_name": "3 号育肥舍",
+        "day_age": 96,
+        "current_count": 200,
+        "count_unit_text": "头"
+      },
+      {
+        "batch_id": 3003,
+        "batch_no": "ZM2610-045",
+        "category_name": "生猪",
+        "stage_name": "保育猪",
+        "breed_name": "杜长大",
+        "pen_id": 2001,
+        "pen_name": "1 号保育舍",
+        "day_age": 35,
+        "current_count": 320,
+        "count_unit_text": "头"
+      },
+      {
+        "batch_id": 3004,
+        "batch_no": "ZM2609-038",
+        "category_name": "生猪",
+        "stage_name": "保育猪",
+        "breed_name": "杜长大",
+        "pen_id": 2002,
+        "pen_name": "2 号保育舍",
+        "day_age": 63,
+        "current_count": 200,
+        "count_unit_text": "头"
+      },
+      {
+        "batch_id": 3002,
+        "batch_no": "ZM2610-019",
+        "category_name": "生猪",
+        "stage_name": "育肥猪",
+        "breed_name": "杜长大",
+        "pen_id": 2004,
+        "pen_name": "4 号育肥舍",
+        "day_age": 82,
+        "current_count": 150,
+        "count_unit_text": "头"
+      }
+    ],
+    "panel_hint": "只能关联东山猪场的在栏批次。提问时会带上批次的品种、日龄、存栏和最近一次称重体重。",
+    "empty_hint": null
+  },
+  "trace_id": "mock-ai-0001"
+}

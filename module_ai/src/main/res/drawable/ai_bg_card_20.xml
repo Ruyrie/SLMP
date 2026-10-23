@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 继续观看卡、专题卡、学习进度卡：surface-container-lowest，圆角 20dp，按下水波纹 -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="?attr/colorControlHighlight">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/colorSurfaceContainerLowest" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+</ripple>

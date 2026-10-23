@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "recognized": true,
+    "text": "保育猪换料后拉稀，要停料吗？",
+    "duration_ms": 3200
+  },
+  "trace_id": "mock-ai-0027"
+}

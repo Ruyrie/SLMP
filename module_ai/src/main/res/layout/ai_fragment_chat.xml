@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- K01 AI 问答：关联批次 Chip（固定在对话区上方）、疑似重大疫病横幅、对话区（骨架 / 无权查看由 StateLayout 处理，
+     新会话空状态、加载更早进度、“回到底部”）、课程背景提示行、输入栏（参照 AI_PDIA：附图缩略图条 + 胶囊内文字 / 语音两态）与固定声明 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ai_chat_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/ai_chat_batch_chip"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:layout_marginStart="@dimen/base_page_margin"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="@dimen/base_page_margin"
+        android:background="@drawable/ai_bg_outline_8"
+        android:drawablePadding="8dp"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:maxLines="1"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+        android:textColor="?attr/colorOnSurface"
+        tools:text="ZM2610-031 · 育肥猪 · 96 日龄 · 存栏 200 头" />
+
+    <com.zhimu.slmp.base.widget.NoticeView
+        android:id="@+id/ai_chat_epidemic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_page_margin"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="@dimen/base_page_margin"
+        android:visibility="gone"
+        app:noticeLevel="error" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/ai_chat_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:stateErrorTitle="@string/ai_chat_load_error">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/ai_chat_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingTop="12dp"
+                android:paddingBottom="16dp" />
+        </com.zhimu.slmp.base.widget.StateLayout>
+
+        <LinearLayout
+            android:id="@+id/ai_chat_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingStart="40dp"
+            android:paddingEnd="40dp"
+            android:visibility="gone">
+
+            <FrameLayout
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/ai_bg_avatar">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_auto_awesome"
+                    app:tint="?attr/colorTertiary" />
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/ai_chat_empty_title"
+                android:textAppearance="@style/TextAppearance.Zmt.TitleMedium"
+                android:textColor="?attr/colorOnSurface" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="@string/ai_chat_empty_message"
+                android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/ai_chat_loading_earlier"
+            style="@style/Widget.Zmt.CircularProgressIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="8dp"
+            android:indeterminate="true"
+            android:visibility="gone"
+            app:indicatorSize="24dp" />
+
+        <TextView
+            android:id="@+id/ai_chat_back_bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/ai_bg_back_bottom"
+            android:drawablePadding="8dp"
+            android:elevation="@dimen/base_elevation_2"
+            android:gravity="center_vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="16dp"
+            android:text="@string/ai_chat_back_bottom"
+            android:textAppearance="@style/TextAppearance.Zmt.LabelLarge"
+            android:textColor="?attr/colorPrimary"
+            android:visibility="gone"
+            app:drawableStartCompat="@drawable/ic_arrow_downward"
+            app:drawableTint="?attr/colorPrimary" />
+    </FrameLayout>
+
+    <!-- 输入区（Snackbar 锚点） -->
+    <LinearLayout
+        android:id="@+id/ai_chat_input_area"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:tag="snackbar_anchor">
+
+        <LinearLayout
+            android:id="@+id/ai_chat_course_row"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="24dp"
+            android:paddingEnd="12dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/ai_chat_course_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <ImageButton
+                android:id="@+id/ai_chat_course_close"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/ai_chat_context_course_close"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_close"
+                app:tint="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/ai_chat_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="28dp"
+            android:gravity="end"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone" />
+
+        <!-- 胶囊：上排附图缩略图条（没有附图时隐藏），下排文字 / 语音输入 -->
+        <LinearLayout
+            android:id="@+id/ai_chat_pill"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_page_margin"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="@dimen/base_page_margin"
+            android:background="@drawable/ai_bg_composer"
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/ai_chat_attach_list"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:clipToPadding="false"
+                android:overScrollMode="never"
+                android:paddingStart="8dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="8dp"
+                android:scrollbars="none"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/ai_chat_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="52dp"
+                android:orientation="horizontal"
+                android:paddingStart="6dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="6dp">
+
+                <ImageButton
+                    android:id="@+id/ai_chat_camera"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/ai_chat_camera"
+                    android:src="@drawable/ic_photo_camera"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <EditText
+                    android:id="@+id/ai_chat_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:gravity="center_vertical|start"
+                    android:hint="@string/ai_chat_hint_new"
+                    android:importantForAutofill="no"
+                    android:includeFontPadding="false"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:maxLines="5"
+                    android:minHeight="40dp"
+                    android:paddingStart="10dp"
+                    android:paddingTop="8dp"
+                    android:paddingEnd="6dp"
+                    android:paddingBottom="8dp"
+                    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textColorHint="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/ai_chat_talk"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/ai_bg_talk"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:maxLines="1"
+                    android:text="@string/ai_voice_talk"
+                    android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+                    android:textColor="@color/ai_talk_text"
+                    android:visibility="gone" />
+
+                <ImageButton
+                    android:id="@+id/ai_chat_mic"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/ai_chat_voice_mode"
+                    android:src="@drawable/ic_mic"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <ImageButton
+                    android:id="@+id/ai_chat_keyboard"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/ai_chat_keyboard_mode"
+                    android:src="@drawable/ic_keyboard"
+                    android:visibility="gone"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <ImageButton
+                    android:id="@+id/ai_chat_album"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/ai_chat_album"
+                    android:src="@drawable/ic_add"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <ImageButton
+                    android:id="@+id/ai_chat_action"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="2dp"
+                    android:background="@drawable/ai_bg_send"
+                    android:contentDescription="@string/ai_chat_send"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_arrow_upward"
+                    android:visibility="gone"
+                    app:tint="@color/ai_send_icon" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp"
+            android:gravity="center"
+            android:text="@string/ai_chat_disclaimer"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+</LinearLayout>

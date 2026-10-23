@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- “按住 说话”底色：surface-container-highest；取消区 error-container -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="?attr/colorErrorContainer" android:state_activated="true" />
+    <item android:color="?attr/colorSurfaceContainerHighest" />
+</selector>

@@ -1,0 +1,9 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "rating": null,
+    "rated_at": null
+  },
+  "trace_id": "mock-ai-0026"
+}

@@ -1,0 +1,83 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 6201,
+        "title": "育肥猪分阶段饲喂方案",
+        "cover_url": "file:///android_asset/mock/media/farm_env.jpg",
+        "duration_sec": 310,
+        "published_at": "2026-10-20 10:00:00",
+        "category_name": "饲养管理",
+        "learn_status": "NOT_STARTED",
+        "position_sec": 0,
+        "progress_ratio": 0.0,
+        "topic_id": 7002,
+        "topic_name": "育肥猪精细化饲喂",
+        "section_no": 1
+      },
+      {
+        "id": 6104,
+        "title": "保育舍的温度与通风",
+        "cover_url": "file:///android_asset/mock/media/death_photo.jpg",
+        "duration_sec": 210,
+        "published_at": "2026-10-14 10:00:00",
+        "category_name": "饲养管理",
+        "learn_status": "COMPLETED",
+        "position_sec": 210,
+        "progress_ratio": 1,
+        "topic_id": 7001,
+        "topic_name": "仔猪腹泻防控",
+        "section_no": 4
+      },
+      {
+        "id": 6202,
+        "title": "饲料过渡与换料技巧",
+        "cover_url": "file:///android_asset/mock/media/death_photo.jpg",
+        "duration_sec": 265,
+        "published_at": "2026-10-10 10:00:00",
+        "category_name": "饲养管理",
+        "learn_status": "NOT_STARTED",
+        "position_sec": 0,
+        "progress_ratio": 0.0,
+        "topic_id": 7002,
+        "topic_name": "育肥猪精细化饲喂",
+        "section_no": 2
+      },
+      {
+        "id": 6203,
+        "title": "采食量下降的排查",
+        "cover_url": "file:///android_asset/mock/media/qual_license.jpg",
+        "duration_sec": 290,
+        "published_at": "2026-10-09 10:00:00",
+        "category_name": "饲养管理",
+        "learn_status": "NOT_STARTED",
+        "position_sec": 0,
+        "progress_ratio": 0.0,
+        "topic_id": 7002,
+        "topic_name": "育肥猪精细化饲喂",
+        "section_no": 3
+      },
+      {
+        "id": 6204,
+        "title": "育肥舍饮水管理要点",
+        "cover_url": "file:///android_asset/mock/media/farm_env.jpg",
+        "duration_sec": 220,
+        "published_at": "2026-10-08 10:00:00",
+        "category_name": "饲养管理",
+        "learn_status": "NOT_STARTED",
+        "position_sec": 0,
+        "progress_ratio": 0.0,
+        "topic_id": 7002,
+        "topic_name": "育肥猪精细化饲喂",
+        "section_no": 4
+      }
+    ],
+    "total": 5,
+    "page": 1,
+    "size": 20,
+    "has_more": false
+  },
+  "trace_id": "mock-ai-0037"
+}

@@ -1,0 +1,37 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 6302,
+    "title": "带猪消毒的操作要点",
+    "category_name": "疾病防治",
+    "duration_sec": 362,
+    "source_label": "平台知识库",
+    "updated_at": "2026-10-12 10:00:00",
+    "cover_url": "file:///android_asset/mock/media/death_photo.jpg",
+    "share_url": "https://web.zhimutong.example.com/course/6302",
+    "sources": [
+      {
+        "quality": "P720",
+        "hls_url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+        "size_bytes": 29360128
+      },
+      {
+        "quality": "P480",
+        "hls_url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+        "size_bytes": 15728640
+      }
+    ],
+    "knowledge_id": null,
+    "section_no": null,
+    "next_course_id": null,
+    "topic": null,
+    "progress": {
+      "position_sec": 163,
+      "completed": false,
+      "resume_position_sec": 163
+    },
+    "related_courses": null
+  },
+  "trace_id": "mock-ai-0049"
+}

@@ -5,6 +5,8 @@ def props = rootProject.ext.localProps
 def directFields = [
         DASHSCOPE_API_KEY    : props.getProperty('ai.dashscopeKey', ''),
         DASHSCOPE_MODEL      : props.getProperty('ai.dashscopeModel', 'qwen3.8-max'),
+        // 模块11 K01 语音识别模型；为空时 AiDirectConfig.speechModel() 用代码中的默认值 qwen3-asr-flash
+        DASHSCOPE_ASR_MODEL  : props.getProperty('ai.dashscopeAsrModel', ''),
         DEEPSEEK_API_KEY     : props.getProperty('ai.deepseekKey', ''),
         DEEPSEEK_MODEL       : props.getProperty('ai.deepseekModel', 'deepseek-flash'),
         ALIYUN_ACCESS_KEY_ID : props.getProperty('aliyun.accessKeyId', ''),

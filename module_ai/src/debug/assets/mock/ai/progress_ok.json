@@ -1,0 +1,14 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "position_sec": 94,
+    "max_position_sec": 94,
+    "progress_ratio": 0.4234,
+    "completed": false,
+    "just_completed": false,
+    "learn_status": "LEARNING",
+    "topic_learned_count": 2
+  },
+  "trace_id": "mock-ai-0062"
+}

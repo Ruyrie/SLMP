@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 底部导航“助手”一级页：一级页顶部栏；模式切换行（连接按钮组 AI 问答 / 养殖课堂 + 两个 24dp 图标按钮）；
+     内容区承载 K01 AiChatFragment 与 K04 CourseHomeFragment（显隐切换，切换时保留输入栏内容） -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <com.zhimu.slmp.common.widget.FirstLevelTopBar
+        android:id="@+id/ai_top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/base_top_bar_height" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingEnd="4dp">
+
+        <com.zhimu.slmp.base.widget.ConnectedButtonGroup
+            android:id="@+id/ai_mode_group"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:checkedButton="@id/ai_mode_chat"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/ai_mode_chat"
+                style="@style/Widget.Zmt.Button.Connected"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="@string/ai_mode_chat" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/ai_mode_course"
+                style="@style/Widget.Zmt.Button.Connected"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="@string/ai_mode_course" />
+        </com.zhimu.slmp.base.widget.ConnectedButtonGroup>
+
+        <ImageButton
+            android:id="@+id/ai_mode_action1"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/ai_action_history"
+            android:src="@drawable/ic_history"
+            app:tint="?attr/colorOnSurfaceVariant" />
+
+        <ImageButton
+            android:id="@+id/ai_mode_action2"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/ai_action_new_chat"
+            android:src="@drawable/ic_add_comment"
+            app:tint="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/ai_assistant_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+</LinearLayout>

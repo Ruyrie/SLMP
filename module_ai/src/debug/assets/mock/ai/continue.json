@@ -1,0 +1,17 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "course_id": 6102,
+    "title": "仔猪腹泻的日常防控",
+    "cover_url": "file:///android_asset/mock/media/farm_env.jpg",
+    "category_name": "疾病防治",
+    "duration_sec": 222,
+    "position_sec": 84,
+    "remaining_sec": 138,
+    "progress_ratio": 0.3784,
+    "topic_name": "仔猪腹泻防控",
+    "section_no": 2
+  },
+  "trace_id": "mock-ai-0042"
+}

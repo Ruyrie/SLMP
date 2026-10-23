@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- K05 视频信息（课程列表的页头）：标题 22sp、分类标签 + “3:42 · 平台知识库 · 10月12日更新”、
+     “问 AI”色调按钮 / “图文原文”描边按钮（无关联条目时隐藏）/ 倍速描边按钮；“本专题 · 仔猪腹泻防控”+“已学 2 / 6” -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/base_page_margin"
+    android:paddingTop="14dp"
+    android:paddingEnd="@dimen/base_page_margin">
+
+    <TextView
+        android:id="@+id/ai_info_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textAppearance="@style/TextAppearance.Zmt.TitleLarge"
+        android:textColor="?attr/colorOnSurface"
+        tools:text="仔猪腹泻的日常防控" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.zhimu.slmp.base.widget.StatusTagView
+            android:id="@+id/ai_info_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:tagType="neutral" />
+
+        <TextView
+            android:id="@+id/ai_info_meta"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/ai_info_ask"
+            style="@style/Widget.Zmt.Button.Tonal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/ai_play_ask_ai"
+            app:icon="@drawable/ic_auto_awesome" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/ai_info_knowledge"
+            style="@style/Widget.Zmt.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/ai_play_knowledge"
+            app:icon="@drawable/ic_menu_book" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/ai_info_speed"
+            style="@style/Widget.Zmt.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            app:icon="@drawable/ic_speed"
+            tools:text="1.0x" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ai_info_topic_row"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/ai_info_topic"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackground"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Zmt.TitleSmall"
+            android:textColor="?attr/colorPrimary" />
+
+        <TextView
+            android:id="@+id/ai_info_learned"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- K03 AI 引用块：左侧 2dp tertiary 竖线 + surface-container-low 底，右侧圆角 8dp -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/colorSurfaceContainerLow" />
+            <corners android:topRightRadius="8dp" android:bottomRightRadius="8dp" />
+        </shape>
+    </item>
+    <item android:gravity="start|fill_vertical" android:width="2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/colorTertiary" />
+        </shape>
+    </item>
+</layer-list>

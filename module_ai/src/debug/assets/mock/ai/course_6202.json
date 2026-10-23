@@ -1,0 +1,42 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 6202,
+    "title": "饲料过渡与换料技巧",
+    "category_name": "饲养管理",
+    "duration_sec": 265,
+    "source_label": "平台知识库",
+    "updated_at": "2026-10-12 10:00:00",
+    "cover_url": "file:///android_asset/mock/media/death_photo.jpg",
+    "share_url": "https://web.zhimutong.example.com/course/6202",
+    "sources": [
+      {
+        "quality": "P720",
+        "hls_url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+        "size_bytes": 29360128
+      },
+      {
+        "quality": "P480",
+        "hls_url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+        "size_bytes": 15728640
+      }
+    ],
+    "knowledge_id": null,
+    "section_no": 2,
+    "next_course_id": 6203,
+    "topic": {
+      "id": 7002,
+      "name": "育肥猪精细化饲喂",
+      "learned_count": 0,
+      "course_count": 4
+    },
+    "progress": {
+      "position_sec": 0,
+      "completed": false,
+      "resume_position_sec": 0
+    },
+    "related_courses": null
+  },
+  "trace_id": "mock-ai-0057"
+}

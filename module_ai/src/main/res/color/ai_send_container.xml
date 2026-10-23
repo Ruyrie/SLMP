@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 发送 / 停止按钮底色：primary；禁用为 on-surface 12% -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:alpha="0.12" android:color="?attr/colorOnSurface" android:state_enabled="false" />
+    <item android:color="?attr/colorPrimary" />
+</selector>

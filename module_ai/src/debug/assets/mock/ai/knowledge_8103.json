@@ -1,0 +1,47 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 8103,
+    "title": "禁用兽药与禁用物质清单",
+    "category_name": "用药规范",
+    "source_type": "PLATFORM",
+    "source_type_text": "平台知识库",
+    "version_no": 5,
+    "updated_at": "2026-09-30 10:00:00",
+    "share_url": "https://web.zhimutong.example.com/knowledge/8103",
+    "embedded_video": null,
+    "blocks": [
+      {
+        "para_key": "p1",
+        "para_type": "TEXT",
+        "text": "克伦特罗、莱克多巴胺、沙丁胺醇等 β-受体激动剂是食品动物禁用物质，任何阶段都不能添加到饲料或饮水中。",
+        "content_html": null,
+        "image_url": null
+      },
+      {
+        "para_key": "p2",
+        "para_type": "TEXT",
+        "text": "发现销售或使用禁用物质，应立即停止并向当地农业农村部门报告。",
+        "content_html": null,
+        "image_url": null
+      }
+    ],
+    "related_items": [
+      {
+        "id": 8101,
+        "title": "休药期计算与出栏",
+        "category_name": "用药规范",
+        "source_type": "PLATFORM",
+        "source_type_text": null,
+        "version_no": 3,
+        "icon_type": "ARTICLE"
+      }
+    ],
+    "highlight_para_key": "p1",
+    "cited_version_no": 5,
+    "updated_after_answer": false,
+    "citing_answer": null
+  },
+  "trace_id": "mock-ai-0032"
+}

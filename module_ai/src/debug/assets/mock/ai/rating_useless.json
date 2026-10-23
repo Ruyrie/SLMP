@@ -1,0 +1,9 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "rating": "USELESS",
+    "rated_at": "2026-10-19 09:41:00"
+  },
+  "trace_id": "mock-ai-0025"
+}
