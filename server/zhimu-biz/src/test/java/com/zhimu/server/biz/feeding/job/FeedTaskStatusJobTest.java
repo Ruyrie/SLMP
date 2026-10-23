@@ -50,7 +50,8 @@ class FeedTaskStatusJobTest {
     @Test
     void overdueTaskBecomesMissedAndTodoIsIgnored() {
         when(taskMapper.selectList(any())).thenReturn(List.of(
-                task(70101L, "PENDING"), task(70107L, "DONE"), task(70102L, "MISSED")));
+                task(70101L, "PENDING"), task(70107L, "DONE"), task(70102L, "MISSED"),
+                task(70103L, "IGNORED"), task(70104L, "CANCELLED")));
 
         int count = job.markMissed(NOW);
 
@@ -62,7 +63,7 @@ class FeedTaskStatusJobTest {
         assertThat(wrapper.getSqlSet()).contains("status=", "close_reason=");
         assertThat(wrapper.getParamNameValuePairs().values())
                 .contains(70101L, "MISSED", "超过补登期限")
-                .doesNotContain(70107L, 70102L);
+                .doesNotContain(70107L, 70102L, 70103L, 70104L);
         verify(todoWriter).ignoreFromSource(1001L, "FEEDING", "FEED_TASK:70101", "超过补登期限");
     }
 

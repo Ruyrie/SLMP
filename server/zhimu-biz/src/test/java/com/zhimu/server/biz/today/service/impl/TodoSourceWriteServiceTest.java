@@ -165,6 +165,34 @@ class TodoSourceWriteServiceTest {
         assertThat(ignored.getStatus()).isEqualTo("IGNORED");
     }
 
+    @Test
+    void reopenFromSourceRestoresOnlyTodoCompletedByThatRecord() {
+        Todo done = existingTodo(95001L, "DONE", "REGISTER");
+        done.setCompleteRecordId(7106L);
+        when(todoMapper.selectByDedupIncludingDeleted(1001L, "FEEDING", "FEED_TASK:70107")).thenReturn(done);
+        when(todoMapper.update(any(Todo.class), any())).thenReturn(1);
+
+        boolean reopened = service.reopenFromSource(1001L, "FEEDING", "FEED_TASK:70107", 7106L);
+
+        assertThat(reopened).isTrue();
+        ArgumentCaptor<LambdaUpdateWrapper<Todo>> captor = wrapperCaptor();
+        verify(todoMapper).update(any(Todo.class), captor.capture());
+        assertThat(captor.getValue().getSqlSet()).contains("status=");
+        assertThat(captor.getValue().getParamNameValuePairs().values()).contains("PENDING");
+    }
+
+    @Test
+    void reopenFromSourceSkipsTodoCompletedByAnotherRecord() {
+        Todo done = existingTodo(95001L, "DONE", "REGISTER");
+        done.setCompleteRecordId(9999L);
+        when(todoMapper.selectByDedupIncludingDeleted(1001L, "FEEDING", "FEED_TASK:70107")).thenReturn(done);
+
+        boolean reopened = service.reopenFromSource(1001L, "FEEDING", "FEED_TASK:70107", 7106L);
+
+        assertThat(reopened).isFalse();
+        verify(todoMapper, never()).update(any(Todo.class), any());
+    }
+
     private static ArgumentCaptor<LambdaUpdateWrapper<Todo>> wrapperCaptor() {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<LambdaUpdateWrapper<Todo>> captor = ArgumentCaptor.forClass(LambdaUpdateWrapper.class);

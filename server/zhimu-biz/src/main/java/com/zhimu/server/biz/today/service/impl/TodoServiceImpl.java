@@ -61,6 +61,9 @@ import java.util.Set;
  * <p>
  * 范围：所有者/场长看全场；员工只看负责栏舍的作业类待办。全部养殖场视角显式关闭多租户插件后按场过滤。
  * 显示状态 OVERDUE 与逾期天数实时计算；完成/忽略带 version 乐观锁，员工调用返回 40303。
+ * <p>
+ * 同时实现 {@link TodoSourceWriteService}：来源模块（如模块06 饲喂）按去重键幂等写入待办，
+ * 登记记录后自动完成、超过补登期限自动忽略、记录作废时恢复。
  */
 @Service
 @RequiredArgsConstructor

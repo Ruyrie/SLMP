@@ -142,7 +142,7 @@ public class FeedRecordService {
             recordMapper.updateById(record);
         }
         completeTask(task, record.getId());
-        completeTodo(task, record);
+        completeTodo(task, record, userId);
         FeedRecordVO.Detail detail = detail(record.getId());
         detail.setTodoCompleted(true);
         return detail;
@@ -413,9 +413,9 @@ public class FeedRecordService {
     }
 
     /** 登记投喂后自动完成对应待办（幂等；待办不存在或已非 PENDING 时无操作） */
-    private void completeTodo(FeedTask task, FeedRecord record) {
+    private void completeTodo(FeedTask task, FeedRecord record, Long operatorId) {
         todoWriter.completeFromSource(record.getFarmId(), FeedTodoSource.TODO_TYPE,
-                FeedTodoSource.dedupKey(task.getId()), "FEED_RECORD", record.getId(), record.getExecutorId());
+                FeedTodoSource.dedupKey(task.getId()), "FEED_RECORD", record.getId(), operatorId);
     }
 
     private void completeTask(FeedTask task, Long recordId) {
