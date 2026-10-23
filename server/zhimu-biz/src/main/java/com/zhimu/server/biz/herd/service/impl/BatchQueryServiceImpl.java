@@ -90,6 +90,8 @@ public class BatchQueryServiceImpl implements BatchQueryService {
 
     private static BatchInfo toInfo(Batch batch, List<Long> penIds) {
         return new BatchInfo(batch.getFarmId(), batch.getId(), batch.getBatchNo(), batch.getBreedId(),
-                batch.getCategoryId(), batch.getEntryDate(), batch.getCurrentCount(), batch.getStatus(), penIds);
+                batch.getCategoryId(), batch.getEntryDate(), batch.getCurrentCount(), batch.getStatus(), penIds,
+                batch.getEntryAgeDays(), batch.getEntryCount(), batch.getDeathCount(), batch.getSoldCount(),
+                batch.getEntryPenId());
     }
 }

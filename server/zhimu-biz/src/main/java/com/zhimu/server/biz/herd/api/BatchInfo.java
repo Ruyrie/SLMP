@@ -15,9 +15,16 @@ import java.util.List;
  * @param currentCount 当前在栏数（= 各栏舍 t_batch_pen.stock_count 之和）
  * @param status       BATCH_STATUS：ACTIVE 在养 / ENDED 已结束
  * @param penIds       当前有在栏数的栏舍 ID（按栏舍 ID 升序）
+ * @param entryAgeDays 入栏日龄，例如 78
+ * @param entryCount   入栏数量，例如 205
+ * @param deathCount   有效死淘累计
+ * @param soldCount    有效出栏累计
+ * @param entryPenId   入栏栏舍 ID
  */
 public record BatchInfo(Long farmId, Long batchId, String batchNo, Long breedId, Long categoryId,
-                        LocalDate entryDate, Integer currentCount, String status, List<Long> penIds) {
+                        LocalDate entryDate, Integer currentCount, String status, List<Long> penIds,
+                        Integer entryAgeDays, Integer entryCount, Integer deathCount, Integer soldCount,
+                        Long entryPenId) {
 
     public boolean active() {
         return "ACTIVE".equals(status);
