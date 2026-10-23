@@ -54,7 +54,7 @@ public interface HealthReferenceMapper {
     @Select("SELECT name FROM t_user WHERE id = #{userId}")
     String selectUserName(@Param("userId") Long userId);
 
-    @Select("SELECT name FROM t_pen WHERE id = #{penId}")
+    @Select("SELECT pen_name FROM t_pen WHERE id = #{penId}")
     String selectPenName(@Param("penId") Long penId);
 
     /** 品种当前已发布模板与版本；没有模板返回 null */
