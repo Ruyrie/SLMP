@@ -1,0 +1,13 @@
+# 生产环境：关闭接口文档，短信真实发送
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+zhimu:
+  integration:
+    sms:
+      mode: aliyun
+    push:
+      apns-production: true

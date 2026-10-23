@@ -1,0 +1,21 @@
+# 构建产物
+target/
+*.class
+*.log
+logs/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# 本机中间件与工具（免安装包、数据目录），不进 git
+tools/*
+!tools/README.md
+!tools/*.ps1
+
+# 本机密钥与环境变量，不进 git
+.env
+.env.*
+!.env.example
+application-local.yml

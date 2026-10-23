@@ -1,0 +1,9 @@
+# 联调服务器：App 调试版与 Web 测试站连接这里
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/sample
+
+zhimu:
+  integration:
+    sms:
+      mode: ${SMS_MODE:aliyun}

@@ -1,0 +1,172 @@
+# 智牧通服务端公共配置。密钥、数据库密码、外部服务 Key 只来自环境变量（本机开发放在 server/.env.local，不进 git）。
+spring:
+  application:
+    name: zhimu-server
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  config:
+    # 本机开发：从 server/.env.local 读取 KEY=VALUE 形式的环境变量（IDEA 工作目录为 server 或 server/zhimu-app 时都能找到）
+    import:
+      - optional:file:./.env.local[.properties]
+      - optional:file:../.env.local[.properties]
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/zhimu?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 20
+      connection-timeout: 3000
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: 3s
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: true
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  forward-headers-strategy: native
+  tomcat:
+    uri-encoding: UTF-8
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    default-statement-timeout: 30
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  default-produces-media-type: application/json
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+zhimu:
+  security:
+    # 用户端访问令牌（JWT HS256）
+    jwt-user-secret: ${JWT_USER_SECRET:}
+    access-token-ttl: 2h
+    refresh-token-ttl: 30d
+    refresh-grace: 30s
+    # Web 用户端刷新令牌 Cookie（HttpOnly、Secure、SameSite=Strict、Path=/api/v1/auth）
+    web-refresh-cookie-name: ZMT_REFRESH
+    # 管理端会话令牌 Cookie（HttpOnly、Secure、SameSite=Strict、Path=/admin/v1）
+    admin-session-cookie-name: ZMT_ADMIN_SESSION
+    admin-session-ttl: 30m
+    jwt-admin-secret: ${JWT_ADMIN_SECRET:}
+    cookie-secure: true
+    # 凭 Cookie 认证的请求校验 Origin（Web 用户端与管理端站点）
+    allowed-origins: ${ALLOWED_ORIGINS:}
+  app-version:
+    # App 低于该版本时响应头返回 X-Min-App-Version 与 X-App-Download-Url
+    min-version: ${APP_MIN_VERSION:1.0.0}
+    download-url: ${APP_DOWNLOAD_URL:}
+  clock:
+    # 演示用：把“今天”固定到某个日期（时间照常走），为空用真实日期。例如 2026-10-19
+    fixed-date: ${ZMT_FIXED_DATE:}
+  integration:
+    ai:
+      enabled: true
+      max-concurrency: 20
+      # 主模型：阿里云百炼（OpenAI 兼容接口），qwen3.8-max 为可识图的旗舰模型
+      primary:
+        name: dashscope
+        base-url: ${DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+        api-key: ${DASHSCOPE_API_KEY:}
+        chat-model: ${DASHSCOPE_CHAT_MODEL:qwen3.8-max}
+        vision-model: ${DASHSCOPE_VISION_MODEL:qwen3.8-max}
+        asr-model: ${DASHSCOPE_ASR_MODEL:qwen3-asr-flash}
+      # 备用模型：DeepSeek，deepseek-flash（V4.1）支持图片输入；主模型未输出正文前失败时切换
+      fallback:
+        name: deepseek
+        base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+        api-key: ${DEEPSEEK_API_KEY:}
+        chat-model: ${DEEPSEEK_CHAT_MODEL:deepseek-flash}
+        vision-model: ${DEEPSEEK_VISION_MODEL:deepseek-flash}
+      diagnosis-timeout: 60s
+      chat-timeout: 120s
+      asr-timeout: 15s
+      advice-timeout: 60s
+    sms:
+      # mock：不发送，验证码固定为 mock-code 并写日志；aliyun：阿里云号码认证 Dypnsapi（阿里云生成并校验验证码）
+      mode: ${SMS_MODE:mock}
+      mock-code: "123456"
+      endpoint: dypnsapi.aliyuncs.com
+      access-key-id: ${SMS_ACCESS_KEY:}
+      access-key-secret: ${SMS_SECRET:}
+      sign-name: ${SMS_SIGN_NAME:}
+      code-length: 6
+      valid-seconds: 300
+      interval-seconds: 60
+      templates:
+        LOGIN_REGISTER: "100001"
+        CHANGE_BOUND_PHONE: "100002"
+        RESET_PASSWORD: "100003"
+        BIND_NEW_PHONE: "100004"
+        VERIFY_BOUND_PHONE: "100005"
+    push:
+      # 未配置 Master Secret 时只写日志，不真实推送
+      app-key: ${JPUSH_APP_KEY:}
+      master-secret: ${JPUSH_MASTER_SECRET:}
+      base-url: https://api.jpush.cn
+      apns-production: false
+      # App 点击厂商通道通知时打开的 Activity action
+      intent-action: com.zhimu.slmp.action.PUSH_OPEN
+    amap:
+      web-key: ${AMAP_WEB_KEY:}
+      base-url: https://restapi.amap.com
+    minio:
+      endpoint: ${MINIO_ENDPOINT:http://127.0.0.1:9000}
+      # 生成临时下载地址用的公网入口（生产为 files.{域名}；本机真机调试改为电脑局域网 IP）
+      public-endpoint: ${MINIO_PUBLIC_ENDPOINT:http://127.0.0.1:9000}
+      access-key: ${MINIO_ACCESS_KEY:minioadmin}
+      secret-key: ${MINIO_SECRET_KEY:minioadmin123}
+      private-bucket: zmt-private
+      course-bucket: zmt-course
+      presign-ttl: 2h
+      export-presign-ttl: 10m
+      multipart-part-size: 10MB
+    hls:
+      # 课程 HLS 地址前缀：{base-url}/{文件编号}/720p/index.m3u8（生产经 Nginx /hls 代理 zmt-course 的 hls/ 前缀）
+      base-url: ${HLS_BASE_URL:http://127.0.0.1:9000/zmt-course/hls}
+    ffmpeg:
+      ffmpeg-path: ${FFMPEG_PATH:ffmpeg}
+      ffprobe-path: ${FFPROBE_PATH:ffprobe}
+      transcode-threads: 2
+    ip2region:
+      # ip2region xdb 文件路径；为空或文件不存在时属地显示为空
+      db-path: ${IP2REGION_DB:}

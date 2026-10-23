@@ -1,0 +1,14 @@
+# 本机开发：MySQL 9.5（本机服务）、Redis / MinIO 免安装版（server/tools/start-dev.ps1 启动）
+spring:
+  flyway:
+    # 开发与联调环境额外导入统一示例数据（王建国、东山猪场 1001 等）
+    locations: classpath:db/migration,classpath:db/sample
+
+zhimu:
+  security:
+    cookie-secure: false
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174}
+
+logging:
+  level:
+    com.zhimu.server: debug
