@@ -82,20 +82,33 @@ public final class MockRouter {
         String m = method.toUpperCase(Locale.ROOT);
         Map<String, String> h = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         h.putAll(headers);
-        for (MockRule rule : rules()) {
-            if (!rule.method.equals(m)) {
-                continue;
-            }
-            Map<String, String> params = matchPath(rule.segments, segments);
-            if (params == null) {
-                continue;
-            }
-            if (containsAll(params, rule.whenPath) && containsAll(query, rule.whenQuery)
-                    && containsAll(h, rule.whenHeader) && bodyMatches(body, rule.whenBody)) {
-                return new Match(rule, params);
+        // 先匹配不带 {参数} 的路径，再匹配模板路径：/records/{id} 不会盖住 /records/monthly-summary
+        for (int pass = 0; pass < 2; pass++) {
+            boolean templatePass = pass == 1;
+            for (MockRule rule : rules()) {
+                if (!rule.method.equals(m) || hasParams(rule.segments) != templatePass) {
+                    continue;
+                }
+                Map<String, String> params = matchPath(rule.segments, segments);
+                if (params == null) {
+                    continue;
+                }
+                if (containsAll(params, rule.whenPath) && containsAll(query, rule.whenQuery)
+                        && containsAll(h, rule.whenHeader) && bodyMatches(body, rule.whenBody)) {
+                    return new Match(rule, params);
+                }
             }
         }
         return null;
+    }
+
+    static boolean hasParams(@NonNull String[] pattern) {
+        for (String p : pattern) {
+            if (p.length() > 2 && p.startsWith("{") && p.endsWith("}")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Nullable

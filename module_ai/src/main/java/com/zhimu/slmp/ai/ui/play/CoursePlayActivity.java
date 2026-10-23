@@ -167,8 +167,8 @@ public class CoursePlayActivity extends BaseActivity {
     }
 
     private void setupInfo() {
-        info = AiViewPlayInfoBinding.inflate(LayoutInflater.from(this), binding.aiPlayList, false);
         binding.aiPlayList.setLayoutManager(new LinearLayoutManager(this));
+        info = AiViewPlayInfoBinding.inflate(LayoutInflater.from(this), binding.aiPlayList, false);
         infoAdapter = new SingleViewAdapter(info.getRoot());
         courseAdapter = new TopicCourseAdapter(vm::switchCourse);
         binding.aiPlayList.setAdapter(new ConcatAdapter(infoAdapter, courseAdapter));

@@ -90,7 +90,7 @@ public interface HerdApi {
 |---|---|
 | 位置 | `src/debug/assets/mock/<组件名>/routes.json` 与响应文件（完整 ApiResponse JSON） |
 | 规则 | JSON 数组，每项 `method`、`path`（`/api/v1/farms/{farmId}`）、可选 `when.path` / `when.query` / `when.header` / `when.body`（字符串或数组，均需包含）、`file`、`delay`（默认 300） |
-| 顺序 | 目录名字母顺序（account、common、farm、herd、today），文件内从上到下，命中第一条；带条件的规则放在默认规则前 |
+| 顺序 | 先比不带 {参数} 的路径，再比模板路径；同一类中按目录名字母顺序（account、ai、breed、common、farm、feed、finance、health、herd、inspect、media、stock、today、zz_fallback）、文件内从上到下，命中第一条；带条件的规则放在默认规则前 |
 | 状态码 | 取 code 前三位（0 为 200）；未配置返回 50001“Mock 未配置：方法 路径”，Logcat 标签 ZmtMock |
 | 已有 | common 目录：A04 两个账号、A08、F02（1001 所有者 / 员工）、U09、U10（PEN_TYPE、DEATH_REASON） |
 

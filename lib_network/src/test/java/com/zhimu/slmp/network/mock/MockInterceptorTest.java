@@ -116,6 +116,23 @@ public class MockInterceptorTest {
     }
 
     @Test
+    public void literalPathBeforeTemplate() throws IOException {
+        // common 排在 farm 之前，但 /records/{id} 不应盖住 farm 的 /records/summary
+        source.files.put("common/routes.json", "["
+                + "{\"method\":\"GET\",\"path\":\"/api/v1/records/{id}\",\"file\":\"rec_detail.json\",\"delay\":0}]");
+        source.files.put("farm/routes.json", "["
+                + "{\"method\":\"GET\",\"path\":\"/api/v1/records/summary\",\"file\":\"rec_summary.json\",\"delay\":0}]");
+        source.files.put("common/rec_detail.json", ok("{\"kind\":\"DETAIL\"}"));
+        source.files.put("farm/rec_summary.json", ok("{\"kind\":\"SUMMARY\"}"));
+        try (Response r = get("/api/v1/records/summary")) {
+            assertTrue(r.body().string().contains("SUMMARY"));
+        }
+        try (Response r = get("/api/v1/records/12")) {
+            assertTrue(r.body().string().contains("DETAIL"));
+        }
+    }
+
+    @Test
     public void headerAndPathConditions() throws IOException {
         try (Response r = get("/api/v1/farms/1001/context", "Authorization", "Bearer mock-staff")) {
             assertTrue(r.body().string().contains("STAFF"));
