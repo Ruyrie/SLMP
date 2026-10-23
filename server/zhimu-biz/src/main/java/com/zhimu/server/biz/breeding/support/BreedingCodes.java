@@ -190,8 +190,11 @@ public final class BreedingCodes {
         return date == null ? null : date.format(MONTH_DAY);
     }
 
-    /** 畜种 → 母猪 / 母牛 / 母羊 */
+    /** 畜种 → 母猪 / 母牛 / 母羊；禽类显示“种禽” */
     public static String animalLabel(String species) {
+        if ("POULTRY".equals(species)) {
+            return "种禽";
+        }
         if ("CATTLE".equals(species)) {
             return "母牛";
         }

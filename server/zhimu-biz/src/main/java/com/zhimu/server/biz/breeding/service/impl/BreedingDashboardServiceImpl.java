@@ -428,7 +428,7 @@ public class BreedingDashboardServiceImpl implements BreedingDashboardService {
             default -> {
                 Incubation record = incubationMapper.selectOne(Wrappers.<Incubation>lambdaQuery()
                         .eq(Incubation::getHatchRequestId, clientRequestId)
-                        .eq(Incubation::getCreatedBy, userId).last("LIMIT 1"));
+                        .eq(Incubation::getHatchBy, userId).last("LIMIT 1"));
                 if (record != null) {
                     fill(vo, record.getId(), incubationResult(record));
                 }

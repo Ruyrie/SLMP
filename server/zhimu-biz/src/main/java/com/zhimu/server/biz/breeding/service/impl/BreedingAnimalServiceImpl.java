@@ -662,12 +662,13 @@ public class BreedingAnimalServiceImpl implements BreedingAnimalService {
 
     private void log(BizType bizType, Long bizId, Object before, Object after, String reason) {
         FarmContext.FarmMember viewer = FarmContext.get();
+        String opAction = bizType == BizType.BREEDING_EXIT ? "EXIT" : before == null ? "CREATE" : "UPDATE";
         operationLogRecorder.record(OperationLogEntry.builder()
                 .operatorType("USER")
                 .operatorId(UserContext.requireUserId())
                 .operatorRole(viewer == null ? null : viewer.role().name())
                 .opType("RECORD_EDIT")
-                .opAction("EXIT".equals(bizType.name()) ? "EXIT" : before == null ? "CREATE" : "UPDATE")
+                .opAction(opAction)
                 .bizType(bizType.name())
                 .bizId(bizId)
                 .farmId(support.farmId())
