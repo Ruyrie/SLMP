@@ -142,9 +142,15 @@ public class BatchServiceImpl implements BatchService {
         int to = Math.min(from + size, items.size());
         PageVO<BatchListItemVO> result = PageVO.of(new ArrayList<>(items.subList(from, to)), items.size(), page, size);
         Map<String, Integer> tabs = new LinkedHashMap<>();
-        tabs.put("ACTIVE", (int) support.countBatches(farmId, "ACTIVE"));
-        tabs.put("ENDED", (int) support.countBatches(farmId, "ENDED"));
-        tabs.put("ALL", (int) support.countBatches(farmId, "ALL"));
+        if (member.isStaff()) {
+            tabs.put("ACTIVE", visibleBatchCount(farmId, "ACTIVE", member));
+            tabs.put("ENDED", visibleBatchCount(farmId, "ENDED", member));
+            tabs.put("ALL", visibleBatchCount(farmId, "ALL", member));
+        } else {
+            tabs.put("ACTIVE", (int) support.countBatches(farmId, "ACTIVE"));
+            tabs.put("ENDED", (int) support.countBatches(farmId, "ENDED"));
+            tabs.put("ALL", (int) support.countBatches(farmId, "ALL"));
+        }
         result.setTabCounts(tabs);
         return result;
     }
@@ -1480,6 +1486,12 @@ public class BatchServiceImpl implements BatchService {
         actions.setCanEditEntry(manager && active && !hasFollowUp);
         actions.setCanDelete(manager && active && !hasFollowUp && batch.getSourceRecordType() == null);
         return actions;
+    }
+
+    private int visibleBatchCount(Long farmId, String status, FarmContext.FarmMember member) {
+        return (int) support.batches(farmId, status).stream()
+                .filter(batch -> support.visibleToStaff(batch, member))
+                .count();
     }
 
     private boolean matches(Batch batch, List<BatchPen> rows, Map<Long, Pen> penMap,
