@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.biz.farm.mapper.FarmMapper">
+
+    <!-- F01：本人在场、未删除的养殖场；调用方在 TenantSkip 内执行，避免 X-Farm-Id 影响跨养殖场列表 -->
+    <select id="selectRowsOfUser" resultType="com.zhimu.server.biz.farm.query.FarmListRow">
+        SELECT f.id             AS farm_id,
+               f.name           AS name,
+               f.owner_user_id  AS owner_user_id,
+               f.main_category_id AS main_category_id,
+               f.scale          AS scale,
+               f.contact_name   AS contact_name,
+               f.contact_phone  AS contact_phone,
+               f.intro          AS intro,
+               f.address        AS address,
+               f.province       AS province,
+               f.city           AS city,
+               f.district       AS district,
+               f.township       AS township,
+               f.adcode         AS adcode,
+               f.longitude      AS longitude,
+               f.latitude       AS latitude,
+               f.audit_status   AS audit_status,
+               f.approved_at    AS approved_at,
+               f.disabled       AS disabled,
+               f.disabled_at    AS disabled_at,
+               f.frozen         AS frozen,
+               f.frozen_at      AS frozen_at,
+               f.version        AS version,
+               f.created_at     AS created_at,
+               m.id             AS member_id,
+               m.user_id        AS user_id,
+               m.role           AS role,
+               m.join_type      AS join_type,
+               m.last_switch_at AS last_switch_at
+        FROM t_farm_member m
+                 JOIN t_farm f ON f.id = m.farm_id
+        WHERE m.user_id = #{userId}
+          AND m.active_flag = 1
+          AND m.status = 'ACTIVE'
+          AND f.deleted = 0
+        ORDER BY f.id
+    </select>
+</mapper>
