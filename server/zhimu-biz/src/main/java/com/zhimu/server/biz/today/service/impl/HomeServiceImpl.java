@@ -333,9 +333,11 @@ public class HomeServiceImpl implements HomeService {
     private int unreadCount(Long userId) {
         Long count = messageMapper.selectCount(Wrappers.<Message>lambdaQuery()
                 .eq(Message::getUserId, userId)
-                .eq(Message::getHidden, false)
                 .isNull(Message::getReadAt)
-                .ge(Message::getSortTime, BeijingTime.now().minusDays(180)));
+                .ge(Message::getSortTime, BeijingTime.now().minusDays(180))
+                // 撤回的平台通知仍保留在消息中心，与 API-T12/T13 的未读口径一致
+                .and(q -> q.eq(Message::getHidden, false)
+                        .or().eq(Message::getHiddenReason, "NOTICE_REVOKED")));
         return count == null ? 0 : count.intValue();
     }
 
