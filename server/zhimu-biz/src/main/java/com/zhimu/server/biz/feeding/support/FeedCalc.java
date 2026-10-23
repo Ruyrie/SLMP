@@ -152,13 +152,30 @@ public final class FeedCalc {
         return slots;
     }
 
+    /**
+     * 解析投喂时间：同时接受 HH:mm:ss（库里 TIME 列）与 App 提交的 HH:mm / H:mm（2.5.4 节）。
+     * 秒与小数秒一律截掉，避免“09:00:00”“9:00”被判为非法。
+     */
     public static LocalTime parseTime(String value) {
         if (value == null || value.isBlank()) {
             return null;
         }
         String text = value.trim();
+        int colon = text.indexOf(':');
+        if (colon <= 0) {
+            return null;
+        }
+        int minuteEnd = text.indexOf(':', colon + 1);
+        String hourMinute = minuteEnd < 0 ? text : text.substring(0, minuteEnd);
+        hourMinute = hourMinute.trim();
+        int split = hourMinute.indexOf(':');
         try {
-            return LocalTime.parse(text.length() == 5 ? text : text.substring(0, 5));
+            int hour = Integer.parseInt(hourMinute.substring(0, split).trim());
+            int minute = Integer.parseInt(hourMinute.substring(split + 1).trim());
+            if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+                return null;
+            }
+            return LocalTime.of(hour, minute);
         } catch (RuntimeException e) {
             return null;
         }
@@ -183,7 +200,8 @@ public final class FeedCalc {
             case TASK_DONE -> "已投喂";
             case TASK_MANUAL_DONE -> "手动完成";
             case TASK_IGNORED -> "已忽略";
-            case TASK_MISSED -> "未执行";
+            // 补登期结束仍未登记：App Mock（day_1016、attention_3001）显示“已逾期”
+            case TASK_MISSED -> "已逾期";
             case TASK_CANCELLED -> "已取消";
             default -> "";
         };

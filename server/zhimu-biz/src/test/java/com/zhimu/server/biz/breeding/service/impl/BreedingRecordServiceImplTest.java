@@ -154,6 +154,53 @@ class BreedingRecordServiceImplTest {
     }
 
     @Test
+    void createCheckNegativeMarksCycleFailedAndOmitsDueDate() {
+        BreedingAnimal animal = animal(4155L, "0155", BreedingCodes.STATUS_MATED, 5155L);
+        when(support.requireAnimal(4155L)).thenReturn(animal);
+        when(support.requireCycle(5155L)).thenReturn(cycle(5155L, 4155L, "MATED",
+                LocalDate.of(2026, 9, 24), LocalDate.of(2027, 1, 16)));
+        doAnswer(inv -> {
+            ((com.zhimu.server.biz.breeding.entity.PregnancyCheck) inv.getArgument(0)).setId(71099L);
+            return 1;
+        }).when(checkMapper).insert(any(com.zhimu.server.biz.breeding.entity.PregnancyCheck.class));
+        when(cycleMapper.updateById(any(BreedingCycle.class))).thenReturn(1);
+        when(animalMapper.updateById(any(BreedingAnimal.class))).thenReturn(1);
+
+        RegisterResultVO result = service.createCheck(checkRequest(4155L, 5155L, "NEGATIVE"), "check-neg");
+
+        // App mock check_0155_negative：animal_status EMPTY、expected_due_date 为 null
+        assertThat(result.getRecordType()).isEqualTo("PREG_CHECK");
+        assertThat(result.getRecordId()).isEqualTo(71099L);
+        assertThat(result.getCycleId()).isEqualTo(5155L);
+        assertThat(result.getAnimalStatus()).isEqualTo("EMPTY");
+        assertThat(result.getExpectedDueDate()).isNull();
+        assertThat(animal.getStatus()).isEqualTo("EMPTY");
+        assertThat(animal.getCurrentCycleId()).isNull();
+        assertThat(animal.getLastCycleEndDate()).isEqualTo(LocalDate.of(2026, 10, 19));
+    }
+
+    @Test
+    void createCheckPositiveKeepsExpectedDueDate() {
+        BreedingAnimal animal = animal(4155L, "0155", BreedingCodes.STATUS_MATED, 5155L);
+        when(support.requireAnimal(4155L)).thenReturn(animal);
+        when(support.requireCycle(5155L)).thenReturn(cycle(5155L, 4155L, "MATED",
+                LocalDate.of(2026, 9, 24), LocalDate.of(2027, 1, 16)));
+        doAnswer(inv -> {
+            ((com.zhimu.server.biz.breeding.entity.PregnancyCheck) inv.getArgument(0)).setId(71098L);
+            return 1;
+        }).when(checkMapper).insert(any(com.zhimu.server.biz.breeding.entity.PregnancyCheck.class));
+        when(cycleMapper.updateById(any(BreedingCycle.class))).thenReturn(1);
+        when(animalMapper.updateById(any(BreedingAnimal.class))).thenReturn(1);
+
+        RegisterResultVO result = service.createCheck(checkRequest(4155L, 5155L, "POSITIVE"), "check-pos");
+
+        assertThat(result.getAnimalStatus()).isEqualTo("PREGNANT");
+        assertThat(result.getExpectedDueDate()).isEqualTo("2027-01-16");
+        assertThat(animal.getStatus()).isEqualTo("PREGNANT");
+        assertThat(animal.getCurrentCycleId()).isEqualTo(5155L);
+    }
+
+    @Test
     void createFarrowingRejectsDuplicateForSameCycle() {
         BreedingAnimal animal = animal(4131L, "0131", BreedingCodes.STATUS_PREGNANT, 5131L);
         when(support.requireAnimal(4131L)).thenReturn(animal);
@@ -261,6 +308,17 @@ class BreedingRecordServiceImplTest {
         request.setAnimalVersion(3);
         request.setMatingDate("2026-10-19");
         request.setMatingMethod("ARTIFICIAL");
+        return request;
+    }
+
+    private static com.zhimu.server.biz.breeding.request.PregnancyCheckRequest checkRequest(
+            Long animalId, Long cycleId, String result) {
+        var request = new com.zhimu.server.biz.breeding.request.PregnancyCheckRequest();
+        request.setAnimalId(animalId);
+        request.setCycleId(cycleId);
+        request.setAnimalVersion(4);
+        request.setCheckDate("2026-10-19");
+        request.setResult(result);
         return request;
     }
 

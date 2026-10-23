@@ -63,6 +63,7 @@ class FeedTaskServiceTest {
 
     @BeforeEach
     void setUp() {
+        com.zhimu.server.biz.feeding.FeedingTableInfo.ensure();
         service = new FeedTaskService(taskMapper, planMapper, stageMapper, mealMapper, recordMapper, lookup);
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-19T01:30:00Z"), ZONE));
         FarmContext.set(new FarmContext.FarmMember(1001L, "东山猪场", 10001L, 5001L, FarmRole.OWNER,
@@ -136,8 +137,10 @@ class FeedTaskServiceTest {
         task.setMealName(mealName);
         task.setFeedTime(LocalTime.parse(time));
         task.setTaskDate(LocalDate.of(2026, 10, 19));
-        task.setFeedAt(LocalDateTime.of(2026, 10, 19, 7, 0));
-        task.setDeadlineAt(LocalDateTime.of(2026, 10, 19, 9, 0));
+        // 与任务生成一致：feed_at = 当天该餐时间，deadline_at = feed_at + 2 小时
+        LocalDateTime feedAt = task.getFeedTime().atDate(LocalDate.of(2026, 10, 19));
+        task.setFeedAt(feedAt);
+        task.setDeadlineAt(feedAt.plusHours(2));
         task.setBackfillEndAt(LocalDateTime.of(2026, 10, 21, 0, 0));
         task.setPlanQty(new BigDecimal(planQty).setScale(2));
         task.setHeadCount(200);
