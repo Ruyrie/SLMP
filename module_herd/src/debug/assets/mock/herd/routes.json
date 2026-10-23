@@ -1,6 +1,17 @@
 [
   {
     "method": "GET",
+    "path": "/api/v1/record-logs",
+    "when": {
+      "query": {
+        "biz_type": "PEN",
+        "biz_id": "2003"
+      }
+    },
+    "file": "record_logs_pen_2003.json"
+  },
+  {
+    "method": "GET",
     "path": "/api/v1/change-requests/form",
     "when": {
       "query": {
