@@ -2,6 +2,7 @@
 spring:
   flyway:
     locations: classpath:db/migration,classpath:db/sample
+    out-of-order: true
 
 zhimu:
   integration:

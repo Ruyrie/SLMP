@@ -3,6 +3,8 @@ spring:
   flyway:
     # 开发与联调环境额外导入统一示例数据（王建国、东山猪场 1001 等）
     locations: classpath:db/migration,classpath:db/sample
+    # 示例数据（V9_xx）先于后续批次的建表脚本（V1_xx）执行，需要允许补跑低版本号脚本
+    out-of-order: true
 
 zhimu:
   security:

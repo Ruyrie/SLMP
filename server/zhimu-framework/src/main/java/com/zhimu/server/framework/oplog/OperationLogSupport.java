@@ -38,7 +38,7 @@ public final class OperationLogSupport {
      *     <li>都没有：SYSTEM</li>
      *     <li>farm_id 未填时取 FarmContext 的当前养殖场</li>
      * </ul>
-     * client_type、ip、user_agent 不在 {@link OperationLogEntry} 中，记录器写库时用 {@link #requestInfo()} 取。
+     * client_type、ip、user_agent 未填时取 RequestContext；ip_region 由记录器按 ip 解析后填写。
      */
     public static OperationLogEntry fillContext(OperationLogEntry entry) {
         AdminContext.LoginAdmin admin = AdminContext.get();
@@ -70,6 +70,18 @@ public final class OperationLogSupport {
         }
         if (entry.getFarmId() == null && farm != null) {
             entry.setFarmId(farm.farmId());
+        }
+        RequestContext.Info request = RequestContext.get();
+        if (request != null) {
+            if (entry.getClientType() == null && request.clientType() != null) {
+                entry.setClientType(request.clientType().name());
+            }
+            if (entry.getIp() == null) {
+                entry.setIp(request.ip());
+            }
+            if (entry.getUserAgent() == null) {
+                entry.setUserAgent(request.userAgent());
+            }
         }
         return entry;
     }
@@ -110,11 +122,13 @@ public final class OperationLogSupport {
         putIfNotNull(map, "after", entry.getAfter());
         putIfNotNull(map, "change_request_id", entry.getChangeRequestId());
         RequestContext.Info request = RequestContext.get();
-        if (request != null) {
-            putIfNotNull(map, "client_type", request.clientType() == null ? null : request.clientType().name());
-            putIfNotNull(map, "ip", request.ip());
-            putIfNotNull(map, "user_agent", request.userAgent());
-        }
+        String clientType = entry.getClientType() != null ? entry.getClientType()
+                : request != null && request.clientType() != null ? request.clientType().name() : null;
+        putIfNotNull(map, "client_type", clientType);
+        putIfNotNull(map, "ip", entry.getIp() != null ? entry.getIp() : request == null ? null : request.ip());
+        putIfNotNull(map, "ip_region", entry.getIpRegion());
+        putIfNotNull(map, "user_agent", entry.getUserAgent() != null ? entry.getUserAgent()
+                : request == null ? null : request.userAgent());
         putIfNotNull(map, "trace_id", TraceContext.get());
         return map;
     }

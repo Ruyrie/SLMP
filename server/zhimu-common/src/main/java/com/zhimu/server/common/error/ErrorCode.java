@@ -18,7 +18,8 @@ public enum ErrorCode {
 
     TOKEN_EXPIRED(40101, "登录已过期，请重新登录"),
     PASSWORD_WRONG(40102, "手机号或密码不正确"),
-    SMS_CODE_WRONG(40103, "验证码不正确或已过期，请重新获取"),
+    // App 按文案含“过期”清零倒计时，默认文案不能含“过期”；过期场景由模块01 另给文案
+    SMS_CODE_WRONG(40103, "验证码不正确，请重新输入"),
     SESSION_INVALID(40104, "登录状态已失效，请重新登录"),
     RECOVERY_CODE_WRONG(40105, "恢复码不正确"),
     ADMIN_SESSION_TIMEOUT(40106, "登录已超时，请重新登录"),
@@ -40,7 +41,8 @@ public enum ErrorCode {
     DUPLICATE_SUBMIT(40901, "请求正在处理，请勿重复提交"),
     VERSION_CONFLICT(40902, "数据已被他人修改，请刷新后重试"),
     STATE_CHANGED(40903, "状态已变化，请刷新后重试"),
-    PHONE_REGISTERED(40904, "该手机号已注册，可直接登录"),
+    // App 按文案含“已经注册”显示“去登录”
+    PHONE_REGISTERED(40904, "该手机号已经注册，可直接登录"),
     NAME_DUPLICATE(40905, "名称重复"),
     PENDING_EXISTS(40906, "该对象已有待审核的申请"),
 

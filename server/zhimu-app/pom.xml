@@ -12,6 +12,10 @@
     <artifactId>zhimu-app</artifactId>
     <description>启动类、配置文件、Flyway 迁移脚本、定时任务注册</description>
 
+    <properties>
+        <spring-boot.run.skip>false</spring-boot.run.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.zhimu</groupId>
@@ -45,6 +49,22 @@
                         </exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+            <!-- *IT 集成测试（连本机 MySQL 的 zhimu_test 与 Redis database 15）在 verify 阶段执行 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <argLine>-Duser.timezone=Asia/Shanghai -Dfile.encoding=UTF-8</argLine>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

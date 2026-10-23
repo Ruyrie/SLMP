@@ -31,4 +31,10 @@ public class OperationLogEntry {
     private Object before;
     private Object after;
     private Long changeRequestId;
+    /** APP_ANDROID / WEB / ADMIN_WEB；未填时取 RequestContext */
+    private String clientType;
+    private String ip;
+    /** IP 属地（记录器按 ip 解析后填写） */
+    private String ipRegion;
+    private String userAgent;
 }
