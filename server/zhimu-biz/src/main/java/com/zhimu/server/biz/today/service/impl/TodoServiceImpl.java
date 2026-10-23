@@ -428,8 +428,7 @@ public class TodoServiceImpl implements TodoService, TodoQueryService {
                         TodoLinks.listRoute(todo.getTodoType())));
             }
         }
-        warnings.sort(Comparator.comparing(WarningTodo::todoId,
-                Comparator.nullsLast(Comparator.naturalOrder())));
+        // pendingOfFarm 已按 sort_time 升序，提醒项保持“越早越靠前”
         return new ProductionTodoSummary(todayTodoCount, warnings);
     }
 
