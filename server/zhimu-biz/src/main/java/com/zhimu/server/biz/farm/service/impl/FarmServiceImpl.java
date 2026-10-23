@@ -157,9 +157,8 @@ public class FarmServiceImpl implements FarmService {
         if (status == FarmStatus.FROZEN) {
             throw FarmErrors.frozen(farm.getName());
         }
-        if (status != FarmStatus.NORMAL && status != FarmStatus.DISABLED) {
-            throw FarmErrors.statusForbidden(farm.getName() + "还在审核中，审核通过后才能切换");
-        }
+        // F03 允许切换到待审核、已驳回的养殖场（任务书 7.2 第 1 条）：返回权限全部 false 的上下文，
+        // 带 restrict_tip，并记录 last_farm_id；App 的切换面板对这两种状态打开审核页，不调用本接口。
         LocalDateTime now = BeijingTime.now();
         TenantSkip.run(() -> memberMapper.update(new FarmMember(), Wrappers.<FarmMember>lambdaUpdate()
                 .eq(FarmMember::getFarmId, farmId)

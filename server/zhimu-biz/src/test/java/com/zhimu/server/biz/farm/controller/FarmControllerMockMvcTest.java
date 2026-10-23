@@ -305,8 +305,14 @@ class FarmControllerMockMvcTest {
         org.mockito.Mockito.when(memberCache.get(1003L, 10001L)).thenReturn(member(1003L, "北湾牛场",
                 FarmRole.OWNER, FarmStatus.PENDING, 5001L, Set.of()));
         guarded.perform(post("/api/v1/farms/1003/switch").header("Authorization", AUTH))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value(40305));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
+
+        org.mockito.Mockito.when(memberCache.get(1003L, 10001L)).thenReturn(member(1003L, "北湾牛场",
+                FarmRole.OWNER, FarmStatus.REJECTED, 5001L, Set.of()));
+        guarded.perform(post("/api/v1/farms/1003/switch").header("Authorization", AUTH))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
 
         guarded.perform(get("/api/v1/farms/1003/context").header("Authorization", AUTH))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.code").value(0));

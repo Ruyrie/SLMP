@@ -42,7 +42,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -102,14 +101,24 @@ class FarmServiceImplTest {
     }
 
     @Test
-    void switchedPendingFarmReturns40305() {
+    void switchPendingAndRejectedFarmReturnsContextAndRecordsLastFarm() {
         when(lookup.findFarmIncludingDeleted(1003L)).thenReturn(farm(1003L, "PENDING", false, false));
         when(lookup.findActiveMember(1003L, 10001L)).thenReturn(member("OWNER"));
+        FarmContextVO pendingContext = new FarmContextVO();
+        pendingContext.setFarmId(1003L);
+        when(assembler.context(any(), any())).thenReturn(pendingContext);
 
-        assertThatThrownBy(() -> service.switchFarm(1003L, 10001L))
-                .isInstanceOf(BizException.class)
-                .extracting("code").isEqualTo(40305);
-        verify(accountQuery, never()).recordLastFarm(anyLong(), anyLong());
+        assertThat(service.switchFarm(1003L, 10001L)).isSameAs(pendingContext);
+        verify(accountQuery).recordLastFarm(10001L, 1003L);
+
+        when(lookup.findFarmIncludingDeleted(1004L)).thenReturn(farm(1004L, "REJECTED", false, false));
+        when(lookup.findActiveMember(1004L, 10001L)).thenReturn(member("OWNER"));
+        FarmContextVO rejectedContext = new FarmContextVO();
+        rejectedContext.setFarmId(1004L);
+        when(assembler.context(any(), any())).thenReturn(rejectedContext);
+
+        assertThat(service.switchFarm(1004L, 10001L)).isSameAs(rejectedContext);
+        verify(accountQuery).recordLastFarm(10001L, 1004L);
     }
 
     @Test
