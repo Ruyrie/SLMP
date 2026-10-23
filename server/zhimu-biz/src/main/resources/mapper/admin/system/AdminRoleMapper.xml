@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.admin.system.mapper.AdminRoleMapper">
+
+    <select id="selectByRoleCode" resultType="com.zhimu.server.admin.system.entity.AdminRole">
+        SELECT * FROM t_admin_role WHERE role_code = #{roleCode}
+    </select>
+
+    <select id="selectByIdForUpdate" resultType="com.zhimu.server.admin.system.entity.AdminRole">
+        SELECT * FROM t_admin_role WHERE id = #{id} FOR UPDATE
+    </select>
+
+    <!-- 保存权限的并发控制：version 条件更新，影响 0 行由 Service 返回 40902 -->
+    <update id="bumpVersion">
+        UPDATE t_admin_role
+        SET version    = version + 1,
+            updated_at = NOW()
+        WHERE id = #{id}
+          AND version = #{version}
+    </update>
+</mapper>

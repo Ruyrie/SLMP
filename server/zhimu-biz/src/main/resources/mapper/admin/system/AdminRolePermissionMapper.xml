@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.admin.system.mapper.AdminRolePermissionMapper">
+
+    <select id="selectPermCodesByRoleId" resultType="string">
+        SELECT p.perm_code
+        FROM t_admin_role_permission rp
+                 JOIN t_admin_permission p ON p.id = rp.permission_id
+        WHERE rp.role_id = #{roleId}
+        ORDER BY p.sort_no, p.id
+    </select>
+
+    <select id="selectPermissionIdsByRoleId" resultType="long">
+        SELECT permission_id FROM t_admin_role_permission WHERE role_id = #{roleId} ORDER BY permission_id
+    </select>
+
+    <select id="selectRoleIdsByPermCode" resultType="long">
+        SELECT DISTINCT rp.role_id
+        FROM t_admin_role_permission rp
+                 JOIN t_admin_permission p ON p.id = rp.permission_id
+        WHERE p.perm_code = #{permCode}
+    </select>
+
+    <select id="countByRoleId" resultType="long">
+        SELECT COUNT(*) FROM t_admin_role_permission WHERE role_id = #{roleId}
+    </select>
+</mapper>

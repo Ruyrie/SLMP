@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.admin.system.mapper.AdminMessageMapper">
+
+    <select id="selectByMergeKey" resultType="com.zhimu.server.admin.system.entity.AdminMessage">
+        SELECT * FROM t_admin_message
+        WHERE admin_id = #{adminId}
+          AND merge_key = #{mergeKey}
+          AND deleted = 0
+    </select>
+
+    <update id="updateReadByIds">
+        UPDATE t_admin_message
+        SET read_at    = #{readAt},
+            updated_at = #{readAt}
+        WHERE admin_id = #{adminId}
+          AND deleted = 0
+          AND read_at IS NULL
+          AND id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="updateReadAll">
+        UPDATE t_admin_message
+        SET read_at    = #{readAt},
+            updated_at = #{readAt}
+        WHERE admin_id = #{adminId}
+          AND deleted = 0
+          AND read_at IS NULL
+    </update>
+
+    <select id="countUnread" resultType="long">
+        SELECT COUNT(*) FROM t_admin_message
+        WHERE admin_id = #{adminId} AND deleted = 0 AND read_at IS NULL
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM t_admin_message WHERE admin_id = #{adminId} AND deleted = 0
+    </select>
+</mapper>

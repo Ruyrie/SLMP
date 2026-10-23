@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.admin.system.mapper.readonly.AdminOperationLogQueryMapper">
+
+    <!-- 管理端日志可见性：本人日志始终可见；其他日志按 allowedOpTypes（由 Service 按权限点生成）。
+         只查 operator_type IN ('ADMIN','SYSTEM')，用户端修改记录不进入管理端日志列表。 -->
+    <sql id="visibleWhere">
+        operator_type IN ('ADMIN', 'SYSTEM')
+        AND (
+            operator_id = #{viewerId}
+            <if test="allVisible">
+                OR 1 = 1
+            </if>
+            <if test="allowedOpTypes != null and allowedOpTypes.size() > 0">
+                OR op_type IN
+                <foreach collection="allowedOpTypes" item="opType" open="(" separator="," close=")">
+                    #{opType}
+                </foreach>
+            </if>
+        )
+        <if test="dateFrom != null">
+            AND created_at &gt;= #{dateFrom}
+        </if>
+        <if test="dateTo != null">
+            AND created_at &lt; DATE_ADD(#{dateTo}, INTERVAL 1 DAY)
+        </if>
+        <if test="filterAdminId != null">
+            AND operator_id = #{filterAdminId}
+        </if>
+        <if test="opType != null and opType != ''">
+            AND op_type = #{opType}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (target_name LIKE CONCAT('%', #{keyword}, '%')
+                OR search_text LIKE CONCAT('%', #{keyword}, '%')
+                OR reason LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+    </sql>
+
+    <select id="selectAdminLogs" resultType="com.zhimu.server.biz.common.entity.OperationLog">
+        SELECT * FROM t_operation_log
+        WHERE <include refid="visibleWhere"/>
+        ORDER BY created_at DESC, id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countAdminLogs" resultType="long">
+        SELECT COUNT(*) FROM t_operation_log WHERE <include refid="visibleWhere"/>
+    </select>
+
+    <select id="selectLogById" resultType="com.zhimu.server.biz.common.entity.OperationLog">
+        SELECT * FROM t_operation_log WHERE id = #{id}
+    </select>
+
+    <select id="selectRelated" resultType="com.zhimu.server.biz.common.entity.OperationLog">
+        SELECT * FROM t_operation_log
+        WHERE biz_type = #{bizType}
+          AND biz_id = #{bizId}
+          <if test="excludeId != null">
+              AND id &lt;&gt; #{excludeId}
+          </if>
+        ORDER BY created_at DESC, id DESC
+        LIMIT #{limit}
+    </select>
+</mapper>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.admin.system.mapper.AdminMapper">
+
+    <select id="selectByUsername" resultType="com.zhimu.server.admin.system.entity.Admin">
+        SELECT * FROM t_admin WHERE username = #{username}
+    </select>
+
+    <select id="selectByPhone" resultType="com.zhimu.server.admin.system.entity.Admin">
+        SELECT * FROM t_admin WHERE phone = #{phone}
+    </select>
+
+    <select id="countByPhone" resultType="long">
+        SELECT COUNT(*) FROM t_admin
+        WHERE phone = #{phone}
+        <if test="excludeId != null">
+            AND id &lt;&gt; #{excludeId}
+        </if>
+    </select>
+
+    <!-- 正常状态的超级管理员数量；停用/改角色前在事务内先锁 t_admin_role 的超级管理员行 -->
+    <select id="countNormalSuperAdmins" resultType="long">
+        SELECT COUNT(*)
+        FROM t_admin a
+                 JOIN t_admin_role r ON r.id = a.role_id
+        WHERE r.role_code = 'SUPER_ADMIN'
+          AND a.status = 'NORMAL'
+    </select>
+
+    <select id="selectByIdForUpdate" resultType="com.zhimu.server.admin.system.entity.Admin">
+        SELECT * FROM t_admin WHERE id = #{id} FOR UPDATE
+    </select>
+
+    <select id="selectByRoleId" resultType="com.zhimu.server.admin.system.entity.Admin">
+        SELECT * FROM t_admin WHERE role_id = #{roleId} ORDER BY id
+    </select>
+
+    <select id="countByRoleId" resultType="long">
+        SELECT COUNT(*) FROM t_admin WHERE role_id = #{roleId}
+    </select>
+
+    <select id="selectAllNormal" resultType="com.zhimu.server.admin.system.entity.Admin">
+        SELECT * FROM t_admin WHERE status = 'NORMAL' ORDER BY id
+    </select>
+</mapper>
