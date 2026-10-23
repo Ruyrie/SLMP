@@ -141,7 +141,7 @@ class FeedTaskServiceTest {
         task.setMealCode("BREAKFAST");
         task.setMealName(mealName);
         LocalTime feedTime = LocalTime.parse(time);
-        LocalDateTime feedAt = LocalDateTime.of(2026, 10, 19, feedTime);
+        LocalDateTime feedAt = LocalDate.of(2026, 10, 19).atTime(feedTime);
         task.setFeedTime(feedTime);
         task.setTaskDate(LocalDate.of(2026, 10, 19));
         task.setFeedAt(feedAt);
