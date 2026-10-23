@@ -26,6 +26,7 @@ import com.zhimu.server.common.context.FarmContext;
 import com.zhimu.server.common.util.BeijingTime;
 import com.zhimu.server.common.vo.UserBriefVO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -236,35 +237,80 @@ public class FeedTaskService {
         if (batch == null || !batch.active() || plan == null || stages == null || stages.isEmpty()) {
             return;
         }
-        LocalDate today = BeijingTime.today();
-        LocalDateTime now = BeijingTime.now();
-        int dayAge = FeedCalc.generationDayAge(batch, today);
+        generateForFarm(batch.farmId(), batch, plan, stages, BeijingTime.today(), BeijingTime.now(), false);
+    }
+
+    /** 有在养批次的养殖场 ID（定时任务没有当前养殖场上下文时使用） */
+    public List<Long> activeFarmIds() {
+        return lookup.activeFarmIds();
+    }
+
+    /**
+     * 定时任务：为指定养殖场的全部在养批次按方案生成指定日期的任务。
+     * 幂等：同批次 + 栏舍 + 日期 + 餐次已存在时跳过，不覆盖已生成任务；返回新生成条数。
+     */
+    @Transactional
+    public int generateDailyForFarm(Long farmId, LocalDate date) {
+        if (farmId == null || date == null) {
+            return 0;
+        }
+        int created = 0;
+        for (BatchInfo batch : lookup.requireActiveBatches(farmId)) {
+            FeedPlan plan = planMapper.selectOne(Wrappers.<FeedPlan>lambdaQuery()
+                    .eq(FeedPlan::getBatchId, batch.batchId()).last("LIMIT 1"));
+            if (plan == null) {
+                continue;
+            }
+            List<FeedPlanStage> stages = stageMapper.selectList(Wrappers.<FeedPlanStage>lambdaQuery()
+                    .eq(FeedPlanStage::getPlanId, plan.getId())
+                    .orderByAsc(FeedPlanStage::getSortNo)
+                    .orderByAsc(FeedPlanStage::getId));
+            if (stages.isEmpty()) {
+                continue;
+            }
+            created += generateForFarm(farmId, batch, plan, stages, date, null, true);
+        }
+        return created;
+    }
+
+    /**
+     * 按方案阶段与餐次生成任务。
+     *
+     * @param now           首存方案时只补生成投喂时间晚于此刻的餐次；定时任务传 null
+     * @param includePast   是否生成投喂时间已经过去的餐次（定时任务在 00:05 执行，正常不会遇到；
+     *                      服务停机后补跑时仍应生成当天全部餐次）
+     */
+    private int generateForFarm(Long farmId, BatchInfo batch, FeedPlan plan, List<FeedPlanStage> stages,
+                                LocalDate date, LocalDateTime now, boolean includePast) {
+        int dayAge = FeedCalc.generationDayAge(batch, date);
         FeedPlanStage stage = stageForAge(stages, dayAge);
         if (stage == null) {
-            return;
+            return 0;
         }
         List<FeedPlanMeal> meals = mealMapper.selectList(Wrappers.<FeedPlanMeal>lambdaQuery()
                 .eq(FeedPlanMeal::getStageId, stage.getId())
                 .orderByAsc(FeedPlanMeal::getMealNo));
         if (meals.isEmpty()) {
-            return;
+            return 0;
         }
-        List<com.zhimu.server.biz.feeding.support.FeedBatchPenRow> pens = lookup.batchPens(batch);
-        Long farmId = lookup.farmId();
-        for (com.zhimu.server.biz.feeding.support.FeedBatchPenRow pen : pens) {
+        int created = 0;
+        for (com.zhimu.server.biz.feeding.support.FeedBatchPenRow pen : lookup.batchPens(batch)) {
             Integer headCount = pen.getStockCount();
             if (headCount == null || headCount <= 0) {
                 continue;
             }
             for (FeedPlanMeal meal : meals) {
-                LocalDateTime feedAt = LocalDateTime.of(today, meal.getFeedTime());
-                if (!feedAt.isAfter(now)) {
+                if (meal.getFeedTime() == null) {
+                    continue;
+                }
+                LocalDateTime feedAt = LocalDateTime.of(date, meal.getFeedTime());
+                if (!includePast && now != null && !feedAt.isAfter(now)) {
                     continue;
                 }
                 long exists = taskMapper.selectCount(Wrappers.<FeedTask>lambdaQuery()
                         .eq(FeedTask::getBatchId, batch.batchId())
                         .eq(FeedTask::getPenId, pen.getPenId())
-                        .eq(FeedTask::getTaskDate, today)
+                        .eq(FeedTask::getTaskDate, date)
                         .eq(FeedTask::getMealNo, meal.getMealNo()));
                 if (exists > 0) {
                     continue;
@@ -275,26 +321,32 @@ public class FeedTaskService {
                 task.setPenId(pen.getPenId());
                 task.setPlanId(plan.getId());
                 task.setStageId(stage.getId());
-                task.setTaskDate(today);
+                task.setTaskDate(date);
                 task.setMealNo(meal.getMealNo());
                 task.setMealCode(meal.getMealCode());
                 task.setMealName(meal.getMealName());
                 task.setFeedTime(meal.getFeedTime());
                 task.setFeedAt(feedAt);
                 task.setDeadlineAt(feedAt.plusHours(2));
-                task.setBackfillEndAt(today.plusDays(2).atStartOfDay());
+                task.setBackfillEndAt(date.plusDays(2).atStartOfDay());
                 task.setFeedId(stage.getFeedId());
                 task.setHeadCount(headCount);
                 task.setDailyQtyPerHead(stage.getDailyQtyPerHead());
                 task.setMealsPerDay(stage.getMealsPerDay());
                 task.setPlanQty(FeedCalc.planQty(stage.getDailyQtyPerHead(), headCount, stage.getMealsPerDay()));
-                task.setAssigneeId(lookup.firstAssignee(pen.getPenId()));
+                task.setAssigneeId(lookup.firstAssignee(farmId, pen.getPenId()));
                 task.setStatus(FeedCalc.TASK_PENDING);
                 task.setOverdueNotified(false);
                 task.setVersion(0);
-                taskMapper.insert(task);
+                try {
+                    taskMapper.insert(task);
+                    created++;
+                } catch (DuplicateKeyException e) {
+                    // 方案保存与定时任务并发时由 uk_feed_task 兜底；已存在即视为幂等成功
+                }
             }
         }
+        return created;
     }
 
     /** 任务（当前养殖场）；不存在返回 40401 */

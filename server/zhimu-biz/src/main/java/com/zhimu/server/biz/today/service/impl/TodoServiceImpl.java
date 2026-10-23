@@ -3,6 +3,8 @@ package com.zhimu.server.biz.today.service.impl;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.zhimu.server.biz.farm.api.FarmQueryService;
 import com.zhimu.server.biz.today.api.TodoQueryService;
+import com.zhimu.server.biz.today.api.TodoSource;
+import com.zhimu.server.biz.today.api.TodoSourceWriteService;
 import com.zhimu.server.biz.today.convert.TodoConvert;
 import com.zhimu.server.biz.today.entity.Todo;
 import com.zhimu.server.biz.today.entity.TodoHandleLog;
@@ -37,6 +39,7 @@ import com.zhimu.server.common.util.BeijingTime;
 import com.zhimu.server.common.vo.FarmBriefVO;
 import com.zhimu.server.framework.mybatis.TenantSkip;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,7 +64,7 @@ import java.util.Set;
  */
 @Service
 @RequiredArgsConstructor
-public class TodoServiceImpl implements TodoService, TodoQueryService {
+public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourceWriteService {
 
     private static final String FILTER_ALL = "ALL";
     private static final String FILTER_OVERDUE = "OVERDUE";
@@ -387,6 +390,221 @@ public class TodoServiceImpl implements TodoService, TodoQueryService {
         }
         writeHandleLog(todo, "IGNORE", "MANUAL", userId, reason, false, now);
         return convertDetail(loadTodo(todoId), userId, member);
+    }
+
+    // ===================== 来源模块写入（TodoSourceWriteService） =====================
+
+    @Override
+    @Transactional
+    public List<Long> upsertFromSource(Long farmId, List<TodoSource.TodoDraft> drafts) {
+        if (farmId == null || drafts == null || drafts.isEmpty()) {
+            return List.of();
+        }
+        List<Long> ids = new ArrayList<>();
+        for (TodoSource.TodoDraft draft : drafts) {
+            if (draft == null || draft.getTodoType() == null || draft.getTodoType().isBlank()
+                    || draft.getDedupKey() == null || draft.getDedupKey().isBlank()) {
+                continue;
+            }
+            Todo existing = findByDedup(farmId, draft.getTodoType(), draft.getDedupKey());
+            if (existing == null) {
+                Todo todo = fromDraft(farmId, draft);
+                try {
+                    todoMapper.insert(todo);
+                    ids.add(todo.getId());
+                } catch (DuplicateKeyException e) {
+                    // 并发生成时唯一键 uk_todo_dedup 兜底：改为更新已存在行的展示字段
+                    Todo created = findByDedup(farmId, draft.getTodoType(), draft.getDedupKey());
+                    if (created != null && !Boolean.TRUE.equals(created.getDeleted())) {
+                        updateDisplayFields(created.getId(), draft);
+                        ids.add(created.getId());
+                    }
+                }
+            } else if (!Boolean.TRUE.equals(existing.getDeleted())) {
+                // DONE / IGNORED 的行只更新展示字段，不改变状态（2.8.1）
+                updateDisplayFields(existing.getId(), draft);
+                ids.add(existing.getId());
+            }
+        }
+        return ids;
+    }
+
+    @Override
+    @Transactional
+    public boolean completeFromSource(Long farmId, String todoType, String dedupKey, String recordType,
+                                      Long recordId, Long operatorId) {
+        Todo todo = findByDedup(farmId, todoType, dedupKey);
+        if (todo == null || Boolean.TRUE.equals(todo.getDeleted())
+                || !TodoStatus.PENDING.name().equals(todo.getStatus())) {
+            return false;
+        }
+        LocalDateTime now = BeijingTime.now();
+        boolean overdue = todo.getOverdueAt() != null && now.isAfter(todo.getOverdueAt());
+        Long operator = operatorId == null ? 0L : operatorId;
+        int rows = todoMapper.update(new Todo(), Wrappers.<Todo>lambdaUpdate()
+                .eq(Todo::getId, todo.getId())
+                .eq(Todo::getStatus, TodoStatus.PENDING.name())
+                .set(Todo::getStatus, TodoStatus.DONE.name())
+                .set(Todo::getCompleteWay, recordType == null ? "AUTO" : "REGISTER")
+                .set(Todo::getCompleteRecordType, recordType)
+                .set(Todo::getCompleteRecordId, recordId)
+                .set(Todo::getCompletedAt, now)
+                .set(Todo::getCompletedBy, operator)
+                .set(Todo::getOverdueDone, overdue));
+        if (rows == 0) {
+            return false;
+        }
+        writeHandleLog(todo, "COMPLETE", recordType == null ? "AUTO" : "REGISTER", operator, null, overdue, now);
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public boolean ignoreFromSource(Long farmId, String todoType, String dedupKey, String reason) {
+        Todo todo = findByDedup(farmId, todoType, dedupKey);
+        if (todo == null || Boolean.TRUE.equals(todo.getDeleted())
+                || !TodoStatus.PENDING.name().equals(todo.getStatus())) {
+            return false;
+        }
+        LocalDateTime now = BeijingTime.now();
+        String text = reason == null || reason.isBlank() ? "系统关闭" : TodayText.trim(reason);
+        if (TodayText.codePointLength(text) > 100) {
+            text = text.substring(0, 100);
+        }
+        int rows = todoMapper.update(new Todo(), Wrappers.<Todo>lambdaUpdate()
+                .eq(Todo::getId, todo.getId())
+                .eq(Todo::getStatus, TodoStatus.PENDING.name())
+                .set(Todo::getStatus, TodoStatus.IGNORED.name())
+                .set(Todo::getIgnoreWay, "AUTO")
+                .set(Todo::getIgnoredAt, now)
+                .set(Todo::getIgnoredBy, 0L)
+                .set(Todo::getIgnoreReason, text));
+        if (rows == 0) {
+            return false;
+        }
+        writeHandleLog(todo, "IGNORE", "AUTO", 0L, text, false, now);
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public boolean reopenFromSource(Long farmId, String todoType, String dedupKey, Long recordId) {
+        Todo todo = findByDedup(farmId, todoType, dedupKey);
+        if (todo == null || Boolean.TRUE.equals(todo.getDeleted())
+                || !TodoStatus.DONE.name().equals(todo.getStatus())
+                || !"REGISTER".equals(todo.getCompleteWay())
+                || (recordId != null && !recordId.equals(todo.getCompleteRecordId()))) {
+            return false;
+        }
+        int rows = todoMapper.update(new Todo(), Wrappers.<Todo>lambdaUpdate()
+                .eq(Todo::getId, todo.getId())
+                .eq(Todo::getStatus, TodoStatus.DONE.name())
+                .set(Todo::getStatus, TodoStatus.PENDING.name())
+                .set(Todo::getCompleteWay, null)
+                .set(Todo::getCompleteRecordType, null)
+                .set(Todo::getCompleteRecordId, null)
+                .set(Todo::getCompletedAt, null)
+                .set(Todo::getCompletedBy, null)
+                .set(Todo::getOverdueDone, false));
+        return rows > 0;
+    }
+
+    private Todo findByDedup(Long farmId, String todoType, String dedupKey) {
+        if (farmId == null || todoType == null || dedupKey == null) {
+            return null;
+        }
+        return TenantSkip.call(() -> todoMapper.selectByDedupIncludingDeleted(farmId, todoType, dedupKey));
+    }
+
+    private Todo fromDraft(Long farmId, TodoSource.TodoDraft draft) {
+        Todo todo = new Todo();
+        todo.setFarmId(farmId);
+        todo.setTodoType(draft.getTodoType());
+        todo.setCategory(categoryOf(draft));
+        todo.setPenId(draft.getPenId());
+        todo.setBatchId(draft.getBatchId());
+        todo.setPenName(draft.getPenName());
+        todo.setBatchNo(draft.getBatchNo());
+        todo.setBizType(draft.getBizType());
+        todo.setBizId(draft.getBizId());
+        todo.setDedupKey(draft.getDedupKey());
+        todo.setTitle(titleOf(draft));
+        todo.setContentText(draft.getContentText());
+        todo.setStatusNote(draft.getStatusNote());
+        todo.setDetailLabel(draft.getDetailLabel());
+        todo.setDetailValue(draft.getDetailValue());
+        todo.setAmount(draft.getAmount());
+        todo.setReceiverScope(receiverScopeOf(draft));
+        todo.setAssigneeId(draft.getAssigneeId());
+        todo.setAssigneeName(draft.getAssigneeName());
+        todo.setDueDate(draft.getDueDate());
+        todo.setTimeType(timeTypeOf(draft));
+        todo.setDueTime(draft.getDueTime());
+        todo.setOverdueAt(draft.getOverdueAt());
+        todo.setSortTime(sortTimeOf(draft));
+        todo.setStatus(TodoStatus.PENDING.name());
+        todo.setOverdueDone(false);
+        todo.setRemindCount(0);
+        todo.setVersion(0);
+        todo.setDeleted(false);
+        return todo;
+    }
+
+    /** 已存在的待办只刷新展示字段：状态、完成/忽略信息与版本一律不动 */
+    private void updateDisplayFields(Long todoId, TodoSource.TodoDraft draft) {
+        todoMapper.update(new Todo(), Wrappers.<Todo>lambdaUpdate()
+                .eq(Todo::getId, todoId)
+                .set(Todo::getPenId, draft.getPenId())
+                .set(Todo::getBatchId, draft.getBatchId())
+                .set(Todo::getPenName, draft.getPenName())
+                .set(Todo::getBatchNo, draft.getBatchNo())
+                .set(Todo::getBizType, draft.getBizType())
+                .set(Todo::getBizId, draft.getBizId())
+                .set(Todo::getTitle, titleOf(draft))
+                .set(Todo::getContentText, draft.getContentText())
+                .set(Todo::getStatusNote, draft.getStatusNote())
+                .set(Todo::getDetailLabel, draft.getDetailLabel())
+                .set(Todo::getDetailValue, draft.getDetailValue())
+                .set(Todo::getAmount, draft.getAmount())
+                .set(Todo::getReceiverScope, receiverScopeOf(draft))
+                .set(Todo::getAssigneeId, draft.getAssigneeId())
+                .set(Todo::getAssigneeName, draft.getAssigneeName())
+                .set(Todo::getDueDate, draft.getDueDate())
+                .set(Todo::getTimeType, timeTypeOf(draft))
+                .set(Todo::getDueTime, draft.getDueTime())
+                .set(Todo::getOverdueAt, draft.getOverdueAt())
+                .set(Todo::getSortTime, sortTimeOf(draft)));
+    }
+
+    private static String categoryOf(TodoSource.TodoDraft draft) {
+        return draft.getCategory() == null || draft.getCategory().isBlank()
+                ? TodoCategory.WORK.name() : draft.getCategory();
+    }
+
+    private static String receiverScopeOf(TodoSource.TodoDraft draft) {
+        return draft.getReceiverScope() == null || draft.getReceiverScope().isBlank()
+                ? "MANAGERS" : draft.getReceiverScope();
+    }
+
+    private static String timeTypeOf(TodoSource.TodoDraft draft) {
+        if (draft.getTimeType() != null && !draft.getTimeType().isBlank()) {
+            return draft.getTimeType();
+        }
+        return draft.getDueTime() == null ? "ALL_DAY" : "AT_TIME";
+    }
+
+    private static String titleOf(TodoSource.TodoDraft draft) {
+        return draft.getTitle() == null || draft.getTitle().isBlank() ? draft.getTodoType() : draft.getTitle();
+    }
+
+    private static LocalDateTime sortTimeOf(TodoSource.TodoDraft draft) {
+        if (draft.getDueDate() == null) {
+            return null;
+        }
+        if (draft.getDueTime() == null || "ALL_DAY".equals(timeTypeOf(draft))) {
+            return draft.getDueDate().atStartOfDay();
+        }
+        return LocalDateTime.of(draft.getDueDate(), draft.getDueTime());
     }
 
     // ===================== 对外计数（模块02、管理端） =====================
