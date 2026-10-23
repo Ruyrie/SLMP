@@ -20,6 +20,10 @@ public interface BatchMapper extends BaseMapper<Batch> {
     @Select("SELECT * FROM t_batch WHERE qr_token = #{qrToken} LIMIT 1")
     Batch selectByQrTokenIncludingDeleted(@Param("qrToken") String qrToken);
 
+    /** 按 ID 查（含已删除，用于区分 40401 与 41001） */
+    @Select("SELECT * FROM t_batch WHERE id = #{id} LIMIT 1")
+    Batch selectByIdIncludingDeleted(@Param("id") Long id);
+
     /** 批次是否已有入栏之外的流水（后续记录口径，含已作废 SALE） */
     @Select("SELECT COUNT(1) FROM t_batch_event WHERE batch_id = #{batchId} AND event_type <> 'ENTRY' AND deleted = 0")
     long countFollowUpEvents(@Param("batchId") Long batchId);
