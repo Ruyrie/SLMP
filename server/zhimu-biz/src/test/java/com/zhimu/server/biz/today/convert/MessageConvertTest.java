@@ -64,6 +64,36 @@ class MessageConvertTest {
         assertThat(vo.getAction().getStatus()).isEqualTo("PENDING");
         assertThat(vo.getAction().getCanAccept()).isTrue();
         assertThat(vo.getAction().getRoleText()).isEqualTo("员工");
+        // App 列表副文字：“员工 · 7 天内有效”
+        assertThat(vo.getAction().getStatusText()).isEqualTo("7 天内有效");
+    }
+
+    @Test
+    void transferActionPendingUsesConfirmText() {
+        Message transfer = message(513L, LocalDateTime.of(2026, 10, 16, 18, 30), null, null);
+        transfer.setCategory("MEMBER");
+        transfer.setMsgType("OWNER_TRANSFER");
+        transfer.setExtraJson("{\"status\":\"PENDING\",\"role_text\":\"所有者\","
+                + "\"expire_at\":\"2026-10-19 18:30:00\"}");
+        MessageBriefVO vo = brief(transfer);
+
+        assertThat(vo.getAction().getActionType()).isEqualTo("TRANSFER");
+        assertThat(vo.getAction().getStatusText()).isEqualTo("待你确认");
+        assertThat(vo.getAction().getCanAccept()).isTrue();
+    }
+
+    @Test
+    void revokedNoticeIsMarkedAndKeepsDefaultIcon() {
+        Message notice = message(512L, LocalDateTime.of(2026, 10, 17, 10, 0), null, null);
+        notice.setCategory("NOTICE");
+        notice.setMsgType("NOTICE");
+        notice.setHidden(true);
+        notice.setHiddenReason("NOTICE_REVOKED");
+        notice.setExtraJson("{\"revoked\":true}");
+        MessageBriefVO vo = brief(notice);
+
+        assertThat(vo.getRevoked()).isTrue();
+        assertThat(vo.getIconState()).isEqualTo("DEFAULT");
     }
 
     @Test

@@ -106,7 +106,7 @@ public class TodoConvert {
         vo.setNoticeText(TodayText.noticeText(todo, staff, now));
         vo.setMarkDoneTip(TodayText.markDoneTip(todo.getTodoType()));
         vo.setCompleteWay(todo.getCompleteWay());
-        vo.setCompleteWayText(completeWayText(todo.getCompleteWay(), todo.getOverdueDone()));
+        vo.setCompleteWayText(completeWayText(todo.getCompleteWay(), todo.getOverdueDone(), todo.getTodoType()));
         vo.setCompletedAt(todo.getCompletedAt() == null ? null : TodayText.dateTime(todo.getCompletedAt()));
         vo.setCompletedBy(userBrief(todo.getCompletedBy(), staff));
         vo.setIgnoredAt(todo.getIgnoredAt() == null ? null : TodayText.dateTime(todo.getIgnoredAt()));
@@ -252,15 +252,34 @@ public class TodoConvert {
         return name + " " + TodayText.hm(todo.getIgnoredAt()) + " 忽略";
     }
 
-    private String completeWayText(String way, Boolean overdueDone) {
+    private String completeWayText(String way, Boolean overdueDone, String todoType) {
         if (way == null) {
             return null;
         }
         return switch (way) {
-            case "REGISTER" -> Boolean.TRUE.equals(overdueDone) ? "逾期登记" : "登记记录";
+            case "REGISTER" -> Boolean.TRUE.equals(overdueDone) ? "逾期登记" : registerWayText(todoType);
             case "MANUAL" -> "手动标记，未生成记录";
             case "AUTO" -> "系统自动完成";
             default -> way;
+        };
+    }
+
+    /** 登记类完成方式写明登记了什么，例如“登记投喂记录”（与 App 详情页文案一致） */
+    private static String registerWayText(String todoType) {
+        if (todoType == null) {
+            return "登记记录";
+        }
+        return switch (todoType) {
+            case "FEEDING" -> "登记投喂记录";
+            case "INSPECTION" -> "登记巡检记录";
+            case "IMMUNIZATION" -> "登记接种记录";
+            case "DISINFECTION" -> "登记消毒记录";
+            case "WEIGHING" -> "登记称重记录";
+            case "FARROWING" -> "登记产仔记录";
+            case "HATCHING" -> "登记出雏记录";
+            case "WITHDRAWAL_END" -> "登记出栏记录";
+            case "RECEIVABLE" -> "登记收款记录";
+            default -> "登记记录";
         };
     }
 

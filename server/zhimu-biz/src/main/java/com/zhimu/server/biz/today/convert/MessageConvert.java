@@ -147,22 +147,41 @@ public class MessageConvert {
             status = message.getReadAt() == null ? "PENDING" : "PENDING";
         }
         action.setStatus(status);
-        action.setStatusText(statusText(status));
-        action.setRoleText(TodayJson.str(extra, "role_text"));
         LocalDateTime expireAt = parseDateTime(TodayJson.str(extra, "expire_at"));
+        action.setStatusText(statusText(status, invite, expireAt, now));
+        action.setRoleText(TodayJson.str(extra, "role_text"));
         action.setExpireAt(expireAt);
         action.setCanAccept("PENDING".equals(status) && (expireAt == null || expireAt.isAfter(now)));
         return action;
     }
 
-    private static String statusText(String status) {
+    /** 邀请待确认显示剩余天数（“7 天内有效”），转让待确认显示“待你确认”（与 App 列表副文字一致） */
+    private static String statusText(String status, boolean invite, LocalDateTime expireAt, LocalDateTime now) {
         return switch (status) {
-            case "PENDING" -> "待确认";
+            case "PENDING" -> {
+                if (!invite) {
+                    yield "待你确认";
+                }
+                Long days = daysLeft(expireAt, now);
+                yield days == null ? "待确认" : (days <= 0 ? "已过期" : days + " 天内有效");
+            }
             case "ACCEPTED" -> "已同意";
             case "REJECTED" -> "已拒绝";
             case "EXPIRED" -> "已过期";
             default -> status;
         };
+    }
+
+    /** 距到期还有几天（不足一天按一天算）；没有到期时间返回 null */
+    private static Long daysLeft(LocalDateTime expireAt, LocalDateTime now) {
+        if (expireAt == null) {
+            return null;
+        }
+        long minutes = java.time.Duration.between(now, expireAt).toMinutes();
+        if (minutes <= 0) {
+            return 0L;
+        }
+        return (minutes + 1439) / 1440;
     }
 
     private static LocalDateTime parseDateTime(String text) {

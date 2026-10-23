@@ -123,6 +123,60 @@ class MessageQueryServiceImplTest {
     }
 
     @Test
+    void openNoticeReturnsOkWithoutLink() {
+        Message notice = message(507L, LocalDateTime.of(2026, 10, 18, 16, 0));
+        notice.setFarmId(null);
+        notice.setCategory("NOTICE");
+        notice.setMsgType("NOTICE");
+        when(messageMapper.selectIncludingDeleted(507L, 10001L)).thenReturn(notice);
+        when(messageMapper.update(any(), any())).thenReturn(1);
+        when(messageMapper.selectCount(any())).thenReturn(3L);
+
+        OpenResultVO result = service.open(507L, null, 10001L);
+
+        assertThat(result.getTargetStatus()).isEqualTo("OK");
+        assertThat(result.getTargetStatusText()).isEqualTo("可以打开");
+        assertThat(result.getLink()).isNull();
+    }
+
+    @Test
+    void openRevokedNoticeReturnsOkWithoutLink() {
+        Message notice = message(512L, LocalDateTime.of(2026, 10, 17, 10, 0));
+        notice.setFarmId(null);
+        notice.setCategory("NOTICE");
+        notice.setMsgType("NOTICE");
+        notice.setHidden(true);
+        notice.setHiddenReason("NOTICE_REVOKED");
+        when(messageMapper.selectIncludingDeleted(512L, 10001L)).thenReturn(notice);
+        when(messageMapper.update(any(), any())).thenReturn(1);
+        when(messageMapper.selectCount(any())).thenReturn(3L);
+
+        OpenResultVO result = service.open(512L, null, 10001L);
+
+        assertThat(result.getTargetStatus()).isEqualTo("OK");
+        assertThat(result.getLink()).isNull();
+    }
+
+    @Test
+    void openOwnerTransferReturnsOkWithoutLink() {
+        Message transfer = message(513L, LocalDateTime.of(2026, 10, 16, 18, 30));
+        transfer.setFarmId(1002L);
+        transfer.setCategory("MEMBER");
+        transfer.setMsgType("OWNER_TRANSFER");
+        when(messageMapper.selectIncludingDeleted(513L, 10001L)).thenReturn(transfer);
+        when(messageMapper.update(any(), any())).thenReturn(1);
+        when(messageMapper.selectCount(any())).thenReturn(3L);
+        when(memberLoader.load(1002L, 10001L)).thenReturn(new com.zhimu.server.common.context.FarmContext.FarmMember(
+                1002L, "西岭鸡场", 10001L, 5002L, com.zhimu.server.common.enums.FarmRole.MANAGER,
+                java.util.Set.of(), com.zhimu.server.common.enums.FarmStatus.NORMAL));
+
+        OpenResultVO result = service.open(513L, null, 10001L);
+
+        assertThat(result.getTargetStatus()).isEqualTo("OK");
+        assertThat(result.getLink()).isNull();
+    }
+
+    @Test
     void openMissingMessageReturns40401() {
         when(messageMapper.selectIncludingDeleted(999L, 10001L)).thenReturn(null);
 

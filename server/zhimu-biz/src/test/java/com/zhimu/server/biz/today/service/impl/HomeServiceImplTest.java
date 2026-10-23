@@ -112,6 +112,52 @@ class HomeServiceImplTest {
     }
 
     @Test
+    void staffPensUseProviderMetricsAndBatchLink() {
+        FarmContext.set(new FarmContext.FarmMember(1001L, "东山猪场", 10003L, 5003L, FarmRole.STAFF,
+                Set.of(2003L, 2004L), FarmStatus.NORMAL));
+        when(farmQueryService.listFarmsOfUser(10003L)).thenReturn(List.of(
+                FarmBriefVO.builder().farmId(1001L).name("东山猪场").speciesText("猪")
+                        .status("NORMAL").statusText("正常").role("STAFF").build()));
+        when(accountQueryService.getBrief(10003L)).thenReturn(
+                new AccountBrief(10003L, "李明", "13700005678", "NORMAL", false));
+        when(todoMapper.selectList(any())).thenReturn(List.of());
+        com.zhimu.server.biz.today.api.HomeMetricProvider provider =
+                new com.zhimu.server.biz.today.api.HomeMetricProvider() {
+                    @Override
+                    public String moduleName() {
+                        return "herd";
+                    }
+
+                    @Override
+                    public List<PenMetric> pens(FarmContext.FarmMember member) {
+                        return List.of(
+                                new PenMetric(2003L, "3 号育肥舍", "育肥舍", 220,
+                                        List.of(new BatchMetric(3001L, "ZM2610-031", "杜长大育肥猪", 96, 200,
+                                                "3 号育肥舍", "育肥期"))),
+                                new PenMetric(2004L, "4 号育肥舍", "育肥舍", 220, List.of()));
+                    }
+                };
+        HomeServiceImpl withProvider = new HomeServiceImpl(farmQueryService, accountQueryService, todoMapper,
+                messageMapper, todoScope, todoLinks, List.of(provider));
+
+        HomeVO home = withProvider.getHome(10003L);
+
+        assertThat(home.getMyPens()).hasSize(2);
+        var pen = home.getMyPens().stream().filter(item -> item.getPenId() == 2003L).findFirst().orElseThrow();
+        assertThat(pen.getCapacity()).isEqualTo(220);
+        assertThat(pen.getPenTypeText()).isEqualTo("育肥舍");
+        assertThat(pen.getBatches()).hasSize(1);
+        assertThat(pen.getBatches().get(0).getStageText()).isEqualTo("育肥期");
+        // L06 批次档案必须带 batch_id，L02 我的栏舍带 pen_id
+        assertThat(pen.getLink()).isNotNull();
+        assertThat(pen.getLink().getRoute()).isEqualTo("L06");
+        assertThat(pen.getLink().getParams()).containsEntry("batch_id", "3001");
+        var emptyPen = home.getMyPens().stream().filter(item -> item.getPenId() == 2004L).findFirst().orElseThrow();
+        assertThat(emptyPen.getLink().getRoute()).isEqualTo("L02");
+        assertThat(emptyPen.getLink().getParams()).containsEntry("pen_id", "2004");
+    }
+
+    @Test
     void pendingFarmOnlyReturnsBasicInfo() {
         FarmContext.set(new FarmContext.FarmMember(1003L, "北湾牛场", 10001L, 5007L, FarmRole.OWNER,
                 Set.of(), FarmStatus.PENDING));
