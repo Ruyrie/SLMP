@@ -123,14 +123,14 @@ public class MessageQueryServiceImpl implements MessageQueryService {
         String category = validateCategory(request == null ? null : request.getCategory());
         Long farmId = request == null ? null : request.getFarmId();
         LocalDateTime now = BeijingTime.now();
-        int updated = messageMapper.update(null, Wrappers.<Message>lambdaUpdate()
-                .set(Message::getReadAt, now)
-                .eq(Message::getUserId, userId)
-                .eq(Message::getHidden, false)
-                .isNull(Message::getReadAt)
-                .ge(Message::getSortTime, now.minusDays(RETENTION_DAYS))
-                .eq(category != null, Message::getCategory, category)
-                .eq(farmId != null, Message::getFarmId, farmId));
+        int updated = messageMapper.update(null, Wrappers.<Message>update()
+                .set("read_at", now)
+                .eq("user_id", userId)
+                .eq("hidden", false)
+                .isNull("read_at")
+                .ge("sort_time", now.minusDays(RETENTION_DAYS))
+                .eq(category != null, "category", category)
+                .eq(farmId != null, "farm_id", farmId));
         ReadAllResult result = new ReadAllResult();
         result.setUpdatedCount(updated);
         result.setTotalUnread(totalUnread(userId));

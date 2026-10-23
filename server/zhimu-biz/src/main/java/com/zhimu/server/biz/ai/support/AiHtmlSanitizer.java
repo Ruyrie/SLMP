@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 public final class AiHtmlSanitizer {
 
     private static final Set<String> ALLOWED = Set.of("strong", "ul", "ol", "li", "br");
+    private static final Pattern SCRIPT = Pattern.compile("(?is)<(script|style)[^>]*>.*?</\\1>");
     private static final Pattern TAG = Pattern.compile("<(/?)([a-zA-Z][a-zA-Z0-9]*)([^>]*)>");
 
     private AiHtmlSanitizer() {
@@ -19,7 +20,8 @@ public final class AiHtmlSanitizer {
         if (html == null || html.isBlank()) {
             return null;
         }
-        Matcher matcher = TAG.matcher(html);
+        String cleaned = SCRIPT.matcher(html).replaceAll("");
+        Matcher matcher = TAG.matcher(cleaned);
         StringBuilder sb = new StringBuilder();
         while (matcher.find()) {
             String name = matcher.group(2).toLowerCase();

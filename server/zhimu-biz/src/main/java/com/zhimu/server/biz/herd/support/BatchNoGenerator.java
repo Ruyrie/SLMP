@@ -3,6 +3,7 @@ package com.zhimu.server.biz.herd.support;
 import com.zhimu.server.biz.herd.entity.Batch;
 import com.zhimu.server.biz.herd.mapper.BatchMapper;
 import com.zhimu.server.common.util.BeijingTime;
+import com.zhimu.server.framework.mybatis.TenantSkip;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,10 +23,27 @@ public class BatchNoGenerator {
     private final BatchMapper batchMapper;
 
     public String nextBatchNo() {
+        return next().batchNo();
+    }
+
+    /** 取下一个批次号（月 + 流水号 + 批次号）；已被占用时顺延，最多 5 次 */
+    public Generated next() {
         LocalDate today = BeijingTime.today();
         String month = today.format(MONTH);
-        int seq = batchMapper.maxSeqOfMonth(month) + 1;
-        return batchNo(month, seq);
+        // 批次号是全平台当月流水号，必须关闭多租户条件后取最大值
+        int seq = TenantSkip.call(() -> batchMapper.maxSeqOfMonth(month)) + 1;
+        for (int i = 0; i < 5; i++) {
+            String no = batchNo(month, seq);
+            if (TenantSkip.call(() -> batchMapper.selectByBatchNoIncludingDeleted(no)) == null) {
+                return new Generated(month, seq, no);
+            }
+            seq++;
+        }
+        return new Generated(month, seq, batchNo(month, seq));
+    }
+
+    /** 生成结果 */
+    public record Generated(String month, int seq, String batchNo) {
     }
 
     /** 由月与流水号拼批次号；超过 999 自然扩为 4 位 */

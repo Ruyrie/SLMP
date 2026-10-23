@@ -10,8 +10,13 @@ import com.zhimu.server.biz.farm.support.FarmLookup;
 import com.zhimu.server.biz.herd.entity.Batch;
 import com.zhimu.server.biz.herd.entity.BatchPen;
 import com.zhimu.server.biz.herd.entity.Pen;
+import com.zhimu.server.biz.herd.mapper.PenMapper;
 import com.zhimu.server.biz.herd.query.PenQuery;
+import com.zhimu.server.biz.herd.request.PenCreateRequest;
+import com.zhimu.server.biz.herd.request.PenStatusRequest;
+import com.zhimu.server.biz.herd.request.PenUpdateRequest;
 import com.zhimu.server.biz.herd.service.PenService;
+import com.zhimu.server.biz.herd.support.HerdErrors;
 import com.zhimu.server.biz.herd.support.HerdSupport;
 import com.zhimu.server.biz.herd.vo.ExecutorOptionVO;
 import com.zhimu.server.biz.herd.vo.PenDetailVO;
@@ -22,9 +27,13 @@ import com.zhimu.server.common.enums.FarmRole;
 import com.zhimu.server.common.util.BeijingTime;
 import com.zhimu.server.common.vo.OptionVO;
 import com.zhimu.server.common.vo.UserBriefVO;
+import com.zhimu.server.framework.oplog.OperationLogEntry;
+import com.zhimu.server.framework.oplog.OperationLogRecorder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -32,24 +41,36 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /** API-L07、L08、L10、L25 查询实现。 */
 @Service
 @RequiredArgsConstructor
 public class PenServiceImpl implements PenService {
 
-    private static final List<OptionVO> PEN_TYPES = List.of(
+    private static final Pattern PEN_CODE = Pattern.compile("^[A-Za-z0-9-]{1,10}$");
+
+    private static final List<OptionVO> PIG_PEN_TYPES = List.of(
             OptionVO.of("NURSERY", "保育舍"),
             OptionVO.of("FATTENING", "育肥舍"),
             OptionVO.of("SOW", "母猪舍"),
-            OptionVO.of("FARROWING", "产房"),
+            OptionVO.of("FARROWING", "产房"));
+
+    private static final List<OptionVO> POULTRY_PEN_TYPES = List.of(
             OptionVO.of("BROODING", "育雏舍"),
             OptionVO.of("BROILER", "肉鸡舍"),
             OptionVO.of("BREEDER", "种鸡舍"));
 
+    private static final List<OptionVO> RUMINANT_PEN_TYPES = List.of(
+            OptionVO.of("FATTENING", "育肥舍"),
+            OptionVO.of("SOW", "母畜舍"),
+            OptionVO.of("FARROWING", "产房"));
+
     private final HerdSupport support;
     private final FarmLookup farmLookup;
     private final BaseDataQueryService baseDataQueryService;
+    private final PenMapper penMapper;
+    private final OperationLogRecorder operationLogRecorder;
 
     @Override
     public PenFormOptionsVO formOptions() {
@@ -59,7 +80,7 @@ public class PenServiceImpl implements PenService {
         String species = main == null ? null : main.species();
 
         PenFormOptionsVO vo = new PenFormOptionsVO();
-        vo.setPenTypes(PEN_TYPES);
+        vo.setPenTypes(penTypesOf(species));
         List<PenFormOptionsVO.CategoryOption> categories = new ArrayList<>();
         for (CategoryInfo category : baseDataQueryService.listEnabledCategories()) {
             if (species != null && !species.equals(category.species())) {
@@ -275,6 +296,171 @@ public class PenServiceImpl implements PenService {
             }
         }
         return result;
+    }
+
+    @Override
+    @Transactional
+    public PenDetailVO create(PenCreateRequest request) {
+        FarmContext.FarmMember member = support.context();
+        String code = request.getPenCode() == null ? "" : request.getPenCode().trim().toUpperCase();
+        if (code.isEmpty()) {
+            throw HerdErrors.fieldInvalid("pen_code", "请填写栏舍编号");
+        }
+        if (!PEN_CODE.matcher(code).matches()) {
+            throw HerdErrors.fieldInvalid("pen_code", "栏舍编号最多 10 位，只能包含字母、数字和短横线");
+        }
+        if (penMapper.countByCode(member.farmId(), code) > 0) {
+            throw HerdErrors.fieldInvalid("pen_code", "本场已有编号为 " + code + " 的栏舍");
+        }
+        Validated validated = validate(request.getPenName(), request.getPenType(), request.getCategoryId(),
+                request.getCapacity());
+        Pen pen = new Pen();
+        pen.setFarmId(member.farmId());
+        pen.setPenCode(code);
+        pen.setPenName(validated.name());
+        pen.setPenType(validated.penType());
+        pen.setCategoryId(request.getCategoryId());
+        pen.setCapacity(request.getCapacity());
+        pen.setStockCount(0);
+        pen.setStatus(PenDetailVO.STATUS_ENABLED);
+        pen.setVersion(0);
+        pen.setUpdatedBy(member.userId());
+        penMapper.insert(pen);
+        logPen("CREATE", pen, null, Map.of("pen_code", code, "pen_name", validated.name(),
+                "capacity", request.getCapacity()));
+        return toDetail(pen, member);
+    }
+
+    @Override
+    @Transactional
+    public PenDetailVO update(Long penId, PenUpdateRequest request) {
+        FarmContext.FarmMember member = support.context();
+        Pen pen = requirePen(member.farmId(), penId);
+        requireVersion(pen.getVersion(), request.getVersion());
+        Validated validated = validate(request.getPenName(), request.getPenType(), request.getCategoryId(),
+                request.getCapacity());
+        Map<String, Object> before = Map.of("pen_name", pen.getPenName(), "pen_type", pen.getPenType(),
+                "capacity", pen.getCapacity());
+        pen.setPenName(validated.name());
+        pen.setPenType(validated.penType());
+        pen.setCategoryId(request.getCategoryId());
+        pen.setCapacity(request.getCapacity());
+        pen.setUpdatedBy(member.userId());
+        if (penMapper.updateById(pen) == 0) {
+            throw HerdErrors.versionConflict();
+        }
+        logPen("UPDATE", pen, before, Map.of("pen_name", validated.name(), "capacity", request.getCapacity()));
+        return toDetail(pen, member);
+    }
+
+    @Override
+    @Transactional
+    public PenDetailVO disable(Long penId, PenStatusRequest request) {
+        FarmContext.FarmMember member = support.context();
+        Pen pen = requirePen(member.farmId(), penId);
+        requireVersion(pen.getVersion(), request.getVersion());
+        if (PenDetailVO.STATUS_DISABLED.equals(pen.getStatus())) {
+            throw HerdErrors.stateChanged("栏舍状态已变化，列表已刷新");
+        }
+        int activeBatches = support.positivePensOfBatchByPen(member.farmId(), penId).size();
+        if ((pen.getStockCount() != null && pen.getStockCount() > 0) || activeBatches > 0) {
+            throw HerdErrors.penNotEmpty(Math.max(activeBatches, 1));
+        }
+        pen.setStatus(PenDetailVO.STATUS_DISABLED);
+        pen.setDisabledAt(BeijingTime.now());
+        pen.setDisabledBy(member.userId());
+        pen.setUpdatedBy(member.userId());
+        if (penMapper.updateById(pen) == 0) {
+            throw HerdErrors.versionConflict();
+        }
+        logPen("DISABLE", pen, Map.of("status", "ENABLED"), Map.of("status", "DISABLED"));
+        return toDetail(pen, member);
+    }
+
+    @Override
+    @Transactional
+    public PenDetailVO enable(Long penId, PenStatusRequest request) {
+        FarmContext.FarmMember member = support.context();
+        Pen pen = requirePen(member.farmId(), penId);
+        requireVersion(pen.getVersion(), request.getVersion());
+        if (PenDetailVO.STATUS_ENABLED.equals(pen.getStatus())) {
+            throw HerdErrors.stateChanged("栏舍状态已变化，列表已刷新");
+        }
+        pen.setStatus(PenDetailVO.STATUS_ENABLED);
+        pen.setDisabledAt(null);
+        pen.setDisabledBy(null);
+        pen.setUpdatedBy(member.userId());
+        if (penMapper.updateById(pen) == 0) {
+            throw HerdErrors.versionConflict();
+        }
+        logPen("ENABLE", pen, Map.of("status", "DISABLED"), Map.of("status", "ENABLED"));
+        return toDetail(pen, member);
+    }
+
+    private static List<OptionVO> penTypesOf(String species) {
+        if (species == null) {
+            return PIG_PEN_TYPES;
+        }
+        return switch (species) {
+            case "POULTRY" -> POULTRY_PEN_TYPES;
+            case "CATTLE", "SHEEP" -> RUMINANT_PEN_TYPES;
+            default -> PIG_PEN_TYPES;
+        };
+    }
+
+    private record Validated(String name, String penType) {
+    }
+
+    private Validated validate(String penName, String penType, Long categoryId, Integer capacity) {
+        String name = penName == null ? "" : penName.trim();
+        if (name.isEmpty()) {
+            throw HerdErrors.fieldInvalid("pen_name", "请填写栏舍名称");
+        }
+        if (name.codePointCount(0, name.length()) > 20) {
+            throw HerdErrors.fieldInvalid("pen_name", "栏舍名称最多 20 个字");
+        }
+        String type = penType == null ? "" : penType.trim().toUpperCase();
+        if (type.isEmpty()) {
+            throw HerdErrors.fieldInvalid("pen_type", "请选择栏舍类型");
+        }
+        boolean known = penTypesOf(null).stream().anyMatch(option -> option.getValue().equals(type))
+                || PIG_PEN_TYPES.stream().anyMatch(option -> option.getValue().equals(type))
+                || POULTRY_PEN_TYPES.stream().anyMatch(option -> option.getValue().equals(type))
+                || RUMINANT_PEN_TYPES.stream().anyMatch(option -> option.getValue().equals(type));
+        if (!known) {
+            throw HerdErrors.fieldInvalid("pen_type", "请选择栏舍类型");
+        }
+        if (categoryId == null) {
+            throw HerdErrors.fieldInvalid("category_id", "请选择适用品类");
+        }
+        CategoryInfo category = support.category(categoryId);
+        if (category == null || !category.enabled()) {
+            throw HerdErrors.fieldInvalid("category_id", "请选择适用品类");
+        }
+        if (capacity == null || capacity < 1 || capacity > 999_999) {
+            throw HerdErrors.fieldInvalid("capacity", "容量需为大于 0 的整数");
+        }
+        return new Validated(name, type);
+    }
+
+    private static void requireVersion(Integer current, Integer requested) {
+        if (requested == null || !requested.equals(current)) {
+            throw HerdErrors.versionConflict();
+        }
+    }
+
+    private void logPen(String action, Pen pen, Object before, Object after) {
+        operationLogRecorder.record(OperationLogEntry.builder()
+                .operatorType("USER")
+                .opType("PEN")
+                .opAction(action)
+                .bizType("PEN")
+                .bizId(pen.getId())
+                .targetName(pen.getPenName())
+                .farmId(pen.getFarmId())
+                .before(before)
+                .after(after)
+                .build());
     }
 
     private Map<Long, List<Long>> activeCategoriesByPen(Long farmId) {

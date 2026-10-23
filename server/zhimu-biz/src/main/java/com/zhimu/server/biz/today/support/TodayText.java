@@ -143,9 +143,11 @@ public final class TodayText {
             return null;
         }
         return switch (todoType) {
-            case "FEEDING", "WEIGHING" -> "饲喂与称重";
+            case "FEEDING" -> "饲喂管理";
+            case "WEIGHING" -> "称重管理";
             case "INSPECTION" -> "巡检管理";
-            case "IMMUNIZATION", "DISINFECTION" -> "免疫与消毒";
+            case "IMMUNIZATION" -> "免疫计划";
+            case "DISINFECTION" -> "消毒记录";
             case "FARROWING", "HATCHING" -> "繁育管理";
             case "FEED_LOW_STOCK", "DRUG_LOW_STOCK" -> "物资库存";
             case "DRUG_NEAR_EXPIRY", "DRUG_EXPIRED" -> "药品批号";

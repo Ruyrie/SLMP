@@ -62,22 +62,18 @@ foreach ($file in $controllers) {
     $baseMatch = [regex]::Match($text, '@RequestMapping\s*\(\s*(?:value\s*=\s*)?"([^"]*)"')
     $base = if ($baseMatch.Success) { $baseMatch.Groups[1].Value } else { '' }
 
+    # 注解可能带 produces/consumes 等属性，取注解括号内所有字符串作为路径；没有字符串则用类级 base。
     $methodMatches = [regex]::Matches(
         $text,
-        '@(Get|Post|Put|Delete|Patch)Mapping\s*(?:\(\s*(?:value\s*=\s*)?"([^"]*)"\s*\))?')
+        '@(Get|Post|Put|Delete|Patch)Mapping\s*(?:\(([^)]*)\))?')
     foreach ($m in $methodMatches) {
-        $server.Add([pscustomobject]@{
-            Method = $m.Groups[1].Value.ToUpperInvariant()
-            Path   = (Normalize-Path ($base + $m.Groups[2].Value))
-        })
-    }
-
-    # 方法级 @RequestMapping（非类级）按 ANY 记录，只用于提示
-    foreach ($m in [regex]::Matches($text, '@RequestMapping\s*\(\s*(?:value\s*=\s*)?"([^"]*)"')) {
-        if ($m.Groups[1].Value -and $m.Groups[1].Value -ne $base) {
+        $body = $m.Groups[2].Value
+        $paths = @([regex]::Matches($body, '"([^"]*)"') | ForEach-Object { $_.Groups[1].Value })
+        if ($paths.Count -eq 0) { $paths = @('') }
+        foreach ($p in $paths) {
             $server.Add([pscustomobject]@{
-                Method = 'ANY'
-                Path   = (Normalize-Path ($base + $m.Groups[1].Value))
+                Method = $m.Groups[1].Value.ToUpperInvariant()
+                Path   = (Normalize-Path ($base + $p))
             })
         }
     }
@@ -94,6 +90,7 @@ foreach ($a in $appUnique) {
     if (-not $hit) { $missing += $a }
 }
 
+$duplicates = $server | Group-Object Method, Path | Where-Object { $_.Count -gt 1 }
 $coverage = if ($appUnique.Count -eq 0) { 0 } else { [math]::Round(100 * ($appUnique.Count - $missing.Count) / $appUnique.Count, 1) }
 
 Write-Host ''
@@ -102,6 +99,14 @@ Write-Host ("App 唯一接口 : {0}" -f $appUnique.Count)
 Write-Host ("服务端已映射 : {0}" -f ($appUnique.Count - $missing.Count))
 Write-Host ("缺失         : {0}" -f $missing.Count)
 Write-Host ("覆盖率       : {0}%" -f $coverage)
+
+if ($duplicates.Count -gt 0) {
+    Write-Host ''
+    Write-Host '=== 重复映射（会导致 Spring 启动报 Ambiguous mapping） ===' -ForegroundColor Red
+    foreach ($d in $duplicates) {
+        Write-Host ("  {0}  x{1}" -f $d.Name, $d.Count) -ForegroundColor Red
+    }
+}
 
 if ($missing.Count -gt 0) {
     Write-Host ''

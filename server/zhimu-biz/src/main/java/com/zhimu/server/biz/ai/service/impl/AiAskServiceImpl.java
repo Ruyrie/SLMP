@@ -459,14 +459,18 @@ public class AiAskServiceImpl implements AiAskService {
         AiCitation citation = new AiCitation();
         citation.setSeqNo(seq);
         citation.setKnowledgeId(hit.knowledge().getId());
-        citation.setKnowledgeVersionNo(hit.knowledge().getVersionNo());
-        citation.setParaKey(hit.paragraph().getParaKey());
-        citation.setSourceType(hit.knowledge().getSourceType());
-        citation.setIconType(hit.knowledge().getDisplayType());
-        citation.setTitleSnapshot(hit.knowledge().getTitle());
-        citation.setCategoryNameSnapshot(hit.knowledge().getCategoryName());
+        citation.setKnowledgeVersionNo(hit.knowledge().getVersionNo() == null ? 1 : hit.knowledge().getVersionNo());
+        citation.setParaKey(hit.paragraph().getParaKey() == null ? "" : hit.paragraph().getParaKey());
+        citation.setSourceType(hit.knowledge().getSourceType() == null ? AiCodes.SOURCE_PLATFORM
+                : hit.knowledge().getSourceType());
+        citation.setIconType(hit.knowledge().getDisplayType() == null ? AiCodes.ICON_STANDARD
+                : hit.knowledge().getDisplayType());
+        citation.setTitleSnapshot(hit.knowledge().getTitle() == null ? "" : hit.knowledge().getTitle());
+        citation.setCategoryNameSnapshot(hit.knowledge().getCategoryName() == null ? ""
+                : hit.knowledge().getCategoryName());
         String text = hit.paragraph().getContentText();
-        citation.setQuoteText(text != null && text.length() > 1000 ? text.substring(0, 1000) : text);
+        citation.setQuoteText(text != null && text.length() > 1000 ? text.substring(0, 1000)
+                : (text == null ? "" : text));
         return citation;
     }
 

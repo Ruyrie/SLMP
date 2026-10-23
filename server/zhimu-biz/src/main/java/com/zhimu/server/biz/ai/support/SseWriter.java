@@ -53,7 +53,8 @@ public final class SseWriter {
         }
         try {
             String json = JSON.writeValueAsString(data);
-            emitter.send(SseEmitter.event().name(event).data(json, MediaType.APPLICATION_JSON));
+            // 用 text/plain 写出 JSON 文本，避免 Jackson 把 String 再序列化成带引号的字符串
+            emitter.send(SseEmitter.event().name(event).data(json, MediaType.TEXT_PLAIN));
         } catch (Exception e) {
             closed = true;
             stopHeartbeat();

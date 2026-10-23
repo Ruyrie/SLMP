@@ -138,16 +138,18 @@ public class TodoConvert {
     }
 
     private RelatedBatchVO relatedBatch(Todo todo, String farmName) {
-        if (todo.getBatchId() == null) {
+        Long batchId = todo.getRelatedBatchId() != null ? todo.getRelatedBatchId() : todo.getBatchId();
+        if (batchId == null) {
             return null;
         }
         RelatedBatchVO batch = new RelatedBatchVO();
-        batch.setBatchId(todo.getBatchId());
-        batch.setBatchNo(todo.getBatchNo());
+        batch.setBatchId(batchId);
+        batch.setBatchNo(todo.getRelatedBatchNo() != null ? todo.getRelatedBatchNo() : todo.getBatchNo());
         batch.setPenName(todo.getPenName());
-        batch.setDesc(todo.getContentText());
-        batch.setTagText("WITHDRAWAL_END".equals(todo.getTodoType()) ? "休药中" : null);
-        batch.setLink(links.batchLink(todo.getBatchId(), todo.getFarmId(), farmName));
+        batch.setDesc(todo.getRelatedBatchDesc() != null ? todo.getRelatedBatchDesc() : todo.getContentText());
+        batch.setTagText(todo.getRelatedBatchTag() != null ? todo.getRelatedBatchTag()
+                : ("WITHDRAWAL_END".equals(todo.getTodoType()) ? "休药中" : null));
+        batch.setLink(links.batchLink(batchId, todo.getFarmId(), farmName));
         return batch;
     }
 

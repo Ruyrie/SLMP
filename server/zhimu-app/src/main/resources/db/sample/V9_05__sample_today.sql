@@ -187,6 +187,17 @@ VALUES
  'PENDING', 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0,
  NULL, 1, 0, 0, '2026-10-18 08:00:00', '2026-10-18 08:00:00');
 
+-- 详情“关联批次”快照与 App todo_*.json 对齐（列表项的 batch_id 保持与 today 列表一致）
+UPDATE t_todo SET related_batch_id = 3004, related_batch_no = 'ZM2609-038',
+                  related_batch_desc = '保育猪 · 存栏 200 头', related_batch_tag = NULL
+WHERE id = 90112;
+UPDATE t_todo SET related_batch_id = 3001, related_batch_no = 'ZM2610-031',
+                  related_batch_desc = '杜长大 · 96 日龄 · 存栏 200 头', related_batch_tag = '休药中'
+WHERE id IN (90117, 90121);
+UPDATE t_todo SET related_batch_id = 3001, related_batch_no = 'ZM2610-031',
+                  related_batch_desc = '氟苯尼考粉 · 末次用药 10月9日 · 休药 20 天', related_batch_tag = '休药中'
+WHERE id = 90201;
+
 INSERT INTO t_todo_remind (id, todo_id, farm_id, remind_stage, cycle_key, remind_way, remind_at, receiver_scope,
                            msg_type, status, cancel_reason, sent_at, receiver_count, created_at, updated_at)
 VALUES (7701, 90112, 1001, 'ADVANCE', '20261018', 'PLAN', '2026-10-17 08:00:00', 'PEN_STAFF', 'TODO_REMIND', 'SENT', NULL, '2026-10-17 08:00:00', 2, '2026-10-16 08:00:00', '2026-10-17 08:00:00'),
