@@ -18,6 +18,7 @@ import com.zhimu.server.biz.feeding.support.FeedErrors;
 import com.zhimu.server.biz.feeding.support.FeedLookup;
 import com.zhimu.server.biz.feeding.vo.FeedPlanVO;
 import com.zhimu.server.biz.herd.api.BatchInfo;
+import com.zhimu.server.biz.today.api.TodoSource;
 import com.zhimu.server.common.context.FarmContext;
 import com.zhimu.server.common.context.UserContext;
 import com.zhimu.server.common.util.BeijingTime;
@@ -48,6 +49,7 @@ public class FeedPlanService {
     private final FeedPlanStageMapper stageMapper;
     private final FeedPlanMealMapper mealMapper;
     private final FeedTaskService taskService;
+    private final FeedTodoSource todoSource;
     private final FeedLookup lookup;
     private final StdQueryService stdQueryService;
 
@@ -213,6 +215,12 @@ public class FeedPlanService {
         }
         if (firstSave) {
             taskService.generateForBatch(batch, plan, saved);
+            // 首次保存方案可能补生成当天的任务，同步补当天的饲喂待办（幂等，已存在只刷新展示字段）
+            todoSource.generate(TodoSource.TodoSourceContext.builder()
+                    .farmId(batch.farmId())
+                    .date(BeijingTime.today())
+                    .member(FarmContext.get())
+                    .build());
         }
         return toPlan(batch);
     }

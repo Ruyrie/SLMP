@@ -17,6 +17,7 @@ import com.zhimu.server.biz.feeding.support.FeedErrors;
 import com.zhimu.server.biz.feeding.support.FeedLookup;
 import com.zhimu.server.biz.feeding.vo.FeedRecordVO;
 import com.zhimu.server.biz.herd.api.BatchInfo;
+import com.zhimu.server.biz.today.api.TodoSourceWriteService;
 import com.zhimu.server.common.context.FarmContext;
 import com.zhimu.server.common.context.UserContext;
 import com.zhimu.server.common.util.BeijingTime;
@@ -45,6 +46,7 @@ public class FeedRecordService {
     private final FeedTaskService taskService;
     private final FeedStockPort feedStockPort;
     private final FeedLookup lookup;
+    private final TodoSourceWriteService todoWriter;
 
     /** G04 确认投喂 */
     @Transactional
@@ -140,6 +142,7 @@ public class FeedRecordService {
             recordMapper.updateById(record);
         }
         completeTask(task, record.getId());
+        completeTodo(task, record);
         FeedRecordVO.Detail detail = detail(record.getId());
         detail.setTodoCompleted(true);
         return detail;
@@ -409,6 +412,12 @@ public class FeedRecordService {
         return record == null ? null : record.getCreatedBy();
     }
 
+    /** 登记投喂后自动完成对应待办（幂等；待办不存在或已非 PENDING 时无操作） */
+    private void completeTodo(FeedTask task, FeedRecord record) {
+        todoWriter.completeFromSource(record.getFarmId(), FeedTodoSource.TODO_TYPE,
+                FeedTodoSource.dedupKey(task.getId()), "FEED_RECORD", record.getId(), record.getExecutorId());
+    }
+
     private void completeTask(FeedTask task, Long recordId) {
         task.setStatus(FeedCalc.TASK_DONE);
         task.setRecordId(recordId);
@@ -435,6 +444,13 @@ public class FeedRecordService {
         task.setStatus(status);
         task.setRecordId(null);
         taskMapper.updateById(task);
+        if (FeedCalc.TASK_MISSED.equals(status)) {
+            todoWriter.ignoreFromSource(record.getFarmId(), FeedTodoSource.TODO_TYPE,
+                    FeedTodoSource.dedupKey(task.getId()), FeedCalc.CLOSE_REASON_BACKFILL_EXPIRED);
+        } else {
+            todoWriter.reopenFromSource(record.getFarmId(), FeedTodoSource.TODO_TYPE,
+                    FeedTodoSource.dedupKey(task.getId()), record.getId());
+        }
     }
 
     private static String formatTime(java.time.LocalTime time) {
