@@ -9,6 +9,7 @@ import com.zhimu.server.biz.breeding.entity.BreedingAnimal;
 import com.zhimu.server.biz.breeding.entity.BreedingCycle;
 import com.zhimu.server.biz.breeding.mapper.BreedingAnimalMapper;
 import com.zhimu.server.biz.breeding.mapper.BreedingCycleMapper;
+import com.zhimu.server.biz.breeding.mapper.BreedingRefMapper;
 import com.zhimu.server.biz.breeding.vo.CapacityConfirmVO;
 import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.herd.api.BatchQueryService;
@@ -41,6 +42,7 @@ public class BreedingSupport {
 
     private final BreedingAnimalMapper animalMapper;
     private final BreedingCycleMapper cycleMapper;
+    private final BreedingRefMapper refMapper;
     private final PenQueryService penQueryService;
     private final BatchQueryService batchQueryService;
     private final BreedQueryService breedQueryService;
@@ -207,14 +209,10 @@ public class BreedingSupport {
         if (userId == null) {
             return null;
         }
-        AccountBrief brief = accountQueryService.getBrief(userId);
-        if (brief == null) {
-            return null;
-        }
-        return UserBriefVO.builder().userId(brief.userId()).name(brief.name()).build();
+        return users(List.of(userId)).get(userId);
     }
 
-    /** 批量取登记人等账号姓名（一次查询） */
+    /** 批量取登记人等账号姓名与在本场的角色（一次查询；不在本场时只回姓名） */
     public Map<Long, UserBriefVO> users(Collection<Long> userIds) {
         Map<Long, UserBriefVO> result = new LinkedHashMap<>();
         if (userIds == null || userIds.isEmpty()) {
@@ -225,28 +223,43 @@ public class BreedingSupport {
             return result;
         }
         Map<Long, AccountBrief> briefs = accountQueryService.listBriefs(distinct);
-        if (briefs == null) {
+        if (briefs == null || briefs.isEmpty()) {
             return result;
         }
+        Map<Long, String> roles = memberRoles();
         for (Long userId : distinct) {
             AccountBrief brief = briefs.get(userId);
-            if (brief != null) {
-                result.put(userId, UserBriefVO.builder().userId(brief.userId()).name(brief.name()).build());
+            if (brief == null) {
+                continue;
             }
+            String role = roles.get(userId);
+            result.put(userId, UserBriefVO.builder()
+                    .userId(brief.userId())
+                    .name(brief.name())
+                    .role(role)
+                    .roleText(roleText(role))
+                    .build());
         }
         return result;
     }
 
-    public UserBriefVO user(Long userId, Long currentUserId, String role) {
-        UserBriefVO vo = user(userId);
-        if (vo == null) {
-            return null;
+    /** 本场在场成员的角色（App 的 registrant.role / role_text 按农场成员关系回显） */
+    public Map<Long, String> memberRoles() {
+        Map<Long, String> roles = new LinkedHashMap<>();
+        Long farmId = FarmContext.farmId();
+        if (farmId == null) {
+            return roles;
         }
-        if (Objects.equals(userId, currentUserId) && role != null) {
-            vo.setRole(role);
-            vo.setRoleText(roleText(role));
+        List<BreedingMemberRow> rows = refMapper.memberRoles(farmId);
+        if (rows == null) {
+            return roles;
         }
-        return vo;
+        for (BreedingMemberRow row : rows) {
+            if (row.getUserId() != null) {
+                roles.putIfAbsent(row.getUserId(), row.getRole());
+            }
+        }
+        return roles;
     }
 
     public static String roleText(String role) {
