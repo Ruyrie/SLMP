@@ -223,6 +223,39 @@ class AdminBaseDrugMigrationSqlTest {
         assertThat(sql).contains("(3304, 'PAYMENT_METHOD', 'CASH', '现金'");
     }
 
+    /** V2_07 的疫苗、免次、日龄与 module_health 的计划/入栏前项目 mock 一致。 */
+    @Test
+    void v207MatchesHealthPlanMock() {
+        String sql = read("V2_07__init_immune_templates.sql");
+        Map<String, Long> vaccineIds = Map.of(
+                "猪瘟活疫苗", 7001L,
+                "猪伪狂犬病活疫苗", 7002L,
+                "口蹄疫灭活疫苗", 7003L,
+                "猪细小病毒灭活疫苗", 7004L);
+
+        JsonNode plans = AdminBaseTestMvc.json(
+                readAppMock("module_health", "health", "plans_3001_all.json")).get("data").get("list");
+        assertThat(plans.size()).isGreaterThan(0);
+        for (JsonNode plan : plans) {
+            String vaccine = plan.get("vaccine_name").asText();
+            Long vaccineId = vaccineIds.get(vaccine);
+            assertThat(vaccineId).as("未登记的疫苗 %s", vaccine).isNotNull();
+            String round = plan.get("immune_round").asText();
+            int dayAge = plan.get("age_at_plan").asInt();
+            assertThat(sql).contains(", " + vaccineId + ", '" + round + "', 'BY_DAY_AGE', " + dayAge + ",");
+        }
+
+        JsonNode preEntry = AdminBaseTestMvc.json(
+                readAppMock("module_health", "health", "overview_3001.json")).get("data").get("pre_entry_items");
+        assertThat(preEntry.size()).isEqualTo(3);
+        for (JsonNode item : preEntry) {
+            Long vaccineId = vaccineIds.get(item.get("vaccine_name").asText());
+            assertThat(vaccineId).isNotNull();
+            assertThat(sql).contains(", " + vaccineId + ", '" + item.get("immune_round").asText()
+                    + "', 'BY_DAY_AGE', " + item.get("template_age_day").asInt() + ",");
+        }
+    }
+
     /** U10：VACCINATE_METHOD / DISINFECT_METHOD 的 is_system 与 App Mock 一致（被模板/目录引用，不能停用）。 */
     @Test
     void v2081AlignsDictSystemFlagsWithAppMocks() {
