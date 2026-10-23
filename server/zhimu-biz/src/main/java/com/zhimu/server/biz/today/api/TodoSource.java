@@ -16,6 +16,9 @@ import java.util.Map;
  * 待办来源扩展点：模块04–11 在各自事务内调用 {@link #generate} 或直接写 TODO 表后注册本 Bean，
  * 模块03 的列表、日历与首页即可看到该来源的待办；没有实现时只用种子/已有数据。
  * <p>
+ * 实现类通常把 {@link TodoDraft} 交给 {@link TodoSourceWriteService} 落库：按去重键幂等、
+ * 已存在的行只刷新展示字段，登记/作废时再由来源调用该接口完成或恢复待办。
+ * <p>
  * 约定与 2.8.1 节一致：同一 (farm_id, todo_type, dedup_key) 只一条；DONE / IGNORED 的行只更新展示字段。
  */
 public interface TodoSource {
