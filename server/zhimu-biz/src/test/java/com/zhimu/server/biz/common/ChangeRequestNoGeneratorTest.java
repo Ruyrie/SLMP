@@ -21,7 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * 修改申请编号：Redis seq:cr:yyyyMMdd + 4 位序号，跨日由日期键自然重置。
+ * 修改申请编号：Redis seq:cr:yyMMdd + 4 位序号，跨日由日期键自然重置。
  */
 class ChangeRequestNoGeneratorTest {
 
@@ -44,17 +44,17 @@ class ChangeRequestNoGeneratorTest {
 
     @Test
     void generatesCrNumberFromDailySequence() {
-        when(ops.increment("seq:cr:20261019")).thenReturn(8L);
+        when(ops.increment("seq:cr:261019")).thenReturn(8L);
 
-        assertThat(generator.next()).isEqualTo("CR202610190008");
+        assertThat(generator.next()).isEqualTo("CR2610190008");
     }
 
     @Test
     void firstSequenceOfDaySetsTwoDayTtl() {
-        when(ops.increment("seq:cr:20261019")).thenReturn(1L);
+        when(ops.increment("seq:cr:261019")).thenReturn(1L);
 
-        assertThat(generator.next()).isEqualTo("CR202610190001");
-        verify(redis).expire("seq:cr:20261019", Duration.ofDays(2));
+        assertThat(generator.next()).isEqualTo("CR2610190001");
+        verify(redis).expire("seq:cr:261019", Duration.ofDays(2));
     }
 
     @Test
@@ -63,13 +63,13 @@ class ChangeRequestNoGeneratorTest {
 
         generator.next();
 
-        verify(redis, never()).expire(eq("seq:cr:20261019"), eq(Duration.ofDays(2)));
+        verify(redis, never()).expire(eq("seq:cr:261019"), eq(Duration.ofDays(2)));
     }
 
     @Test
     void sequenceIsPaddedToFourDigitsAndWraps() {
         when(ops.increment(anyString())).thenReturn(12345L);
 
-        assertThat(generator.next()).isEqualTo("CR202610192345");
+        assertThat(generator.next()).isEqualTo("CR2610192345");
     }
 }

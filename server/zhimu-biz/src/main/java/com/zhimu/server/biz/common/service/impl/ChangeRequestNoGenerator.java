@@ -9,15 +9,15 @@ import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 
 /**
- * 修改申请编号：Redis 序号 seq:cr:yyyyMMdd 每天从 1 开始，request_no = CR + yyyyMMdd + 4 位序号（任务书第七节 10）。
- * 序号保留 2 天，避免跨天时旧键过早丢失。
+ * 修改申请编号：Redis 序号 seq:cr:yyMMdd 每天从 1 开始，request_no = CR + yyMMdd + 4 位序号（例如 CR2610190008，
+ * 与 App Mock / 管理端-01 示例一致）。序号保留 2 天，避免跨天时旧键过早丢失。
  */
 @Component
 @RequiredArgsConstructor
 public class ChangeRequestNoGenerator {
 
     public static final String KEY_PREFIX = "seq:cr:";
-    private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("yyyyMMdd");
+    private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("yyMMdd");
     private static final Duration TTL = Duration.ofDays(2);
 
     private final StringRedisTemplate redis;
