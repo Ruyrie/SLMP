@@ -1,0 +1,68 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 9106,
+    "batch_id": 3002,
+    "batch_no": "ZM2610-019",
+    "pen_name": "4 号育肥舍",
+    "buyer_name": "赤峰鑫源肉联厂",
+    "sale_date": "2026-10-19",
+    "quantity": 60,
+    "count_unit_text": "头",
+    "total_weight": 7020,
+    "sale_amount": 109512,
+    "received_amount": 0,
+    "unpaid_amount": 109512,
+    "progress_rate": 0.0,
+    "payment_status": "UNPAID",
+    "payment_status_text": "未收款",
+    "has_pending_change": false,
+    "effective_due_date": "2026-10-26",
+    "due_state_text": null,
+    "void_by_review": false,
+    "created_at": "2026-10-19 16:40:00",
+    "due_state": "DUE_LATER",
+    "due_date": "2026-10-26",
+    "overdue_days": null,
+    "days_to_due": 7,
+    "paid_off_date": null,
+    "voided_at": null,
+    "void_reason": null,
+    "sale_no": "CL26101906",
+    "category_name": "育肥猪",
+    "breed_name": "杜长大",
+    "pricing_method": "BY_WEIGHT",
+    "pricing_method_text": "按重量",
+    "unit_price": 15.6,
+    "avg_weight": 117.0,
+    "batch_status": "ACTIVE",
+    "registrant": {
+      "user_id": 10001,
+      "name": "王建国"
+    },
+    "registered_at": "2026-10-19 16:40:00",
+    "content_version": 3,
+    "version": 5,
+    "ref_unit_price": 15.6,
+    "pen_allocations": [
+      {
+        "pen_id": 2004,
+        "pen_name": "4 号育肥舍",
+        "quantity": 60
+      }
+    ],
+    "receipts": [],
+    "pending_change": null,
+    "actions": {
+      "can_receive": true,
+      "can_edit": true,
+      "can_void": true,
+      "can_apply_change": false,
+      "change_in_review": false
+    },
+    "settlement_brief": null,
+    "receipt_result": null
+  },
+  "trace_id": "mock-finance-order_9106"
+}

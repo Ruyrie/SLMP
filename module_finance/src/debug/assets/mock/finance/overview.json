@@ -1,0 +1,72 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "today": "2026-10-19",
+    "pending_supplement_count": 1,
+    "month_balance": {
+      "balance_amount": 87600,
+      "income": 400000,
+      "expense_amount": 312400,
+      "prev_balance_amount": 66300,
+      "balance_mom_rate": 0.321,
+      "comparable": true
+    },
+    "receivable": {
+      "total_unpaid_amount": 193112,
+      "order_count": 3,
+      "overdue_count": 1,
+      "overdue_unpaid_amount": 68448,
+      "nearest_due_date": "2026-10-20"
+    },
+    "price_card": {
+      "category_name": "育肥猪",
+      "province_name": "内蒙古",
+      "price": 15.6,
+      "price_unit": "YUAN_PER_KG",
+      "price_unit_text": "元/千克",
+      "change_rate": 0.04,
+      "direction": "UP",
+      "price_date": "2026-10-19",
+      "compare_date": "2026-10-18",
+      "compare_price": 15.0
+    },
+    "month_sales": {
+      "order_count": 3,
+      "sale_amount": 593112
+    },
+    "month_records": {
+      "total": 46,
+      "auto_count": 18,
+      "manual_count": 28
+    },
+    "todos": {
+      "total": 2,
+      "items": [
+        {
+          "todo_id": 90103,
+          "todo_type": "RECEIVABLE",
+          "title": "ZM2605-018 收款已逾期",
+          "subtitle": "未收 68,448 元 · 约定 10月15日",
+          "due_date": "2026-10-15",
+          "overdue": true,
+          "tag_text": "已逾期",
+          "biz_type": "SALE_ORDER",
+          "biz_id": 9101
+        },
+        {
+          "todo_id": 90501,
+          "todo_type": "RECEIVABLE",
+          "title": "ZM2609-012 待收款",
+          "subtitle": "未收 88,160 元 · 约定 10月20日",
+          "due_date": "2026-10-20",
+          "overdue": false,
+          "tag_text": "明天",
+          "biz_type": "SALE_ORDER",
+          "biz_id": 9102
+        }
+      ]
+    }
+  },
+  "trace_id": "mock-finance-overview"
+}

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E12 列表头部（图 10-16）：在栏批次下拉 + 辅助文字、AI 建议卡、“历史建议”分组标题 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/base_page_margin"
+    android:paddingTop="@dimen/base_space_4"
+    android:paddingEnd="@dimen/base_page_margin">
+
+    <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+        android:id="@+id/finance_batch_layout"
+        style="@style/Widget.Zmt.TextInputLayout.Picker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/finance_e12_batch"
+        app:endIconDrawable="@drawable/ic_arrow_drop_down"
+        app:endIconMode="custom"
+        app:helperTextEnabled="true">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/finance_batch"
+            style="@style/Widget.Zmt.TextInputEditText.Picker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+    <TextView
+        android:id="@+id/finance_no_batch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="@dimen/base_space_8"
+        android:paddingBottom="@dimen/base_space_8"
+        android:text="@string/finance_e12_no_batch"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/finance_card"
+        layout="@layout/finance_view_advice_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_3" />
+
+    <com.zhimu.slmp.base.widget.SectionHeaderView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_section_gap"
+        app:sectionTitle="@string/finance_e12_history" />
+
+    <TextView
+        android:id="@+id/finance_history_empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/finance_e12_history_empty"
+        android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone" />
+</LinearLayout>

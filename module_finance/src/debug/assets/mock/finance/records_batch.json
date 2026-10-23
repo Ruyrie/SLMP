@@ -1,0 +1,93 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 8202,
+        "farm_id": 1001,
+        "category_id": 104,
+        "amount": 600,
+        "record_date": "2026-10-19",
+        "voucher_count": 0,
+        "title": "人工 · 临时工",
+        "category_name": "人工",
+        "category_icon": "engineering",
+        "source_type": "MANUAL",
+        "source_label": null,
+        "record_type_text": "支出",
+        "status_text": "正常",
+        "editable": true,
+        "created_at": "2026-10-19 08:10:00",
+        "record_type": "EXPENSE",
+        "status": "NORMAL",
+        "subcategory_id": 1041,
+        "subcategory_name": "临时工",
+        "batch_id": 3001,
+        "batch_no": "ZM2610-031"
+      },
+      {
+        "id": 8207,
+        "farm_id": 1001,
+        "category_id": 201,
+        "amount": 40000,
+        "record_date": "2026-10-16",
+        "voucher_count": 0,
+        "title": "出栏销售",
+        "category_name": "出栏销售",
+        "category_icon": "payments",
+        "source_type": "SALE_RECEIPT",
+        "source_label": "来自出栏收款",
+        "record_type_text": "收入",
+        "status_text": "正常",
+        "editable": false,
+        "created_at": "2026-10-16 15:00:00",
+        "record_type": "INCOME",
+        "status": "NORMAL",
+        "detail_text": "ZM2609-012 · 微信",
+        "batch_id": 3009,
+        "batch_no": "ZM2609-012",
+        "source_target": {
+          "biz_type": "SALE_ORDER",
+          "biz_id": 9102
+        }
+      },
+      {
+        "id": 8208,
+        "farm_id": 1001,
+        "category_id": 201,
+        "amount": 60000,
+        "record_date": "2026-10-13",
+        "voucher_count": 0,
+        "title": "出栏销售",
+        "category_name": "出栏销售",
+        "category_icon": "payments",
+        "source_type": "SALE_RECEIPT",
+        "source_label": "来自出栏收款",
+        "record_type_text": "收入",
+        "status_text": "正常",
+        "editable": false,
+        "created_at": "2026-10-13 16:45:00",
+        "record_type": "INCOME",
+        "status": "NORMAL",
+        "detail_text": "ZM2609-012 · 银行转账",
+        "batch_id": 3009,
+        "batch_no": "ZM2609-012",
+        "source_target": {
+          "biz_type": "SALE_ORDER",
+          "biz_id": 9102
+        }
+      }
+    ],
+    "total": 3,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": null,
+    "totals": {
+      "income": 100000,
+      "expense_amount": 600
+    }
+  },
+  "trace_id": "mock-finance-records_batch"
+}

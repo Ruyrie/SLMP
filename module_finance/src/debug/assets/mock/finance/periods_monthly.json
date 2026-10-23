@@ -1,0 +1,22 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "periods": [
+      {
+        "period_start": "2026-09-01",
+        "period_end": "2026-09-30",
+        "label": "9月",
+        "generated_at": "2026-10-01 02:00:00"
+      },
+      {
+        "period_start": "2026-08-01",
+        "period_end": "2026-08-31",
+        "label": "8月",
+        "generated_at": "2026-09-01 02:00:00"
+      }
+    ],
+    "next_generation_date": "2026-11-01"
+  },
+  "trace_id": "mock-finance-periods_monthly"
+}

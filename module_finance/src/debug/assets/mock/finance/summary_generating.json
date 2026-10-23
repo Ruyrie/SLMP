@@ -1,0 +1,13 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "status": "GENERATING",
+    "highlight": null,
+    "problem": null,
+    "suggestion": null,
+    "generated_at": null,
+    "outdated": false
+  },
+  "trace_id": "mock-finance-summary_generating"
+}

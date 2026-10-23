@@ -1,0 +1,58 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "biz_type": "SALE_ORDER",
+    "biz_id": 9102,
+    "biz_type_text": "出栏单",
+    "record_locator": "ZM2609-012 · 10月13日出栏",
+    "record_title": "出栏单 ZM2609-012",
+    "record_subtitle": "11,760 千克 · 已收 100,000 元",
+    "record_version": "3",
+    "record_card": [
+      {
+        "label": "销售金额",
+        "value": "188,160 元"
+      },
+      {
+        "label": "已收",
+        "value": "100,000 元"
+      }
+    ],
+    "fields": [
+      {
+        "field_code": "unit_price",
+        "field_name": "单价",
+        "value": "16.00",
+        "value_unit": "元/千克",
+        "input_type": "NUMBER",
+        "options": [],
+        "min": 0,
+        "max": 99999.99
+      },
+      {
+        "field_code": "quantity",
+        "field_name": "数量",
+        "value": "98",
+        "value_unit": "头",
+        "input_type": "NUMBER",
+        "options": [],
+        "min": 1,
+        "max": 98
+      }
+    ],
+    "linked_rules": [
+      "修改单价或数量会重新计算销售金额、未收金额和批次盈亏"
+    ],
+    "review_tip": "这张出栏单已有收款，修改数量、单价或作废需要管理员审核，审核期间原单照常有效。",
+    "pending_request_id": null,
+    "void_allowed": true,
+    "void_notice": "审核通过后出栏单作废，已收款生成的收入同步作废",
+    "void_recalc_tags": [
+      "销售金额",
+      "批次盈亏",
+      "存栏"
+    ]
+  },
+  "trace_id": "mock-finance-change_form_sale_order"
+}

@@ -1,0 +1,64 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "latest": {
+      "price": 15.6,
+      "price_unit": "YUAN_PER_KG",
+      "price_unit_text": "元/千克",
+      "price_date": "2026-10-19"
+    },
+    "change": {
+      "change_rate": 0.04,
+      "direction": "UP",
+      "compare_date": "2026-10-18",
+      "compare_price": 15.0
+    },
+    "series": [
+      {
+        "date": "2026-10-13",
+        "price": 14.86,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-14",
+        "price": 14.88,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-15",
+        "price": 14.9,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-16",
+        "price": 14.9,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-17",
+        "price": 14.9,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-18",
+        "price": 15.0,
+        "corrected": true
+      },
+      {
+        "date": "2026-10-19",
+        "price": 15.6,
+        "corrected": false
+      }
+    ],
+    "stats": {
+      "max_price": 15.6,
+      "max_date": "2026-10-19",
+      "min_price": 14.86,
+      "min_date": "2026-10-13",
+      "avg_price": 15.01
+    },
+    "empty": false
+  },
+  "trace_id": "mock-finance-trend_7"
+}

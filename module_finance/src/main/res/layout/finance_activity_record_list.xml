@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E04 收支流水（图 10-6）：顶部栏（search、filter_list）/ 搜索栏、月份下拉 + 合计、类型筛选 Chip 行、按日期分组的分页列表 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/finance_top_bar"
+        layout="@layout/base_include_top_app_bar" />
+
+    <include
+        android:id="@+id/finance_search"
+        layout="@layout/finance_view_search_bar"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_1"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingEnd="@dimen/base_page_margin">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/finance_month_chip"
+            style="@style/Widget.Zmt.Chip.Dropdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/finance_totals"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/base_page_margin"
+        android:paddingEnd="@dimen/base_page_margin"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/finance_type_chips"
+            style="@style/Widget.Zmt.ChipGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleLine="true" />
+    </HorizontalScrollView>
+
+    <com.zhimu.slmp.base.widget.StateLayout
+        android:id="@+id/finance_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:stateEmptyIcon="@drawable/ic_receipt_long"
+        app:stateErrorTitle="@string/finance_error_title"
+        app:stateNoPermissionTitle="@string/finance_no_permission_title"
+        app:stateSkeletonLayout="@layout/base_skeleton_list">
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/finance_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/finance_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="@dimen/base_space_4" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </com.zhimu.slmp.base.widget.StateLayout>
+</LinearLayout>

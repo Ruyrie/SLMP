@@ -1,0 +1,116 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 9101,
+    "batch_id": 3005,
+    "batch_no": "ZM2605-018",
+    "pen_name": "4 号育肥舍",
+    "buyer_name": "赤峰鑫源肉联厂",
+    "sale_date": "2026-10-05",
+    "quantity": 202,
+    "count_unit_text": "头",
+    "total_weight": 24240,
+    "sale_amount": 368448,
+    "received_amount": 330000,
+    "unpaid_amount": 38448,
+    "progress_rate": 0.896,
+    "payment_status": "PARTIAL",
+    "payment_status_text": "部分收款",
+    "has_pending_change": true,
+    "effective_due_date": "2026-10-15",
+    "due_state_text": "已逾期 4 天",
+    "void_by_review": false,
+    "created_at": "2026-10-05 16:40:00",
+    "due_state": "OVERDUE",
+    "due_date": "2026-10-15",
+    "overdue_days": 4,
+    "days_to_due": null,
+    "paid_off_date": null,
+    "voided_at": null,
+    "void_reason": null,
+    "sale_no": "CL26100501",
+    "category_name": "育肥猪",
+    "breed_name": "杜长大",
+    "pricing_method": "BY_WEIGHT",
+    "pricing_method_text": "按重量",
+    "unit_price": 15.2,
+    "avg_weight": 120.0,
+    "batch_status": "ENDED",
+    "registrant": {
+      "user_id": 10001,
+      "name": "王建国"
+    },
+    "registered_at": "2026-10-05 16:40:00",
+    "content_version": 3,
+    "version": 5,
+    "ref_unit_price": 15.6,
+    "pen_allocations": [
+      {
+        "pen_id": 2004,
+        "pen_name": "4 号育肥舍",
+        "quantity": 202
+      }
+    ],
+    "receipts": [
+      {
+        "id": 5900,
+        "amount": 30000,
+        "receipt_date": "2026-10-19",
+        "payment_method": "BANK_TRANSFER",
+        "payment_method_text": "银行转账",
+        "operator_name": "王建国",
+        "finance_record_id": 8299,
+        "status": "NORMAL"
+      },
+      {
+        "id": 5102,
+        "amount": 100000,
+        "receipt_date": "2026-10-12",
+        "payment_method": "BANK_TRANSFER",
+        "payment_method_text": "银行转账",
+        "operator_name": "王建国",
+        "finance_record_id": 8190,
+        "status": "NORMAL"
+      },
+      {
+        "id": 5101,
+        "amount": 200000,
+        "receipt_date": "2026-10-05",
+        "payment_method": "BANK_TRANSFER",
+        "payment_method_text": "银行转账",
+        "operator_name": "王建国",
+        "finance_record_id": 8180,
+        "status": "NORMAL"
+      }
+    ],
+    "pending_change": {
+      "change_request_id": 9011,
+      "change_type": "UPDATE",
+      "field_code": "unit_price",
+      "summary_text": "单价每千克 15.20 元改为 15.00 元"
+    },
+    "actions": {
+      "can_receive": true,
+      "can_edit": false,
+      "can_void": false,
+      "can_apply_change": true,
+      "change_in_review": true
+    },
+    "settlement_brief": {
+      "status": "LOCKED",
+      "profit": 13848,
+      "sale_income": 368448,
+      "cost_total": 354600,
+      "cost_per_head": 1755.45,
+      "fcr": 2.71,
+      "pending_supplement_count": 0
+    },
+    "receipt_result": {
+      "amount": 30000,
+      "unpaid_amount": 38448,
+      "paid_off": false
+    }
+  },
+  "trace_id": "mock-finance-receipt_9101_partial"
+}

@@ -1,0 +1,90 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "id": 8203,
+        "farm_id": 1001,
+        "category_id": 203,
+        "amount": 6000,
+        "record_date": "2026-10-18",
+        "voucher_count": 1,
+        "title": "补贴 · 能繁母猪补贴",
+        "category_name": "补贴",
+        "category_icon": "account_balance",
+        "source_type": "MANUAL",
+        "source_label": null,
+        "record_type_text": "收入",
+        "status_text": "正常",
+        "editable": true,
+        "created_at": "2026-10-18 16:30:00",
+        "record_type": "INCOME",
+        "status": "NORMAL",
+        "note": "能繁母猪补贴"
+      },
+      {
+        "id": 8207,
+        "farm_id": 1001,
+        "category_id": 201,
+        "amount": 40000,
+        "record_date": "2026-10-16",
+        "voucher_count": 0,
+        "title": "出栏销售",
+        "category_name": "出栏销售",
+        "category_icon": "payments",
+        "source_type": "SALE_RECEIPT",
+        "source_label": "来自出栏收款",
+        "record_type_text": "收入",
+        "status_text": "正常",
+        "editable": false,
+        "created_at": "2026-10-16 15:00:00",
+        "record_type": "INCOME",
+        "status": "NORMAL",
+        "detail_text": "ZM2609-012 · 微信",
+        "batch_id": 3009,
+        "batch_no": "ZM2609-012",
+        "source_target": {
+          "biz_type": "SALE_ORDER",
+          "biz_id": 9102
+        }
+      },
+      {
+        "id": 8208,
+        "farm_id": 1001,
+        "category_id": 201,
+        "amount": 60000,
+        "record_date": "2026-10-13",
+        "voucher_count": 0,
+        "title": "出栏销售",
+        "category_name": "出栏销售",
+        "category_icon": "payments",
+        "source_type": "SALE_RECEIPT",
+        "source_label": "来自出栏收款",
+        "record_type_text": "收入",
+        "status_text": "正常",
+        "editable": false,
+        "created_at": "2026-10-13 16:45:00",
+        "record_type": "INCOME",
+        "status": "NORMAL",
+        "detail_text": "ZM2609-012 · 银行转账",
+        "batch_id": 3009,
+        "batch_no": "ZM2609-012",
+        "source_target": {
+          "biz_type": "SALE_ORDER",
+          "biz_id": 9102
+        }
+      }
+    ],
+    "total": 3,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": null,
+    "totals": {
+      "income": 106000,
+      "expense_amount": 0
+    }
+  },
+  "trace_id": "mock-finance-records_income"
+}

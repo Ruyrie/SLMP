@@ -1,0 +1,6 @@
+{
+  "code": 40903,
+  "message": "这张出栏单还没有收款，可以直接修改",
+  "data": null,
+  "trace_id": "mock-finance-err_40903_no_receipt"
+}

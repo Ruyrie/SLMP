@@ -1,0 +1,120 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "period_start": "2026-10-01",
+    "period_end": "2026-10-19",
+    "is_current_month": true,
+    "income": 400000,
+    "expense_amount": 312400,
+    "balance_amount": 87600,
+    "prev_income": 360000,
+    "prev_expense_amount": 293600,
+    "prev_balance_amount": 66300,
+    "income_comparable": true,
+    "expense_comparable": true,
+    "balance_comparable": true,
+    "income_mom_rate": 0.111,
+    "expense_mom_rate": 0.064,
+    "balance_mom_rate": 0.321,
+    "record_count": 46,
+    "auto_count": 18,
+    "manual_count": 28,
+    "manageable_farm_count": 2,
+    "expense_shares": [
+      {
+        "category_id": 101,
+        "name": "饲料采购",
+        "icon": "inventory_2",
+        "amount": 187440,
+        "share_rate": 0.6,
+        "mom_rate": 0.091,
+        "comparable": true,
+        "trend": "UP"
+      },
+      {
+        "category_id": 104,
+        "name": "人工",
+        "icon": "engineering",
+        "amount": 46860,
+        "share_rate": 0.15,
+        "mom_rate": 0,
+        "comparable": true,
+        "trend": "FLAT"
+      },
+      {
+        "category_id": 102,
+        "name": "兽药疫苗",
+        "icon": "vaccines",
+        "amount": 31240,
+        "share_rate": 0.1,
+        "mom_rate": -0.16,
+        "comparable": true,
+        "trend": "DOWN"
+      },
+      {
+        "category_id": 103,
+        "name": "水电",
+        "icon": "bolt",
+        "amount": 18744,
+        "share_rate": 0.06,
+        "mom_rate": 0.05,
+        "comparable": true,
+        "trend": "UP"
+      },
+      {
+        "category_id": 106,
+        "name": "设备维修",
+        "icon": "build",
+        "amount": 15620,
+        "share_rate": 0.05,
+        "mom_rate": 0.75,
+        "comparable": true,
+        "trend": "UP"
+      },
+      {
+        "category_id": 107,
+        "name": "其他",
+        "icon": "category",
+        "amount": 12496,
+        "share_rate": 0.04,
+        "mom_rate": -0.16,
+        "comparable": true,
+        "trend": "DOWN"
+      }
+    ],
+    "income_shares": [
+      {
+        "category_id": 201,
+        "name": "出栏销售",
+        "icon": "payments",
+        "amount": 388000,
+        "share_rate": 0.97,
+        "mom_rate": 0.12,
+        "comparable": true,
+        "trend": "UP"
+      },
+      {
+        "category_id": 203,
+        "name": "补贴",
+        "icon": "account_balance",
+        "amount": 6000,
+        "share_rate": 0.015,
+        "mom_rate": null,
+        "comparable": false,
+        "trend": null
+      },
+      {
+        "category_id": 202,
+        "name": "副产品",
+        "icon": "storefront",
+        "amount": 6000,
+        "share_rate": 0.015,
+        "mom_rate": -0.2,
+        "comparable": true,
+        "trend": "DOWN"
+      }
+    ]
+  },
+  "trace_id": "mock-finance-summary_202610"
+}

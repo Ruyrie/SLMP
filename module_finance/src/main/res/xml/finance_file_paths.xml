@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 经营报表导出文件：只暴露专属外部目录 Download/reports/ -->
+<paths>
+    <external-files-path
+        name="reports"
+        path="Download/reports/" />
+</paths>

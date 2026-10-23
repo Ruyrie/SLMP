@@ -1,0 +1,43 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 701,
+      "code": "BANK_TRANSFER",
+      "name": "银行转账",
+      "description": null,
+      "remark_required": false,
+      "system": true,
+      "sort_no": 1
+    },
+    {
+      "id": 702,
+      "code": "WECHAT",
+      "name": "微信",
+      "description": null,
+      "remark_required": false,
+      "system": true,
+      "sort_no": 2
+    },
+    {
+      "id": 703,
+      "code": "ALIPAY",
+      "name": "支付宝",
+      "description": null,
+      "remark_required": false,
+      "system": true,
+      "sort_no": 3
+    },
+    {
+      "id": 704,
+      "code": "CASH",
+      "name": "现金",
+      "description": null,
+      "remark_required": false,
+      "system": true,
+      "sort_no": 4
+    }
+  ],
+  "trace_id": "mock-finance-dict_payment_method"
+}

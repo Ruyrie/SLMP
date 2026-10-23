@@ -1,0 +1,71 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "batch_id": 3001,
+        "batch_no": "ZM2610-031",
+        "pen_name": "3 号育肥舍",
+        "batch_status": "ACTIVE",
+        "settlement_status": "RUNNING",
+        "pending_supplement_count": 0
+      },
+      {
+        "batch_id": 3002,
+        "batch_no": "ZM2610-019",
+        "pen_name": "4 号育肥舍",
+        "batch_status": "ACTIVE",
+        "settlement_status": "RUNNING",
+        "pending_supplement_count": 0
+      },
+      {
+        "batch_id": 3004,
+        "batch_no": "ZM2609-038",
+        "pen_name": "2 号保育舍",
+        "batch_status": "ACTIVE",
+        "settlement_status": "RUNNING",
+        "pending_supplement_count": 0
+      },
+      {
+        "batch_id": 3003,
+        "batch_no": "ZM2610-045",
+        "pen_name": "1 号保育舍",
+        "batch_status": "ACTIVE",
+        "settlement_status": "RUNNING",
+        "pending_supplement_count": 0
+      },
+      {
+        "batch_id": 3009,
+        "batch_no": "ZM2609-012",
+        "pen_name": "5 号育肥舍",
+        "batch_status": "ENDED",
+        "settlement_status": "LOCKED",
+        "pending_supplement_count": 1
+      },
+      {
+        "batch_id": 3005,
+        "batch_no": "ZM2605-018",
+        "pen_name": "4 号育肥舍",
+        "batch_status": "ENDED",
+        "settlement_status": "LOCKED",
+        "pending_supplement_count": 0
+      },
+      {
+        "batch_id": 3006,
+        "batch_no": "ZM2604-007",
+        "pen_name": "1 号育肥舍",
+        "batch_status": "ENDED",
+        "settlement_status": "LOCKED",
+        "pending_supplement_count": 0
+      }
+    ],
+    "total": 7,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": null,
+    "farm_pending_supplement_count": 1
+  },
+  "trace_id": "mock-finance-settlement_options"
+}

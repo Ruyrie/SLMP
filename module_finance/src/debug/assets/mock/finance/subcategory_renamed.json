@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 1012,
+    "name": "玉米（已改名）",
+    "created_at": "2026-09-01 10:00:00"
+  },
+  "trace_id": "mock-finance-subcategory_renamed"
+}

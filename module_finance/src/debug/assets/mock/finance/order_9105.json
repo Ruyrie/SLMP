@@ -1,0 +1,68 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 9105,
+    "batch_id": 3006,
+    "batch_no": "ZM2604-007",
+    "pen_name": "1 号育肥舍",
+    "buyer_name": "宁城宏达生猪收购站",
+    "sale_date": "2026-09-26",
+    "quantity": 168,
+    "count_unit_text": "头",
+    "total_weight": 19824,
+    "sale_amount": 293395,
+    "received_amount": 0,
+    "unpaid_amount": 0,
+    "progress_rate": 0.0,
+    "payment_status": "VOIDED",
+    "payment_status_text": "已作废",
+    "has_pending_change": false,
+    "effective_due_date": null,
+    "due_state_text": null,
+    "void_by_review": false,
+    "created_at": "2026-09-26 09:00:00",
+    "due_state": "VOIDED",
+    "due_date": null,
+    "overdue_days": null,
+    "days_to_due": null,
+    "paid_off_date": null,
+    "voided_at": "2026-09-26 15:10:00",
+    "void_reason": "数量登记错误，已重新登记",
+    "sale_no": "CL26092605",
+    "category_name": "育肥猪",
+    "breed_name": "杜长大",
+    "pricing_method": "BY_WEIGHT",
+    "pricing_method_text": "按重量",
+    "unit_price": 14.8,
+    "avg_weight": 118.0,
+    "batch_status": "ENDED",
+    "registrant": {
+      "user_id": 10001,
+      "name": "王建国"
+    },
+    "registered_at": "2026-09-26 16:40:00",
+    "content_version": 3,
+    "version": 5,
+    "ref_unit_price": 15.6,
+    "pen_allocations": [
+      {
+        "pen_id": 2008,
+        "pen_name": "1 号育肥舍",
+        "quantity": 168
+      }
+    ],
+    "receipts": [],
+    "pending_change": null,
+    "actions": {
+      "can_receive": false,
+      "can_edit": false,
+      "can_void": false,
+      "can_apply_change": false,
+      "change_in_review": false
+    },
+    "settlement_brief": null,
+    "receipt_result": null
+  },
+  "trace_id": "mock-finance-order_9105"
+}

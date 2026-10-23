@@ -1,0 +1,12 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 9106,
+    "batch_no": "ZM2610-019",
+    "remaining_count": 90,
+    "count_unit_text": "头",
+    "batch_ended": false
+  },
+  "trace_id": "mock-finance-order_created"
+}

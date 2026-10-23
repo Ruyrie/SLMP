@@ -1,0 +1,33 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 7301,
+    "batch_id": 3001,
+    "batch_no": "ZM2610-031",
+    "pen_name": "3 号育肥舍",
+    "status": "SUCCESS",
+    "conclusion": "NOT_SELLABLE",
+    "conclusion_text": "暂不可出栏",
+    "in_withdrawal": true,
+    "basis_insufficient": false,
+    "generated_at": "2026-10-19 09:28:00",
+    "window_start": "2026-10-29",
+    "window_end": "2026-11-05",
+    "sellable_date": "2026-10-29",
+    "withdrawal_days_left": 10,
+    "reasons": {
+      "withdrawal": "氟苯尼考粉末次用药 10月9日，休药期 20 天，10月29日起可出栏。",
+      "age": "96 日龄，存栏 200 头。",
+      "weight": "10月19日称重，平均体重比同日龄标准低 12.5%。",
+      "price": "近 30 天每千克 14.40—15.60 元，平均 14.73 元；今天涨 4.0%。"
+    },
+    "risks": [
+      "单日涨幅较大，休药期满后价格可能回落。",
+      "体重偏低，过早出栏会降低单头收入。"
+    ],
+    "basis_note": null,
+    "batch_end_date": null
+  },
+  "trace_id": "mock-finance-advice_3001"
+}

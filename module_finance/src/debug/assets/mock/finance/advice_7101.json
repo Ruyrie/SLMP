@@ -1,0 +1,32 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "id": 7101,
+    "batch_id": 3009,
+    "batch_no": "ZM2609-012",
+    "pen_name": "5 号育肥舍",
+    "status": "SUCCESS",
+    "conclusion": "SELL_SOON",
+    "conclusion_text": "建议近期出栏",
+    "in_withdrawal": false,
+    "basis_insufficient": false,
+    "generated_at": "2026-10-08 09:00:00",
+    "window_start": "2026-10-09",
+    "window_end": "2026-10-16",
+    "sellable_date": null,
+    "withdrawal_days_left": null,
+    "reasons": {
+      "withdrawal": "不在休药期，可以出栏。",
+      "age": "162 日龄，存栏 98 头。",
+      "weight": "10月6日称重，平均体重 119.5 千克。",
+      "price": "近 30 天每千克 14.40—14.80 元，平均 14.60 元；今天持平。"
+    },
+    "risks": [
+      "收购商压价，可多比较几家。"
+    ],
+    "basis_note": null,
+    "batch_end_date": "2026-10-13"
+  },
+  "trace_id": "mock-finance-advice_7101"
+}

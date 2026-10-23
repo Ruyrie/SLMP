@@ -1,0 +1,12 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "latest": null,
+    "change": null,
+    "series": [],
+    "stats": null,
+    "empty": true
+  },
+  "trace_id": "mock-finance-trend_empty"
+}

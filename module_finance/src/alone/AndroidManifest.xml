@@ -22,6 +22,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 单独运行时承载 E01 经营页（壳工程中为 MainActivity 的“经营”标签） -->
+        <activity
+            android:name="com.zhimu.slmp.finance.alone.FinanceHostActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.E01" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

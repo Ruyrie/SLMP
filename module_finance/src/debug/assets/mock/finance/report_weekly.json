@@ -1,0 +1,96 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "period": {
+      "start": "2026-10-12",
+      "end": "2026-10-18",
+      "label": "10月12日—18日",
+      "to_date": "2026-10-18"
+    },
+    "scope": null,
+    "included_farms": [
+      {
+        "farm_id": 1001,
+        "name": "东山猪场",
+        "species_text": "猪",
+        "status": "NORMAL",
+        "status_text": "正常",
+        "role": "OWNER"
+      }
+    ],
+    "staff_farm_names": [],
+    "empty": false,
+    "data_check": {
+      "has_issue": false,
+      "batch_count": 0,
+      "more_count": 0,
+      "items": []
+    },
+    "metrics": {
+      "stock": [
+        {
+          "count_unit": "HEAD",
+          "count_unit_text": "头",
+          "begin": 975,
+          "end": 872,
+          "change": -103
+        }
+      ],
+      "mortality": {
+        "rate": 0.006,
+        "change_point": -0.001,
+        "death_count": 6,
+        "comparable": true
+      },
+      "feed": {
+        "kg": 18200,
+        "change_rate": 0.012,
+        "comparable": true
+      },
+      "balance": {
+        "amount": 41200,
+        "change_rate": null,
+        "comparable": false
+      }
+    },
+    "batch_profits": {
+      "profit_total": 3160,
+      "items": [
+        {
+          "batch_id": 3009,
+          "batch_no": "ZM2609-012",
+          "farm_name": "东山猪场",
+          "profit": 3160
+        }
+      ]
+    },
+    "running_batches": [
+      {
+        "batch_id": 3001,
+        "batch_no": "ZM2610-031",
+        "pen_name": "3 号育肥舍",
+        "cost_total": 146000
+      },
+      {
+        "batch_id": 3002,
+        "batch_no": "ZM2610-019",
+        "pen_name": "4 号育肥舍",
+        "cost_total": 98000
+      },
+      {
+        "batch_id": 3004,
+        "batch_no": "ZM2609-038",
+        "pen_name": "2 号保育舍",
+        "cost_total": 61000
+      },
+      {
+        "batch_id": 3003,
+        "batch_no": "ZM2610-045",
+        "pen_name": "1 号保育舍",
+        "cost_total": 52000
+      }
+    ]
+  },
+  "trace_id": "mock-finance-report_weekly"
+}

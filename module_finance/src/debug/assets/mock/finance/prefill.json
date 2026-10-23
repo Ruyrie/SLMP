@@ -1,0 +1,21 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "market_price": {
+      "province_name": "内蒙古",
+      "category_name": "育肥猪",
+      "price": 15.6,
+      "price_unit_text": "元/千克",
+      "price_date": "2026-10-19"
+    },
+    "recent_buyers": [
+      "赤峰鑫源肉联厂",
+      "宁城宏达生猪收购站",
+      "通辽牧原食品"
+    ],
+    "last_buyer": "赤峰鑫源肉联厂",
+    "last_payment_method": "BANK_TRANSFER"
+  },
+  "trace_id": "mock-finance-prefill"
+}

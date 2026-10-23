@@ -1,0 +1,194 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "price_date": "2026-10-19",
+        "price": 15.6,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.04,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-18",
+        "price": 15.0,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.007,
+        "direction": "UP",
+        "corrected": true,
+        "corrected_at": "2026-10-19 08:30:00"
+      },
+      {
+        "price_date": "2026-10-17",
+        "price": 14.9,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.0,
+        "direction": "FLAT",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-16",
+        "price": 14.9,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.0,
+        "direction": "FLAT",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-15",
+        "price": 14.9,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.001,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-14",
+        "price": 14.88,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.001,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-13",
+        "price": 14.86,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.003,
+        "direction": "DOWN",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-12",
+        "price": 14.9,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.003,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-11",
+        "price": 14.85,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.003,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-10",
+        "price": 14.8,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.001,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-09",
+        "price": 14.78,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.002,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-08",
+        "price": 14.75,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.002,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-07",
+        "price": 14.72,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.001,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-06",
+        "price": 14.7,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.001,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-05",
+        "price": 14.68,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.001,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-04",
+        "price": 14.66,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.001,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-03",
+        "price": 14.64,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.001,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-10-02",
+        "price": 14.62,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.001,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-09-30",
+        "price": 14.6,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.001,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      },
+      {
+        "price_date": "2026-09-29",
+        "price": 14.58,
+        "price_unit_text": "元/千克",
+        "change_rate": 0.002,
+        "direction": "UP",
+        "corrected": false,
+        "corrected_at": null
+      }
+    ],
+    "total": 20,
+    "page": 1,
+    "size": 20,
+    "has_more": true,
+    "tab_counts": null
+  },
+  "trace_id": "mock-finance-daily_p1"
+}

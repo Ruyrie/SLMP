@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E09 待收款（图 10-13）：顶部栏文字按钮“全部出栏单”、应收合计卡、全部 / 已逾期 / 7 天内到期 Chip、出栏单卡片分页列表、提醒规则横幅 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/finance_top_bar"
+        layout="@layout/base_include_top_app_bar" />
+
+    <com.zhimu.slmp.base.widget.StatCardView
+        android:id="@+id/finance_total_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_page_margin"
+        android:layout_marginTop="@dimen/base_space_2"
+        android:layout_marginEnd="@dimen/base_page_margin"
+        app:statEmphasis="true"
+        app:statIcon="@drawable/ic_pending_actions"
+        app:statLabel="@string/finance_e09_total"
+        app:statSize="large"
+        app:statUnit="@string/finance_unit_yuan" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/finance_filter_chips"
+        style="@style/Widget.Zmt.ChipGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/base_page_margin"
+        android:layout_marginTop="@dimen/base_space_3"
+        android:layout_marginEnd="@dimen/base_page_margin"
+        android:layout_marginBottom="@dimen/base_space_2"
+        app:selectionRequired="true"
+        app:singleLine="true"
+        app:singleSelection="true" />
+
+    <com.zhimu.slmp.base.widget.StateLayout
+        android:id="@+id/finance_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:stateEmptyIcon="@drawable/ic_pending_actions"
+        app:stateErrorTitle="@string/finance_error_title"
+        app:stateNoPermissionTitle="@string/finance_no_permission_title"
+        app:stateSkeletonLayout="@layout/base_skeleton_list">
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/finance_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/finance_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="@dimen/base_space_4" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </com.zhimu.slmp.base.widget.StateLayout>
+</LinearLayout>

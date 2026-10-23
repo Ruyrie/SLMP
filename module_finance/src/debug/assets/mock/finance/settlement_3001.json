@@ -1,0 +1,71 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "settlement_id": 6001,
+    "status": "RUNNING",
+    "settled_at": null,
+    "calc_at": "2026-10-19 06:00:00",
+    "profit": -146000,
+    "sale_income": 0,
+    "received_amount": 0,
+    "cost_total": 146000,
+    "per_head_basis": "STOCK",
+    "per_head_count": 200,
+    "version": 7,
+    "batch": {
+      "batch_id": 3001,
+      "batch_no": "ZM2610-031",
+      "pen_name": "3 号育肥舍",
+      "breed_name": "杜长大",
+      "category_name": "育肥猪",
+      "count_unit_text": "头",
+      "day_age": 96,
+      "entry_count": 205,
+      "death_count": 5,
+      "sold_count": 0,
+      "current_count": 200,
+      "end_date": null
+    },
+    "cost_per_head": 730.0,
+    "profit_per_head": -730.0,
+    "fcr": 2.65,
+    "feed_kg": 21624,
+    "net_gain_kg": 8160,
+    "costs": [
+      {
+        "cost_group": "FEED",
+        "cost_group_text": "饲料",
+        "amount": 92000,
+        "share_rate": 0.63,
+        "note": null
+      },
+      {
+        "cost_group": "SEEDLING",
+        "cost_group_text": "引种",
+        "amount": 41000,
+        "share_rate": 0.281,
+        "note": "205 头 × 200 元"
+      },
+      {
+        "cost_group": "DRUG",
+        "cost_group_text": "兽药疫苗",
+        "amount": 8200,
+        "share_rate": 0.056,
+        "note": null
+      },
+      {
+        "cost_group": "OTHER",
+        "cost_group_text": "其他费用",
+        "amount": 4800,
+        "share_rate": 0.033,
+        "note": "人工、水电等"
+      }
+    ],
+    "sale_orders": [],
+    "supplements": [],
+    "preview_after": null,
+    "recent_cost_records": []
+  },
+  "trace_id": "mock-finance-settlement_3001"
+}

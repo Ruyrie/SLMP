@@ -1,0 +1,178 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": [
+    {
+      "id": 101,
+      "code": "FEED",
+      "name": "饲料采购",
+      "icon": "inventory_2",
+      "direction": "EXPENSE",
+      "sort_no": 1,
+      "auto_source": true,
+      "mark_only": true,
+      "is_fallback": false,
+      "subcategories": [
+        {
+          "id": 1011,
+          "name": "全价料",
+          "created_at": "2026-09-01 10:00:00"
+        },
+        {
+          "id": 1012,
+          "name": "玉米",
+          "created_at": "2026-09-01 10:00:00"
+        },
+        {
+          "id": 1013,
+          "name": "豆粕",
+          "created_at": "2026-09-01 10:00:00"
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "code": "DRUG",
+      "name": "兽药疫苗",
+      "icon": "vaccines",
+      "direction": "EXPENSE",
+      "sort_no": 2,
+      "auto_source": true,
+      "mark_only": true,
+      "is_fallback": false,
+      "subcategories": []
+    },
+    {
+      "id": 103,
+      "code": "UTILITY",
+      "name": "水电",
+      "icon": "bolt",
+      "direction": "EXPENSE",
+      "sort_no": 3,
+      "auto_source": false,
+      "mark_only": false,
+      "is_fallback": false,
+      "subcategories": [
+        {
+          "id": 1031,
+          "name": "电费",
+          "created_at": "2026-09-01 10:00:00"
+        },
+        {
+          "id": 1032,
+          "name": "水费",
+          "created_at": "2026-09-01 10:00:00"
+        }
+      ]
+    },
+    {
+      "id": 104,
+      "code": "LABOR",
+      "name": "人工",
+      "icon": "engineering",
+      "direction": "EXPENSE",
+      "sort_no": 4,
+      "auto_source": false,
+      "mark_only": false,
+      "is_fallback": false,
+      "subcategories": [
+        {
+          "id": 1041,
+          "name": "临时工",
+          "created_at": "2026-09-01 10:00:00"
+        }
+      ]
+    },
+    {
+      "id": 105,
+      "code": "SEEDLING",
+      "name": "引种",
+      "icon": "add_box",
+      "direction": "EXPENSE",
+      "sort_no": 5,
+      "auto_source": true,
+      "mark_only": true,
+      "is_fallback": false,
+      "subcategories": []
+    },
+    {
+      "id": 106,
+      "code": "REPAIR",
+      "name": "设备维修",
+      "icon": "build",
+      "direction": "EXPENSE",
+      "sort_no": 6,
+      "auto_source": false,
+      "mark_only": false,
+      "is_fallback": false,
+      "subcategories": [
+        {
+          "id": 1061,
+          "name": "料线电机",
+          "created_at": "2026-09-01 10:00:00"
+        }
+      ]
+    },
+    {
+      "id": 107,
+      "code": "OTHER",
+      "name": "其他",
+      "icon": "category",
+      "direction": "EXPENSE",
+      "sort_no": 7,
+      "auto_source": false,
+      "mark_only": false,
+      "is_fallback": true,
+      "subcategories": []
+    },
+    {
+      "id": 201,
+      "code": "SALE",
+      "name": "出栏销售",
+      "icon": "payments",
+      "direction": "INCOME",
+      "sort_no": 1,
+      "auto_source": true,
+      "mark_only": false,
+      "is_fallback": false,
+      "subcategories": []
+    },
+    {
+      "id": 202,
+      "code": "BYPRODUCT",
+      "name": "副产品",
+      "icon": "storefront",
+      "direction": "INCOME",
+      "sort_no": 2,
+      "auto_source": false,
+      "mark_only": false,
+      "is_fallback": false,
+      "subcategories": []
+    },
+    {
+      "id": 203,
+      "code": "SUBSIDY",
+      "name": "补贴",
+      "icon": "account_balance",
+      "direction": "INCOME",
+      "sort_no": 3,
+      "auto_source": false,
+      "mark_only": false,
+      "is_fallback": false,
+      "subcategories": []
+    },
+    {
+      "id": 204,
+      "code": "OTHER_INCOME",
+      "name": "其他",
+      "icon": "category",
+      "direction": "INCOME",
+      "sort_no": 4,
+      "auto_source": false,
+      "mark_only": false,
+      "is_fallback": true,
+      "subcategories": []
+    }
+  ],
+  "trace_id": "mock-finance-categories_all"
+}

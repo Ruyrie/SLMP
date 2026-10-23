@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E14 出栏单列表（补充设计）：顶部栏（search）/ 搜索栏、状态筛选 Chip 行、按出栏月份分组的出栏单卡片分页列表、扩展 FAB“登记出栏单” -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/finance_top_bar"
+            layout="@layout/base_include_top_app_bar" />
+
+        <include
+            android:id="@+id/finance_search"
+            layout="@layout/finance_view_search_bar"
+            android:visibility="gone" />
+
+        <HorizontalScrollView
+            android:id="@+id/finance_chips_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_1"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/base_page_margin"
+            android:paddingEnd="@dimen/base_page_margin"
+            android:scrollbars="none">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/finance_status_chips"
+                style="@style/Widget.Zmt.ChipGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:selectionRequired="true"
+                app:singleLine="true"
+                app:singleSelection="true" />
+        </HorizontalScrollView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/finance_search_all"
+            style="@style/Widget.Zmt.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/finance_e14_search_all"
+            android:visibility="gone" />
+
+        <com.zhimu.slmp.base.widget.StateLayout
+            android:id="@+id/finance_state"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:stateEmptyIcon="@drawable/ic_local_shipping"
+            app:stateErrorTitle="@string/finance_error_title"
+            app:stateNoPermissionTitle="@string/finance_no_permission_title"
+            app:stateSkeletonLayout="@layout/base_skeleton_list">
+
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/finance_refresh"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/finance_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingTop="@dimen/base_space_2"
+                    android:paddingBottom="@dimen/base_fab_list_bottom_space" />
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </com.zhimu.slmp.base.widget.StateLayout>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/finance_fab"
+        style="@style/Widget.Zmt.ExtendedFloatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/base_page_margin"
+        android:text="@string/finance_e14_fab"
+        app:icon="@drawable/ic_add" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

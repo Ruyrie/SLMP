@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 下拉框选项（关联批次、收购商）：48 dp、body-l -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:ellipsize="end"
+    android:gravity="center_vertical"
+    android:maxLines="1"
+    android:minHeight="48dp"
+    android:paddingStart="@dimen/base_space_4"
+    android:paddingEnd="@dimen/base_space_4"
+    android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+    android:textColor="?attr/colorOnSurface" />

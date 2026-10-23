@@ -1,0 +1,17 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [],
+    "total": 0,
+    "page": 1,
+    "size": 20,
+    "has_more": false,
+    "tab_counts": null,
+    "totals": {
+      "income": 0,
+      "expense_amount": 0
+    }
+  },
+  "trace_id": "mock-finance-records_highlight_none"
+}

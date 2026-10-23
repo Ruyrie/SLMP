@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- E09 顶部栏文字按钮“全部出栏单” -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/finance_menu_all_orders"
+        android:title="@string/finance_e09_all_orders"
+        app:showAsAction="always|withText" />
+</menu>

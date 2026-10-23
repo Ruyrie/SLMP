@@ -1,0 +1,179 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "latest": {
+      "price": 15.6,
+      "price_unit": "YUAN_PER_KG",
+      "price_unit_text": "元/千克",
+      "price_date": "2026-10-19"
+    },
+    "change": {
+      "change_rate": 0.04,
+      "direction": "UP",
+      "compare_date": "2026-10-18",
+      "compare_price": 15.0
+    },
+    "series": [
+      {
+        "date": "2026-09-20",
+        "price": 14.7,
+        "corrected": false
+      },
+      {
+        "date": "2026-09-21",
+        "price": 14.62,
+        "corrected": false
+      },
+      {
+        "date": "2026-09-22",
+        "price": 14.55,
+        "corrected": false
+      },
+      {
+        "date": "2026-09-23",
+        "price": 14.5,
+        "corrected": false
+      },
+      {
+        "date": "2026-09-24",
+        "price": 14.45,
+        "corrected": false
+      },
+      {
+        "date": "2026-09-25",
+        "price": 14.4,
+        "corrected": false
+      },
+      {
+        "date": "2026-09-26",
+        "price": 14.48,
+        "corrected": false
+      },
+      {
+        "date": "2026-09-27",
+        "price": 14.52,
+        "corrected": false
+      },
+      {
+        "date": "2026-09-28",
+        "price": 14.55,
+        "corrected": false
+      },
+      {
+        "date": "2026-09-29",
+        "price": 14.58,
+        "corrected": false
+      },
+      {
+        "date": "2026-09-30",
+        "price": 14.6,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-01",
+        "price": null,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-02",
+        "price": 14.62,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-03",
+        "price": 14.64,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-04",
+        "price": 14.66,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-05",
+        "price": 14.68,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-06",
+        "price": 14.7,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-07",
+        "price": 14.72,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-08",
+        "price": 14.75,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-09",
+        "price": 14.78,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-10",
+        "price": 14.8,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-11",
+        "price": 14.85,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-12",
+        "price": 14.9,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-13",
+        "price": 14.86,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-14",
+        "price": 14.88,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-15",
+        "price": 14.9,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-16",
+        "price": 14.9,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-17",
+        "price": 14.9,
+        "corrected": false
+      },
+      {
+        "date": "2026-10-18",
+        "price": 15.0,
+        "corrected": true
+      },
+      {
+        "date": "2026-10-19",
+        "price": 15.6,
+        "corrected": false
+      }
+    ],
+    "stats": {
+      "max_price": 15.6,
+      "max_date": "2026-10-19",
+      "min_price": 14.4,
+      "min_date": "2026-09-25",
+      "avg_price": 14.73
+    },
+    "empty": false
+  },
+  "trace_id": "mock-finance-trend_30"
+}

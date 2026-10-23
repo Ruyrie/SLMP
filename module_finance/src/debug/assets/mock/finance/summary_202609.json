@@ -1,0 +1,90 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "period_start": "2026-09-01",
+    "period_end": "2026-09-30",
+    "is_current_month": false,
+    "income": 360000,
+    "expense_amount": 293600,
+    "balance_amount": 66400,
+    "prev_income": 300000,
+    "prev_expense_amount": 280000,
+    "prev_balance_amount": 20000,
+    "income_comparable": true,
+    "expense_comparable": true,
+    "balance_comparable": true,
+    "income_mom_rate": 0.2,
+    "expense_mom_rate": 0.049,
+    "balance_mom_rate": 2.32,
+    "record_count": 52,
+    "auto_count": 20,
+    "manual_count": 32,
+    "manageable_farm_count": 2,
+    "expense_shares": [
+      {
+        "category_id": 101,
+        "name": "饲料采购",
+        "icon": "inventory_2",
+        "amount": 180000,
+        "share_rate": 0.613,
+        "mom_rate": 0.05,
+        "comparable": true,
+        "trend": "UP"
+      },
+      {
+        "category_id": 104,
+        "name": "人工",
+        "icon": "engineering",
+        "amount": 46860,
+        "share_rate": 0.16,
+        "mom_rate": 0.02,
+        "comparable": true,
+        "trend": "UP"
+      },
+      {
+        "category_id": 102,
+        "name": "兽药疫苗",
+        "icon": "vaccines",
+        "amount": 37190,
+        "share_rate": 0.127,
+        "mom_rate": 0.1,
+        "comparable": true,
+        "trend": "UP"
+      },
+      {
+        "category_id": 107,
+        "name": "其他",
+        "icon": "category",
+        "amount": 29550,
+        "share_rate": 0.1,
+        "mom_rate": -0.05,
+        "comparable": true,
+        "trend": "DOWN"
+      }
+    ],
+    "income_shares": [
+      {
+        "category_id": 201,
+        "name": "出栏销售",
+        "icon": "payments",
+        "amount": 354000,
+        "share_rate": 0.983,
+        "mom_rate": 0.2,
+        "comparable": true,
+        "trend": "UP"
+      },
+      {
+        "category_id": 202,
+        "name": "副产品",
+        "icon": "storefront",
+        "amount": 6000,
+        "share_rate": 0.017,
+        "mom_rate": null,
+        "comparable": false,
+        "trend": null
+      }
+    ]
+  },
+  "trace_id": "mock-finance-summary_202609"
+}
