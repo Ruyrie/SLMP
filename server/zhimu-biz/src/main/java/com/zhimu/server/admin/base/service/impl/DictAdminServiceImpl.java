@@ -192,6 +192,20 @@ public class DictAdminServiceImpl implements DictAdminService {
         if (items.size() != request.getItemIds().size()) {
             throw BaseErrors.notFound();
         }
+        if (DictTypes.SYMPTOM.equals(type)) {
+            if (request.getCategoryId() == null) {
+                throw BaseErrors.field("category_id", "请选择症状适用品类");
+            }
+            Map<Long, List<DictItemScope>> scopes = support.scopesByItem(request.getItemIds());
+            for (Long itemId : request.getItemIds()) {
+                boolean inCategory = (scopes.getOrDefault(itemId, List.of())).stream()
+                        .anyMatch(scope -> DictScopes.CATEGORY.equals(scope.getScopeType())
+                                && Objects.equals(scope.getCategoryId(), request.getCategoryId()));
+                if (!inCategory) {
+                    throw BaseErrors.field("item_ids", "所选症状不属于该品类");
+                }
+            }
+        }
         int sort = 0;
         for (Long id : request.getItemIds()) {
             dictItemMapper.update(new DictItem(), Wrappers.<DictItem>lambdaUpdate()

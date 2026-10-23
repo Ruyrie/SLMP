@@ -177,6 +177,32 @@ class DictAdminServiceImplTest {
         assertThat(service.items("PEN_TYPE", query)).extracting("id").containsExactly(505L);
     }
 
+    @Test
+    void symptomOrderRequiresCategoryAndMatchingScope() {
+        DictItem pig = item(401L, "SYMPTOM", "DIARRHEA", "腹泻", "ENABLED", false, false);
+        DictItem poultry = item(413L, "SYMPTOM", "LOW_INTAKE", "减料", "ENABLED", false, false);
+        when(dictItemMapper.selectList(any())).thenReturn(List.of(pig, poultry), List.of(pig), List.of(pig));
+        Map<Long, List<DictItemScope>> scopes = new LinkedHashMap<>();
+        scopes.put(401L, List.of(scope(401L, "CATEGORY", "", 101L)));
+        scopes.put(413L, List.of(scope(413L, "CATEGORY", "", 201L)));
+        when(support.scopesByItem(any())).thenReturn(scopes);
+
+        ItemOrderRequest missing = new ItemOrderRequest();
+        missing.setItemIds(List.of(401L, 413L));
+        assertThatThrownBy(() -> service.order("SYMPTOM", missing)).hasMessage("请选择症状适用品类");
+
+        ItemOrderRequest wrongCategory = new ItemOrderRequest();
+        wrongCategory.setItemIds(List.of(401L));
+        wrongCategory.setCategoryId(201L);
+        assertThatThrownBy(() -> service.order("SYMPTOM", wrongCategory)).hasMessage("所选症状不属于该品类");
+
+        ItemOrderRequest ok = new ItemOrderRequest();
+        ok.setItemIds(List.of(401L));
+        ok.setCategoryId(101L);
+        service.order("SYMPTOM", ok);
+        verify(dictItemMapper).update(any(), any());
+    }
+
     private static DictStatusRequest status(String status, String reason, int version) {
         DictStatusRequest request = new DictStatusRequest();
         request.setStatus(status);
