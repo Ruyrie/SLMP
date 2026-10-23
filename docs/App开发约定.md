@@ -12,6 +12,8 @@
 | 员工退出养殖场 | 2026-10-22 确认：入口放在 A07“我的养殖场”下方单独一行（场长、员工显示），确认对话框同 F09 |
 | L07 扫码 | 2026-10-22 确认：使用 lib_media 公共相机页识别后返回结果（技术文档原写 L07 自持相机） |
 | 测试直连（2026-10-22 用户确认） | 服务端完成前，debug 包允许放 Key 做测试：模块07 AI 诊断直连阿里云百炼 qwen3.8-max（OpenAI 兼容接口，图片 base64），失败时用 deepseek-flash 备用；短信验证码直连阿里云号码认证服务（Dypnsapi SendSmsVerifyCode / CheckSmsVerifyCode，签名“恒创联众”、系统模板 100001–100005）。Key 写在 local.properties（ai.dashscopeKey、ai.deepseekKey、aliyun.accessKeyId、aliyun.accessKeySecret、aliyun.smsSignName），只生成到 lib_common 的 debug BuildConfig；release 包为空，直连关闭、走服务端接口。正式上线前改回服务端调用 |
+| 接口契约冲突（2026-10-23 用户确认） | 同一接口在两份文档中写法不同时，以接口所属模块的服务端文档为准（例：API-M27 属模块09，purpose 取 VACCINATE / MEDICATE / DISINFECT，DrugLotOptionVO.stock 为 QtyVO，QtyVO 放 lib_common）；UI 文档未给的文案、原型未画的页面、文档之间的冲突保持现做法，汇总在 docs/App接口对接与待确认清单.md 由小组过目 |
+| Mock 日期（2026-10-23） | debug 包走 Mock 时 DateFormatter.today() 对齐示例数据 2026-10-19（local.properties zmt.mockToday，留空用真实日期）；取“今天”一律用 DateFormatter.today()，不直接 LocalDate.now() |
 | 测试直连扩展（2026-10-22 用户确认） | 模块11 K01 AI 问答（流式、附图）与模块10 E12 AI 出栏建议也直连千问，DeepSeek 备用；K01 语音转文字直连百炼语音识别；课程视频 Mock 用公开测试 HLS 地址 |
 | 麦克风被拒（2026-10-22 用户确认） | 录像时没有麦克风权限：说明“录像需要麦克风”并提供“去设置开启”，不开启就不录像（仍可拍照）；03 号 8.2 节“只录无声视频”作废 |
 | 原型图 | 模块01–04 用 .tech-prep/screens；模块05 起直接看 原型导出/Android端/智牧通App原型/智牧通App原型_完整版.pdf（Read 工具按页码查看） |
@@ -61,7 +63,7 @@
 - 资源名必须带组件前缀：base_、common_、media_、map_、account_、farm_、today_、herd_、breed_、feed_、inspect_、health_、stock_、finance_、ai_（lib_base 的图标为 `ic_<名称>` / `ic_<名称>_filled`，主题与样式为 `Theme.Zmt*`、`Widget.Zmt.*`、`TextAppearance.Zmt.*`、`ShapeAppearance.Zmt.*`）。
 - `android.nonTransitiveRClass=true`：引用 lib_base 资源时用 `com.zhimu.slmp.base.R`，引用本组件资源用本组件的 R。
 - 业务组件之间不互相依赖；跨组件只用 RouterPath 的 action 打开页面，或通过 ServiceHub 取 lib_common 中定义的服务接口。
-- 新的跨组件参数键如果 RouterPath 中没有，先在本组件内定义字符串常量，交付时列出，由主会话合并进 RouterPath。
+- 页面参数键（Intent extras）统一定义在 RouterPath（EXTRA_*），组件内不再另定义同值常量；只在本组件页面之间传递的 JSON 串、结果键（RESULT_*）和取值常量（MODE_*、BIZ_*）留在组件的 Extras 类。
 
 ## 四、框架约定（阶段一实现，阶段二直接使用）
 
@@ -117,7 +119,7 @@ HTTP 状态码按 code 的前三位（0 为 200）。员工视图、不同养殖
 - 页面继承 BaseActivity / BaseFragment；ViewModel 继承 BaseViewModel，字段、方法、事件名称按模块技术准备文档 2.4 节；内部 MutableLiveData、对外 getter 返回 LiveData，表单双向绑定字段直接暴露 MutableLiveData。
 - 页面状态用 UiState + StateLayout（骨架屏、空、加载失败、无权查看）；一次性提示用 BaseViewModel 的 message（UiMessage），由基类用 Snackbar 显示，不用 Toast。
 - 弹窗只用 lib_base 的五级封装：SnackbarHelper、TipPopup、MoreMenuHelper、BaseBottomSheetDialogFragment、ConfirmDialogFragment、ReasonDialogFragment；结果经 FragmentResult 回传。
-- 表单页用 DataBinding 双向绑定；列表项用 ViewBinding + ListAdapter；长列表用 Paging 3。
+- 表单页用 DataBinding 双向绑定；列表项用 ViewBinding + ListAdapter；长列表用 Paging 3。例外：模块11（module_ai）没有登记表单，页面全部用 ViewBinding。
 - 文案、颜色、字号、间距以 UI 设计文档与 02 号规范为准，布局只引用主题属性与 `@color/zm_*`，不写死色值。
 
 ## 五、编译与提交
