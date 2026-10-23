@@ -125,9 +125,10 @@ public class FeedRecordChangeHandler implements ChangeRequestHandler {
                 new ChangeCardItem("实际投喂量", FeedingChangeSupport.display(FeedingChangeSupport.plain(actual), UNIT)),
                 new ChangeCardItem("计划量", FeedingChangeSupport.display(FeedingChangeSupport.plain(plan), UNIT)));
         String meal = fresh.getMealName() == null ? "" : fresh.getMealName();
+        String deadlineText = backfillDeadlineText(fresh);
         String voidNotice = "审核通过后这条投喂记录作废，" + FeedingChangeSupport.plain(actual) + " " + UNIT
                 + feedName + "退回库存；" + change.monthDay(fresh.getFeedDate()) + " " + meal
-                + "的饲喂任务在补登期限内（超过补登截止时间记为未执行）恢复为待投喂。";
+                + "的饲喂任务在补登期限内" + deadlineText + "恢复为待投喂，超过期限记为未执行。";
         return new ChangeForm(card, List.of(feedField, qtyField),
                 List.of("修改实际投喂量会同步调整饲料库存出库数量"),
                 "这条记录会影响饲料库存和成本统计，需要管理员审核。审核期间原记录照常有效，审核通过后才会修改并重新计算。",
@@ -301,9 +302,17 @@ public class FeedRecordChangeHandler implements ChangeRequestHandler {
         }
     }
 
-    /** 作废后按补登期限恢复任务：超过补登截止记 MISSED，超过 deadline 记 OVERDUE，否则 PENDING */
-    private void restoreTask(FeedRecord record) {
+    /** 补登截止文案：任务 backfill_end_at 为次日 00:00，展示为“（10月19日 24:00 前）” */
+    private String backfillDeadlineText(FeedRecord record) {
         FeedTask task = change.task(record.getTaskId());
+        if (task == null || task.getBackfillEndAt() == null) {
+            return "";
+        }
+        return "（" + change.monthDay(task.getBackfillEndAt().toLocalDate().minusDays(1)) + " 24:00 前）";
+    }
+
+    /** 作废后按补登期限恢复任务：超过补登截止记 MISSED，超过 deadline 记 OVERDUE，否则 PENDING */
+    private void restoreTask(FeedRecord record) {        FeedTask task = change.task(record.getTaskId());
         if (task == null) {
             return;
         }

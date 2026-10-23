@@ -63,6 +63,7 @@ class FeedRecordChangeHandlerTest {
         when(change.batch(3001L)).thenReturn(batch());
         when(change.penName(2003L)).thenReturn("3 号育肥舍");
         when(change.monthDay(LocalDate.of(2026, 10, 18))).thenReturn("10月18日");
+        when(change.monthDay(LocalDate.of(2026, 10, 19))).thenReturn("10月19日");
         when(change.userName(10003L)).thenReturn("李明");
         when(change.feedName(1001L, 4001L)).thenReturn("育肥全价料");
         when(change.feedName(1001L, 4002L)).thenReturn("保育料");
@@ -134,7 +135,7 @@ class FeedRecordChangeHandlerTest {
         assertThat(qty.recalcTags()).containsExactly("头均采食量", "料肉比", "饲料成本", "经营报表");
         assertThat(form.linkedRules()).containsExactly("修改实际投喂量会同步调整饲料库存出库数量");
         assertThat(form.voidAllowed()).isTrue();
-        assertThat(form.voidNotice()).contains("140 千克育肥全价料退回库存");
+        assertThat(form.voidNotice()).contains("140 千克育肥全价料退回库存", "（10月19日 24:00 前）");
         assertThat(form.voidRecalcTags()).containsExactly("库存（退回饲料）", "成本", "统计");
         assertThat(form.reviewTip()).contains("饲料库存和成本统计");
     }
