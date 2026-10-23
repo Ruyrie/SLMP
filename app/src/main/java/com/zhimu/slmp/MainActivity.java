@@ -1,5 +1,6 @@
 package com.zhimu.slmp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -19,6 +20,7 @@ import com.zhimu.slmp.base.ui.BaseActivity;
 import com.zhimu.slmp.base.ui.InsetsHelper;
 import com.zhimu.slmp.common.di.CoreInjector;
 import com.zhimu.slmp.common.model.vo.FarmContextVO;
+import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.common.service.MainTabHost;
 import com.zhimu.slmp.common.service.TabRegistry;
 
@@ -30,6 +32,7 @@ import java.util.List;
  * 主页：按 FarmContext 角色装配底部导航（01 号文档 2.2 节）。
  * 所有者与场长“今日、生产、助手、经营、我的”；员工“今日、我的栏舍、助手、我的”；没有养殖场或养殖场待审核时按所有者。
  * 标签 Fragment 由 TabRegistry 创建，没有注册的标签显示占位页；角色变化时重建导航。
+ * 打开时可带 RouterPath.EXTRA_MAIN_TAB（及 EXTRA_MAIN_TAB_ARGS）切到指定标签，导航装配好后生效。
  * 返回：不在“今日”标签时先回到“今日”，在“今日”时交给系统（预测性返回到桌面）。
  */
 public class MainActivity extends BaseActivity implements MainTabHost {
@@ -77,6 +80,11 @@ public class MainActivity extends BaseActivity implements MainTabHost {
     @NonNull
     private String currentKey = TabRegistry.TODAY;
     private OnBackPressedCallback backToToday;
+    /** 等待导航装配后切换的标签与参数 */
+    @Nullable
+    private String pendingTab;
+    @Nullable
+    private Bundle pendingTabArgs;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -87,6 +95,11 @@ public class MainActivity extends BaseActivity implements MainTabHost {
         if (savedInstanceState != null) {
             currentKey = savedInstanceState.getString(STATE_TAB, TabRegistry.TODAY);
             restoredLayout = savedInstanceState.getString(STATE_LAYOUT);
+        } else {
+            takeTabRequest(getIntent());
+            if (pendingTab != null) {
+                currentKey = pendingTab;
+            }
         }
         backToToday = new OnBackPressedCallback(false) {
             @Override
@@ -105,6 +118,33 @@ public class MainActivity extends BaseActivity implements MainTabHost {
         nav.setOnItemReselectedListener(item -> {
         });
         CoreInjector.get(this).farmContext().getContext().observe(this, this::onFarmContext);
+    }
+
+    @Override
+    protected void onNewIntent(@NonNull Intent intent) {
+        super.onNewIntent(intent);
+        takeTabRequest(intent);
+        if (!tabs.isEmpty()) {
+            applyPendingTab();
+        }
+    }
+
+    private void takeTabRequest(@Nullable Intent intent) {
+        String tab = intent == null ? null : intent.getStringExtra(RouterPath.EXTRA_MAIN_TAB);
+        if (tab != null) {
+            pendingTab = tab;
+            pendingTabArgs = intent.getBundleExtra(RouterPath.EXTRA_MAIN_TAB_ARGS);
+        }
+    }
+
+    private void applyPendingTab() {
+        String tab = pendingTab;
+        Bundle args = pendingTabArgs;
+        pendingTab = null;
+        pendingTabArgs = null;
+        if (tab != null) {
+            selectTab(tab, args);
+        }
     }
 
     /** 由系统栏 insets 交给顶部容器与底部导航各自处理 */
@@ -174,6 +214,7 @@ public class MainActivity extends BaseActivity implements MainTabHost {
         // 只更新选中状态，不触发监听，再显示对应标签页
         menu.findItem(index + 1).setChecked(true);
         showTab(tabs.get(index).key);
+        applyPendingTab();
     }
 
     private void showTab(@NonNull String key) {

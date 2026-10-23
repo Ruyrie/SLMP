@@ -10,6 +10,19 @@ amap.key=
 # 极光 AppKey，为空时不初始化推送
 jpush.appKey=
 
+# 测试直连（只进 debug 包，release 为空；为空时走 Mock 或服务端）
+# 百炼（千问）Key、对话模型、语音识别模型（为空用代码默认值）
+ai.dashscopeKey=
+ai.dashscopeModel=qwen3.8-max
+ai.dashscopeAsrModel=
+# DeepSeek 备用
+ai.deepseekKey=
+ai.deepseekModel=deepseek-flash
+# 阿里云号码认证短信（Dypnsapi）
+aliyun.accessKeyId=
+aliyun.accessKeySecret=
+aliyun.smsSignName=
+
 # 正式签名（只在负责发布的组员电脑上填写）
 # release.storeFile=
 # release.storePassword=

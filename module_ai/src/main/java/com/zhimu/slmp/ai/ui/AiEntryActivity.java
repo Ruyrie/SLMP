@@ -8,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.zhimu.slmp.ai.AiExtras;
-import com.zhimu.slmp.ai.AiModuleEntry;
 import com.zhimu.slmp.ai.R;
 import com.zhimu.slmp.base.ui.BaseActivity;
 import com.zhimu.slmp.common.router.Router;
@@ -33,8 +32,10 @@ public class AiEntryActivity extends BaseActivity implements MainTabHost {
         super.onCreate(savedInstanceState);
         Bundle args = entryArgs(getIntent());
         if (savedInstanceState == null && Router.canOpen(this, RouterPath.MAIN)) {
-            AiModuleEntry.postAssistantEntry(args);
-            Intent i = Router.intent(this, RouterPath.MAIN, null)
+            Bundle extras = new Bundle();
+            extras.putString(RouterPath.EXTRA_MAIN_TAB, TabRegistry.ASSISTANT);
+            extras.putBundle(RouterPath.EXTRA_MAIN_TAB_ARGS, args);
+            Intent i = Router.intent(this, RouterPath.MAIN, extras)
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
             finish();

@@ -308,6 +308,10 @@ public final class RouterPath {
     public static final String EXTRA_ACTION_TEXT = "action_text";
     /** 错误码（int，U03 加载失败按错误码选择默认说明，-1 为网络不可用） */
     public static final String EXTRA_ERROR_CODE = "error_code";
+    /** 打开 MAIN 时切到的底部标签（String，TabRegistry 的 key） */
+    public static final String EXTRA_MAIN_TAB = "main_tab";
+    /** 打开 MAIN 时转交给该标签的参数（Bundle，标签页用 MainTabHost.argsResultKey 接收） */
+    public static final String EXTRA_MAIN_TAB_ARGS = "main_tab_args";
     /** 推荐问题（String，T01 AI 入口打开 K01） */
     public static final String EXTRA_QUESTION = "question";
     /** 待办类别（String，TODO_CATEGORY，T01 进入 T03 时预选） */
