@@ -20,12 +20,12 @@ import com.zhimu.slmp.breed.databinding.BreedActivityIncubationBinding;
 import com.zhimu.slmp.breed.databinding.BreedItemStepBinding;
 import com.zhimu.slmp.breed.di.BreedInjector;
 import com.zhimu.slmp.breed.model.BreedCodes;
-import com.zhimu.slmp.breed.ui.archive.ChangeLogActivity;
 import com.zhimu.slmp.breed.ui.common.BreedNav;
 import com.zhimu.slmp.breed.ui.common.NavRequest;
 import com.zhimu.slmp.breed.util.BreedFormRules;
 import com.zhimu.slmp.common.router.Router;
 import com.zhimu.slmp.common.router.RouterPath;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
 
 import java.util.List;
 
@@ -242,7 +242,7 @@ public class IncubationActivity extends BaseActivity {
         }
         if (BreedCodes.BIZ_INCUBATION.equals(req.getAction())) {
             long id = req.getExtras().getLong(RouterPath.EXTRA_BIZ_ID);
-            startActivity(ChangeLogActivity.intent(this, BreedCodes.BIZ_INCUBATION, id, null));
+            RecordLogSheet.show(getSupportFragmentManager(), BreedCodes.BIZ_INCUBATION, id, null);
             return;
         }
         Router.open(this, req.getAction(), req.getExtras());

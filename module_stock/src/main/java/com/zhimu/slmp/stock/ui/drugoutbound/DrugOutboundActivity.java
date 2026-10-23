@@ -36,7 +36,7 @@ import com.zhimu.slmp.stock.model.vo.CostAllocationVO;
 import com.zhimu.slmp.stock.model.vo.StockBatchOptionVO;
 import com.zhimu.slmp.stock.model.vo.StockMemberVO;
 import com.zhimu.slmp.stock.model.vo.StockPenOptionVO;
-import com.zhimu.slmp.stock.ui.common.ChangeLogActivity;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
 import com.zhimu.slmp.stock.ui.common.FormMode;
 import com.zhimu.slmp.stock.ui.common.PickerData;
 import com.zhimu.slmp.stock.ui.common.PickerHost;
@@ -268,8 +268,8 @@ public class DrugOutboundActivity extends BaseActivity implements PickerHost, Re
         vm.getOpenChangeRequest().observe(this, id -> Router.open(this, RouterPath.U01,
                 StockNav.changeArgs(StockEnums.BIZ_OUTBOUND, id)));
         vm.getOpenRequest().observe(this, id -> Router.open(this, RouterPath.U02, StockNav.requestArgs(id)));
-        vm.getOpenChangeLog().observe(this, id -> startActivity(ChangeLogActivity.intent(this,
-                StockEnums.BIZ_OUTBOUND, id)));
+        vm.getOpenChangeLog().observe(this, id -> RecordLogSheet.show(getSupportFragmentManager(),
+                StockEnums.BIZ_OUTBOUND, id, null));
     }
 
     @Override

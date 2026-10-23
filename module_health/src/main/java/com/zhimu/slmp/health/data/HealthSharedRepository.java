@@ -10,7 +10,6 @@ import com.zhimu.slmp.common.farm.FarmContext;
 import com.zhimu.slmp.common.model.vo.ChangeRequestFormVO;
 import com.zhimu.slmp.common.model.vo.ChangeRequestVO;
 import com.zhimu.slmp.common.model.vo.DictItemVO;
-import com.zhimu.slmp.common.model.vo.RecordLogVO;
 import com.zhimu.slmp.common.ui.change.model.request.ChangeRequestSubmitRequest;
 import com.zhimu.slmp.health.model.vo.DrugLotOptionsVO;
 import com.zhimu.slmp.health.model.vo.LinkableReportVO;
@@ -96,10 +95,5 @@ public class HealthSharedRepository {
     @NonNull
     public Single<List<DictItemVO>> getDisinfectMethods() {
         return baseData.getDicts(DictTypes.DISINFECT_METHOD, null);
-    }
-
-    @NonNull
-    public Single<List<RecordLogVO>> getRecordLogs(@NonNull String bizType, long bizId) {
-        return baseData.getRecordLogs(bizType, bizId);
     }
 }

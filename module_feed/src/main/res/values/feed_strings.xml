@@ -80,8 +80,6 @@
     <string name="feed_plan_threshold_field">偏差比例</string>
     <string name="feed_plan_threshold_helper">实际投喂量偏离计划量超过这个比例时，标为投喂异常</string>
     <string name="feed_plan_action_save">保存方案</string>
-    <string name="feed_plan_history_title">修改记录</string>
-    <string name="feed_plan_history_empty">还没有修改记录</string>
     <string name="feed_plan_undo">撤销</string>
 
     <!-- ===== G04 饲喂执行情况 ===== -->

@@ -16,7 +16,6 @@ import com.zhimu.slmp.base.mvvm.SingleLiveEvent;
 import com.zhimu.slmp.base.mvvm.UiMessage;
 import com.zhimu.slmp.base.mvvm.UiState;
 import com.zhimu.slmp.common.farm.FarmContext;
-import com.zhimu.slmp.common.model.vo.RecordLogVO;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.health.HealthExtras;
 import com.zhimu.slmp.health.data.HealthSharedRepository;
@@ -28,7 +27,6 @@ import com.zhimu.slmp.health.model.vo.ImmunePlanOverviewVO;
 import com.zhimu.slmp.health.model.vo.ImmunePlanVO;
 import com.zhimu.slmp.health.model.vo.MedicationTargetVO;
 import com.zhimu.slmp.health.model.vo.MemberItemVO;
-import com.zhimu.slmp.health.ui.common.RecordLogHost;
 import com.zhimu.slmp.health.util.HealthFormRules;
 import com.zhimu.slmp.health.util.HealthFormat;
 import com.zhimu.slmp.health.util.ImmuneRules;
@@ -51,8 +49,7 @@ import io.reactivex.rxjava3.core.Single;
  * 计划列表（API-D02 分页）；所有者、场长可确认入栏前项目、加入计划、调整日期、补录漏免、修改与删除项目、添加项目。
  * 进入时没有 batch_id（生产页入口）时先选批次（API-D19 BATCH）。
  */
-public class ImmunePlanViewModel extends BaseListViewModel<ImmunePlanViewModel.PlanFilter, ImmunePlanVO>
-        implements RecordLogHost {
+public class ImmunePlanViewModel extends BaseListViewModel<ImmunePlanViewModel.PlanFilter, ImmunePlanVO> {
 
     public static final String ALL = "ALL";
     /** Chip 顺序与文字 */
@@ -105,7 +102,6 @@ public class ImmunePlanViewModel extends BaseListViewModel<ImmunePlanViewModel.P
     private final MutableLiveData<Boolean> postponing = new MutableLiveData<>(false);
     private final MutableLiveData<Map<String, String>> fieldErrors = new MutableLiveData<>(Collections.emptyMap());
     private final MutableLiveData<Long> highlightPlanId = new MutableLiveData<>();
-    private final MutableLiveData<List<RecordLogVO>> logs = new MutableLiveData<>();
     private final MutableLiveData<String> reminderNames = new MutableLiveData<>("");
 
     private final SingleLiveEvent<ImmunePlanVO> openRegister = new SingleLiveEvent<>();
@@ -188,9 +184,6 @@ public class ImmunePlanViewModel extends BaseListViewModel<ImmunePlanViewModel.P
     public LiveData<Map<String, String>> getFieldErrors() { return fieldErrors; }
 
     public LiveData<Long> getHighlightPlanId() { return highlightPlanId; }
-
-    @Override
-    public LiveData<List<RecordLogVO>> getLogs() { return logs; }
 
     public SingleLiveEvent<ImmunePlanVO> getOpenRegister() { return openRegister; }
 
@@ -622,17 +615,5 @@ public class ImmunePlanViewModel extends BaseListViewModel<ImmunePlanViewModel.P
     @Override
     protected void onDataChanged(@NonNull ApiException e) {
         refresh();
-    }
-
-    // ===== 修改记录 =====
-
-    /** API-U14（IMMUNE_PLAN、batch_id） */
-    public void loadLogs() {
-        if (batchId == null) {
-            return;
-        }
-        logs.setValue(null);
-        launch(shared.getRecordLogs(HealthExtras.BIZ_IMMUNE_PLAN, batchId), logs::setValue,
-                e -> logs.setValue(Collections.emptyList()));
     }
 }

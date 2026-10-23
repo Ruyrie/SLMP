@@ -50,8 +50,6 @@
     <string name="herd_pen_disable_title">停用 %1$s？</string>
     <string name="herd_pen_disable_message">停用后不能再向这个栏舍入栏或转入，历史记录照常保留。</string>
     <string name="herd_pen_disable_action">停用</string>
-    <string name="herd_pen_change_log">修改记录</string>
-    <string name="herd_pen_change_log_empty">还没有修改记录</string>
 
     <!-- ===== L05 ===== -->
     <string name="herd_pen_edit_title_new">新增栏舍</string>

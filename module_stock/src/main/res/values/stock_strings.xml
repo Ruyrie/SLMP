@@ -30,8 +30,6 @@
     <string name="stock_unit_yuan">元</string>
     <string name="stock_unit_day">天</string>
     <string name="stock_unit_kg">千克</string>
-    <string name="stock_change_log_title">修改记录</string>
-    <string name="stock_change_log_empty">还没有修改记录</string>
     <string name="stock_field_remark_optional">说明（选填）</string>
     <string name="stock_field_remark">说明</string>
     <string name="stock_menu_more">更多</string>

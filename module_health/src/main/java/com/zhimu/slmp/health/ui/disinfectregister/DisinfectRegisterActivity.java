@@ -26,6 +26,7 @@ import com.zhimu.slmp.common.model.vo.AccountUserVO;
 import com.zhimu.slmp.common.model.vo.DictItemVO;
 import com.zhimu.slmp.common.router.Router;
 import com.zhimu.slmp.common.router.RouterPath;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
 import com.zhimu.slmp.health.HealthExtras;
 import com.zhimu.slmp.health.R;
 import com.zhimu.slmp.health.databinding.HealthActivityDisinfectRegisterBinding;
@@ -39,7 +40,6 @@ import com.zhimu.slmp.health.ui.common.HealthForms;
 import com.zhimu.slmp.health.ui.common.HealthNav;
 import com.zhimu.slmp.health.ui.common.LotSheet;
 import com.zhimu.slmp.health.ui.common.OptionAdapter;
-import com.zhimu.slmp.health.ui.common.RecordLogBottomSheet;
 import com.zhimu.slmp.health.util.HealthFormat;
 
 import java.time.LocalDate;
@@ -91,8 +91,8 @@ public class DisinfectRegisterActivity extends BaseActivity {
         TopAppBarHelper.setupBack(binding.healthTopBar.baseToolbar, getString(R.string.health_d08_title));
         binding.healthTopBar.baseToolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.health_menu_history) {
-                vm.loadLogs();
-                RecordLogBottomSheet.newInstance(DisinfectRegisterViewModel.class).showSafely(getSupportFragmentManager());
+                RecordLogSheet.show(getSupportFragmentManager(), HealthExtras.BIZ_DISINFECT_RECORD,
+                        vm.getRecordId() == null ? 0L : vm.getRecordId(), null);
                 return true;
             }
             return false;

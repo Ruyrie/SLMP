@@ -12,11 +12,8 @@ import androidx.lifecycle.Transformations;
 import com.zhimu.slmp.base.R;
 import com.zhimu.slmp.base.mvvm.BaseViewModel;
 import com.zhimu.slmp.base.mvvm.SingleLiveEvent;
-import com.zhimu.slmp.common.data.BaseDataRepository;
-import com.zhimu.slmp.common.model.vo.RecordLogVO;
 import com.zhimu.slmp.common.model.vo.UserBriefVO;
 import com.zhimu.slmp.common.router.RouterPath;
-import com.zhimu.slmp.herd.HerdExtras;
 import com.zhimu.slmp.herd.data.PenRepository;
 import com.zhimu.slmp.herd.model.request.PenStatusRequest;
 import com.zhimu.slmp.herd.model.vo.PenDetailVO;
@@ -25,7 +22,6 @@ import com.zhimu.slmp.herd.ui.common.MenuItemSpec;
 import com.zhimu.slmp.herd.ui.common.NavTarget;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -41,25 +37,22 @@ public class PenDetailViewModel extends BaseViewModel {
     public static final int MENU_ENABLE = 4;
 
     private final PenRepository repository;
-    private final BaseDataRepository baseData;
 
     private final MutableLiveData<PenDetailVO> pen = new MutableLiveData<>();
     private final LiveData<String> headerSub;
     private final LiveData<String> capacityHint;
-    /** 修改记录（API-U14 biz_type = PEN）；lib_common 的 BaseDataRepository 返回整页列表，不分页 */
-    private final MutableLiveData<List<RecordLogVO>> changeLogs = new MutableLiveData<>();
     private final MutableLiveData<Boolean> statusSubmitting = new MutableLiveData<>(false);
     private final SingleLiveEvent<List<MenuItemSpec>> menuEvent = new SingleLiveEvent<>();
     private final SingleLiveEvent<String> disableConfirmEvent = new SingleLiveEvent<>();
-    private final SingleLiveEvent<Void> changeLogEvent = new SingleLiveEvent<>();
+    /** 打开修改记录面板（U14，biz_type = PEN），值为 pen_id */
+    private final SingleLiveEvent<Long> changeLogEvent = new SingleLiveEvent<>();
     private final SingleLiveEvent<NavTarget> navEvent = new SingleLiveEvent<>();
 
     private long penId;
 
     @Inject
-    public PenDetailViewModel(@NonNull PenRepository repository, @NonNull BaseDataRepository baseData) {
+    public PenDetailViewModel(@NonNull PenRepository repository) {
         this.repository = repository;
-        this.baseData = baseData;
         headerSub = Transformations.map(pen, p -> p == null ? "" : p.getCategoryName() + HerdFormat.DOT
                 + statusText(p));
         capacityHint = Transformations.map(pen, p -> {
@@ -104,10 +97,6 @@ public class PenDetailViewModel extends BaseViewModel {
         return capacityHint;
     }
 
-    public LiveData<List<RecordLogVO>> getChangeLogs() {
-        return changeLogs;
-    }
-
     public LiveData<Boolean> getStatusSubmitting() {
         return statusSubmitting;
     }
@@ -120,7 +109,7 @@ public class PenDetailViewModel extends BaseViewModel {
         return disableConfirmEvent;
     }
 
-    public SingleLiveEvent<Void> getChangeLogEvent() {
+    public SingleLiveEvent<Long> getChangeLogEvent() {
         return changeLogEvent;
     }
 
@@ -227,15 +216,9 @@ public class PenDetailViewModel extends BaseViewModel {
         });
     }
 
-    /** API-U14 修改记录（底部面板） */
+    /** API-U14 修改记录：由公共修改记录面板加载 */
     public void openChangeLog() {
-        changeLogs.setValue(null);
-        changeLogEvent.call();
-        launch(baseData.getRecordLogs(HerdExtras.BIZ_PEN, penId), list -> changeLogs.setValue(list),
-                e -> {
-                    changeLogs.setValue(Collections.emptyList());
-                    showMessage(e.getMessage());
-                });
+        changeLogEvent.setValue(penId);
     }
 
     // ===== 点击 =====

@@ -11,7 +11,6 @@ import com.zhimu.slmp.base.error.ErrorCodes;
 import com.zhimu.slmp.base.mvvm.SingleLiveEvent;
 import com.zhimu.slmp.common.data.BaseDataRepository;
 import com.zhimu.slmp.common.farm.FarmContext;
-import com.zhimu.slmp.common.model.vo.RecordLogVO;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.finance.FinanceExtras;
 import com.zhimu.slmp.finance.data.SaleOrderRepository;
@@ -71,7 +70,8 @@ public class SaleOrderDetailViewModel extends FinanceViewModel implements Receip
     private final MutableLiveData<Integer> bannerMode = new MutableLiveData<>(BANNER_NONE);
     private final MutableLiveData<Boolean> voiding = new MutableLiveData<>(false);
     private final SingleLiveEvent<String> showReasonDialog = new SingleLiveEvent<>();
-    private final SingleLiveEvent<List<RecordLogVO>> showLogSheet = new SingleLiveEvent<>();
+    /** 打开修改记录面板（U14），值为出栏单 ID */
+    private final SingleLiveEvent<Long> showLogSheet = new SingleLiveEvent<>();
     private long orderId;
     private boolean changed;
 
@@ -134,7 +134,7 @@ public class SaleOrderDetailViewModel extends FinanceViewModel implements Receip
         return showReasonDialog;
     }
 
-    public SingleLiveEvent<List<RecordLogVO>> getShowLogSheet() {
+    public SingleLiveEvent<Long> getShowLogSheet() {
         return showLogSheet;
     }
 
@@ -230,7 +230,7 @@ public class SaleOrderDetailViewModel extends FinanceViewModel implements Receip
                 open(NavTarget.of(RouterPath.E08).put(RouterPath.EXTRA_SALE_ORDER_ID, d.getId()).forResult());
                 break;
             case MENU_LOG:
-                launch(baseData.getRecordLogs(FinanceConst.LOG_SALE_ORDER, d.getId()), showLogSheet::setValue);
+                showLogSheet.setValue(d.getId());
                 break;
             case MENU_EDIT:
                 open(NavTarget.of(RouterPath.E06).put(RouterPath.EXTRA_SALE_ORDER_ID, d.getId()).forResult());

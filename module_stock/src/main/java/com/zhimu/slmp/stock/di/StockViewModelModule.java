@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel;
 
 import com.zhimu.slmp.base.mvvm.ViewModelFactoryModule;
 import com.zhimu.slmp.base.mvvm.ViewModelKey;
-import com.zhimu.slmp.stock.ui.common.ChangeLogViewModel;
 import com.zhimu.slmp.stock.ui.drugarchive.DrugArchiveViewModel;
 import com.zhimu.slmp.stock.ui.druginbound.DrugInboundViewModel;
 import com.zhimu.slmp.stock.ui.druglot.DrugLotDetailViewModel;
@@ -29,11 +28,6 @@ import dagger.multibindings.IntoMap;
  */
 @Module(includes = ViewModelFactoryModule.class)
 public abstract class StockViewModelModule {
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(ChangeLogViewModel.class)
-    abstract ViewModel bindChangeLog(ChangeLogViewModel vm);
 
     @Binds
     @IntoMap

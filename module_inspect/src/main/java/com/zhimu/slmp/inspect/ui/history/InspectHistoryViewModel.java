@@ -11,7 +11,6 @@ import com.zhimu.slmp.base.mvvm.BaseListViewModel;
 import com.zhimu.slmp.base.mvvm.SingleLiveEvent;
 import com.zhimu.slmp.base.util.DateFormatter;
 import com.zhimu.slmp.common.farm.FarmContext;
-import com.zhimu.slmp.common.model.vo.RecordLogVO;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.inspect.InspectExtras;
 import com.zhimu.slmp.inspect.data.HistoryQuery;
@@ -33,8 +32,7 @@ import javax.inject.Inject;
  * 每行“更多”菜单（查看详情、修改巡检或提交修改申请、查看修改记录 API-U14）。员工不显示规则横幅与“提交修改申请”。
  * 参数：pen_id、locate_date（定位并闪一次该行）。
  */
-public class InspectHistoryViewModel extends BaseListViewModel<HistoryQuery, PenInspectionRowVO>
-        implements com.zhimu.slmp.inspect.ui.common.RecordLogHost {
+public class InspectHistoryViewModel extends BaseListViewModel<HistoryQuery, PenInspectionRowVO> {
 
     public static final int MENU_DETAIL = 1;
     public static final int MENU_MODIFY = 2;
@@ -49,9 +47,9 @@ public class InspectHistoryViewModel extends BaseListViewModel<HistoryQuery, Pen
     private final MutableLiveData<String> overviewText = new MutableLiveData<>("");
     private final MutableLiveData<String> ruleText = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isManager = new MutableLiveData<>(false);
-    private final MutableLiveData<List<RecordLogVO>> recordLogs = new MutableLiveData<>(Collections.emptyList());
     private final SingleLiveEvent<NavTarget> navEvent = new SingleLiveEvent<>();
-    private final SingleLiveEvent<Void> showRecordLogs = new SingleLiveEvent<>();
+    /** 打开修改记录面板（U14），值为记录 ID */
+    private final SingleLiveEvent<Long> showRecordLogs = new SingleLiveEvent<>();
     private final SingleLiveEvent<String> highlightDate = new SingleLiveEvent<>();
 
     private long penId;
@@ -125,13 +123,9 @@ public class InspectHistoryViewModel extends BaseListViewModel<HistoryQuery, Pen
 
     public LiveData<Boolean> getIsManager() { return isManager; }
 
-    @NonNull
-    @Override
-    public LiveData<List<RecordLogVO>> getRecordLogs() { return recordLogs; }
-
     public SingleLiveEvent<NavTarget> getNavEvent() { return navEvent; }
 
-    public SingleLiveEvent<Void> getShowRecordLogs() { return showRecordLogs; }
+    public SingleLiveEvent<Long> getShowRecordLogs() { return showRecordLogs; }
 
     public SingleLiveEvent<String> getHighlightDate() { return highlightDate; }
 
@@ -227,11 +221,7 @@ public class InspectHistoryViewModel extends BaseListViewModel<HistoryQuery, Pen
                         .put(RouterPath.EXTRA_REQUEST_ID, row.getPendingRequestId()));
                 break;
             case MENU_LOGS:
-                recordLogs.setValue(Collections.emptyList());
-                showRecordLogs.call();
-                launch(repository.getRecordLogs(InspectExtras.BIZ_INSPECTION, row.getInspectionId()),
-                        list -> recordLogs.setValue(list == null ? Collections.emptyList() : list),
-                        e -> showMessage(e.getMessage()));
+                showRecordLogs.setValue(row.getInspectionId());
                 break;
             default:
                 break;

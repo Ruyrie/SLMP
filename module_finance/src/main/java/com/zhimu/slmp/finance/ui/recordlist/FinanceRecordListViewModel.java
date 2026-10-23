@@ -8,9 +8,7 @@ import androidx.lifecycle.SavedStateHandle;
 import androidx.paging.PagingSource;
 
 import com.zhimu.slmp.base.mvvm.SingleLiveEvent;
-import com.zhimu.slmp.common.data.BaseDataRepository;
 import com.zhimu.slmp.common.farm.FarmContext;
-import com.zhimu.slmp.common.model.vo.RecordLogVO;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.finance.FinanceExtras;
 import com.zhimu.slmp.finance.data.FinanceRepository;
@@ -44,23 +42,21 @@ public class FinanceRecordListViewModel extends FinanceListViewModel<FinanceReco
     static final int KEYWORD_MAX = 30;
 
     private final FinanceRepository repository;
-    private final BaseDataRepository baseData;
 
     private final MutableLiveData<FinanceRecordPageVO.Totals> totals = new MutableLiveData<>();
     private final MutableLiveData<Long> highlightId = new MutableLiveData<>();
     private final MutableLiveData<Boolean> searchMode = new MutableLiveData<>(false);
     private final MutableLiveData<List<FinanceCategoryVO>> expenseCategories =
             new MutableLiveData<>(Collections.emptyList());
-    private final SingleLiveEvent<List<RecordLogVO>> showLogSheet = new SingleLiveEvent<>();
+    /** 打开修改记录面板（U14），值为手工记录 ID */
+    private final SingleLiveEvent<Long> showLogSheet = new SingleLiveEvent<>();
     private final SingleLiveEvent<FinanceRecordVO> confirmVoid = new SingleLiveEvent<>();
     private final PublishSubject<String> searchInput = PublishSubject.create();
 
     @Inject
-    public FinanceRecordListViewModel(@NonNull FinanceRepository repository, @NonNull BaseDataRepository baseData,
-                                      @NonNull FarmContext farm) {
+    public FinanceRecordListViewModel(@NonNull FinanceRepository repository, @NonNull FarmContext farm) {
         super(farm, null);
         this.repository = repository;
-        this.baseData = baseData;
         disposables.add(searchInput
                 .debounce(SEARCH_DEBOUNCE_MS, TimeUnit.MILLISECONDS, Schedulers.computation())
                 .distinctUntilChanged()
@@ -124,7 +120,7 @@ public class FinanceRecordListViewModel extends FinanceListViewModel<FinanceReco
         return expenseCategories;
     }
 
-    public SingleLiveEvent<List<RecordLogVO>> getShowLogSheet() {
+    public SingleLiveEvent<Long> getShowLogSheet() {
         return showLogSheet;
     }
 
@@ -231,9 +227,9 @@ public class FinanceRecordListViewModel extends FinanceListViewModel<FinanceReco
         open(NavTarget.of(RouterPath.E03).put(RouterPath.EXTRA_RECORD_ID, r.getId()).forResult());
     }
 
-    /** 查看修改记录（U14，FINANCE_RECORD） */
+    /** 查看修改记录（U14，FINANCE_RECORD）：由公共修改记录面板加载 */
     public void showLog(@NonNull FinanceRecordVO r) {
-        launch(baseData.getRecordLogs(FinanceConst.LOG_FINANCE_RECORD, r.getId()), showLogSheet::setValue);
+        showLogSheet.setValue(r.getId());
     }
 
     public void requestVoid(@NonNull FinanceRecordVO r) {

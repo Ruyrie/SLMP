@@ -16,16 +16,17 @@ import com.zhimu.slmp.base.widget.KeyValueRowView;
 import com.zhimu.slmp.base.widget.ListRowView;
 import com.zhimu.slmp.base.widget.StatusTagView;
 import com.zhimu.slmp.base.widget.TopAppBarHelper;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
 import com.zhimu.slmp.finance.R;
 import com.zhimu.slmp.finance.databinding.FinanceActivitySaleDetailBinding;
 import com.zhimu.slmp.finance.di.FinanceInjector;
+import com.zhimu.slmp.finance.model.FinanceConst;
 import com.zhimu.slmp.finance.model.vo.SaleOrderDetailVO;
 import com.zhimu.slmp.finance.ui.common.FinanceNav;
 import com.zhimu.slmp.finance.ui.common.FinancePageActivity;
 import com.zhimu.slmp.finance.ui.common.FinanceViews;
 import com.zhimu.slmp.finance.ui.common.ReceiptBottomSheet;
 import com.zhimu.slmp.finance.ui.common.ReceiptHost;
-import com.zhimu.slmp.finance.ui.common.RecordLogBottomSheet;
 import com.zhimu.slmp.finance.util.FinanceFormat;
 
 import java.util.ArrayList;
@@ -67,8 +68,8 @@ public class SaleOrderDetailActivity extends FinancePageActivity implements Rece
         });
         vm.getDetail().observe(this, this::render);
         vm.getBannerMode().observe(this, m -> renderBanner());
-        vm.getShowLogSheet().observe(this, logs -> RecordLogBottomSheet.show(getSupportFragmentManager(), logs,
-                getString(R.string.finance_log_title)));
+        vm.getShowLogSheet().observe(this, id -> RecordLogSheet.show(getSupportFragmentManager(),
+                FinanceConst.LOG_SALE_ORDER, id, null, getString(R.string.finance_log_empty)));
         vm.getShowReasonDialog().observe(this, msg -> ReasonDialogFragment.builder(REQ_VOID)
                 .title(getString(R.string.finance_e07_void_title)).message(msg)
                 .label(getString(R.string.finance_e07_void_label)).maxLength(200)

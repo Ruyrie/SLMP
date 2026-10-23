@@ -11,8 +11,6 @@ import com.zhimu.slmp.base.error.ErrorCodes;
 import com.zhimu.slmp.base.mvvm.BaseViewModel;
 import com.zhimu.slmp.base.mvvm.SingleLiveEvent;
 import com.zhimu.slmp.base.mvvm.UiMessage;
-import com.zhimu.slmp.common.data.BaseDataRepository;
-import com.zhimu.slmp.common.model.vo.RecordLogVO;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.feed.FeedExtras;
 import com.zhimu.slmp.feed.data.FeedRepository;
@@ -49,7 +47,6 @@ public class FeedPlanViewModel extends BaseViewModel {
     static final String MSG_SAVED = "已保存饲喂方案";
 
     private final FeedRepository repository;
-    private final BaseDataRepository baseData;
 
     private final MutableLiveData<FeedPlanVO> plan = new MutableLiveData<>();
     private final MutableLiveData<String> batchHeader = new MutableLiveData<>("");
@@ -64,7 +61,6 @@ public class FeedPlanViewModel extends BaseViewModel {
     private final MutableLiveData<List<FeedOptionBriefVO>> feedOptions = new MutableLiveData<>(Collections.emptyList());
     private final MutableLiveData<BigDecimal> abnormalThreshold = new MutableLiveData<>();
     private final MutableLiveData<String> thresholdText = new MutableLiveData<>("");
-    private final MutableLiveData<List<RecordLogVO>> historyItems = new MutableLiveData<>();
     private final MutableLiveData<Map<String, String>> stageErrors = new MutableLiveData<>(Collections.emptyMap());
     private final MutableLiveData<Boolean> saving = new MutableLiveData<>(false);
     private final MutableLiveData<List<FeedPlanBatchOptionVO>> batchOptions =
@@ -73,7 +69,8 @@ public class FeedPlanViewModel extends BaseViewModel {
     private final SingleLiveEvent<Integer> scrollToError = new SingleLiveEvent<>();
     private final SingleLiveEvent<int[]> showTimePicker = new SingleLiveEvent<>();
     private final SingleLiveEvent<Void> showThresholdSheet = new SingleLiveEvent<>();
-    private final SingleLiveEvent<Void> showHistorySheet = new SingleLiveEvent<>();
+    /** 打开修改记录面板（U14），值为 plan_id，方案还没有保存时为 0 */
+    private final SingleLiveEvent<Long> showHistorySheet = new SingleLiveEvent<>();
     private final SingleLiveEvent<Void> showDiscardDialog = new SingleLiveEvent<>();
     private final SingleLiveEvent<Void> showBatchSheet = new SingleLiveEvent<>();
 
@@ -92,9 +89,8 @@ public class FeedPlanViewModel extends BaseViewModel {
     private boolean saved;
 
     @Inject
-    public FeedPlanViewModel(@NonNull FeedRepository repository, @NonNull BaseDataRepository baseData) {
+    public FeedPlanViewModel(@NonNull FeedRepository repository) {
         this.repository = repository;
-        this.baseData = baseData;
     }
 
     @Override
@@ -161,10 +157,6 @@ public class FeedPlanViewModel extends BaseViewModel {
         return thresholdText;
     }
 
-    public LiveData<List<RecordLogVO>> getHistoryItems() {
-        return historyItems;
-    }
-
     public LiveData<Map<String, String>> getStageErrors() {
         return stageErrors;
     }
@@ -190,7 +182,7 @@ public class FeedPlanViewModel extends BaseViewModel {
         return showThresholdSheet;
     }
 
-    public SingleLiveEvent<Void> getShowHistorySheet() {
+    public SingleLiveEvent<Long> getShowHistorySheet() {
         return showHistorySheet;
     }
 
@@ -665,22 +657,10 @@ public class FeedPlanViewModel extends BaseViewModel {
 
     // ===================== 修改记录 =====================
 
-    /** API-U14（biz_type FEED_PLAN，biz_id plan_id） */
-    public void loadHistory() {
-        FeedPlanVO p = plan.getValue();
-        if (p == null || p.getPlanId() == null) {
-            historyItems.setValue(Collections.emptyList());
-            return;
-        }
-        historyItems.setValue(null);
-        launch(baseData.getRecordLogs(FeedExtras.BIZ_FEED_PLAN, p.getPlanId()), historyItems::setValue, e -> {
-            historyItems.setValue(Collections.emptyList());
-            showMessage(e.isNetwork() ? ApiException.MSG_NETWORK : e.getMessage());
-        });
-    }
-
+    /** 顶部栏 history：打开公共修改记录面板（API-U14，biz_type FEED_PLAN，biz_id plan_id） */
     public void onHistoryClick() {
-        showHistorySheet.call();
+        FeedPlanVO p = plan.getValue();
+        showHistorySheet.setValue(p == null || p.getPlanId() == null ? 0L : p.getPlanId());
     }
 
     // ===================== 返回 =====================

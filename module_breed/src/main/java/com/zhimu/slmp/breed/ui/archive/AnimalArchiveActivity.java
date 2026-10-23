@@ -35,6 +35,7 @@ import com.zhimu.slmp.breed.ui.common.SingleViewAdapter;
 import com.zhimu.slmp.breed.ui.mating.PregCheckSheet;
 import com.zhimu.slmp.breed.util.BreedTextFormatter;
 import com.zhimu.slmp.common.router.Router;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
 
 import java.util.List;
 
@@ -125,8 +126,9 @@ public class AnimalArchiveActivity extends BaseActivity implements PregCheckHost
             }
         });
         vm.getNavigate().observe(this, this::navigate);
-        vm.getOpenChangeLog().observe(this, args -> startActivity(ChangeLogActivity.intent(this, args[0],
-                Long.parseLong(args[1]), args[2])));
+        vm.getOpenChangeLog().observe(this, args -> RecordLogSheet.show(getSupportFragmentManager(), args[0],
+                Long.parseLong(args[1]), args[2] == null || args[2].isEmpty() ? null
+                        : args[2] + " " + getString(com.zhimu.slmp.common.R.string.common_record_log_title)));
         vm.getFinishToList().observe(this, msg -> BreedNav.finishToList(this, msg));
         vm.getNoPermission().observe(this, v -> finish());
     }

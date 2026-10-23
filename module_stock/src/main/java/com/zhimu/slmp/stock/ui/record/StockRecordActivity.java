@@ -17,7 +17,7 @@ import com.zhimu.slmp.stock.databinding.StockItemRowBinding;
 import com.zhimu.slmp.stock.di.StockInjector;
 import com.zhimu.slmp.stock.model.StockEnums;
 import com.zhimu.slmp.stock.model.vo.StocktakeVO;
-import com.zhimu.slmp.stock.ui.common.ChangeLogActivity;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
 import com.zhimu.slmp.stock.ui.common.RecordMenu;
 import com.zhimu.slmp.stock.ui.common.StockNav;
 import com.zhimu.slmp.stock.ui.common.StockUi;
@@ -59,7 +59,7 @@ public class StockRecordActivity extends BaseActivity implements RecordMenu.Call
         vm.getOpenChangeRequest().observe(this, id -> Router.open(this, RouterPath.U01,
                 StockNav.changeArgs(vm.bizType(), id)));
         vm.getOpenRequest().observe(this, id -> Router.open(this, RouterPath.U02, StockNav.requestArgs(id)));
-        vm.getOpenChangeLog().observe(this, id -> startActivity(ChangeLogActivity.intent(this, vm.bizType(), id)));
+        vm.getOpenChangeLog().observe(this, id -> RecordLogSheet.show(getSupportFragmentManager(), vm.bizType(), id, null));
         binding.stockRecordNotice.setText(getString(R.string.stock_record_rule));
     }
 

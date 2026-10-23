@@ -16,7 +16,6 @@ import com.zhimu.slmp.base.mvvm.UiMessage;
 import com.zhimu.slmp.base.util.DateFormatter;
 import com.zhimu.slmp.common.farm.FarmContext;
 import com.zhimu.slmp.common.model.vo.DictItemVO;
-import com.zhimu.slmp.common.model.vo.RecordLogVO;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.common.service.ITodoService;
 import com.zhimu.slmp.common.service.ServiceHub;
@@ -35,7 +34,6 @@ import com.zhimu.slmp.health.model.vo.DrugLotOptionsVO;
 import com.zhimu.slmp.health.model.vo.MemberItemVO;
 import com.zhimu.slmp.health.model.vo.PenOptionVO;
 import com.zhimu.slmp.health.ui.common.DraftStore;
-import com.zhimu.slmp.health.ui.common.RecordLogHost;
 import com.zhimu.slmp.health.util.ConcentrationUtil;
 import com.zhimu.slmp.health.util.HealthFormRules;
 import com.zhimu.slmp.health.util.HealthFormat;
@@ -62,7 +60,7 @@ import io.reactivex.rxjava3.core.Single;
  * 实际执行人（员工不显示）、消毒剂批号（API-M27）、用量（不超过结存）、浓度（与计划不一致时必须确认）、消毒方式、
  * 现场照片（lib_media，场景 DISINFECT，最多 6 张）。提交 API-D38（Idempotency-Key，超时 API-D41），修改 API-D40。
  */
-public class DisinfectRegisterViewModel extends BaseViewModel implements RecordLogHost {
+public class DisinfectRegisterViewModel extends BaseViewModel {
 
     public static final String PAGE_CODE = "D08";
     public static final int MAX_PHOTOS = 6;
@@ -130,7 +128,6 @@ public class DisinfectRegisterViewModel extends BaseViewModel implements RecordL
     private final MutableLiveData<Boolean> concentrationConfirmed = new MutableLiveData<>(false);
     private final MediatorLiveData<Boolean> concentrationMismatch = new MediatorLiveData<>();
     private final MutableLiveData<DisinfectRecordVO> record = new MutableLiveData<>();
-    private final MutableLiveData<List<RecordLogVO>> logs = new MutableLiveData<>();
     private final MutableLiveData<Map<String, String>> fieldErrors = new MutableLiveData<>(Collections.emptyMap());
     private final MutableLiveData<Boolean> submitting = new MutableLiveData<>(false);
     private final MediatorLiveData<Boolean> canSubmit = new MediatorLiveData<>();
@@ -256,9 +253,6 @@ public class DisinfectRegisterViewModel extends BaseViewModel implements RecordL
     public LiveData<Boolean> getConcentrationMismatch() { return concentrationMismatch; }
 
     public LiveData<DisinfectRecordVO> getRecord() { return record; }
-
-    @Override
-    public LiveData<List<RecordLogVO>> getLogs() { return logs; }
 
     public LiveData<Map<String, String>> getFieldErrors() { return fieldErrors; }
 
@@ -1001,15 +995,6 @@ public class DisinfectRegisterViewModel extends BaseViewModel implements RecordL
         if (r != null) {
             openChangeRequest.setValue(r.getId());
         }
-    }
-
-    public void loadLogs() {
-        if (recordId == null) {
-            return;
-        }
-        logs.setValue(null);
-        launch(shared.getRecordLogs(HealthExtras.BIZ_DISINFECT_RECORD, recordId), logs::setValue,
-                e -> logs.setValue(Collections.emptyList()));
     }
 
     // ===== 返回与草稿 =====

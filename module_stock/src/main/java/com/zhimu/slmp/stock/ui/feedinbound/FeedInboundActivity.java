@@ -26,7 +26,7 @@ import com.zhimu.slmp.stock.R;
 import com.zhimu.slmp.stock.databinding.StockActivityFeedInboundBinding;
 import com.zhimu.slmp.stock.di.StockInjector;
 import com.zhimu.slmp.stock.model.StockEnums;
-import com.zhimu.slmp.stock.ui.common.ChangeLogActivity;
+import com.zhimu.slmp.common.ui.recordlog.RecordLogSheet;
 import com.zhimu.slmp.stock.ui.common.FormMode;
 import com.zhimu.slmp.stock.ui.common.PickerData;
 import com.zhimu.slmp.stock.ui.common.PickerHost;
@@ -183,8 +183,8 @@ public class FeedInboundActivity extends BaseActivity implements PickerHost, Rec
         vm.getOpenChangeRequest().observe(this, id -> Router.open(this, RouterPath.U01,
                 StockNav.changeArgs(StockEnums.BIZ_INBOUND, id)));
         vm.getOpenRequest().observe(this, id -> Router.open(this, RouterPath.U02, StockNav.requestArgs(id)));
-        vm.getOpenChangeLog().observe(this, id -> startActivity(ChangeLogActivity.intent(this,
-                StockEnums.BIZ_INBOUND, id)));
+        vm.getOpenChangeLog().observe(this, id -> RecordLogSheet.show(getSupportFragmentManager(),
+                StockEnums.BIZ_INBOUND, id, null));
     }
 
     @Override
