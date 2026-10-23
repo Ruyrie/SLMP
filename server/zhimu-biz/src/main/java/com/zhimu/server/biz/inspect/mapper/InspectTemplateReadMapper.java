@@ -30,3 +30,4 @@ public interface InspectTemplateReadMapper {
             + "ORDER BY i.sort_no, i.id, o.sort_no, o.id")
     List<InspectTemplateItemRow> selectItems(@Param("versionId") Long versionId);
 }
+

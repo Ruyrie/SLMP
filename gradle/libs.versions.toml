@@ -28,7 +28,7 @@ camerax = "1.6.1"
 # camera-video 1.6.1 依赖 media3-muxer、media3-container 1.9.0；media3 各模块必须同一版本，否则运行时 NoSuchMethodError
 media3 = "1.9.0"
 zxing = "3.5.3"
-amap = "10.1.201_loc6.4.9_sea9.7.4"
+amap = "11.3.100_loc11.3.101_sea9.8.1"
 jpush = "6.0.1"
 leakcanary = "2.14"
 coreTesting = "2.2.0"

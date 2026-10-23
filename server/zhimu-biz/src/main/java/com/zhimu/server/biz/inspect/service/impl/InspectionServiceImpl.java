@@ -297,7 +297,7 @@ public class InspectionServiceImpl implements InspectionService {
         vo.setRegistrant(InspectionConvert.userBrief(member.userId(), support.memberMap()));
         vo.setCanChooseExecutor(member.isManagerView());
         vo.setCanManualMark(member.isManagerView());
-        vo.setMembers(memberOptions());
+        vo.setMembers(member.isManagerView() ? memberOptions() : List.of());
         vo.setDefaultExecutorId(inspection != null && inspection.getExecutorId() != null
                 ? inspection.getExecutorId() : member.userId());
         if (inspection != null && inspection.getTemplateId() != null && inspection.getTemplateVersion() != null) {
@@ -474,6 +474,9 @@ public class InspectionServiceImpl implements InspectionService {
         inspection.setIsManualMarked(Boolean.TRUE.equals(manualMarked));
         inspection.setManualReason(Boolean.TRUE.equals(manualMarked) ? blankToNull(manualReason) : null);
         inspection.setRemark(blankToNull(request.getRemark()));
+        if (member.isManagerView() && request.getExecutorId() != null) {
+            inspection.setExecutorId(resolveExecutor(request.getExecutorId(), member));
+        }
         inspection.setStockSnapshot(totalStockOf(inspection.getPenId()));
         inspection.setUpdatedBy(member.userId());
         inspectionMapper.updateById(inspection);
@@ -723,6 +726,9 @@ public class InspectionServiceImpl implements InspectionService {
             cell.setDate(BeijingTime.format(date));
             String tag;
             if (inspection != null) {
+                if (InspectRules.DONE.equals(inspection.getInspectStatus())) {
+                    done++;
+                }
                 if (Boolean.TRUE.equals(inspection.getIsAbnormal())) {
                     tag = "ABNORMAL";
                     cell.setAbnormalSource(inspection.getAbnormalSource());
@@ -736,7 +742,6 @@ public class InspectionServiceImpl implements InspectionService {
                     tag = "PENDING";
                 } else {
                     tag = "DONE";
-                    done++;
                 }
                 cell.setInspectionId(inspection.getId());
             } else if (date.isBefore(today)) {
@@ -959,7 +964,14 @@ public class InspectionServiceImpl implements InspectionService {
         if (fileIds == null) {
             return;
         }
-        bizMediaService.validateForBind(fileIds, FileScene.INSPECTION, userId, "media_file_ids",
+        List<Long> existing = bizMediaService.listFileIds(BizType.INSPECTION, inspectionId);
+        List<Long> fresh = new ArrayList<>();
+        for (Long fileId : fileIds) {
+            if (!existing.contains(fileId)) {
+                fresh.add(fileId);
+            }
+        }
+        bizMediaService.validateForBind(fresh, FileScene.INSPECTION, userId, "media_file_ids",
                 new BizRef(BizType.INSPECTION, inspectionId));
         bizMediaService.replace(BizType.INSPECTION, inspectionId, support.farmId(), fileIds);
     }

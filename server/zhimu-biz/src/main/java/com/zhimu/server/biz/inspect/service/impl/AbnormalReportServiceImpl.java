@@ -263,7 +263,15 @@ public class AbnormalReportServiceImpl implements AbnormalReportService {
 
         List<Long> media = request.getMediaFileIds();
         if (media != null && !media.isEmpty()) {
-            bizMediaService.validateForBind(media, FileScene.ABNORMAL, member.userId(), "media_file_ids",
+            List<Long> inspectionFiles = inspection == null ? List.of()
+                    : bizMediaService.listFileIds(BizType.INSPECTION, inspection.getId());
+            List<Long> fresh = new ArrayList<>();
+            for (Long fileId : media) {
+                if (!inspectionFiles.contains(fileId)) {
+                    fresh.add(fileId);
+                }
+            }
+            bizMediaService.validateForBind(fresh, FileScene.ABNORMAL, member.userId(), "media_file_ids",
                     inspection == null ? new BizRef[0] : new BizRef[]{new BizRef(BizType.INSPECTION,
                             inspection.getId())});
             bizMediaService.replace(BizType.ABNORMAL_REPORT, report.getId(), support.farmId(), media);
