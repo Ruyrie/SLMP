@@ -1,18 +1,57 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { ApiError } from '@zmt/shared'
 import { useAdminStore } from '@/stores/admin'
 import { useUsersStore } from '@/stores/system/users'
-import type { AdminUserItem } from '@/api/system'
+import { useUiStore } from '@/stores/ui'
+import { revealUserPhone, type AdminUserItem } from '@/api/system'
 import { fmtLastLogin, fmtShortDate } from '@/views/system/shared'
 
 const route = useRoute()
 const admin = useAdminStore()
 const store = useUsersStore()
+const ui = useUiStore()
 
 const canHandle = computed(() => admin.hasPerm('WA-S03:HANDLE'))
 const detail = computed(() => store.detail)
 const target = computed(() => store.target)
+const canRevealPhone = computed(() => detail.value?.can_reveal_phone ?? canHandle.value)
+
+/* 完整手机号只保存在当前页面的局部变量里，不写入 store，关闭抽屉即清除。 */
+const revealedPhone = ref('')
+const revealLoading = ref(false)
+
+async function revealPhone(): Promise<void> {
+  if (!detail.value || revealLoading.value) return
+  revealLoading.value = true
+  try {
+    const result = await revealUserPhone(detail.value.user_id)
+    revealedPhone.value = result.phone
+    ui.toast(`已显示${result.name}的完整手机号`)
+  } catch (error) {
+    ui.toast(error instanceof Error ? error.message : '完整手机号查看失败', 'error')
+    if (error instanceof ApiError && error.code === 40308) {
+      await admin.me().catch(() => undefined)
+    }
+  } finally {
+    revealLoading.value = false
+  }
+}
+
+watch(
+  () => store.drawer,
+  (open) => {
+    if (!open) revealedPhone.value = ''
+  }
+)
+
+watch(
+  () => store.activeId,
+  () => {
+    revealedPhone.value = ''
+  }
+)
 
 const headers = [
   { title: '用户', key: 'user', width: 210, sortable: false },
@@ -231,7 +270,11 @@ onMounted(() => {
               <zw-tag :type="detail.status === 'NORMAL' ? 'success' : 'error'" size="small">{{ detail.status_text }}</zw-tag>
             </div>
             <div class="user-head-sub num">
-              {{ detail.phone }}
+              {{ revealedPhone || detail.phone }}
+              <template v-if="canRevealPhone">
+                <a v-if="!revealedPhone" class="zw-link phone-reveal" @click="revealPhone">{{ revealLoading ? '加载中…' : '查看完整号码' }}</a>
+                <a v-else class="zw-link phone-reveal" @click="revealedPhone = ''">隐藏</a>
+              </template>
               <template v-if="detail.role_summary"> · {{ detail.role_summary }}</template>
             </div>
           </div>
@@ -398,6 +441,11 @@ onMounted(() => {
   font-size: 13px;
   line-height: 20px;
   color: var(--text-2);
+}
+.phone-reveal {
+  margin-left: 6px;
+  font-size: 12px;
+  white-space: nowrap;
 }
 .user-sec {
   margin-top: 24px;

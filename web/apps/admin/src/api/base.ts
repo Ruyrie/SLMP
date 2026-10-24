@@ -472,6 +472,42 @@ export interface DrugPayload {
   version?: number
 }
 
+export interface DrugImportError {
+  row: number
+  message: string
+}
+
+export interface DrugImportResult {
+  total: number
+  success: number
+  failed: number
+  errors: DrugImportError[]
+  file_name?: string
+}
+
+function saveBlob(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  link.style.display = 'none'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  window.setTimeout(() => URL.revokeObjectURL(url), 0)
+}
+
+export async function downloadDrugCatalogImportTemplate(): Promise<void> {
+  const response = await http().instance.get<Blob>('/drug-catalog/import-template', { responseType: 'blob' })
+  saveBlob(response.data, '兽药疫苗目录导入模板.xlsx')
+}
+
+export function importDrugCatalog(file: File, onProgress?: (percent: number) => void): Promise<DrugImportResult> {
+  const form = new FormData()
+  form.append('file', file)
+  return http().upload<DrugImportResult>('/drug-catalog/import', form, onProgress)
+}
+
 export interface BannedDrug {
   id: number
   name: string

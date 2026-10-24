@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 import { ApiError, dayjs, formatDateTime, formatNumber, formatPercent, today } from '@zmt/shared'
 import {
   closeKnowledgeTask,
@@ -157,60 +157,61 @@ function changeSize(size: number): void {
   void fetchList()
 }
 
-/* ---------------- HTML 与编辑区互转（仅显示纯文本，不注入 HTML） ---------------- */
-interface VideoBlock {
-  courseId: number
-  title: string
+/* ---------------- 正文 HTML 与编辑区 ---------------- */
+interface EditorImage {
+  fileId: number | null
+  url: string
+  alt: string
 }
 
-function parseContent(html?: string): { text: string; videos: VideoBlock[] } {
-  if (!html) return { text: '', videos: [] }
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function textToHtml(text?: string): string {
+  if (!text) return ''
+  return text
+    .split(/\n{2,}/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((part) => `<p>${escapeHtml(part).replace(/\n/g, '<br>')}</p>`)
+    .join('')
+}
+
+function contentText(html?: string): string {
+  if (!html) return ''
   const doc = new DOMParser().parseFromString(html, 'text/html')
-  const blocks: string[] = []
-  const videos: VideoBlock[] = []
+  const parts: string[] = []
   const walk = (node: Element): void => {
     if (node.matches('div[data-type="video"]')) {
-      const courseId = Number(node.getAttribute('data-course-id') || 0)
-      const course = courses.value.find((c) => c.id === courseId)
-      videos.push({ courseId, title: course?.title || `课堂视频 #${courseId}` })
-      blocks.push(`【视频：${courseId}】`)
+      parts.push('【教学视频】')
       return
     }
     if (node.matches('img')) {
-      blocks.push('【知识正文图片】')
+      parts.push('【图片】')
       return
     }
-    if (node.matches('p, li, h2, h3, blockquote')) {
+    if (node.matches('p, li, h1, h2, h3, h4, h5, h6, blockquote')) {
       const text = (node.textContent || '').trim()
-      if (text) blocks.push(text)
+      if (text) parts.push(text)
       return
     }
     for (const child of Array.from(node.children)) walk(child)
   }
   for (const child of Array.from(doc.body.children)) walk(child)
-  if (!blocks.length) {
+  if (!parts.length) {
     const text = (doc.body.textContent || '').trim()
-    if (text) blocks.push(...text.split(/\n{2,}/).map((part) => part.trim()).filter(Boolean))
+    if (text) parts.push(text)
   }
-  return { text: blocks.join('\n\n'), videos }
+  return parts.join('\n\n')
 }
 
-function editorToHtml(text: string): string {
-  const pieces = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
-  return pieces.map((piece) => {
-    const video = piece.match(/^【视频：(\d+)】$/)
-    if (video) return `<div data-type="video" data-course-id="${video[1]}"></div>`
-    const escaped = piece
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\n/g, '<br>')
-    return `<p>${escaped}</p>`
-  }).join('')
-}
-
-function contentText(html?: string): string {
-  return parseContent(html).text.replace(/【视频：\d+】/g, '【教学视频】').replace(/【知识正文图片】/g, '【图片】')
+function courseTitle(courseId: number): string {
+  return courses.value.find((course) => course.id === courseId)?.title || `课程 #${courseId}`
 }
 
 /* ---------------- 编辑 ---------------- */
@@ -233,6 +234,240 @@ const form = reactive({
   source_task_id: null as number | null,
   version: 0
 })
+
+const editorEl = ref<HTMLDivElement | null>(null)
+const imageInput = ref<HTMLInputElement | null>(null)
+const imageUploading = ref(false)
+const imageProgress = ref(0)
+const imageError = ref('')
+const lastImageFile = ref<File | null>(null)
+const videoToInsert = ref<number | null>(null)
+
+const contentLength = computed(() => {
+  if (!form.content) return 0
+  const doc = new DOMParser().parseFromString(form.content, 'text/html')
+  doc.querySelectorAll('img, div[data-type="video"]').forEach((node) => node.remove())
+  return (doc.body.textContent || '').replace(/\s+/g, ' ').trim().length
+})
+
+const contentImages = computed<EditorImage[]>(() => {
+  if (!form.content) return []
+  const doc = new DOMParser().parseFromString(form.content, 'text/html')
+  return Array.from(doc.body.querySelectorAll('img'))
+    .map((img) => ({
+      fileId: Number(img.getAttribute('data-file-id') || 0) || null,
+      url: img.getAttribute('src') || '',
+      alt: img.getAttribute('alt') || ''
+    }))
+    .filter((image) => !!image.url || image.fileId !== null)
+})
+
+const previewTagWhitelist = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'blockquote', 'ul', 'ol', 'li', 'strong', 'b', 'em', 'i', 'br', 'img', 'span'])
+
+const previewHtml = computed(() => {
+  if (!form.content.trim()) return ''
+  const doc = new DOMParser().parseFromString(form.content, 'text/html')
+  doc.querySelectorAll('script, style, iframe, object, embed, link, meta').forEach((node) => node.remove())
+  const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT)
+  const elements: Element[] = []
+  while (walker.nextNode()) elements.push(walker.currentNode as Element)
+  for (const element of elements) {
+    if (!element.parentNode) continue
+    const tag = element.tagName.toLowerCase()
+    if (!previewTagWhitelist.has(tag)) {
+      element.replaceWith(...Array.from(element.childNodes))
+      continue
+    }
+    for (const attr of Array.from(element.attributes)) {
+      const name = attr.name.toLowerCase()
+      const allowed = tag === 'img' ? ['src', 'alt', 'data-file-id'] : tag === 'div' ? ['data-type', 'data-course-id'] : []
+      if (!allowed.includes(name)) element.removeAttribute(attr.name)
+    }
+    if (tag === 'img') {
+      const src = element.getAttribute('src') || ''
+      if (!/^(https?:)?\/\//i.test(src) && !src.startsWith('/')) {
+        element.remove()
+        continue
+      }
+      element.setAttribute('class', 'knowledge-preview-img')
+    }
+    if (tag === 'div' && element.getAttribute('data-type') === 'video') {
+      const courseId = Number(element.getAttribute('data-course-id') || 0)
+      element.setAttribute('class', 'knowledge-preview-video')
+      element.textContent = `课堂视频 · ${courseTitle(courseId)}`
+    }
+  }
+  return doc.body.innerHTML
+})
+
+async function setEditorContent(html: string): Promise<void> {
+  await nextTick()
+  if (!editorEl.value) return
+  editorEl.value.innerHTML = html.trim() ? html : '<p><br></p>'
+  decorateEditor()
+  form.content = editorEl.value.innerHTML
+}
+
+/** 服务端按块解析正文；把顶层裸文本包成段落，避免保存时丢字。 */
+function normalizeContentHtml(html: string): string {
+  if (!html.trim()) return ''
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  for (const node of Array.from(doc.body.childNodes)) {
+    if (node.nodeType !== Node.TEXT_NODE) continue
+    const text = node.textContent || ''
+    if (!text.trim()) {
+      node.remove()
+      continue
+    }
+    const paragraph = doc.createElement('p')
+    paragraph.textContent = text
+    node.replaceWith(paragraph)
+  }
+  return doc.body.innerHTML
+}
+
+function decorateEditor(): void {
+  const root = editorEl.value
+  if (!root) return
+  for (const img of Array.from(root.querySelectorAll('img'))) {
+    img.classList.add('knowledge-editor-img')
+    if (!img.getAttribute('alt')) img.setAttribute('alt', '知识正文图片')
+  }
+  for (const block of Array.from(root.querySelectorAll('div[data-type="video"]'))) {
+    block.classList.add('knowledge-video-block')
+    block.setAttribute('contenteditable', 'false')
+    block.textContent = `课堂视频 · ${courseTitle(Number(block.getAttribute('data-course-id') || 0))}`
+  }
+}
+
+function syncEditor(): void {
+  if (editorEl.value) form.content = editorEl.value.innerHTML
+}
+
+function onEditorInput(): void {
+  syncEditor()
+  if (fieldErrors.content) delete fieldErrors.content
+}
+
+function onEditorPaste(event: ClipboardEvent): void {
+  event.preventDefault()
+  const text = event.clipboardData?.getData('text/plain') || ''
+  if (!text) return
+  document.execCommand('insertHTML', false, escapeHtml(text).replace(/\r\n/g, '\n').replace(/\n/g, '<br>'))
+  syncEditor()
+}
+
+function insertTopLevelNode(node: HTMLElement): void {
+  const root = editorEl.value
+  if (!root) return
+  root.focus()
+  const selection = window.getSelection()
+  let anchor: Node | null = null
+  if (selection && selection.rangeCount) {
+    let current: Node | null = selection.getRangeAt(0).startContainer
+    while (current && current !== root) {
+      if (current.parentNode === root) {
+        anchor = current
+        break
+      }
+      current = current.parentNode
+    }
+  }
+  if (anchor) anchor.parentNode?.insertBefore(node, anchor.nextSibling)
+  else root.appendChild(node)
+  const paragraph = document.createElement('p')
+  paragraph.innerHTML = '<br>'
+  node.after(paragraph)
+  const range = document.createRange()
+  range.setStart(paragraph, 0)
+  range.collapse(true)
+  selection?.removeAllRanges()
+  selection?.addRange(range)
+  syncEditor()
+  root.focus()
+}
+
+function createImageElement(image: EditorImage): HTMLImageElement {
+  const img = document.createElement('img')
+  img.setAttribute('src', image.url)
+  if (image.fileId) img.setAttribute('data-file-id', String(image.fileId))
+  img.setAttribute('alt', image.alt || '知识正文图片')
+  img.className = 'knowledge-editor-img'
+  return img
+}
+
+function createVideoElement(courseId: number, title: string): HTMLElement {
+  const block = document.createElement('div')
+  block.setAttribute('data-type', 'video')
+  block.setAttribute('data-course-id', String(courseId))
+  block.setAttribute('contenteditable', 'false')
+  block.className = 'knowledge-video-block'
+  block.textContent = `课堂视频 · ${title}`
+  return block
+}
+
+function insertVideo(courseId: number | null): void {
+  if (!courseId || !editorEl.value) return
+  insertTopLevelNode(createVideoElement(courseId, courseTitle(courseId)))
+  videoToInsert.value = null
+  ui.toast(`已插入视频：${courseTitle(courseId)}`, 'info')
+}
+
+function triggerImageUpload(): void {
+  if (saving.value || imageUploading.value) return
+  imageError.value = ''
+  imageInput.value?.click()
+}
+
+async function onImageSelected(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+  lastImageFile.value = file
+  await uploadKnowledgeImage(file)
+}
+
+async function uploadKnowledgeImage(file: File): Promise<void> {
+  imageError.value = ''
+  if (!['image/jpeg', 'image/png'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+    imageError.value = '只支持 JPG 或 PNG 图片，单张不超过 5MB'
+    lastImageFile.value = null
+    return
+  }
+  if (!editorEl.value) return
+  imageUploading.value = true
+  imageProgress.value = 0
+  try {
+    const data = await uploadAdminFile(file, 'KNOWLEDGE_MEDIA', (percent) => { imageProgress.value = percent })
+    if (!data.file_id || !data.url) throw new Error('上传结果缺少图片地址')
+    insertTopLevelNode(createImageElement({ fileId: data.file_id, url: data.url, alt: file.name }))
+    lastImageFile.value = null
+    ui.toast('已插入正文图片')
+  } catch (e) {
+    imageError.value = e instanceof Error ? e.message : '图片上传失败，请重试'
+  } finally {
+    imageUploading.value = false
+  }
+}
+
+async function retryImageUpload(): Promise<void> {
+  if (lastImageFile.value) await uploadKnowledgeImage(lastImageFile.value)
+}
+
+function removeImage(image: EditorImage): void {
+  const root = editorEl.value
+  if (!root || saving.value) return
+  const images = Array.from(root.querySelectorAll('img'))
+  const target = images.find((img) => (image.fileId ? img.getAttribute('data-file-id') === String(image.fileId) : img.getAttribute('src') === image.url))
+  if (!target) return
+  const next = target.nextElementSibling
+  target.remove()
+  if (next && next.tagName === 'P' && !(next.textContent || '').trim() && !next.querySelector('img')) next.remove()
+  syncEditor()
+  ui.toast('已删除正文图片', 'info')
+}
+
 const keywordOptions = computed(() => {
   const set = new Set<string>(['休药期', '可出栏日期', '饲喂', '免疫', '消毒', '腹泻', '通风'])
   for (const keyword of form.keywords) set.add(keyword)
@@ -247,8 +482,13 @@ function clearErrors(): void {
 
 function openCreate(task?: KnowledgeTask): void {
   editing.value = null
+  detailLoading.value = false
   clearErrors()
   formError.value = ''
+  imageError.value = ''
+  imageProgress.value = 0
+  lastImageFile.value = null
+  videoToInsert.value = null
   Object.assign(form, {
     title: task?.title || '',
     category_id: task?.category_id || categories.value.find((c) => c.status === 'ENABLED')?.id || null,
@@ -256,17 +496,22 @@ function openCreate(task?: KnowledgeTask): void {
     is_major_epidemic: false,
     applicable_category_ids: [],
     keywords: [],
-    content: task?.points ? `${task.points}\n\n` : '',
+    content: task?.points ? textToHtml(task.points) : '',
     change_note: '',
     source_task_id: task?.id || null,
     version: 0
   })
   drawer.value = true
+  void setEditorContent(form.content)
 }
 
 async function openEdit(row: KnowledgeRow, task?: KnowledgeTask): Promise<void> {
   clearErrors()
   formError.value = ''
+  imageError.value = ''
+  imageProgress.value = 0
+  lastImageFile.value = null
+  videoToInsert.value = null
   drawer.value = true
   detailLoading.value = true
   try {
@@ -274,14 +519,13 @@ async function openEdit(row: KnowledgeRow, task?: KnowledgeTask): Promise<void> 
     editing.value = data
     const contentData = data.draft || data.online_content
     if (!contentData) throw new Error('没有可编辑的内容')
-    const parsed = parseContent(contentData.content)
     form.title = contentData.title || data.online_content?.title || row.title
     form.category_id = contentData.category_id || data.online_content?.category_id || null
     form.display_type = contentData.display_type || data.display_type || 'ARTICLE'
     form.is_major_epidemic = !!(contentData.is_major_epidemic ?? data.is_major_epidemic)
     form.applicable_category_ids = [...(contentData.applicable_category_ids || [])]
     form.keywords = [...(contentData.keywords || [])]
-    form.content = parsed.text
+    form.content = contentData.content || ''
     form.change_note = data.draft?.change_note || ''
     form.source_task_id = task?.id || data.draft?.source_task_id || null
     form.version = data.version || 0
@@ -290,16 +534,8 @@ async function openEdit(row: KnowledgeRow, task?: KnowledgeTask): Promise<void> 
     ui.toast(e instanceof Error ? e.message : '条目加载失败', 'error')
   } finally {
     detailLoading.value = false
+    if (drawer.value) await setEditorContent(form.content)
   }
-}
-
-function insertVideo(courseId: number | null): void {
-  if (!courseId) return
-  const course = courses.value.find((c) => c.id === courseId)
-  const token = `【视频：${courseId}】`
-  if (form.content.includes(token)) return
-  form.content = `${form.content.trim()}\n\n${token}\n\n`
-  ui.toast(`已插入视频：${course?.title || courseId}`, 'info')
 }
 
 function validate(publish: boolean): boolean {
@@ -308,8 +544,8 @@ function validate(publish: boolean): boolean {
   if (!form.title.trim()) fieldErrors.title = '请填写标题'
   else if (form.title.trim().length > 40) fieldErrors.title = '标题不能超过 40 字'
   if (!form.category_id) fieldErrors.category_id = '请选择分类'
-  if (!form.content.trim()) fieldErrors.content = '请填写正文'
-  else if (form.content.trim().length > 20000) fieldErrors.content = '正文需为 1–20000 字'
+  if (!contentLength.value) fieldErrors.content = '请填写正文'
+  else if (contentLength.value > 20000) fieldErrors.content = '正文需为 1–20000 字'
   if (form.keywords.length > 8) fieldErrors.keywords = '关键词最多 8 个'
   if (publish && editing.value && !form.change_note.trim()) fieldErrors.change_note = '请填写修改说明'
   return !Object.keys(fieldErrors).length
@@ -324,7 +560,7 @@ function buildPayload(action: 'DRAFT' | 'PUBLISH') {
     display_type: form.display_type,
     applicable_category_ids: form.applicable_category_ids,
     keywords: form.keywords,
-    content: editorToHtml(form.content),
+    content: normalizeContentHtml(form.content),
     source_task_id: form.source_task_id,
     submit_action: action,
     change_note: form.change_note.trim() || undefined,
@@ -862,13 +1098,56 @@ onMounted(async () => {
           <div class="knowledge-editor">
             <div class="knowledge-editor-bar">
               <div class="knowledge-insert">
-                <v-select :items="courses.map((c) => ({ title: c.title, value: c.id }))" placeholder="插入课堂视频" density="compact" hide-details clearable class="knowledge-video-select" @update:model-value="insertVideo($event as number | null)" />
-                <span class="zw-muted">视频从养殖课堂已上架的课程中选择；每个段落之间空一行</span>
+                <v-select
+                  :model-value="videoToInsert"
+                  :items="courses.map((c) => ({ title: c.title, value: c.id }))"
+                  placeholder="插入课堂视频"
+                  density="compact"
+                  hide-details
+                  clearable
+                  class="knowledge-video-select"
+                  :disabled="saving || imageUploading"
+                  @update:model-value="insertVideo($event as number | null)"
+                />
+                <v-btn
+                  variant="outlined"
+                  size="small"
+                  prepend-icon="add_photo_alternate"
+                  :disabled="saving || imageUploading"
+                  @click="triggerImageUpload"
+                >{{ imageUploading ? `上传中 ${imageProgress}%` : '插入图片' }}</v-btn>
+                <span class="zw-muted">JPG / PNG，不超过 5MB；图片单独成段，可随时删除</span>
               </div>
-              <span class="zw-muted">{{ form.content.length }} / 20000</span>
+              <span class="zw-muted">{{ contentLength }} / 20000</span>
             </div>
-            <v-textarea v-model="form.content" placeholder="请输入正文，段落之间空一行。不能粘贴 HTML。" :rows="14" maxlength="20000" hide-details :error="!!fieldErrors.content" class="knowledge-textarea" />
+            <v-progress-linear v-if="imageUploading" :model-value="imageProgress" height="4" color="primary" />
+            <div v-if="imageError" class="knowledge-image-error">
+              {{ imageError }} <a v-if="lastImageFile" class="zw-link" @click="retryImageUpload">重试</a>
+            </div>
+            <div
+              ref="editorEl"
+              class="knowledge-rich-editor"
+              :contenteditable="saving ? 'false' : 'true'"
+              :data-empty="contentLength === 0 ? 'true' : 'false'"
+              data-placeholder="请输入正文。按回车分段，可插入课堂视频和图片。"
+              @input="onEditorInput"
+              @paste="onEditorPaste"
+            ></div>
+            <div v-if="contentImages.length" class="knowledge-image-list">
+              <span class="knowledge-image-list-title">正文图片</span>
+              <div v-for="(image, index) in contentImages" :key="`${image.fileId || image.url}-${index}`" class="knowledge-image-chip">
+                <img v-if="image.url" :src="image.url" alt="" />
+                <span>图片 {{ index + 1 }}</span>
+                <a class="zw-link danger" :class="{ 'is-disabled': saving }" @click="removeImage(image)">删除</a>
+              </div>
+            </div>
+            <div class="knowledge-preview">
+              <div class="knowledge-preview-head"><span>预览</span><span class="zw-muted">图片与视频按正文顺序显示</span></div>
+              <div v-if="contentLength" class="knowledge-preview-body" v-html="previewHtml"></div>
+              <div v-else class="knowledge-preview-empty">还没有正文内容</div>
+            </div>
           </div>
+          <input ref="imageInput" type="file" accept="image/jpeg,image/png" hidden @change="onImageSelected" />
         </zw-form-item>
         <div class="zw-form-2">
           <zw-form-item label="修改说明" :required="!!editing" :error="fieldErrors.change_note" hint="显示在版本历史中，记入操作日志">
@@ -883,8 +1162,8 @@ onMounted(async () => {
       </div>
       <template #foot>
         <span class="zw-foot-note">发布后 AI 立即按新版本回答，并记入操作日志</span>
-        <v-btn variant="outlined" :disabled="saving" @click="submit('DRAFT')">保存草稿</v-btn>
-        <v-btn color="primary" prepend-icon="publish" :loading="saving && savingAction === 'PUBLISH'" :disabled="saving" @click="submit('PUBLISH')">发布</v-btn>
+        <v-btn variant="outlined" :loading="saving && savingAction === 'DRAFT'" :disabled="saving || imageUploading" @click="submit('DRAFT')">保存草稿</v-btn>
+        <v-btn color="primary" prepend-icon="publish" :loading="saving && savingAction === 'PUBLISH'" :disabled="saving || imageUploading" @click="submit('PUBLISH')">发布</v-btn>
       </template>
     </zw-drawer>
 
@@ -1014,12 +1293,34 @@ onMounted(async () => {
 .knowledge-form { display: flex; flex-direction: column; gap: 18px; }
 .knowledge-online-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 16px; background: var(--fill-1); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-2); }
 .knowledge-editor { border: 1px solid var(--line-2); border-radius: var(--radius-sm); overflow: hidden; }
-.knowledge-editor-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; background: var(--fill-1); }
-.knowledge-insert { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; font-size: 12px; }
-.knowledge-video-select { max-width: 190px; }
-.knowledge-textarea :deep(.v-field__outline) { display: none; }
-.knowledge-textarea :deep(.v-field) { border-radius: 0; }
-.knowledge-textarea :deep(.v-field__input) { min-height: 280px; font-size: 14px; line-height: 23px; }
+.knowledge-editor-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; padding: 8px 12px; background: var(--fill-1); }
+.knowledge-insert { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; flex: 1; min-width: 0; font-size: 12px; }
+.knowledge-video-select { max-width: 190px; min-width: 150px; }
+.knowledge-rich-editor { position: relative; min-height: 260px; max-height: 420px; overflow: auto; padding: 14px 16px; font-size: 14px; line-height: 23px; color: var(--text-1); outline: none; }
+.knowledge-rich-editor[data-empty="true"]::before { content: attr(data-placeholder); position: absolute; left: 16px; top: 14px; color: var(--text-3); pointer-events: none; }
+.knowledge-rich-editor :deep(p) { margin: 0 0 10px; }
+.knowledge-rich-editor :deep(h2), .knowledge-rich-editor :deep(h3) { margin: 0 0 10px; font-size: 16px; }
+.knowledge-rich-editor :deep(blockquote) { margin: 0 0 10px; padding: 2px 0 2px 12px; border-left: 3px solid var(--line-2); color: var(--text-2); }
+.knowledge-rich-editor :deep(ul), .knowledge-rich-editor :deep(ol) { margin: 0 0 10px; padding-left: 22px; }
+.knowledge-rich-editor :deep(img) { display: block; max-width: 100%; max-height: 240px; margin: 4px 0 10px; border-radius: var(--radius-sm); }
+.knowledge-rich-editor :deep(.knowledge-video-block) { display: flex; align-items: center; gap: 8px; margin: 4px 0 10px; padding: 9px 12px; border-radius: var(--radius-sm); background: var(--primary-subtle); color: var(--primary); font-size: 13px; }
+.knowledge-image-error { padding: 6px 12px; font-size: 12px; color: var(--error); background: var(--fill-1); }
+.knowledge-image-list { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 9px 12px; border-top: 1px dashed var(--line-1); background: var(--bg-card); }
+.knowledge-image-list-title { font-size: 12px; color: var(--text-3); }
+.knowledge-image-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px 3px 4px; border: 1px solid var(--line-1); border-radius: 999px; background: var(--fill-1); font-size: 12px; }
+.knowledge-image-chip img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; display: block; }
+.knowledge-preview { border-top: 1px solid var(--line-2); background: var(--bg-card); }
+.knowledge-preview-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; background: var(--fill-1); font-size: 12px; color: var(--text-3); }
+.knowledge-preview-head > span:first-child { color: var(--text-1); font-weight: 600; }
+.knowledge-preview-body { padding: 12px 16px; max-height: 220px; overflow: auto; font-size: 13px; line-height: 22px; }
+.knowledge-preview-body :deep(p) { margin: 0 0 8px; }
+.knowledge-preview-body :deep(h2), .knowledge-preview-body :deep(h3) { margin: 0 0 8px; font-size: 15px; }
+.knowledge-preview-body :deep(blockquote) { margin: 0 0 8px; padding: 2px 0 2px 10px; border-left: 3px solid var(--line-2); color: var(--text-2); }
+.knowledge-preview-body :deep(ul), .knowledge-preview-body :deep(ol) { margin: 0 0 8px; padding-left: 20px; }
+.knowledge-preview-body :deep(img) { display: block; max-width: 100%; max-height: 200px; margin: 6px 0; border-radius: var(--radius-sm); }
+.knowledge-preview-body :deep(.knowledge-preview-video) { display: flex; align-items: center; gap: 8px; margin: 4px 0 8px; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--primary-subtle); color: var(--primary); font-size: 12px; }
+.knowledge-preview-empty { padding: 14px 16px; font-size: 12px; color: var(--text-3); }
+.is-disabled { color: var(--text-3) !important; pointer-events: none; opacity: 0.45; }
 .knowledge-task-hint { display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--primary-subtle); color: var(--primary); font-size: 13px; }
 .knowledge-form-error { margin-top: 8px; color: var(--error); font-size: 12px; }
 .knowledge-dialog-strong { font-size: 15px; font-weight: 600; margin: 0 0 6px; }

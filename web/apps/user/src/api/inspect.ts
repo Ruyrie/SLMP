@@ -640,6 +640,63 @@ export function saveHandle(reportId: number, payload: HandleSavePayload): Promis
   return http().put<HandleSaveResult>(`/abnormal-reports/${reportId}/handle`, payload)
 }
 
+/* ---------------- API-I27 异常上报分页列表 ---------------- */
+
+export interface AbnormalReportListParams {
+  page?: number
+  size?: number
+  status?: 'ALL' | 'PENDING' | 'DIAGNOSED' | 'HANDLED' | 'CLOSED' | string
+  pen_id?: number
+  batch_id?: number
+  urgency?: 'ALL' | 'NORMAL' | 'ATTENTION' | 'URGENT' | string
+  keyword?: string
+  start_date?: string
+  end_date?: string
+  mine?: boolean
+}
+
+export interface AbnormalReportListItem {
+  report_id: number
+  version: number
+  reported_at: string
+  report_date: string
+  pen_id: number
+  pen_name?: string
+  batch_id: number
+  batch_no?: string
+  sick_count: number
+  stock_snapshot: number
+  sick_rate: number | null
+  symptom_names: string[]
+  description?: string
+  status: string
+  status_text?: string
+  ai_state?: string
+  ai_state_text?: string
+  urgency?: string
+  urgency_text?: string
+  major_epidemic?: boolean
+  top_cause_name?: string
+  reporter_id?: number
+  reporter_name?: string
+  inspection_id?: number | null
+  source?: string
+  can_handle?: boolean
+  can_rediagnose?: boolean
+}
+
+export interface AbnormalReportPage extends PageResult<AbnormalReportListItem> {
+  tab_counts: Record<string, number>
+}
+
+/** API-I27 异常上报列表：服务端分页、筛选、状态角标与员工范围过滤。 */
+export function fetchAbnormalReports(
+  params: AbnormalReportListParams = {},
+  signal?: AbortSignal
+): Promise<AbnormalReportPage> {
+  return http().get<AbnormalReportPage>('/abnormal-reports', { ...params }, config(signal))
+}
+
 /* ---------------- API-I24 可关联上报（用于汇总上报记录） ---------------- */
 
 export interface LinkableReport {

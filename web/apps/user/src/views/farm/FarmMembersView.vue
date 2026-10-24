@@ -34,10 +34,16 @@ const inviteResendId = ref<number | null>(null)
 const inviteFormError = ref('')
 const invitePhoneError = ref('')
 const inviteChecking = ref(false)
+const cancelOpen = ref(false)
+const cancelTarget = ref<InviteItemVO | null>(null)
+const cancelReason = ref('')
+const cancelSubmitting = ref(false)
+const cancelDefaultReason = '所有者撤销邀请'
 
 const farmId = computed(() => Number(route.params.farmId || 0))
 const farmName = computed(() => store.farmDetail?.name || appFarm.farmName || '养殖场')
 const canInvite = computed(() => store.canInvite)
+const canCancelInvite = computed(() => store.canCancelInvite)
 const pageDesc = computed(() => `${farmName.value} · 成员角色和负责栏舍的调整立即生效，不走修改申请。`)
 
 const memberTabs = computed(() => [
@@ -63,7 +69,7 @@ const inviteHeaders = computed(() => {
     { title: '邀请时间', key: 'invited', sortable: false, width: 110 },
     { title: '状态', key: 'status', sortable: false, width: 150 }
   ]
-  if (canInvite.value) headers.push({ title: '操作', key: 'actions', sortable: false, width: 110, align: 'end' })
+  if (canCancelInvite.value) headers.push({ title: '操作', key: 'actions', sortable: false, width: 110, align: 'end' })
   return headers
 })
 
@@ -329,6 +335,28 @@ async function submitInvite(): Promise<void> {
   inviteFormError.value = store.inviteFormError
 }
 
+function askCancel(invite: InviteItemVO): void {
+  if (!canCancelInvite.value || invite.status !== 'PENDING') return
+  cancelTarget.value = invite
+  cancelReason.value = cancelDefaultReason
+  cancelOpen.value = true
+}
+
+function closeCancel(): void {
+  if (cancelSubmitting.value) return
+  cancelOpen.value = false
+  cancelTarget.value = null
+  cancelReason.value = ''
+}
+
+async function confirmCancel(): Promise<void> {
+  if (cancelSubmitting.value || !cancelTarget.value) return
+  cancelSubmitting.value = true
+  const ok = await store.cancelInvite(cancelTarget.value.invite_id, cancelReason.value)
+  cancelSubmitting.value = false
+  if (ok) closeCancel()
+}
+
 function retryMember(): void {
   if (lastMemberId.value) void store.openMember(lastMemberId.value)
   else if (farmId.value) void store.reload()
@@ -525,6 +553,7 @@ onBeforeUnmount(() => {
                 </template>
                 <template #item.actions="{ item }">
                   <span class="zw-cell-actions">
+                    <a v-if="canCancelInvite && item.status === 'PENDING'" @click="askCancel(item)">撤销</a>
                     <a v-if="canInvite && item.can_reinvite" @click="openInvite(item)">重新邀请</a>
                   </span>
                 </template>
@@ -636,6 +665,26 @@ onBeforeUnmount(() => {
           <v-btn color="primary" prepend-icon="send" :loading="inviteChecking" @click="submitInvite">发送邀请</v-btn>
         </template>
       </zw-drawer>
+
+      <zw-dialog
+        v-model="cancelOpen"
+        :title="`撤销对 ${cancelTarget?.invitee_phone_masked || '该手机号'} 的邀请？`"
+        icon="undo"
+        tone="error"
+        :width="480"
+        :no-close="cancelSubmitting"
+      >
+        <p class="f04-dlg-p">
+          撤销后这条邀请立即失效，对方不能再通过它加入{{ farmName }}。如果还需要邀请对方，可以稍后重新发送。
+        </p>
+        <zw-form-item label="撤销原因" optional hint="最多 100 字。不填写时按“所有者撤销邀请”记录。">
+          <v-text-field v-model="cancelReason" maxlength="100" counter="100" placeholder="所有者撤销邀请" />
+        </zw-form-item>
+        <template #actions>
+          <v-btn variant="outlined" :disabled="cancelSubmitting" @click="closeCancel">取消</v-btn>
+          <v-btn color="error" :loading="cancelSubmitting" :disabled="cancelSubmitting" @click="confirmCancel">撤销邀请</v-btn>
+        </template>
+      </zw-dialog>
 
       <zw-drawer :model-value="memberOpen" title="成员详情" :sub="farmName" :width="560" @update:model-value="closeMember">
         <v-skeleton-loader v-if="detailStatus === 'loading'" type="list-item-avatar-two-line@3, paragraph" />

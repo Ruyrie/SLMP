@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { formatDate, formatNumber, formatPercent } from '@zmt/shared'
-import { useAbnormalReportsStore, type ReportStatus, type Urgency } from '@/stores/inspect/reports'
+import { ApiError, formatNumber, formatPercent } from '@zmt/shared'
+import {
+  useAbnormalReportsStore,
+  type ReportRow,
+  type ReportStatus,
+  type Urgency
+} from '@/stores/inspect/reports'
 import { useFarmReload } from '@/composables/useFarmReload'
 import { useFarmStore } from '@/stores/farm'
+import { useUiStore } from '@/stores/ui'
 import { monthDay, timeOnly, urgencyIcon, urgencyType } from '@/views/inspect/inspect'
 import AbnormalReportDrawer from './components/AbnormalReportDrawer.vue'
 
 const store = useAbnormalReportsStore()
 const farm = useFarmStore()
+const ui = useUiStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -22,14 +29,21 @@ const desc = computed(() =>
   isStaff.value ? '你只能为负责栏舍上报异常，并查看自己上报的诊断' : '上报后 AI 给出可能病因、紧急程度和处理建议；处理结果由所有者或场长登记'
 )
 const rangeText = computed(() => `${monthDay(store.query.start)} – ${monthDay(store.query.end)}`)
+const rangeLabel = computed(() => (store.isDefaultRange ? '近 30 天上报' : '筛选区间上报'))
 const statusItems = computed(() => store.statusItems)
 const pendingHandle = computed(() => store.pendingHandleCount)
+const statsReady = computed(() => store.statsLoaded && !store.statsLoading)
+const rangeFoot = computed(() =>
+  statsReady.value
+    ? `已处理 ${formatNumber(store.handledCount)} 条 · 已结案 ${formatNumber(store.closedCount)} 条`
+    : '统计加载中'
+)
 const emptyTitle = computed(() => {
-  if (!store.total) return isStaff.value ? '你还没有上报过异常' : '还没有异常上报'
-  return '没有匹配的上报记录'
+  if (store.hasFilter) return '没有匹配的上报记录'
+  return isStaff.value ? '你还没有上报过异常' : '还没有异常上报'
 })
 const emptyDesc = computed(() => {
-  if (store.total) return '换一个筛选条件试试。'
+  if (store.hasFilter) return '换一个筛选条件试试。'
   return isStaff.value ? '巡检发现异常后点“转上报”。' : '巡检发现异常时点“转上报”，或点“异常上报”直接上报。'
 })
 
@@ -39,6 +53,7 @@ onMounted(async () => {
     store.openDrawer(Number(route.query.inspectionId || 0), Number(route.query.penId || 0))
   }
 })
+onBeforeUnmount(() => store.cancelKeywordTimer())
 useFarmReload(async () => {
   await store.load()
 })
@@ -52,12 +67,22 @@ function onCreated(reportId: number): void {
   void router.push({ name: 'WU-I04', params: { id: String(reportId) } })
 }
 
-function openDiagnosis(row: { report_id: number }, handle = false): void {
+function openDiagnosis(row: ReportRow, handle = false): void {
   void router.push({
     name: 'WU-I04',
     params: { id: String(row.report_id) },
     query: handle ? { action: 'handle' } : undefined
   })
+}
+
+async function rediagnose(row: ReportRow): Promise<void> {
+  if (!row.can_rediagnose || store.rediagnosingId) return
+  try {
+    await store.rediagnose(row.report_id)
+    ui.toast('已重新发起诊断')
+  } catch (error) {
+    ui.toast((error as ApiError).message || '重新诊断失败，请稍后重试', 'error')
+  }
 }
 
 function setPen(value: unknown): void {
@@ -69,7 +94,11 @@ function setUrgency(value: unknown): void {
 }
 
 function setStatus(value: string | number): void {
-  store.setStatus(value as ReportStatus)
+  store.setStatus(String(value) as ReportStatus)
+}
+
+function setKeyword(value: unknown): void {
+  store.setKeyword(value)
 }
 
 function openRange(): void {
@@ -90,10 +119,27 @@ function resetFilters(): void {
   rangeEnd.value = store.query.end
 }
 
+function statValue(value: number): string {
+  return statsReady.value ? formatNumber(value) : '—'
+}
+
+function statFoot(value: string): string {
+  return statsReady.value ? value : '统计加载中'
+}
+
 function rateText(rate: number | null, sick: number, stock: number): string {
   if (rate !== null && rate !== undefined) return formatPercent(rate, 1)
   if (!stock) return '—'
   return formatPercent(sick / stock, 1)
+}
+
+function aiText(row: ReportRow): string {
+  if (row.top_cause_name) return row.top_cause_name
+  if (row.ai_state === 'DIAGNOSING' || row.ai_state === 'FAILED' || row.ai_state === 'UNAVAILABLE') {
+    return row.ai_state_text || '等待诊断'
+  }
+  if (row.status === 'PENDING') return '等待诊断'
+  return '—'
 }
 
 function statusTag(row: { status: string; status_text?: string }): { type: string; icon: string; text: string } {
@@ -103,7 +149,7 @@ function statusTag(row: { status: string; status_text?: string }): { type: strin
   return { type: 'neutral', icon: 'check', text: row.status_text || '已结案' }
 }
 
-function urgencyTag(row: { urgency: string; urgency_text?: string }): { type: string; icon: string; text: string } | null {
+function urgencyTag(row: { urgency?: string; urgency_text?: string }): { type: string; icon: string; text: string } | null {
   if (!row.urgency) return null
   return { type: urgencyType(row.urgency), icon: urgencyIcon(row.urgency), text: row.urgency_text || row.urgency }
 }
@@ -138,34 +184,63 @@ function urgencyTag(row: { urgency: string; urgency_text?: string }): { type: st
 
     <template v-else>
       <div v-if="!isStaff" class="zw-grid-4 mb-4">
-        <zw-stat label="今天上报" icon="report" :value="formatNumber(store.todayCount)" unit="次" :foot="store.todayPens" />
-        <zw-stat label="紧急" icon="emergency" :value="formatNumber(store.urgentCount)" unit="条" tone="error" :foot="store.urgentNames" />
-        <zw-stat label="待登记处理" icon="edit_note" :value="formatNumber(pendingHandle)" unit="条" tone="warning" foot="已诊断，等待登记处理结果" />
         <zw-stat
-          label="近 30 天上报"
-          icon="calendar_month"
-          :value="formatNumber(store.totalCount)"
+          label="今天上报"
+          icon="report"
+          :value="statValue(store.todayCount)"
           unit="次"
-          :foot="`已处理 ${formatNumber(store.handledCount)} 条 · 已结案 ${formatNumber(store.closedCount)} 条`"
+          :foot="statFoot(store.todayPens)"
+        />
+        <zw-stat
+          label="紧急"
+          icon="emergency"
+          :value="statValue(store.urgentCount)"
+          unit="条"
+          tone="error"
+          :foot="statFoot(store.urgentNames)"
+        />
+        <zw-stat
+          label="待登记处理"
+          icon="edit_note"
+          :value="statValue(pendingHandle)"
+          unit="条"
+          tone="warning"
+          foot="已诊断，等待登记处理结果"
+        />
+        <zw-stat
+          :label="rangeLabel"
+          icon="calendar_month"
+          :value="statValue(store.totalCount)"
+          unit="次"
+          :foot="rangeFoot"
         />
       </div>
       <zw-notice v-else type="info" class="mb-4">
         AI 诊断仅供参考，需执业兽医确认。处理结果、转归和 AI 是否相符由所有者或场长登记。
       </zw-notice>
 
-      <div class="zw-toolbar">
+      <div class="zw-toolbar i03-toolbar">
         <div class="zw-toolbar-l">
+          <v-text-field
+            :model-value="store.query.keyword"
+            placeholder="搜索栏舍 / 批次 / 病因 / 描述 / 上报人"
+            prepend-inner-icon="search"
+            clearable
+            hide-details
+            class="i03-search"
+            @update:model-value="setKeyword"
+          />
           <v-select
             :model-value="store.query.penId"
             :items="store.penItems"
-            class="zw-w-160"
+            class="i03-select"
             hide-details
             @update:model-value="setPen"
           />
           <v-select
             :model-value="store.query.urgency"
             :items="store.urgencyItems"
-            class="zw-w-160"
+            class="i03-select"
             hide-details
             @update:model-value="setUrgency"
           />
@@ -176,7 +251,7 @@ function urgencyTag(row: { urgency: string; urgency_text?: string }): { type: st
                 :model-value="rangeText"
                 readonly
                 append-inner-icon="calendar_month"
-                class="zw-w-200"
+                class="i03-date"
                 hide-details
                 @click="openRange"
               />
@@ -200,14 +275,17 @@ function urgencyTag(row: { urgency: string; urgency_text?: string }): { type: st
       </div>
 
       <zw-card flush>
-        <div v-if="store.detailLoading" class="i03-table-loading"><v-skeleton-loader type="table-row@5" /></div>
+        <v-progress-linear v-if="store.listLoading" indeterminate color="primary" height="2" />
+        <div v-if="store.listLoading && !store.rows.length" class="i03-table-loading">
+          <v-skeleton-loader type="table-row@5" />
+        </div>
         <zw-empty
-          v-else-if="!store.filtered.length"
+          v-else-if="!store.rows.length"
           icon="report"
           :title="emptyTitle"
           :desc="emptyDesc"
         >
-          <v-btn v-if="!store.total" color="primary" prepend-icon="report" @click="openCreate">异常上报</v-btn>
+          <v-btn v-if="!store.hasFilter" color="primary" prepend-icon="report" @click="openCreate">异常上报</v-btn>
         </zw-empty>
         <template v-else>
           <v-table class="i03-table" hover>
@@ -224,7 +302,7 @@ function urgencyTag(row: { urgency: string; urgency_text?: string }): { type: st
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in store.paged" :key="row.report_id">
+              <tr v-for="row in store.rows" :key="row.report_id" class="i03-row" @click="openDiagnosis(row)">
                 <td class="num">{{ monthDay(row.reported_at) }} {{ timeOnly(row.reported_at) }}</td>
                 <td>
                   <div class="zw-cell-main">{{ row.pen_name }}</div>
@@ -238,7 +316,7 @@ function urgencyTag(row: { urgency: string; urgency_text?: string }): { type: st
                 <td v-if="!isStaff">{{ row.reporter_name || '—' }}</td>
                 <td>
                   <div class="i03-ai">
-                    <span>{{ row.top_cause || '等待诊断' }}</span>
+                    <span>{{ aiText(row) }}</span>
                     <zw-tag v-if="urgencyTag(row)" size="small" :type="urgencyTag(row)?.type" :icon="urgencyTag(row)?.icon">
                       {{ urgencyTag(row)?.text }}
                     </zw-tag>
@@ -249,9 +327,13 @@ function urgencyTag(row: { urgency: string; urgency_text?: string }): { type: st
                 </td>
                 <td class="text-end">
                   <span class="zw-cell-actions">
-                    <a @click="openDiagnosis(row)">查看诊断</a>
-                    <a v-if="!isStaff && row.status === 'DIAGNOSED'" @click="openDiagnosis(row, true)">登记处理</a>
-                    <a v-if="!isStaff && row.status === 'HANDLED'" @click="openDiagnosis(row, true)">修改处理</a>
+                    <a @click.stop="openDiagnosis(row)">查看诊断</a>
+                    <a v-if="row.can_handle" @click.stop="openDiagnosis(row, true)">
+                      {{ row.status === 'HANDLED' ? '修改处理' : '登记处理' }}
+                    </a>
+                    <a v-if="row.can_rediagnose" @click.stop="rediagnose(row)">
+                      {{ store.rediagnosingId === row.report_id ? '诊断中…' : '重新诊断' }}
+                    </a>
                   </span>
                 </td>
               </tr>
@@ -282,7 +364,15 @@ function urgencyTag(row: { urgency: string; urgency_text?: string }): { type: st
 
 <style scoped>
 .i03-loading { display: flex; flex-direction: column; }
+.i03-toolbar { flex-wrap: wrap; row-gap: 10px; }
+.i03-toolbar .zw-toolbar-l { gap: 10px; }
+.i03-toolbar .zw-toolbar-r { flex: 0 0 auto; margin-left: auto; }
+.i03-toolbar :deep(.zw-seg--small .zw-seg-item) { padding: 0 9px; gap: 4px; flex: 0 0 auto; white-space: nowrap; }
+.i03-search { width: 240px; flex: 0 0 240px; }
+.i03-select { width: 150px; flex: 0 0 150px; }
+.i03-date { width: 180px; flex: 0 0 180px; }
 .i03-table :deep(td) { white-space: nowrap; }
+.i03-row { cursor: pointer; }
 .i03-symptoms { white-space: normal !important; max-width: 260px; }
 .i03-ai { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 .i03-table-foot { padding: 12px 16px !important; border-top: 1px solid var(--line-1); }

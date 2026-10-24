@@ -479,6 +479,14 @@ export const farmApi = {
   sendInvite(farmId: number, body: InviteMemberBody): Promise<InviteItemVO> {
     return http().post<InviteItemVO>(`/farms/${farmId}/invites`, body)
   },
+  /** F23 撤销尚未接受的邀请；reason 为空时由服务端按“所有者撤销邀请”记录。 */
+  cancelFarmInvite(farmId: number, inviteId: number, reason?: string): Promise<void> {
+    const trimmed = reason?.trim()
+    return http().post<void>(
+      `/farms/${farmId}/invites/${inviteId}/cancel`,
+      trimmed ? { reason: trimmed } : undefined
+    )
+  },
   transferPage(farmId: number): Promise<TransferPageVO> {
     return http().get<TransferPageVO>(`/farms/${farmId}/transfer`)
   },

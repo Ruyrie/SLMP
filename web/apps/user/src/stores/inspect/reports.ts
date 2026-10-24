@@ -1,68 +1,137 @@
 import { defineStore } from 'pinia'
 import { ApiError, dayjs, today as todayIso } from '@zmt/shared'
 import {
+  fetchAbnormalReports,
   fetchDayList,
   fetchDiagnosis,
-  fetchLinkableReports,
+  rediagnose as requestRediagnose,
+  type AbnormalReportListItem,
   type DiagnosisDetail,
   type InspectionListItem,
-  type LinkableReport
+  type PageStatus
 } from '@/api/inspect'
-import { fetchMessages } from '@/api/today'
 import { useFarmStore } from '@/stores/farm'
-import type { PageStatus } from '@/api/inspect'
+import { useUiStore } from '@/stores/ui'
 
-export interface ReportRow {
-  report_id: number
-  reported_at: string
-  reported_date: string
-  pen_id: number
-  pen_name: string
-  batch_no: string
-  sick_count: number
-  stock_snapshot: number
-  sick_rate: number | null
-  symptom_names: string[]
-  reporter_name: string
-  top_cause: string
-  urgency: string
-  urgency_text: string
-  status: string
-  status_text: string
-  source: string
-  inspection_id: number | null
-  detailLoaded: boolean
+export type ReportRow = AbnormalReportListItem
+export type ReportStatus = 'ALL' | 'PENDING' | 'DIAGNOSED' | 'HANDLED' | 'CLOSED'
+export type Urgency = 'ALL' | 'NORMAL' | 'ATTENTION' | 'URGENT'
+
+interface ReportQuery {
+  penId: number
+  urgency: Urgency
+  status: ReportStatus
+  keyword: string
+  start: string
+  end: string
 }
 
-type ReportStatus = 'ALL' | 'PENDING' | 'DIAGNOSED' | 'HANDLED' | 'CLOSED'
-type Urgency = 'ALL' | 'NORMAL' | 'ATTENTION' | 'URGENT'
+const STORAGE_KEY = 'zmt.inspect.reports.query'
+const PAGE_SIZES = [20, 50, 100]
 
-function toDate(value?: string): string {
-  return value ? value.slice(0, 10) : ''
+function defaultRange(): { start: string; end: string } {
+  const end = dayjs(todayIso())
+  return { start: end.subtract(29, 'day').format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') }
+}
+
+function defaultQuery(): ReportQuery {
+  return { penId: 0, urgency: 'ALL', status: 'ALL', keyword: '', ...defaultRange() }
+}
+
+function emptyTabCounts(): Record<string, number> {
+  return { ALL: 0, PENDING: 0, DIAGNOSED: 0, HANDLED: 0, CLOSED: 0 }
+}
+
+function isDate(value: unknown): value is string {
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && dayjs(value).isValid()
+}
+
+function isStatus(value: unknown): value is ReportStatus {
+  return value === 'ALL' || value === 'PENDING' || value === 'DIAGNOSED' || value === 'HANDLED' || value === 'CLOSED'
+}
+
+function isUrgency(value: unknown): value is Urgency {
+  return value === 'ALL' || value === 'NORMAL' || value === 'ATTENTION' || value === 'URGENT'
+}
+
+/** 从 sessionStorage 恢复筛选条件，浏览器刷新后仍保持上次的筛选。 */
+function readSavedState(): { query: ReportQuery; page: number; size: number; farmId: number } | null {
+  if (typeof sessionStorage === 'undefined') return null
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as {
+      query?: Partial<ReportQuery>
+      page?: unknown
+      size?: unknown
+      farmId?: unknown
+    }
+    const saved = parsed.query || {}
+    const defaults = defaultRange()
+    const size = Number(parsed.size)
+    return {
+      query: {
+        penId: Number(saved.penId) > 0 ? Number(saved.penId) : 0,
+        urgency: isUrgency(saved.urgency) ? saved.urgency : 'ALL',
+        status: isStatus(saved.status) ? saved.status : 'ALL',
+        keyword: typeof saved.keyword === 'string' ? saved.keyword : '',
+        start: isDate(saved.start) ? saved.start : defaults.start,
+        end: isDate(saved.end) ? saved.end : defaults.end
+      },
+      page: Math.max(1, Math.floor(Number(parsed.page) || 1)),
+      size: PAGE_SIZES.includes(size) ? size : 20,
+      farmId: Number(parsed.farmId) || 0
+    }
+  } catch {
+    return null
+  }
+}
+
+function isCanceled(error: unknown): boolean {
+  const err = error as { isCancel?: boolean; name?: string; code?: string } | null
+  return !!err && (err.isCancel === true || err.name === 'CanceledError' || err.code === 'ERR_CANCELED')
+}
+
+function penNamesOf(list?: ReportRow[]): string[] {
+  const names = new Set<string>()
+  for (const item of list || []) {
+    if (item.pen_name) names.add(item.pen_name)
+  }
+  return Array.from(names)
 }
 
 export const useAbnormalReportsStore = defineStore('abnormalReports', {
   state: () => {
-    const end = dayjs(todayIso())
+    const saved = readSavedState()
     return {
       status: 'loading' as PageStatus,
       error: '',
-      pens: [] as InspectionListItem[],
       rows: [] as ReportRow[],
+      total: 0,
+      tabCounts: emptyTabCounts(),
+      pens: [] as InspectionListItem[],
+      query: saved?.query || defaultQuery(),
+      page: saved?.page || 1,
+      size: saved?.size || 20,
+      listLoading: false,
+      requestSeq: 0,
+      controller: null as AbortController | null,
+      keywordTimer: 0,
+      statsLoading: false,
+      statsLoaded: false,
+      statsSeq: 0,
+      statsTabCounts: emptyTabCounts(),
+      todayCount: 0,
+      todayPenNames: [] as string[],
+      urgentCount: 0,
+      urgentPenNames: [] as string[],
+      farmId: saved?.farmId || 0,
       detailCache: {} as Record<number, DiagnosisDetail>,
-      query: {
-        penId: 0,
-        urgency: 'ALL' as Urgency,
-        status: 'ALL' as ReportStatus,
-        start: end.subtract(29, 'day').format('YYYY-MM-DD'),
-        end: end.format('YYYY-MM-DD')
-      },
-      page: 1,
-      size: 20,
+      detailLoading: false,
+      rediagnosingId: 0,
       drawerOpen: false,
       drawerInspectionId: 0,
       drawerPenId: 0,
-      detailLoading: false,
       loaded: false
     }
   },
@@ -70,66 +139,54 @@ export const useAbnormalReportsStore = defineStore('abnormalReports', {
     isStaff(): boolean {
       return useFarmStore().role === 'staff'
     },
+    /** 服务端已按条件过滤并分页，rows 即当前页结果。 */
     filtered(state): ReportRow[] {
-      return state.rows.filter((row) => {
-        if (state.query.penId && row.pen_id !== state.query.penId) return false
-        if (state.query.urgency !== 'ALL' && row.urgency !== state.query.urgency) return false
-        if (state.query.status !== 'ALL' && row.status !== state.query.status) return false
-        if (row.reported_date && row.reported_date < state.query.start) return false
-        if (row.reported_date && row.reported_date > state.query.end) return false
-        return true
-      })
+      return state.rows
     },
-    paged(): ReportRow[] {
-      const from = (this.page - 1) * this.size
-      return this.filtered.slice(from, from + this.size)
+    paged(state): ReportRow[] {
+      return state.rows
     },
-    total(): number {
-      return this.filtered.length
+    pageTotal(state): number {
+      return Math.max(1, Math.ceil(state.total / state.size))
     },
-    pageTotal(): number {
-      return Math.max(1, Math.ceil(this.total / this.size))
-    },
-    hasFilter(): boolean {
+    hasFilter(state): boolean {
+      const defaults = defaultRange()
       return (
-        !!this.query.penId ||
-        this.query.urgency !== 'ALL' ||
-        this.query.status !== 'ALL' ||
-        this.query.start !== dayjs(todayIso()).subtract(29, 'day').format('YYYY-MM-DD') ||
-        this.query.end !== todayIso()
+        !!state.query.penId ||
+        state.query.urgency !== 'ALL' ||
+        state.query.status !== 'ALL' ||
+        !!state.query.keyword.trim() ||
+        state.query.start !== defaults.start ||
+        state.query.end !== defaults.end
       )
     },
-    todayCount(state): number {
-      const today = todayIso()
-      return state.rows.filter((row) => row.reported_date === today).length
+    isDefaultRange(state): boolean {
+      const defaults = defaultRange()
+      return state.query.start === defaults.start && state.query.end === defaults.end
     },
     todayPens(state): string {
-      const today = todayIso()
-      const names = Array.from(new Set(state.rows.filter((row) => row.reported_date === today).map((row) => row.pen_name)))
-      return names.length ? names.join('、') : '今天还没有上报'
-    },
-    urgentCount(state): number {
-      return state.rows.filter((row) => row.urgency === 'URGENT').length
+      if (state.todayPenNames.length) return state.todayPenNames.join('、')
+      return state.todayCount ? '今天有上报' : '今天还没有上报'
     },
     urgentNames(state): string {
-      const names = Array.from(new Set(state.rows.filter((row) => row.urgency === 'URGENT').map((row) => row.pen_name)))
-      return names.length ? `${names.join('、')} · 已立即推送` : '没有紧急诊断'
+      if (!state.urgentCount) return '没有紧急诊断'
+      const names = state.urgentPenNames.join('、')
+      return names ? `${names} · 已立即推送` : '已立即推送'
     },
     pendingHandleCount(state): number {
-      return state.rows.filter((row) => row.status === 'DIAGNOSED').length
+      return Number(state.statsTabCounts.DIAGNOSED || 0)
     },
     handledCount(state): number {
-      return state.rows.filter((row) => row.status === 'HANDLED').length
+      return Number(state.statsTabCounts.HANDLED || 0)
     },
     closedCount(state): number {
-      return state.rows.filter((row) => row.status === 'CLOSED').length
+      return Number(state.statsTabCounts.CLOSED || 0)
     },
-    totalCount(): number {
-      return this.rows.length
+    totalCount(state): number {
+      return Number(state.statsTabCounts.ALL || 0)
     },
     statusItems(state): Array<{ label: string; value: ReportStatus; count: number }> {
-      const count = (status: ReportStatus): number =>
-        state.rows.filter((row) => status === 'ALL' || row.status === status).length
+      const count = (status: ReportStatus): number => Number(state.tabCounts[status] || 0)
       return [
         { label: '全部', value: 'ALL', count: count('ALL') },
         { label: '待诊断', value: 'PENDING', count: count('PENDING') },
@@ -139,7 +196,14 @@ export const useAbnormalReportsStore = defineStore('abnormalReports', {
       ]
     },
     penItems(state): Array<{ title: string; value: number }> {
-      return [{ title: '全部栏舍', value: 0 }, ...state.pens.map((pen) => ({ title: pen.pen_name || '', value: pen.pen_id }))]
+      const seen = new Set<number>()
+      const items: Array<{ title: string; value: number }> = [{ title: '全部栏舍', value: 0 }]
+      for (const pen of state.pens) {
+        if (!pen.pen_id || seen.has(pen.pen_id)) continue
+        seen.add(pen.pen_id)
+        items.push({ title: pen.pen_name || pen.pen_code || `栏舍 ${pen.pen_id}`, value: pen.pen_id })
+      }
+      return items
     },
     urgencyItems(): Array<{ title: string; value: Urgency }> {
       return [
@@ -152,211 +216,237 @@ export const useAbnormalReportsStore = defineStore('abnormalReports', {
   },
   actions: {
     async load(): Promise<void> {
+      const farmId = useFarmStore().currentFarmId
+      if (this.farmId && this.farmId !== farmId) {
+        // 换场后栏舍、上报记录和详情缓存都属于旧场，不能继续展示。
+        this.query.penId = 0
+        this.page = 1
+        this.pens = []
+        this.rows = []
+        this.total = 0
+        this.tabCounts = emptyTabCounts()
+        this.statsTabCounts = emptyTabCounts()
+        this.detailCache = {}
+        this.status = 'loading'
+        this.loaded = false
+      }
+      if (farmId) this.farmId = farmId
       this.error = ''
-      this.status = this.rows.length ? this.status : 'loading'
-      this.detailLoading = true
+      await Promise.all([this.loadPens(), this.loadList(), this.loadStats()])
+    },
+    async loadPens(): Promise<void> {
+      if (this.pens.length) return
       try {
         const page = await fetchDayList({ date: todayIso(), status: 'ALL', page: 1, size: 100 })
         this.pens = page.list || []
-        if (this.isStaff) {
-          // 员工只能查看自己上报的诊断：优先用 AI 诊断消息里的 biz_id 反查，避免逐条请求触发 403。
-          const messages = await fetchMessages({ category: 'AI', page: 1, size: 100 })
-          const farmId = useFarmStore().currentFarmId
-          const ids = Array.from(
-            new Set(
-              (messages.list || [])
-                .filter(
-                  (item) =>
-                    item.biz_type === 'ABNORMAL_REPORT' &&
-                    Number(item.biz_id || 0) > 0 &&
-                    (!farmId || Number(item.farm?.farm_id || 0) === farmId)
-                )
-                .map((item) => Number(item.biz_id))
-            )
-          )
-          let rows: ReportRow[] = []
-          if (ids.length) {
-            const details = await Promise.all(ids.map((id) => this.detailCache[id] || this.fetchDetail(id)))
-            rows = details
-              .filter((detail): detail is DiagnosisDetail => !!detail)
-              .map((detail) => this.mergeDetail(this.baseRowFromDetail(detail), detail))
-          }
-          if (!rows.length) {
-            // 没有诊断消息时（新环境或待诊断），退回按负责栏舍的可关联上报，只展示不需要详情的字段。
-            const groups = await Promise.all(
-              this.pens.map(async (pen) => {
-                try {
-                  return await fetchLinkableReports({ pen_id: pen.pen_id })
-                } catch {
-                  return [] as LinkableReport[]
-                }
-              })
-            )
-            const byId = new Map<number, LinkableReport>()
-            for (const group of groups) {
-              for (const item of group) {
-                if (item.status !== 'PENDING' && !byId.has(item.report_id)) byId.set(item.report_id, item)
-              }
-            }
-            rows = Array.from(byId.values())
-              .sort((a, b) => String(b.reported_at || '').localeCompare(String(a.reported_at || '')))
-              .map((link) => this.baseRow(link))
-          }
-          this.rows = rows.sort((a, b) => b.reported_at.localeCompare(a.reported_at))
-          this.status = this.rows.length ? 'ready' : 'empty'
-          this.loaded = true
-          return
-        }
-        const penIds = this.pens.map((pen) => pen.pen_id)
-        const groups = await Promise.all(
-          penIds.map(async (penId) => {
-            try {
-              return await fetchLinkableReports({ pen_id: penId })
-            } catch {
-              return [] as LinkableReport[]
-            }
-          })
+      } catch {
+        this.pens = []
+      }
+    },
+    async loadList(): Promise<void> {
+      this.cancelKeywordTimer()
+      this.controller?.abort()
+      const controller = new AbortController()
+      this.controller = controller
+      this.requestSeq += 1
+      const seq = this.requestSeq
+      if (!this.rows.length) this.status = 'loading'
+      this.listLoading = true
+      this.error = ''
+      try {
+        const keyword = this.query.keyword.trim()
+        const data = await fetchAbnormalReports(
+          {
+            page: this.page,
+            size: this.size,
+            status: this.query.status,
+            pen_id: this.query.penId || undefined,
+            urgency: this.query.urgency,
+            keyword: keyword || undefined,
+            start_date: this.query.start,
+            end_date: this.query.end
+          },
+          controller.signal
         )
-        const byId = new Map<number, LinkableReport>()
-        for (const group of groups) {
-          for (const item of group) {
-            if (!byId.has(item.report_id)) byId.set(item.report_id, item)
+        if (seq !== this.requestSeq) return
+        this.rows = data.list || []
+        this.total = Number(data.total || 0)
+        this.tabCounts = { ...emptyTabCounts(), ...(data.tab_counts || {}) }
+        if (data.size && data.size !== this.size) this.size = data.size
+        if (!this.rows.length && this.total > 0 && this.page > 1) {
+          const lastPage = Math.max(1, Math.ceil(this.total / this.size))
+          if (lastPage !== this.page) {
+            this.page = lastPage
+            this.persistState()
+            this.listLoading = false
+            return this.loadList()
           }
         }
-        const links = Array.from(byId.values()).sort((a, b) => String(b.reported_at || '').localeCompare(String(a.reported_at || '')))
-        const baseRows = links.map((link) => this.baseRow(link))
-        this.rows = baseRows
-        this.status = baseRows.length ? 'ready' : 'empty'
+        this.status = this.total ? 'ready' : this.hasFilter ? 'filtered_empty' : 'empty'
         this.loaded = true
-        const tasks = links.map(async (link, index) => {
-          const detail = this.detailCache[link.report_id] || (await this.fetchDetail(link.report_id))
-          if (detail) this.applyDetail(index, detail)
-        })
-        await Promise.all(tasks)
+        this.persistState()
       } catch (error) {
+        if (seq !== this.requestSeq || isCanceled(error)) return
         const err = error as ApiError
-        this.status = err.isForbidden ? 'forbidden' : 'error'
-        this.error = err.message || '上报记录加载失败'
+        if (!this.rows.length) {
+          this.status = err.isForbidden ? 'forbidden' : 'error'
+          this.error = err.message || '上报记录加载失败'
+        } else {
+          useUiStore().toast(err.message || '上报记录刷新失败，请稍后重试', 'error')
+        }
       } finally {
-        this.detailLoading = false
+        if (seq === this.requestSeq) this.listLoading = false
       }
     },
-    baseRowFromDetail(detail: DiagnosisDetail): ReportRow {
-      const report = detail.report
-      return {
-        report_id: detail.report_id,
-        reported_at: report.reported_at || '',
-        reported_date: toDate(report.reported_at),
-        pen_id: report.pen_id,
-        pen_name: report.pen_name || '',
-        batch_no: report.batch_no || '',
-        sick_count: report.sick_count || 0,
-        stock_snapshot: report.stock_snapshot || 0,
-        sick_rate: report.sick_rate ?? null,
-        symptom_names: report.symptom_names || [],
-        reporter_name: report.reporter?.name || '',
-        top_cause: detail.diagnosis?.causes?.[0]?.disease_name || '',
-        urgency: detail.diagnosis?.urgency || '',
-        urgency_text: detail.diagnosis?.urgency_text || '',
-        status: detail.status,
-        status_text: detail.status_text || '',
-        source: report.source || '',
-        inspection_id: report.inspection_id ?? null,
-        detailLoaded: true
-      }
-    },
-    baseRow(link: LinkableReport): ReportRow {
-      const status = link.status || ''
-      const statusMap: Record<string, string> = { PENDING: '待诊断', DIAGNOSED: '已诊断', HANDLED: '已处理', CLOSED: '已结案' }
-      return {
-        report_id: link.report_id,
-        reported_at: link.reported_at || '',
-        reported_date: toDate(link.reported_at),
-        pen_id: link.pen_id,
-        pen_name: link.pen_name || '',
-        batch_no: link.batch_no || '',
-        sick_count: 0,
-        stock_snapshot: 0,
-        sick_rate: null,
-        symptom_names: [],
-        reporter_name: '',
-        top_cause: link.top_cause_name || '',
-        urgency: '',
-        urgency_text: '',
-        status,
-        status_text: statusMap[status] || '',
-        source: '',
-        inspection_id: null,
-        detailLoaded: false
-      }
-    },
-    mergeDetail(row: ReportRow, detail: DiagnosisDetail): ReportRow {
-      return {
-        ...row,
-        sick_count: detail.report.sick_count || 0,
-        stock_snapshot: detail.report.stock_snapshot || 0,
-        sick_rate: detail.report.sick_rate ?? null,
-        symptom_names: detail.report.symptom_names || [],
-        reporter_name: detail.report.reporter?.name || '',
-        top_cause: detail.diagnosis?.causes?.[0]?.disease_name || row.top_cause,
-        urgency: detail.diagnosis?.urgency || '',
-        urgency_text: detail.diagnosis?.urgency_text || '',
-        status: detail.status,
-        status_text: detail.status_text || '',
-        source: detail.report.source || '',
-        inspection_id: detail.report.inspection_id ?? null,
-        detailLoaded: true
+    async loadStats(): Promise<void> {
+      if (this.isStaff) return
+      this.statsSeq += 1
+      const seq = this.statsSeq
+      this.statsLoading = true
+      try {
+        const today = todayIso()
+        const [rangePage, todayPage, urgentPage] = await Promise.all([
+          fetchAbnormalReports({
+            page: 1,
+            size: 1,
+            status: 'ALL',
+            start_date: this.query.start,
+            end_date: this.query.end
+          }),
+          fetchAbnormalReports({ page: 1, size: 100, status: 'ALL', start_date: today, end_date: today }),
+          fetchAbnormalReports({
+            page: 1,
+            size: 100,
+            status: 'ALL',
+            urgency: 'URGENT',
+            start_date: this.query.start,
+            end_date: this.query.end
+          })
+        ])
+        if (seq !== this.statsSeq) return
+        this.statsTabCounts = { ...emptyTabCounts(), ...(rangePage.tab_counts || {}) }
+        this.todayCount = Number(todayPage.total || 0)
+        this.todayPenNames = penNamesOf(todayPage.list)
+        this.urgentCount = Number(urgentPage.total || 0)
+        this.urgentPenNames = penNamesOf(urgentPage.list)
+        this.statsLoaded = true
+      } catch {
+        if (seq === this.statsSeq) this.statsLoaded = false
+      } finally {
+        if (seq === this.statsSeq) this.statsLoading = false
       }
     },
     async fetchDetail(reportId: number): Promise<DiagnosisDetail | null> {
+      if (this.detailCache[reportId]) return this.detailCache[reportId]
+      this.detailLoading = true
       try {
         const detail = await fetchDiagnosis(reportId)
         this.detailCache[reportId] = detail
         return detail
       } catch {
         return null
+      } finally {
+        this.detailLoading = false
       }
     },
-    applyDetail(index: number, detail: DiagnosisDetail): void {
-      const row = this.rows[index]
-      if (!row) return
-      Object.assign(row, this.mergeDetail(row, detail))
+    async rediagnose(reportId: number): Promise<void> {
+      if (!reportId || this.rediagnosingId) return
+      this.rediagnosingId = reportId
+      try {
+        await requestRediagnose(reportId)
+        delete this.detailCache[reportId]
+        await this.loadList()
+      } finally {
+        this.rediagnosingId = 0
+      }
+    },
+    cancelKeywordTimer(): void {
+      if (!this.keywordTimer) return
+      window.clearTimeout(this.keywordTimer)
+      this.keywordTimer = 0
+    },
+    persistState(): void {
+      if (typeof sessionStorage === 'undefined') return
+      try {
+        sessionStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({ query: this.query, page: this.page, size: this.size, farmId: this.farmId })
+        )
+      } catch {
+        /* 隐私模式下写入失败不影响页面 */
+      }
+    },
+    setKeyword(value: unknown): void {
+      const keyword = String(value ?? '')
+      if (this.query.keyword === keyword) return
+      this.query.keyword = keyword
+      this.page = 1
+      this.persistState()
+      this.cancelKeywordTimer()
+      this.keywordTimer = window.setTimeout(() => {
+        this.keywordTimer = 0
+        void this.loadList()
+      }, 300)
     },
     setPen(penId: number): void {
+      if (this.query.penId === penId) return
+      this.cancelKeywordTimer()
       this.query.penId = penId
       this.page = 1
+      this.persistState()
+      void this.loadList()
     },
     setUrgency(urgency: Urgency): void {
+      if (this.query.urgency === urgency) return
+      this.cancelKeywordTimer()
       this.query.urgency = urgency
       this.page = 1
+      this.persistState()
+      void this.loadList()
     },
     setStatus(status: ReportStatus): void {
+      if (this.query.status === status) return
+      this.cancelKeywordTimer()
       this.query.status = status
       this.page = 1
+      this.persistState()
+      void this.loadList()
     },
     setRange(start: string, end: string): void {
-      if (!start || !end) return
+      if (!start || !end || start > end) return
+      if (this.query.start === start && this.query.end === end) return
+      this.cancelKeywordTimer()
       this.query.start = start
       this.query.end = end
       this.page = 1
+      this.persistState()
+      void this.loadList()
+      void this.loadStats()
     },
     setPage(page: number): void {
-      this.page = page
+      const target = Math.floor(Number(page))
+      if (!Number.isFinite(target) || target < 1 || target === this.page) return
+      this.cancelKeywordTimer()
+      this.page = target
+      this.persistState()
+      void this.loadList()
     },
     setSize(size: number): void {
-      this.size = size
+      const target = Math.floor(Number(size))
+      if (!PAGE_SIZES.includes(target) || target === this.size) return
+      this.cancelKeywordTimer()
+      this.size = target
       this.page = 1
+      this.persistState()
+      void this.loadList()
     },
     reset(): void {
-      const end = dayjs(todayIso())
-      this.query = {
-        penId: 0,
-        urgency: 'ALL',
-        status: 'ALL',
-        start: end.subtract(29, 'day').format('YYYY-MM-DD'),
-        end: end.format('YYYY-MM-DD')
-      }
+      this.cancelKeywordTimer()
+      this.query = defaultQuery()
       this.page = 1
+      this.persistState()
+      void this.loadList()
+      void this.loadStats()
     },
     openDrawer(inspectionId = 0, penId = 0): void {
       this.drawerInspectionId = inspectionId
@@ -365,5 +455,3 @@ export const useAbnormalReportsStore = defineStore('abnormalReports', {
     }
   }
 })
-
-export type { ReportStatus, Urgency }

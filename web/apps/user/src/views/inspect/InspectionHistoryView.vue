@@ -37,9 +37,7 @@ const overviewSub = computed(() => {
   parts.push(`近 7 天已巡 ${formatNumber(info.recent7_done_days || 0)} / ${formatNumber(info.recent7_should_days || 0)} 天`)
   return parts.join(' · ')
 })
-const filterItems = computed(() =>
-  store.filterItems.map((item) => ({ ...item, count: item.value === 'ALL' ? store.total : undefined }))
-)
+const filterItems = computed(() => store.filterItems)
 const todayLabel = computed(() => formatDate(todayIso()))
 
 onMounted(async () => {

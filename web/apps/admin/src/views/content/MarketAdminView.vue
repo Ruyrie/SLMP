@@ -4,6 +4,7 @@ import { formatDate, formatDateTime, formatNumber, formatPercent, today } from '
 import {
   batchPublishMarketPrices,
   correctMarketPrice,
+  downloadMarketPriceImportTemplate,
   getMarketConfigPermission,
   getMarketConfigs,
   getMarketEntryForm,
@@ -11,17 +12,20 @@ import {
   getMarketPriceDetail,
   getMarketPrices,
   getMarketProgress,
+  importMarketPrices,
   revokeMarketPrice,
   reviewMarketPrice,
   saveMarketConfigs,
   type MarketConfig,
   type MarketEntryForm,
   type MarketHistoryItem,
+  type MarketImportResult,
   type MarketPriceDetail,
   type MarketPriceRow,
   type MarketProgress
 } from '@/api/content'
 import { getCategoryTree, type CategoryNode, type CategoryNodeBreed } from '@/api/base'
+import ImportXlsxDialog from '@/views/common/ImportXlsxDialog.vue'
 import { useAdminStore } from '@/stores/admin'
 import { useUiStore } from '@/stores/ui'
 
@@ -173,6 +177,26 @@ function goPublishProvince(provinceName: string): void {
   const config = configs.value.find((c) => c.province_name === provinceName)
   if (!config) return
   openBatch(config.province_code)
+}
+
+/* ---------------- 表格导入 ---------------- */
+const importOpen = ref(false)
+
+function openImport(): void {
+  if (!canHandle.value) {
+    ui.toast('你没有行情导入权限', 'error')
+    return
+  }
+  importOpen.value = true
+}
+
+function importSuccessText(result: MarketImportResult): string {
+  return `已导入 ${result.success} 行行情`
+}
+
+async function afterImport(): Promise<void> {
+  query.page = 1
+  await Promise.all([fetchList(), fetchProgress()])
 }
 
 /* ---------------- 批量发布 ---------------- */
@@ -642,6 +666,7 @@ onMounted(async () => {
             <zw-seg :items="tabs" :model-value="query.status" @update:model-value="applyTab(String($event))" />
           </div>
           <div class="zw-toolbar-r">
+            <v-btn v-if="canHandle" variant="outlined" prepend-icon="upload_file" @click="openImport">导入表格</v-btn>
             <v-select v-model="query.province_code" :items="provinceOptions" class="zw-w-120" density="compact" hide-details @update:model-value="fetchList()" />
             <v-select v-model="query.category_id" :items="categoryFilterOptions" class="zw-w-120" density="compact" hide-details @update:model-value="fetchList()" />
           </div>
@@ -908,6 +933,16 @@ onMounted(async () => {
       </v-data-table>
       <template #foot><v-btn variant="outlined" @click="historyOpen = false">关闭</v-btn></template>
     </zw-drawer>
+
+    <ImportXlsxDialog
+      v-model="importOpen"
+      title="导入市场行情"
+      hint="按模板填写日期、省份、品类、品种、价格等列；单次最多 200 行，文件不超过 2MB。任一行校验失败整个文件回滚，不会留下脏数据。"
+      :download-template="downloadMarketPriceImportTemplate"
+      :upload="importMarketPrices"
+      :success-text="importSuccessText"
+      @success="afterImport"
+    />
 
     <!-- 发布配置 -->
     <zw-drawer v-model="configOpen" title="行情发布配置" sub="按地区维护启用的品类、品种、价格类型与默认单位；新增、修改都记入操作日志" width="760">

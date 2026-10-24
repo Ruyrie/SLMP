@@ -36,6 +36,7 @@ export const useInspectionHistoryStore = defineStore('inspectHistory', {
       overviewLoading: false,
       rows: [] as PenInspectionRow[],
       total: 0,
+      tabCounts: {} as Record<string, number>,
       listLoading: false,
       filter: 'ALL' as HistoryFilter,
       start: range.start,
@@ -71,13 +72,16 @@ export const useInspectionHistoryStore = defineStore('inspectHistory', {
       return Math.max(1, Math.ceil(this.total / this.size))
     },
     filterItems(state): Array<{ label: string; value: HistoryFilter; count?: number }> {
-      const count = state.filter === 'ALL' ? state.total : undefined
+      const count = (key: HistoryFilter): number | undefined => {
+        const value = Number(state.tabCounts[key])
+        return Number.isFinite(value) ? value : undefined
+      }
       return [
-        { label: '全部', value: 'ALL', count },
-        { label: '异常', value: 'ABNORMAL' },
-        { label: '超时', value: 'OVERDUE' },
-        { label: '补录', value: 'BACKFILL' },
-        { label: '非现场', value: 'OFF_SITE' }
+        { label: '全部', value: 'ALL', count: count('ALL') ?? state.total },
+        { label: '异常', value: 'ABNORMAL', count: count('ABNORMAL') },
+        { label: '超时', value: 'OVERDUE', count: count('OVERDUE') },
+        { label: '补录', value: 'BACKFILL', count: count('BACKFILL') },
+        { label: '非现场', value: 'OFF_SITE', count: count('OFF_SITE') }
       ]
     },
     emptyFilterText(state): string {
@@ -138,6 +142,7 @@ export const useInspectionHistoryStore = defineStore('inspectHistory', {
       if (!this.selectedPenId) {
         this.rows = []
         this.total = 0
+        this.tabCounts = {}
         return
       }
       this.listLoading = true
@@ -153,6 +158,7 @@ export const useInspectionHistoryStore = defineStore('inspectHistory', {
         const data = await fetchPenHistory(this.selectedPenId, params)
         this.rows = data.list || []
         this.total = data.total || 0
+        this.tabCounts = { ...(data.tab_counts || {}) }
         if (data.page && data.page !== this.page) this.page = data.page
         this.locateDate = ''
       } catch (error) {
@@ -239,6 +245,7 @@ export const useInspectionHistoryStore = defineStore('inspectHistory', {
       this.pens = []
       this.rows = []
       this.total = 0
+      this.tabCounts = {}
       this.selectedPenId = 0
       this.overview = null
       this.loaded = false

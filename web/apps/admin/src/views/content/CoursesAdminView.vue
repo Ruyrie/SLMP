@@ -401,6 +401,13 @@ function formatBytes(size?: number | null): string {
   return `${(size / (1024 * 1024)).toFixed(0)}MB`
 }
 
+function courseStatusText(status?: string): string {
+  if (status === 'ON_SHELF') return '已上架'
+  if (status === 'OFF_SHELF') return '已下架'
+  if (status === 'DRAFT') return '草稿'
+  return status || ''
+}
+
 async function onVideoSelected(event: Event): Promise<void> {
   const file = (event.target as HTMLInputElement).files?.[0]
   ;(event.target as HTMLInputElement).value = ''
@@ -634,6 +641,31 @@ const manageError = ref('')
 const newTopic = reactive({ name: '', category_id: null as number | null, intro: '' })
 const newCategory = reactive({ name: '' })
 
+/* 专题排序 / 封面 / 课程编排 —— 均复用 ADM-C37/C38 现有接口 */
+const topicDraggingId = ref<number | null>(null)
+const topicDragOverId = ref<number | null>(null)
+const topicCoverInput = ref<HTMLInputElement | null>(null)
+const topicCoverTarget = ref<CourseTopic | null>(null)
+const topicCoverUploadingId = ref<number | null>(null)
+const topicCoverProgress = ref(0)
+const topicCoverError = ref('')
+const lastTopicCoverFile = ref<File | null>(null)
+const arrangingTopicId = ref<number | null>(null)
+const arrangingCourses = ref<Array<{ course_id: number; title?: string; section_no: number; duration_sec?: number | null; status?: string }>>([])
+const arrangeLoading = ref(false)
+const arrangeSaving = ref(false)
+const arrangeError = ref('')
+const coursePool = ref<CourseRow[]>([])
+const courseToAdd = ref<number | null>(null)
+
+const arrangeOptions = computed(() => coursePool.value
+  .filter((course) => !arrangingCourses.value.some((item) => item.course_id === course.id))
+  .filter((course) => !course.topic_id || course.topic_id === arrangingTopicId.value)
+  .map((course) => ({
+    title: course.topic_name ? `${course.title}（${course.topic_name}）` : course.title,
+    value: course.id
+  })))
+
 function openManage(): void {
   manageOpen.value = true
   manageTab.value = 'topics'
@@ -668,6 +700,7 @@ async function addTopic(): Promise<void> {
 }
 
 async function toggleTopic(topic: CourseTopic): Promise<void> {
+  if (manageSaving.value || topicCoverUploadingId.value) return
   const status = topic.status === 'ON_SHELF' ? 'OFF_SHELF' : 'ON_SHELF'
   const reason = status === 'OFF_SHELF' ? window.prompt('请填写下架专题的原因') || '' : ''
   if (status === 'OFF_SHELF' && !reason.trim()) return
@@ -685,7 +718,7 @@ async function toggleTopic(topic: CourseTopic): Promise<void> {
 }
 
 async function saveTopic(topic: CourseTopic): Promise<void> {
-  if (!topic.category_id || !topic.name.trim()) return
+  if (!topic.category_id || !topic.name.trim() || manageSaving.value || topicCoverUploadingId.value) return
   manageSaving.value = true
   manageError.value = ''
   try {
@@ -694,6 +727,7 @@ async function saveTopic(topic: CourseTopic): Promise<void> {
       category_id: topic.category_id,
       intro: topic.intro || '',
       sort_no: topic.sort_no,
+      cover_file_id: topic.cover_file_id ?? null,
       version: topic.version,
       courses: (topic.courses || []).map((course) => ({ course_id: course.course_id, section_no: course.section_no }))
     })
@@ -703,6 +737,230 @@ async function saveTopic(topic: CourseTopic): Promise<void> {
     manageError.value = e instanceof Error ? e.message : '保存失败'
   } finally {
     manageSaving.value = false
+  }
+}
+
+/* ---------------- 专题拖动排序 ---------------- */
+function onTopicDragStart(topic: CourseTopic, event: DragEvent): void {
+  if (manageSaving.value || topicCoverUploadingId.value) {
+    event.preventDefault()
+    return
+  }
+  topicDraggingId.value = topic.id
+  event.dataTransfer?.setData('text/plain', String(topic.id))
+  if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
+}
+
+function onTopicDragOver(topic: CourseTopic, event: DragEvent): void {
+  if (manageSaving.value || !topicDraggingId.value || topicDraggingId.value === topic.id) return
+  event.preventDefault()
+  if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
+  topicDragOverId.value = topic.id
+}
+
+function onTopicDragEnd(): void {
+  topicDraggingId.value = null
+  topicDragOverId.value = null
+}
+
+async function onTopicDrop(topic: CourseTopic, event: DragEvent): Promise<void> {
+  event.preventDefault()
+  const sourceId = topicDraggingId.value
+  onTopicDragEnd()
+  if (!sourceId || sourceId === topic.id) return
+  const from = topics.value.findIndex((item) => item.id === sourceId)
+  const to = topics.value.findIndex((item) => item.id === topic.id)
+  if (from < 0 || to < 0) return
+  const ordered = [...topics.value]
+  const [moved] = ordered.splice(from, 1)
+  if (!moved) return
+  ordered.splice(to, 0, moved)
+  topics.value = ordered
+  await persistTopicOrder(ordered)
+}
+
+async function moveTopic(index: number, direction: -1 | 1): Promise<void> {
+  if (manageSaving.value || topicCoverUploadingId.value) return
+  const target = index + direction
+  if (target < 0 || target >= topics.value.length) return
+  const ordered = [...topics.value]
+  const [moved] = ordered.splice(index, 1)
+  if (!moved) return
+  ordered.splice(target, 0, moved)
+  topics.value = ordered
+  await persistTopicOrder(ordered)
+}
+
+/** 没有独立的专题排序接口：按新顺序逐个调用 ADM-C38 写入 sort_no，并保留原有课程关系。 */
+async function persistTopicOrder(ordered: CourseTopic[]): Promise<void> {
+  manageSaving.value = true
+  manageError.value = ''
+  try {
+    const changed = ordered
+      .map((topic, index) => ({ topic, sortNo: index + 1 }))
+      .filter(({ topic, sortNo }) => topic.sort_no !== sortNo)
+    for (const { topic, sortNo } of changed) {
+      await updateCourseTopic(topic.id, {
+        name: topic.name.trim(),
+        category_id: topic.category_id,
+        intro: topic.intro || '',
+        sort_no: sortNo,
+        cover_file_id: topic.cover_file_id ?? null,
+        version: topic.version,
+        courses: (topic.courses || []).map((course) => ({ course_id: course.course_id, section_no: course.section_no }))
+      })
+    }
+    await loadNav()
+    ui.toast('已调整专题顺序')
+  } catch (e) {
+    manageError.value = e instanceof Error ? e.message : '调整专题顺序失败'
+    await loadNav()
+  } finally {
+    manageSaving.value = false
+  }
+}
+
+/* ---------------- 专题封面 ---------------- */
+function triggerTopicCover(topic: CourseTopic): void {
+  if (manageSaving.value || topicCoverUploadingId.value) return
+  topicCoverTarget.value = topic
+  topicCoverError.value = ''
+  topicCoverInput.value?.click()
+}
+
+async function onTopicCoverSelected(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  const topic = topicCoverTarget.value
+  if (!file || !topic) return
+  lastTopicCoverFile.value = file
+  await uploadTopicCover(topic, file)
+}
+
+async function uploadTopicCover(topic: CourseTopic, file: File): Promise<void> {
+  topicCoverError.value = ''
+  if (!['image/jpeg', 'image/png'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+    topicCoverError.value = '只支持 JPG 或 PNG 图片，单张不超过 5MB'
+    lastTopicCoverFile.value = null
+    return
+  }
+  topicCoverUploadingId.value = topic.id
+  topicCoverProgress.value = 0
+  try {
+    const data = await uploadAdminFile(file, 'TOPIC_COVER', (percent) => { topicCoverProgress.value = percent })
+    if (!data.file_id) throw new Error('上传结果缺少文件编号')
+    await updateCourseTopic(topic.id, {
+      name: topic.name.trim(),
+      category_id: topic.category_id,
+      intro: topic.intro || '',
+      sort_no: topic.sort_no,
+      cover_file_id: data.file_id,
+      version: topic.version,
+      courses: (topic.courses || []).map((course) => ({ course_id: course.course_id, section_no: course.section_no }))
+    })
+    await loadNav()
+    ui.toast('已更新专题封面')
+  } catch (e) {
+    topicCoverError.value = e instanceof Error ? e.message : '封面上传失败'
+  } finally {
+    topicCoverUploadingId.value = null
+  }
+}
+
+async function retryTopicCover(): Promise<void> {
+  if (lastTopicCoverFile.value && topicCoverTarget.value) {
+    await uploadTopicCover(topicCoverTarget.value, lastTopicCoverFile.value)
+  }
+}
+
+/* ---------------- 专题课程编排 ---------------- */
+async function toggleArrange(topic: CourseTopic): Promise<void> {
+  if (manageSaving.value || topicCoverUploadingId.value) return
+  if (arrangingTopicId.value === topic.id) {
+    arrangingTopicId.value = null
+    return
+  }
+  arrangingTopicId.value = topic.id
+  arrangingCourses.value = (topic.courses || []).map((course) => ({
+    course_id: course.course_id,
+    title: course.title,
+    section_no: course.section_no,
+    duration_sec: course.duration_sec,
+    status: course.status
+  }))
+  courseToAdd.value = null
+  arrangeError.value = ''
+  arrangeLoading.value = true
+  try {
+    const first = await getCourses({ page: 1, size: 100 })
+    let items = first.list || []
+    const pages = Math.ceil((first.total || 0) / 100)
+    for (let page = 2; page <= pages; page += 1) {
+      const next = await getCourses({ page, size: 100 })
+      items = items.concat(next.list || [])
+    }
+    coursePool.value = items
+  } catch (e) {
+    arrangeError.value = e instanceof Error ? e.message : '课程列表加载失败'
+  } finally {
+    arrangeLoading.value = false
+  }
+}
+
+function addArrangeCourse(): void {
+  const course = coursePool.value.find((item) => item.id === courseToAdd.value)
+  if (!course) return
+  if (arrangingCourses.value.some((item) => item.course_id === course.id)) return
+  arrangingCourses.value.push({
+    course_id: course.id,
+    title: course.title,
+    section_no: arrangingCourses.value.length + 1,
+    duration_sec: course.duration_sec,
+    status: course.status
+  })
+  courseToAdd.value = null
+  arrangeError.value = ''
+}
+
+function removeArrangeCourse(index: number): void {
+  arrangingCourses.value.splice(index, 1)
+  arrangingCourses.value.forEach((course, order) => { course.section_no = order + 1 })
+}
+
+function moveArrangeCourse(index: number, direction: -1 | 1): void {
+  const target = index + direction
+  if (target < 0 || target >= arrangingCourses.value.length) return
+  const [moved] = arrangingCourses.value.splice(index, 1)
+  if (!moved) return
+  arrangingCourses.value.splice(target, 0, moved)
+  arrangingCourses.value.forEach((course, order) => { course.section_no = order + 1 })
+}
+
+async function saveArrange(): Promise<void> {
+  const topic = topics.value.find((item) => item.id === arrangingTopicId.value)
+  if (!topic) return
+  arrangeSaving.value = true
+  arrangeError.value = ''
+  try {
+    const updated = await updateCourseTopic(topic.id, {
+      name: topic.name.trim(),
+      category_id: topic.category_id,
+      intro: topic.intro || '',
+      sort_no: topic.sort_no,
+      cover_file_id: topic.cover_file_id ?? null,
+      version: topic.version,
+      courses: arrangingCourses.value.map((course, index) => ({ course_id: course.course_id, section_no: index + 1 }))
+    })
+    const index = topics.value.findIndex((item) => item.id === updated.id)
+    if (index >= 0) topics.value[index] = updated
+    arrangingTopicId.value = null
+    await loadNav()
+    ui.toast('已保存课程编排')
+  } catch (e) {
+    arrangeError.value = e instanceof Error ? e.message : '课程编排保存失败'
+  } finally {
+    arrangeSaving.value = false
   }
 }
 
@@ -1033,7 +1291,7 @@ onMounted(async () => {
     </zw-dialog>
 
     <!-- 分类与专题管理 -->
-    <zw-drawer v-model="manageOpen" title="分类与专题管理" sub="分类排序会同步到用户端筛选项；停用有引用时会被拒绝" width="760">
+    <zw-drawer v-model="manageOpen" title="分类与专题管理" sub="专题可拖动排序、上传封面并编排课程；分类排序会同步到用户端筛选项" width="760">
       <v-tabs v-model="manageTab" class="zw-tabs-line manage-tabs">
         <v-tab value="topics">专题</v-tab>
         <v-tab value="categories">分类</v-tab>
@@ -1045,18 +1303,96 @@ onMounted(async () => {
           <v-btn color="primary" :loading="manageSaving" @click="addTopic">新建专题</v-btn>
         </div>
         <div v-if="!topics.length" class="zw-empty manage-empty">还没有专题</div>
-        <div v-for="topic in topics" :key="topic.id" class="manage-row">
-          <div class="manage-row-main">
-            <v-text-field v-model="topic.name" density="compact" hide-details maxlength="20" />
-            <v-select v-model="topic.category_id" :items="categoryOptions" density="compact" hide-details />
-            <span class="zw-tag" :class="topic.status === 'ON_SHELF' ? 'zw-tag--success' : 'zw-tag--neutral'">{{ topic.status_text || topic.status }}</span>
-            <span class="zw-muted">{{ topic.course_count || 0 }} 节 · {{ topic.duration_text || '' }}</span>
+        <div v-for="(topic, index) in topics" :key="topic.id" class="manage-item">
+          <div
+            class="manage-row"
+            :class="{ 'manage-row--dragging': topicDraggingId === topic.id, 'manage-row--over': topicDragOverId === topic.id }"
+            @dragover="onTopicDragOver(topic, $event)"
+            @drop="onTopicDrop(topic, $event)"
+          >
+            <span
+              class="manage-drag"
+              draggable="true"
+              title="拖动调整专题顺序"
+              @dragstart="onTopicDragStart(topic, $event)"
+              @dragend="onTopicDragEnd"
+            ><zw-icon name="drag_indicator" :size="18" /></span>
+            <button
+              type="button"
+              class="manage-cover"
+              :disabled="manageSaving || topicCoverUploadingId === topic.id"
+              :title="topic.cover_url ? '更换专题封面' : '上传专题封面'"
+              @click="triggerTopicCover(topic)"
+            >
+              <img v-if="safeUrl(topic.cover_url)" :src="safeUrl(topic.cover_url)" alt="" />
+              <zw-icon v-else name="add_photo_alternate" :size="20" />
+              <span v-if="topicCoverUploadingId === topic.id" class="manage-cover-mask">
+                <v-progress-circular :model-value="topicCoverProgress" :size="26" :width="3" color="primary" />
+              </span>
+            </button>
+            <div class="manage-row-main">
+              <v-text-field v-model="topic.name" density="compact" hide-details maxlength="20" />
+              <v-select v-model="topic.category_id" :items="categoryOptions" density="compact" hide-details />
+              <span class="zw-tag" :class="topic.status === 'ON_SHELF' ? 'zw-tag--success' : 'zw-tag--neutral'">{{ topic.status_text || topic.status }}</span>
+            </div>
+            <div class="manage-row-sub">
+              <span class="zw-muted">排序 {{ index + 1 }} · {{ topic.course_count || 0 }} 节 · {{ topic.duration_text || '' }}</span>
+              <div class="zw-cell-actions">
+                <a class="zw-link" :class="{ 'is-disabled': index === 0 || manageSaving }" @click="moveTopic(index, -1)">上移</a>
+                <a class="zw-link" :class="{ 'is-disabled': index === topics.length - 1 || manageSaving }" @click="moveTopic(index, 1)">下移</a>
+                <a class="zw-link" :class="{ 'is-disabled': manageSaving }" @click="toggleArrange(topic)">{{ arrangingTopicId === topic.id ? '收起编排' : '编排课程' }}</a>
+                <a class="zw-link" :class="{ 'is-disabled': manageSaving }" @click="saveTopic(topic)">保存</a>
+                <a class="zw-link" :class="{ danger: topic.status === 'ON_SHELF', 'is-disabled': manageSaving }" @click="toggleTopic(topic)">{{ topic.status === 'ON_SHELF' ? '下架' : '上架' }}</a>
+              </div>
+            </div>
           </div>
-          <div class="zw-cell-actions">
-            <a class="zw-link" @click="saveTopic(topic)">保存</a>
-            <a class="zw-link" :class="{ danger: topic.status === 'ON_SHELF' }" @click="toggleTopic(topic)">{{ topic.status === 'ON_SHELF' ? '下架' : '上架' }}</a>
+          <div v-if="topicCoverUploadingId === topic.id" class="manage-cover-progress">
+            <v-progress-linear :model-value="topicCoverProgress" height="4" rounded color="primary" />
+            <span class="num">{{ topicCoverProgress }}%</span>
+          </div>
+          <div v-if="topicCoverError && topicCoverTarget?.id === topic.id" class="course-form-error manage-cover-error">
+            {{ topicCoverError }} <a v-if="lastTopicCoverFile" class="zw-link" @click="retryTopicCover">重试</a>
+          </div>
+
+          <div v-if="arrangingTopicId === topic.id" class="manage-arrange">
+            <div class="manage-arrange-head">
+              <div><b>课程编排</b><span class="zw-muted">调整后保存，节次按 1–n 自动重排</span></div>
+              <v-btn variant="text" size="small" :disabled="arrangeSaving" @click="arrangingTopicId = null">收起</v-btn>
+            </div>
+            <div v-if="arrangeLoading" class="manage-arrange-loading">
+              <v-progress-circular indeterminate size="18" /><span>课程列表加载中</span>
+            </div>
+            <template v-else>
+              <div v-if="!arrangingCourses.length" class="zw-empty manage-arrange-empty">还没有课程，从下面添加</div>
+              <div v-for="(course, order) in arrangingCourses" :key="course.course_id" class="manage-arrange-row">
+                <span class="manage-arrange-no num">{{ order + 1 }}</span>
+                <div class="manage-arrange-main">
+                  <div class="manage-arrange-title">{{ course.title || `课程 #${course.course_id}` }}</div>
+                  <div class="manage-arrange-sub">
+                    <span v-if="course.duration_sec">{{ formatDuration(course.duration_sec) }}</span>
+                    <span v-if="course.status">{{ courseStatusText(course.status) }}</span>
+                  </div>
+                </div>
+                <div class="zw-cell-actions">
+                  <a class="zw-link" :class="{ 'is-disabled': order === 0 || arrangeSaving }" @click="moveArrangeCourse(order, -1)">上移</a>
+                  <a class="zw-link" :class="{ 'is-disabled': order === arrangingCourses.length - 1 || arrangeSaving }" @click="moveArrangeCourse(order, 1)">下移</a>
+                  <a class="zw-link danger" :class="{ 'is-disabled': arrangeSaving }" @click="removeArrangeCourse(order)">移除</a>
+                </div>
+              </div>
+              <div class="manage-arrange-add">
+                <v-select v-model="courseToAdd" :items="arrangeOptions" placeholder="选择要添加的课程" density="compact" hide-details class="manage-arrange-select" />
+                <v-btn variant="outlined" prepend-icon="add" :disabled="!courseToAdd || arrangeSaving" @click="addArrangeCourse">添加课程</v-btn>
+              </div>
+              <div v-if="arrangeError" class="course-form-error">{{ arrangeError }}</div>
+              <div class="manage-arrange-foot">
+                <span class="zw-muted">从其他专题移入会被服务端拒绝，请先在原专题移除</span>
+                <v-btn variant="text" :disabled="arrangeSaving" @click="arrangingTopicId = null">取消</v-btn>
+                <v-btn color="primary" :loading="arrangeSaving" :disabled="arrangeSaving" @click="saveArrange">保存编排</v-btn>
+              </div>
+            </template>
           </div>
         </div>
+        <input ref="topicCoverInput" type="file" accept="image/jpeg,image/png" hidden @change="onTopicCoverSelected" />
       </template>
       <template v-else>
         <div class="manage-add">
@@ -1147,9 +1483,38 @@ onMounted(async () => {
 .manage-tabs { margin-bottom: 16px; }
 .manage-add { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
 .manage-add .v-btn { flex-shrink: 0; }
-.manage-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line-1); }
-.manage-row-main { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
-.manage-row-main > .v-input:first-child { max-width: 220px; }
-.manage-row-main > .v-input:nth-child(2) { max-width: 140px; }
+.manage-item { border-bottom: 1px solid var(--line-1); }
+.manage-row { display: grid; grid-template-columns: 22px 64px minmax(0, 1fr); grid-template-areas: 'drag cover main' '. . sub'; align-items: center; gap: 6px 8px; padding: 10px 0; }
+.manage-row-main { grid-area: main; display: grid; grid-template-columns: minmax(0, 1fr) 116px auto; align-items: center; gap: 8px; min-width: 0; }
+.manage-row-sub { grid-column: 2 / -1; display: flex; align-items: center; gap: 8px; }
+.manage-row-sub .zw-muted { margin-right: auto; font-size: 12px; }
+.manage-item > .manage-row { border-bottom: 0; }
+.manage-row--dragging { opacity: 0.5; }
+.manage-row--over { background: var(--primary-subtle); box-shadow: inset 0 2px 0 var(--primary); }
+.manage-drag { grid-area: drag; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 32px; color: var(--text-3); cursor: grab; border-radius: 3px; }
+.manage-drag:hover { background: var(--fill-1); color: var(--text-1); }
+.manage-drag:active { cursor: grabbing; }
+.manage-cover { grid-area: cover; position: relative; width: 64px; height: 36px; flex-shrink: 0; padding: 0; border: 1px dashed var(--line-2); border-radius: var(--radius-sm); background: var(--fill-1); color: var(--text-3); display: inline-flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
+.manage-cover:hover { border-color: var(--primary); color: var(--primary); }
+.manage-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.manage-cover-mask { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.72); }
+.manage-cover-progress { display: flex; align-items: center; gap: 8px; padding: 0 0 6px 30px; font-size: 12px; color: var(--text-3); }
+.manage-cover-progress :deep(.v-progress-linear) { max-width: 160px; }
+.manage-cover-error { padding: 0 0 6px 30px; margin-top: 0; }
+.is-disabled { color: var(--text-3) !important; pointer-events: none; opacity: 0.45; }
+.manage-arrange { margin: 0 0 12px 30px; padding: 12px 14px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); background: var(--fill-1); }
+.manage-arrange-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; font-size: 13px; }
+.manage-arrange-head b { margin-right: 8px; }
+.manage-arrange-loading { display: flex; align-items: center; gap: 8px; padding: 12px 0; font-size: 12px; color: var(--text-3); }
+.manage-arrange-empty { padding: 12px 0; font-size: 12px; }
+.manage-arrange-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px dashed var(--line-1); }
+.manage-arrange-no { width: 20px; height: 20px; border-radius: 50%; background: var(--primary-subtle); color: var(--primary); font-size: 11px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.manage-arrange-main { flex: 1; min-width: 0; }
+.manage-arrange-title { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.manage-arrange-sub { display: flex; gap: 10px; font-size: 12px; color: var(--text-3); }
+.manage-arrange-add { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.manage-arrange-select { max-width: 380px; }
+.manage-arrange-foot { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.manage-arrange-foot .zw-muted { margin-right: auto; font-size: 12px; }
 .manage-empty { padding: 24px 0; }
 </style>

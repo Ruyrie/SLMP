@@ -1,11 +1,27 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, watch } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { dayjs, formatDuration, TZ } from '@zmt/shared'
 import type { KnowledgeBlock } from '@/api/ai'
 import { useAiKnowledgeStore } from '@/stores/ai/knowledge'
 import { stripCitationMarkers } from '@/stores/ai/shared'
 import { useUiStore } from '@/stores/ui'
+import { safeKnowledgeImageSrc, sanitizeKnowledgeHtml } from './knowledgeContent'
+
+type BlockType = 'TEXT' | 'HEADING' | 'QUOTE' | 'LIST' | 'IMAGE'
+
+const BLOCK_TYPES = new Set<BlockType>(['TEXT', 'HEADING', 'QUOTE', 'LIST', 'IMAGE'])
+
+interface RenderableBlock {
+  block: KnowledgeBlock
+  key: string
+  type: BlockType
+  html: string
+  text: string
+  imageSrc: string
+  alt: string
+  highlighted: boolean
+}
 
 const store = useAiKnowledgeStore()
 const route = useRoute()
@@ -14,6 +30,30 @@ const ui = useUiStore()
 
 const detail = computed(() => store.detail)
 const blocks = computed<KnowledgeBlock[]>(() => detail.value?.blocks || [])
+const renderBlocks = computed<RenderableBlock[]>(() => {
+  const highlightKey = detail.value?.highlight_para_key || ''
+  return blocks.value
+    .map<RenderableBlock>((block, index) => {
+      const type = blockTypeOf(block)
+      const text = (block.text || '').trim()
+      const highlighted = !!block.para_key && block.para_key === highlightKey
+      return {
+        block,
+        key: `${block.para_key || 'block'}:${index}`,
+        type,
+        html: type === 'IMAGE' ? '' : sanitizeKnowledgeHtml(block.content_html),
+        text,
+        imageSrc: type === 'IMAGE' ? safeKnowledgeImageSrc(block.image_url) : '',
+        alt: text || '知识配图',
+        highlighted
+      }
+    })
+    .filter((item) => item.type === 'IMAGE' || !!item.html || !!item.text || item.highlighted)
+})
+const failedImages = reactive<Record<string, boolean>>({})
+const previewOpen = ref(false)
+const previewUrl = ref('')
+const previewAlt = ref('')
 const sourceText = computed(() => detail.value?.source_type_text || '平台知识库')
 const versionText = computed(() => {
   const value = detail.value
@@ -70,6 +110,7 @@ watch(
 async function load(): Promise<void> {
   const knowledgeId = Number(route.params.id || 0)
   if (!knowledgeId) return
+  clearImageState()
   const citationId = Number(route.query.citation_id || 0)
   const messageId = Number(route.query.message_id || 0)
   await store.load(knowledgeId, citationId, messageId)
@@ -77,6 +118,71 @@ async function load(): Promise<void> {
     await nextTick()
     scrollToHighlight()
   }
+}
+
+function blockTypeOf(block: KnowledgeBlock): BlockType {
+  const value = (block.para_type || 'TEXT').toUpperCase() as BlockType
+  return BLOCK_TYPES.has(value) ? value : 'TEXT'
+}
+
+function clearImageState(): void {
+  for (const key of Object.keys(failedImages)) delete failedImages[key]
+}
+
+function onImageError(key: string): void {
+  failedImages[key] = true
+}
+
+/** 图片加载后尺寸变化会移动锚点，被引用的图片块需要重新定位一次。 */
+function onImageLoad(item: RenderableBlock): void {
+  if (!item.highlighted) return
+  void nextTick(() => scrollToHighlight())
+}
+
+function openPreview(url: string, alt?: string): void {
+  if (!url) return
+  previewUrl.value = url
+  previewAlt.value = alt || '知识配图'
+  previewOpen.value = true
+}
+
+/** content_html 内的图片由 v-html 插入，用事件委托补上全屏预览。 */
+function onBodyClick(event: MouseEvent): void {
+  const target = event.target
+  if (!(target instanceof Element)) return
+  const image = target.closest('img')
+  if (!(image instanceof HTMLImageElement)) return
+  if (image.closest('.k02-image-btn')) return
+  const src = image.getAttribute('src') || ''
+  if (!safeKnowledgeImageSrc(src)) return
+  event.preventDefault()
+  openPreview(src, image.alt || '知识配图')
+}
+
+/** content_html 内的图片加载后，如果它所在段落正是引用锚点，重新定位。 */
+function onBodyMediaLoad(event: Event): void {
+  const target = event.target
+  if (!(target instanceof HTMLImageElement)) return
+  if (!target.closest('.k02-html')) return
+  const block = target.closest<HTMLElement>('[data-para-key]')
+  if (!block || block.dataset.paraKey !== detail.value?.highlight_para_key) return
+  void nextTick(() => scrollToHighlight())
+}
+
+/** content_html 内的坏图替换成占位，避免浏览器默认破图图标影响版面。 */
+function onBodyMediaError(event: Event): void {
+  const target = event.target
+  if (!(target instanceof HTMLImageElement)) return
+  if (target.closest('.k02-image-btn') || !target.closest('.k02-html')) return
+  if (target.dataset.broken === '1') return
+  target.dataset.broken = '1'
+  const alt = target.alt || '图片加载失败'
+  const placeholder = document.createElement('span')
+  placeholder.className = 'k02-inline-broken'
+  placeholder.setAttribute('role', 'img')
+  placeholder.setAttribute('aria-label', alt)
+  placeholder.textContent = alt
+  target.replaceWith(placeholder)
 }
 
 function scrollToHighlight(): void {
@@ -146,7 +252,7 @@ async function copyLink(): Promise<void> {
 }
 
 function blockClass(block: KnowledgeBlock): string[] {
-  const classes = ['k02-block', `k02-block--${(block.para_type || 'TEXT').toLowerCase()}`]
+  const classes = ['k02-block', `k02-block--${blockTypeOf(block).toLowerCase()}`]
   if (block.para_key && block.para_key === detail.value?.highlight_para_key) classes.push('k02-block--cited')
   return classes
 }
@@ -223,33 +329,75 @@ function blockClass(block: KnowledgeBlock): string[] {
                 <div class="k02-cap">教学视频 · {{ video.title }}</div>
               </template>
 
-              <div class="k02-body">
-                <template v-for="block in blocks" :key="block.para_key || block.text">
-                  <div
-                    v-if="block.para_key === detail.highlight_para_key"
-                    :data-para-key="block.para_key"
-                    :class="blockClass(block)"
-                  >
-                    <div class="k02-quote">
-                      <zw-tag type="ai" icon="auto_awesome">AI 回答引用了这一段</zw-tag>
-                      <p>{{ block.text }}</p>
+              <div
+                v-if="renderBlocks.length"
+                class="k02-body"
+                @click="onBodyClick"
+                @load.capture="onBodyMediaLoad"
+                @error.capture="onBodyMediaError"
+              >
+                <div
+                  v-for="item in renderBlocks"
+                  :key="item.key"
+                  :data-para-key="item.block.para_key || undefined"
+                  :class="blockClass(item.block)"
+                >
+                  <div v-if="item.highlighted" class="k02-cited">
+                    <zw-tag type="ai" icon="auto_awesome">AI 回答引用了这一段</zw-tag>
+                  </div>
+
+                  <template v-if="item.type === 'IMAGE'">
+                    <button
+                      v-if="item.imageSrc && !failedImages[item.key]"
+                      type="button"
+                      class="k02-image-btn"
+                      :aria-label="`查看大图：${item.alt}`"
+                      @click="openPreview(item.imageSrc, item.alt)"
+                    >
+                      <img
+                        :src="item.imageSrc"
+                        :alt="item.alt"
+                        loading="lazy"
+                        decoding="async"
+                        @load="onImageLoad(item)"
+                        @error="onImageError(item.key)"
+                      >
+                    </button>
+                    <div
+                      v-else
+                      class="k02-image-fallback"
+                      role="img"
+                      :aria-label="`${item.alt}，${item.imageSrc ? '图片加载失败' : '图片暂不可用'}`"
+                    >
+                      <zw-icon name="broken_image" :size="24" />
+                      <span class="k02-image-fallback-main">{{ item.alt }}</span>
+                      <span class="k02-image-fallback-sub">{{ item.imageSrc ? '图片加载失败' : '图片暂不可用' }}</span>
                     </div>
-                  </div>
-                  <h3 v-else-if="block.para_type === 'HEADING'" :data-para-key="block.para_key" :class="blockClass(block)">
-                    {{ block.text }}
-                  </h3>
-                  <blockquote v-else-if="block.para_type === 'QUOTE'" :data-para-key="block.para_key" :class="blockClass(block)">
-                    {{ block.text }}
-                  </blockquote>
-                  <div v-else-if="block.para_type === 'IMAGE'" :data-para-key="block.para_key" :class="blockClass(block)">
-                    <img v-if="block.image_url" :src="block.image_url" :alt="block.text || '条目图片'" />
-                  </div>
-                  <div v-else :data-para-key="block.para_key" :class="blockClass(block)">
-                    <span v-if="block.para_type === 'LIST'" class="k02-li" aria-hidden="true" />
-                    <p v-else>{{ block.text }}</p>
-                    <p v-if="block.para_type === 'LIST'" class="k02-list-text">{{ block.text }}</p>
-                  </div>
-                </template>
+                  </template>
+
+                  <template v-else-if="item.type === 'HEADING'">
+                    <h3 v-if="item.html" class="k02-heading k02-html" v-html="item.html" />
+                    <h3 v-else class="k02-heading">{{ item.text }}</h3>
+                  </template>
+
+                  <template v-else-if="item.type === 'QUOTE'">
+                    <blockquote v-if="item.html" class="k02-quote-body k02-html" v-html="item.html" />
+                    <blockquote v-else class="k02-quote-body"><p>{{ item.text }}</p></blockquote>
+                  </template>
+
+                  <template v-else-if="item.type === 'LIST'">
+                    <div v-if="item.html" class="k02-html k02-html-list" v-html="item.html" />
+                    <div v-else class="k02-list-row">
+                      <span class="k02-li" aria-hidden="true" />
+                      <p class="k02-list-text">{{ item.text }}</p>
+                    </div>
+                  </template>
+
+                  <template v-else>
+                    <div v-if="item.html" class="k02-html" v-html="item.html" />
+                    <p v-else>{{ item.text }}</p>
+                  </template>
+                </div>
               </div>
 
               <div class="k02-foot">
@@ -304,6 +452,23 @@ function blockClass(block: KnowledgeBlock): string[] {
         </div>
       </div>
     </template>
+
+    <v-dialog
+      v-model="previewOpen"
+      fullscreen
+      transition="fade-transition"
+      scrim="#000000E6"
+      class="k02-preview-dialog"
+    >
+      <div class="k02-preview" @click.self="previewOpen = false">
+        <img v-if="previewUrl" :src="previewUrl" :alt="previewAlt">
+        <div v-else class="k02-preview-empty">图片暂不可用</div>
+        <button type="button" class="k02-preview-close" aria-label="关闭大图" @click="previewOpen = false">
+          <zw-icon name="close" :size="24" />
+        </button>
+        <div v-if="previewAlt" class="k02-preview-cap">{{ previewAlt }}</div>
+      </div>
+    </v-dialog>
   </zw-shell>
 </template>
 
@@ -390,7 +555,9 @@ function blockClass(block: KnowledgeBlock): string[] {
 .k02-block {
   margin: 0 0 16px;
 }
-.k02-block p {
+.k02-block > p,
+.k02-quote-body p,
+.k02-list-text {
   margin: 0;
   font-size: 15px;
   line-height: 26px;
@@ -399,23 +566,34 @@ function blockClass(block: KnowledgeBlock): string[] {
   word-break: break-word;
 }
 .k02-block--heading {
-  margin: 20px 0 12px;
+  margin-top: 20px;
+  margin-bottom: 12px;
+}
+.k02-heading {
+  margin: 0;
   font-size: 16px;
   line-height: 26px;
   font-weight: 600;
   color: var(--text-1);
+  word-break: break-word;
 }
 .k02-block--quote {
   padding: 10px 16px 12px 14px;
   border-left: 3px solid var(--tertiary);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   background: var(--fill-1);
+  color: var(--text-1);
+}
+.k02-quote-body {
+  margin: 0;
+  padding: 0;
+  border: 0;
   font-size: 15px;
   line-height: 26px;
-  color: var(--text-1);
+  color: inherit;
   white-space: pre-wrap;
 }
-.k02-block--list {
+.k02-list-row {
   display: flex;
   gap: 8px;
   align-items: flex-start;
@@ -431,27 +609,208 @@ function blockClass(block: KnowledgeBlock): string[] {
 .k02-list-text {
   flex: 1;
 }
-.k02-block--image img {
-  max-width: 100%;
-  border-radius: var(--radius-sm);
+.k02-html {
+  font-size: 15px;
+  line-height: 26px;
+  color: var(--text-1);
+  word-break: break-word;
 }
-.k02-quote {
+.k02-html :deep(p) {
+  margin: 0 0 8px;
+}
+.k02-html :deep(p:last-child) {
+  margin-bottom: 0;
+}
+.k02-html :deep(h1),
+.k02-html :deep(h2),
+.k02-html :deep(h3),
+.k02-html :deep(h4) {
+  margin: 12px 0 6px;
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.k02-html :deep(h1:first-child),
+.k02-html :deep(h2:first-child),
+.k02-html :deep(h3:first-child),
+.k02-html :deep(h4:first-child) {
+  margin-top: 0;
+}
+.k02-html :deep(ul),
+.k02-html :deep(ol) {
+  margin: 0 0 8px;
+  padding-left: 22px;
+}
+.k02-html :deep(ul) {
+  list-style: disc;
+}
+.k02-html :deep(ol) {
+  list-style: decimal;
+}
+.k02-html :deep(li) {
+  margin: 2px 0;
+  padding-left: 2px;
+}
+.k02-html :deep(li p) {
+  margin: 0;
+}
+.k02-html :deep(blockquote) {
+  margin: 8px 0;
+  padding: 8px 14px;
+  border-left: 3px solid var(--tertiary);
+  background: var(--fill-1);
+  color: var(--text-1);
+}
+.k02-html :deep(a) {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.k02-html :deep(a:hover) {
+  color: var(--primary-hover);
+}
+.k02-html :deep(a:not([href])) {
+  color: inherit;
+  text-decoration: none;
+}
+.k02-html :deep(strong) {
+  font-weight: 600;
+}
+.k02-html :deep(img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 8px 0;
+  border-radius: var(--radius-md);
+  background: var(--fill-1);
+  cursor: zoom-in;
+}
+.k02-html :deep(.k02-inline-broken) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 480px;
+  min-height: 72px;
+  margin: 8px 0;
+  padding: 12px 14px;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--radius-md);
+  background: var(--fill-1);
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 20px;
+}
+.k02-block--cited {
   padding: 10px 16px 12px 14px;
   border-left: 3px solid var(--tertiary);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   background: var(--fill-1);
   animation: k02-flash 600ms ease-out;
 }
-.k02-quote p {
-  margin: 8px 0 0;
-  font-size: 15px;
-  line-height: 26px;
-  color: var(--text-1);
-  white-space: pre-wrap;
+.k02-block--cited.k02-block--heading {
+  padding-top: 10px;
+}
+.k02-cited {
+  margin-bottom: 8px;
+}
+.k02-image-btn {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 160px;
+  min-height: 96px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--fill-1);
+  cursor: zoom-in;
+  line-height: 0;
+}
+.k02-image-btn img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+}
+.k02-image-fallback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  width: 100%;
+  max-width: 480px;
+  min-height: 96px;
+  padding: 16px;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--radius-md);
+  background: var(--fill-1);
+  color: var(--text-2);
+}
+.k02-image-fallback-main {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-2);
+}
+.k02-image-fallback-sub {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-3);
 }
 @keyframes k02-flash {
   from { background: var(--tertiary-container); }
   to { background: var(--fill-1); }
+}
+.k02-preview {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 56px 72px 48px;
+  background: var(--media-backdrop);
+  color: var(--on-media);
+  cursor: zoom-out;
+}
+.k02-preview img {
+  max-width: 100%;
+  max-height: calc(100vh - 150px);
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: #000000;
+  cursor: default;
+}
+.k02-preview-close {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: #FFFFFF1F;
+  color: var(--on-media);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.k02-preview-close:hover {
+  background: #FFFFFF33;
+}
+.k02-preview-cap {
+  max-width: 80vw;
+  font-size: 13px;
+  line-height: 20px;
+  color: #FFFFFFB3;
+  text-align: center;
+}
+.k02-preview-empty {
+  font-size: 14px;
+  color: #FFFFFFA6;
 }
 .k02-foot {
   display: flex;
@@ -531,5 +890,13 @@ function blockClass(block: KnowledgeBlock): string[] {
 }
 .k02-rel > :deep(.zw-mso:last-child) {
   color: var(--text-3);
+}
+</style>
+
+<style>
+.k02-preview-dialog .v-overlay__content {
+  width: 100%;
+  height: 100%;
+  max-width: none;
 }
 </style>

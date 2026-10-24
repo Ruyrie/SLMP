@@ -5,6 +5,7 @@ import {
   addBannedDrug,
   createDrug,
   createLotRecall,
+  downloadDrugCatalogImportTemplate,
   getBannedDrugs,
   getBannedHits,
   getDictItems,
@@ -12,6 +13,7 @@ import {
   getDrugDetail,
   getLotRecalls,
   getRecallFarms,
+  importDrugCatalog,
   previewLotRecall,
   setDrugStatus,
   updateBannedDrug,
@@ -20,6 +22,7 @@ import {
   type DictItem,
   type DrugDetail,
   type DrugHit,
+  type DrugImportResult,
   type DrugLotRecall,
   type DrugRow,
   type DrugUsage,
@@ -28,6 +31,7 @@ import {
 } from '@/api/base'
 import { useAdminStore } from '@/stores/admin'
 import { useUiStore } from '@/stores/ui'
+import ImportXlsxDialog from '@/views/common/ImportXlsxDialog.vue'
 
 const ui = useUiStore()
 const admin = useAdminStore()
@@ -728,6 +732,32 @@ function categoryText(category: string): string {
   return { VET_DRUG: '兽药', VACCINE: '疫苗', DISINFECTANT: '消毒剂' }[category] || category
 }
 
+/* ---------------- 目录导入 ---------------- */
+const importOpen = ref(false)
+
+function openImport(): void {
+  if (!canHandle.value) {
+    ui.toast('你没有目录导入权限', 'error')
+    return
+  }
+  importOpen.value = true
+}
+
+function importSuccessText(result: DrugImportResult): string {
+  return `已导入 ${result.success} 条目录`
+}
+
+async function afterImport(): Promise<void> {
+  query.page = 1
+  if (tab.value === 'BANNED') {
+    await fetchBanned()
+  } else if (tab.value === 'RECALL') {
+    await fetchRecalls()
+  } else {
+    await fetchCatalog()
+  }
+}
+
 onMounted(async () => {
   listLoading.value = true
   void loadDicts()
@@ -739,6 +769,7 @@ onMounted(async () => {
   <zw-shell side="admin" active="WA-D03" :crumbs="['基础数据', '兽药疫苗目录']">
     <zw-page-head title="兽药疫苗目录" desc="养殖户的药品档案、入库和登记用药只能从这里选；休药期决定用户端的可出栏日期。停用批号、标记禁用药、修改休药期都要填写原因，并记入操作日志。">
       <template #actions>
+        <v-btn v-if="canHandle" variant="outlined" prepend-icon="upload_file" @click="openImport">导入目录</v-btn>
         <v-btn v-if="canHandle && tab === 'RECALL'" color="error" variant="outlined" prepend-icon="block" @click="openRecallCreate">停用批号</v-btn>
         <v-btn v-else-if="canHandle && tab === 'BANNED'" color="primary" prepend-icon="add" @click="openAddBanned()">添加禁用药</v-btn>
         <v-btn v-else-if="canHandle" color="primary" prepend-icon="add" @click="openCreate">新增药品</v-btn>
@@ -878,6 +909,16 @@ onMounted(async () => {
         </template>
       </zw-card>
     </template>
+
+    <ImportXlsxDialog
+      v-model="importOpen"
+      title="导入兽药疫苗目录"
+      hint="按模板填写类别、药品名称、规格、单位等列；单次最多 500 行，文件不超过 2MB。任一行校验失败整个文件回滚，不会留下脏数据。导入后请到编辑中补齐用量与休药期。"
+      :download-template="downloadDrugCatalogImportTemplate"
+      :upload="importDrugCatalog"
+      :success-text="importSuccessText"
+      @success="afterImport"
+    />
 
     <!-- 药品编辑 -->
     <zw-drawer v-model="drawer" :title="editing ? `编辑${categoryText(form.drug_category)} · ${editing.name}` : '新增药品'" sub="目录信息供全平台使用；用户端药品档案中的名称和规格从这里带出" width="760">

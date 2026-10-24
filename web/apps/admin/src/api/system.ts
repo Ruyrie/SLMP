@@ -370,6 +370,7 @@ export interface AdminUserDetail {
   status: string
   status_text: string
   version: number
+  can_reveal_phone?: boolean
   role_summary?: string
   registered_at?: string
   register_client_text?: string
@@ -420,6 +421,16 @@ export function setUserEnabled(
 
 export function exportUsers(query: AdminUserQuery) {
   return http().post<ExportResult>('/users/export', undefined, { params: { ...query } })
+}
+
+export interface PhoneReveal {
+  user_id: number
+  name: string
+  phone: string
+}
+
+export function revealUserPhone(id: number) {
+  return http().post<PhoneReveal>(`/users/${id}/reveal-phone`)
 }
 
 /* ---------------- ADM-S15–S19 养殖场管理 ---------------- */

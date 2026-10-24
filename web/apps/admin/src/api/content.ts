@@ -287,6 +287,42 @@ export interface MarketCorrection {
   review_note?: string
 }
 
+export interface MarketImportError {
+  row: number
+  message: string
+}
+
+export interface MarketImportResult {
+  total: number
+  success: number
+  failed: number
+  errors: MarketImportError[]
+  file_name?: string
+}
+
+function saveBlob(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  link.style.display = 'none'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  window.setTimeout(() => URL.revokeObjectURL(url), 0)
+}
+
+export async function downloadMarketPriceImportTemplate(): Promise<void> {
+  const response = await http().instance.get<Blob>('/market-prices/import-template', { responseType: 'blob' })
+  saveBlob(response.data, '行情导入模板.xlsx')
+}
+
+export function importMarketPrices(file: File, onProgress?: (percent: number) => void): Promise<MarketImportResult> {
+  const form = new FormData()
+  form.append('file', file)
+  return http().upload<MarketImportResult>('/market-prices/import', form, onProgress)
+}
+
 export interface MarketHistoryItem {
   price_date: string
   price_id: number

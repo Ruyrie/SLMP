@@ -2,7 +2,15 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ApiError, formatDate, formatMoney, formatNumber, today as todayIso } from '@zmt/shared'
-import { createDrugScrap, newRequestKey, type DrugFlowGroup } from '@/api/stock'
+import {
+  createDrugScrap,
+  fetchStockInbound,
+  newRequestKey,
+  type DrugFlowGroup,
+  type StockFlowItem,
+  type StockInbound
+} from '@/api/stock'
+import StockDocumentDrawer from '@/views/stock/components/StockDocumentDrawer.vue'
 import { useDrugLotStore } from '@/stores/stock/lot'
 import { useFarmReload } from '@/composables/useFarmReload'
 import { useFarmStore } from '@/stores/farm'
@@ -96,10 +104,35 @@ const outOrderText = computed(() => {
 })
 const actionsCanOut = computed(() => store.canOut && !isStaff.value)
 const actionsCanScrap = computed(() => store.canScrap && !isStaff.value)
+const documentOpen = ref(false)
+const selectedFlow = ref<StockFlowItem | null>(null)
+const inboundDoc = ref<StockInbound | null>(null)
+let inboundDocSeq = 0
+const changeTargetId = computed(() => Number(detail.value?.first_inbound?.inbound_id || 0))
+const canRequestChange = computed(() => {
+  if (!changeTargetId.value) return false
+  const allowed = inboundDoc.value?.actions?.can_request_change
+  if (allowed === true || allowed === false) return allowed
+  return !!detail.value?.has_outbound
+})
+
+async function loadInboundDoc(): Promise<void> {
+  const seq = ++inboundDocSeq
+  const inboundId = changeTargetId.value
+  inboundDoc.value = null
+  if (!inboundId) return
+  try {
+    const doc = await fetchStockInbound(inboundId)
+    if (seq === inboundDocSeq) inboundDoc.value = doc
+  } catch {
+    if (seq === inboundDocSeq) inboundDoc.value = null
+  }
+}
 
 async function load(): Promise<void> {
   if (!lotId.value) return
   await store.load(lotId.value)
+  await loadInboundDoc()
 }
 onMounted(load)
 watch(() => route.params.lotId, () => void load())
@@ -124,6 +157,45 @@ function openDrugArchive(): void {
 
 function openRecallMessage(): void {
   void router.push({ name: 'WU-T04', query: { messageId: String(detail.value?.recall_message_id || '') } })
+}
+
+function openChangeRequest(): void {
+  if (!changeTargetId.value) {
+    ui.toast('这个批号没有入库单，无法提交修改申请', 'info')
+    return
+  }
+  if (!canRequestChange.value) {
+    ui.toast('这张入库单还没有发生出库，可以直接修改，不需要提交修改申请', 'info')
+    return
+  }
+  void router.push({
+    name: 'WU-U01',
+    query: {
+      action: 'create',
+      biz_type: 'INBOUND',
+      biz_id: String(changeTargetId.value)
+    }
+  })
+}
+
+function openChangeLog(): void {
+  if (!changeTargetId.value) {
+    ui.toast('这个批号没有入库单，暂无修改记录', 'info')
+    return
+  }
+  // WU-U01 列表只支持按 biz_type / keyword 筛选；biz_id 一并写入地址，keyword 用入库单号
+  // 把列表限定在这张入库单，避免同类型其他单据混在一起。
+  const query: Record<string, string> = {
+    biz_type: 'INBOUND',
+    biz_id: String(changeTargetId.value)
+  }
+  if (inboundDoc.value?.inbound_no) query.keyword = inboundDoc.value.inbound_no
+  void router.push({ name: 'WU-U01', query })
+}
+
+function openFlow(flow: StockFlowItem): void {
+  selectedFlow.value = flow
+  documentOpen.value = true
 }
 
 function onFlowGroup(value: string | number): void {
@@ -256,11 +328,13 @@ async function submitScrap(): Promise<void> {
           </template>
           <v-list density="compact" class="stock-menu">
             <v-list-item prepend-icon="medical_information" @click="openDrugArchive"><v-list-item-title>药品档案</v-list-item-title></v-list-item>
-            <v-list-item v-if="detail?.has_outbound" prepend-icon="edit_note" disabled>
+            <v-list-item v-if="detail?.first_inbound && canRequestChange" prepend-icon="edit_note" @click="openChangeRequest">
               <v-list-item-title>提交修改申请</v-list-item-title>
               <template #append><span class="stock-menu-note">需审核</span></template>
             </v-list-item>
-            <v-list-item v-if="detail?.has_outbound" prepend-icon="history" disabled><v-list-item-title>查看修改记录</v-list-item-title></v-list-item>
+            <v-list-item v-if="detail?.first_inbound" prepend-icon="history" @click="openChangeLog">
+              <v-list-item-title>查看修改记录</v-list-item-title>
+            </v-list-item>
           </v-list>
         </v-menu>
         <v-btn v-if="actionsCanScrap" variant="outlined" color="error" prepend-icon="delete" @click="openScrap">登记报废</v-btn>
@@ -323,21 +397,23 @@ async function submitScrap(): Promise<void> {
                   <th style="width: 100px">经办人</th>
                   <th class="text-end" style="width: 108px">数量</th>
                   <th class="text-end" style="width: 96px">结存</th>
+                  <th class="text-end" style="width: 64px">操作</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="flow in store.flows" :key="flow.flow_id">
+                <tr v-for="flow in store.flows" :key="flow.flow_id" class="stock-flow-row" @click="openFlow(flow)">
                   <td class="num">{{ flowTimeText(flow.occur_at) }}</td>
                   <td><div class="stock-flow-type"><span class="zw-ico-tile stock-ico-sm"><zw-icon :name="flowIcon(flow.flow_type)" :size="16" /></span>{{ flow.flow_type_text }}</div></td>
                   <td class="zw-muted">{{ flow.related_desc || flow.pen_name || flow.batch_no || '—' }}</td>
                   <td>{{ flow.operator_name || '—' }}</td>
                   <td class="text-end num" :class="flow.direction === 'IN' ? 'stock-in-text' : ''">{{ flowQty(flow) }}</td>
                   <td class="text-end num zw-muted">{{ flow.stock_qty_after === null || flow.stock_qty_after === undefined ? '—' : `${formatNumber(flow.stock_qty_after)} ${flow.qty?.unit_text || ''}` }}</td>
+                  <td class="text-end"><a class="stock-link" @click.stop="openFlow(flow)">详情</a></td>
                 </tr>
               </tbody>
             </v-table>
             <div class="zw-table-foot stock-table-foot">
-              <span class="zw-faint body-s">按时间倒序 · 点领用、退货记录可查看详情</span>
+              <span class="zw-faint body-s">按时间倒序 · 点流水行查看单据详情</span>
               <zw-pager :total="store.flowsTotal" :page="store.flowsPage" :size="store.flowsSize" @update:page="store.setFlowsPage" @update:size="store.setFlowsSize" />
             </div>
           </template>
@@ -406,6 +482,9 @@ async function submitScrap(): Promise<void> {
         </template>
       </template>
     </zw-drawer>
+
+    <!-- 单据详情（入库单 / 领用单 / 退货单 / 报废单） -->
+    <StockDocumentDrawer v-model="documentOpen" :flow="selectedFlow" :staff="isStaff" />
   </zw-shell>
 </template>
 
@@ -416,6 +495,7 @@ async function submitScrap(): Promise<void> {
 .stock-link { color: var(--primary); cursor: pointer; }
 .stock-table :deep(td) { white-space: nowrap; }
 .stock-table--compact :deep(td) { height: 44px; }
+.stock-flow-row { cursor: pointer; }
 .stock-table-foot { padding: 12px 16px !important; border-top: 1px solid var(--line-1); }
 .stock-in-text { color: var(--success); }
 .stock-flow-type { display: flex; align-items: center; gap: 8px; }

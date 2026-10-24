@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { ApiError } from '@zmt/shared'
 import { useAdminStore } from '@/stores/admin'
 import { useFarmAuditStore } from '@/stores/audit/farmAudit'
 import { useAuditPendingStore } from '@/stores/audit/pending'
-import type { FarmAuditItem } from '@/api/audit'
+import { useUiStore } from '@/stores/ui'
+import { resendFarmAuditSms, type FarmAuditItem } from '@/api/audit'
 import { fileSize, fmtDate, fmtDateTime, fmtFull, fmtShortDate, mapPoint, statusIcon, statusTone } from '@/views/audit/shared'
 import AuditImageViewer from '@/views/audit/components/AuditImageViewer.vue'
 
@@ -12,6 +14,7 @@ const route = useRoute()
 const admin = useAdminStore()
 const store = useFarmAuditStore()
 const pending = useAuditPendingStore()
+const ui = useUiStore()
 
 const failedImages = ref<Record<number, boolean>>({})
 const viewerOpen = ref(false)
@@ -28,7 +31,7 @@ const headers = computed(() => [
   { title: '提交时间', key: 'submitted_at', width: 132, sortable: false },
   { title: store.tab === 'PENDING' ? '已等待' : '审核时间', key: 'audit_time', width: 116, sortable: false },
   { title: '状态', key: 'status', width: 76, sortable: false },
-  { title: '操作', key: 'actions', width: 64, align: 'end' as const, sortable: false }
+  { title: '操作', key: 'actions', width: 120, align: 'end' as const, sortable: false }
 ])
 
 const submitTypes = [
@@ -97,6 +100,48 @@ function tagText(status: string): string {
 
 function openRow(row: FarmAuditItem): void {
   void store.openDetail(row)
+}
+
+/* ---------------- 重发审核结果短信 ---------------- */
+const resendOpen = ref(false)
+const resendSaving = ref(false)
+const resendTarget = ref<{ id: number; name: string; status: string; phone: string } | null>(null)
+
+function isProcessed(status?: string): boolean {
+  return status === 'APPROVED' || status === 'REJECTED'
+}
+
+function openRowResend(row: FarmAuditItem): void {
+  resendTarget.value = { id: row.audit_id, name: row.farm_name, status: row.status, phone: row.owner_phone }
+  resendOpen.value = true
+}
+
+function openDetailResend(): void {
+  if (!detail.value) return
+  resendTarget.value = {
+    id: detail.value.audit_id,
+    name: detail.value.info.name,
+    status: detail.value.status,
+    phone: detail.value.owner.phone
+  }
+  resendOpen.value = true
+}
+
+async function submitResend(): Promise<void> {
+  if (!resendTarget.value || resendSaving.value) return
+  resendSaving.value = true
+  try {
+    const result = await resendFarmAuditSms(resendTarget.value.id)
+    resendOpen.value = false
+    ui.toast(`已重新发送审核结果通知到${result.phone}`)
+  } catch (error) {
+    ui.toast(error instanceof Error ? error.message : '重发审核短信失败', 'error')
+    if (error instanceof ApiError && error.code === 40308) {
+      await admin.me().catch(() => undefined)
+    }
+  } finally {
+    resendSaving.value = false
+  }
 }
 
 function ownerFarmsText(): string {
@@ -246,6 +291,7 @@ onMounted(() => {
             <div class="zw-cell-actions">
               <a v-if="store.tab === 'PENDING' && canHandle" @click="openRow(item as FarmAuditItem)">审核</a>
               <a v-else @click="openRow(item as FarmAuditItem)">详情</a>
+              <a v-if="canHandle && isProcessed(item.status)" @click="openRowResend(item as FarmAuditItem)">重发短信</a>
             </div>
           </template>
         </v-data-table>
@@ -375,7 +421,10 @@ onMounted(() => {
             </template>
             <span v-else class="zw-foot-note">你没有处理权限，仅可查看</span>
           </template>
-          <v-btn v-else variant="outlined" @click="store.drawer = false">关闭</v-btn>
+          <template v-else>
+            <v-btn v-if="canHandle && isProcessed(detail.status)" variant="outlined" prepend-icon="sms" @click="openDetailResend">重发审核短信</v-btn>
+            <v-btn variant="outlined" @click="store.drawer = false">关闭</v-btn>
+          </template>
         </template>
         <v-btn v-else variant="outlined" @click="store.drawer = false">关闭</v-btn>
       </template>
@@ -456,6 +505,18 @@ onMounted(() => {
       <template #actions>
         <v-btn variant="outlined" @click="store.rejectOpen = false">取消</v-btn>
         <v-btn color="error" :loading="store.submitting" @click="store.reject()">驳回</v-btn>
+      </template>
+    </zw-dialog>
+
+    <zw-dialog v-model="resendOpen" title="重发审核结果短信？" width="480" icon="sms" tone="warning">
+      <p class="dialog-p">
+        将把{{ resendTarget?.name }}的{{ resendTarget?.status === 'APPROVED' ? '通过' : '驳回' }}结果重新发送到所有者手机号
+        <b class="num">{{ resendTarget?.phone }}</b> 和消息中心。
+      </p>
+      <p class="dialog-muted">同一条申请可以重复发送，本次操作记入操作日志。</p>
+      <template #actions>
+        <v-btn variant="outlined" :disabled="resendSaving" @click="resendOpen = false">取消</v-btn>
+        <v-btn color="primary" :loading="resendSaving" @click="submitResend">确认重发</v-btn>
       </template>
     </zw-dialog>
 
@@ -573,6 +634,12 @@ onMounted(() => {
   font-size: 14px;
   line-height: 22px;
   color: var(--text-2);
+}
+.dialog-muted {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-3);
 }
 .dialog-form {
   margin-top: 14px;

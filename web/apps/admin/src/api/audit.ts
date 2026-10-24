@@ -171,6 +171,20 @@ export function rejectFarmAudit(
   return http().post<AuditResult>(`/farm-audits/${id}/reject`, payload)
 }
 
+export interface SmsResendResult {
+  id: number
+  phone: string
+  sms_status?: string
+  sms_status_text?: string
+  retry_count?: number
+  queued_at?: string
+  note?: string
+}
+
+export function resendFarmAuditSms(id: number) {
+  return http().post<SmsResendResult>(`/farm-audits/${id}/resend-sms`, {})
+}
+
 /* ---------------- ADM-R06–R09 资料变更审核 ---------------- */
 
 export interface FarmChangeQuery {
@@ -492,4 +506,57 @@ export function rejectRecovery(
   payload: { verify_method: string; handle_note: string; version: number }
 ) {
   return http().post<AuditResult>(`/account-recoveries/${id}/reject`, payload)
+}
+
+export function resendRecoverySms(id: number) {
+  return http().post<SmsResendResult>(`/account-recoveries/${id}/resend-sms`, {})
+}
+
+export interface RecoveryVerificationRecord {
+  seq: number
+  checked_at: string
+  result: string
+  result_text: string
+  result_desc?: string
+  fail_count?: number
+  remaining_attempts?: number
+  lock_until?: string
+  ip?: string
+  ip_region?: string
+  device?: string
+  submit_channel_text?: string
+  proxy_admin_id?: number
+  proxy_admin_name?: string
+}
+
+export interface RecoveryVerificationRecords {
+  recovery_id: number
+  total: number
+  records: RecoveryVerificationRecord[]
+}
+
+export function getRecoveryVerificationRecords(id: number) {
+  return http().get<RecoveryVerificationRecords>(`/account-recoveries/${id}/verification-records`)
+}
+
+export interface RecoveryProxyPayload {
+  phone: string
+  new_phone?: string
+  recovery_code: string
+  description: string
+}
+
+export interface RecoveryProxyResult {
+  id: number
+  user_id: number
+  user_name: string
+  old_phone: string
+  new_phone: string
+  status: string
+  status_text: string
+  submitted_at: string
+}
+
+export function proxyRecovery(payload: RecoveryProxyPayload) {
+  return http().post<RecoveryProxyResult>('/account-recoveries/proxy', payload)
 }

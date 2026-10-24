@@ -32,6 +32,7 @@ import {
   type PenOption,
   type StockFlowItem
 } from '@/api/stock'
+import StockDocumentDrawer from '@/views/stock/components/StockDocumentDrawer.vue'
 import { useDrugStockStore } from '@/stores/stock/drug'
 import { useFarmReload } from '@/composables/useFarmReload'
 import { useFarmStore } from '@/stores/farm'
@@ -593,6 +594,9 @@ const flowsPage = ref(1)
 const flowsSize = ref(20)
 const flowsGroup = ref<DrugFlowGroup>('ALL')
 const flowsLoading = ref(false)
+const documentOpen = ref(false)
+const selectedFlow = ref<StockFlowItem | null>(null)
+const returnToFlows = ref(false)
 const flowGroups: Array<{ label: string; value: DrugFlowGroup }> = [
   { label: '全部', value: 'ALL' },
   { label: '入库', value: 'INBOUND' },
@@ -637,6 +641,21 @@ function setFlowsSize(size: number): void {
   flowsSize.value = size
   flowsPage.value = 1
   void loadFlows()
+}
+
+function openFlow(flow: StockFlowItem): void {
+  selectedFlow.value = flow
+  returnToFlows.value = true
+  flowsOpen.value = false
+  documentOpen.value = true
+}
+
+function onDocumentToggle(open: boolean): void {
+  documentOpen.value = open
+  if (!open && returnToFlows.value) {
+    returnToFlows.value = false
+    flowsOpen.value = true
+  }
 }
 
 function onBatch(value: unknown): void {
@@ -752,7 +771,7 @@ function statusTagText(item: DrugLotItem): { type: string; icon: string; text: s
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in store.attention" :key="item.lot_id">
+              <tr v-for="item in store.attention" :key="item.lot_id" class="stock-lot-row" @click="goLot(item.lot_id)">
                 <td>
                   <div class="stock-material">
                     <span class="zw-ico-tile" :class="item.lot_status === 'NEAR_EXPIRY' ? 'zw-ico-tile--warning' : 'zw-ico-tile--error'">
@@ -771,9 +790,9 @@ function statusTagText(item: DrugLotItem): { type: string; icon: string; text: s
                 <td class="zw-muted">{{ item.status_note || (item.lot_status === 'RECALLED' ? '平台停用，只能报废' : item.lot_status === 'EXPIRED' ? '已过期，不能出库，只能报废' : daysText(item.days_to_expire)) }}</td>
                 <td class="text-end">
                   <span class="zw-cell-actions">
-                    <a v-if="item.lot_status === 'NEAR_EXPIRY'" @click="openOutbound(item.drug_id, item.lot_id)">出库</a>
-                    <a @click="goLot(item.lot_id, 'scrap')">登记报废</a>
-                    <a @click="goLot(item.lot_id)">详情</a>
+                    <a v-if="item.lot_status === 'NEAR_EXPIRY'" @click.stop="openOutbound(item.drug_id, item.lot_id)">出库</a>
+                    <a @click.stop="goLot(item.lot_id, 'scrap')">登记报废</a>
+                    <a @click.stop="goLot(item.lot_id)">详情</a>
                   </span>
                 </td>
               </tr>
@@ -803,7 +822,7 @@ function statusTagText(item: DrugLotItem): { type: string; icon: string; text: s
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in store.normal" :key="item.lot_id">
+                <tr v-for="item in store.normal" :key="item.lot_id" class="stock-lot-row" @click="goLot(item.lot_id)">
                   <td>
                     <div class="stock-material">
                       <span class="zw-ico-tile zw-ico-tile--primary"><zw-icon :name="categoryIcon(item.category)" :size="18" /></span>
@@ -823,8 +842,8 @@ function statusTagText(item: DrugLotItem): { type: string; icon: string; text: s
                   <td class="zw-muted">{{ item.priority_out ? '登记接种时默认选择这个批号' : item.status_note || '' }}</td>
                   <td class="text-end">
                     <span class="zw-cell-actions">
-                      <a @click="openOutbound(item.drug_id, item.lot_id)">出库</a>
-                      <a @click="goLot(item.lot_id)">详情</a>
+                      <a @click.stop="openOutbound(item.drug_id, item.lot_id)">出库</a>
+                      <a @click.stop="goLot(item.lot_id)">详情</a>
                     </span>
                   </td>
                 </tr>
@@ -1096,15 +1115,17 @@ function statusTagText(item: DrugLotItem): { type: string; icon: string; text: s
               <th>关联</th>
               <th style="width: 100px">经办人</th>
               <th class="text-end" style="width: 118px">数量</th>
+              <th class="text-end" style="width: 64px">操作</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="flow in flows" :key="flow.flow_id">
+            <tr v-for="flow in flows" :key="flow.flow_id" class="stock-flow-row" @click="openFlow(flow)">
               <td class="num">{{ datetimeText(flow.occur_at) }}</td>
               <td><div class="stock-flow-type"><span class="zw-ico-tile stock-ico-sm"><zw-icon :name="flowIcon(flow.flow_type)" :size="16" /></span>{{ flow.flow_type_text }}</div></td>
               <td class="zw-muted">{{ flow.related_desc || flow.pen_name || flow.batch_no || '—' }}</td>
               <td>{{ flow.operator_name || '—' }}</td>
               <td class="text-end num" :class="flow.direction === 'IN' ? 'stock-in-text' : ''">{{ flowQty(flow) }}</td>
+              <td class="text-end"><a class="stock-link" @click.stop="openFlow(flow)">详情</a></td>
             </tr>
           </tbody>
         </v-table>
@@ -1115,6 +1136,9 @@ function statusTagText(item: DrugLotItem): { type: string; icon: string; text: s
       </template>
       <template #foot><v-btn variant="outlined" @click="flowsOpen = false">关闭</v-btn></template>
     </zw-drawer>
+
+    <!-- 单据详情（入库单 / 领用单 / 退货单 / 报废单） -->
+    <StockDocumentDrawer :model-value="documentOpen" :flow="selectedFlow" :staff="isStaff" @update:model-value="onDocumentToggle" />
   </zw-shell>
 </template>
 
@@ -1130,6 +1154,8 @@ function statusTagText(item: DrugLotItem): { type: string; icon: string; text: s
 .stock-table-foot { padding: 12px 16px !important; border-top: 1px solid var(--line-1); }
 .stock-material { display: flex; align-items: center; gap: 10px; }
 .stock-flow-type { display: flex; align-items: center; gap: 8px; }
+.stock-flow-row { cursor: pointer; }
+.stock-lot-row { cursor: pointer; }
 .stock-ico-sm { width: 28px; height: 28px; }
 .stock-in-text { color: var(--success); }
 .stock-banned { margin-top: 6px; font-size: 12px; color: var(--error); }

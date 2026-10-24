@@ -76,6 +76,10 @@ export const useFarmMembersStore = defineStore('farmMembers', {
       if (this.farmDetail) return Boolean(this.farmDetail.permissions?.can_invite)
       return this.allMembers.some((member) => member.is_me && member.role === 'OWNER')
     },
+    canCancelInvite(): boolean {
+      const role = this.farmDetail?.role || this.allMembers.find((member) => member.is_me)?.role
+      return role === 'OWNER' || role === 'MANAGER'
+    },
     isOwner(): boolean {
       if (this.farmDetail) return this.farmDetail.role === 'OWNER'
       return this.allMembers.some((member) => member.is_me && member.role === 'OWNER')
@@ -377,6 +381,34 @@ export const useFarmMembersStore = defineStore('farmMembers', {
         return false
       } finally {
         this.submitting = false
+      }
+    },
+    async cancelInvite(inviteId: number, reason = ''): Promise<boolean> {
+      if (!this.farmId || this.submitting) return false
+      this.submitting = true
+      try {
+        await farmApi.cancelFarmInvite(this.farmId, inviteId, reason)
+        await this.refreshInvitesAfterCancel()
+        useUiStore().toast('已撤销邀请')
+        return true
+      } catch (error) {
+        const value = error as ApiError
+        if (value?.code === 40903) {
+          await this.refreshInvitesAfterCancel()
+          useUiStore().toast('已处理，列表已刷新', 'info')
+          return true
+        }
+        useUiStore().toast(messageOf(error, '撤销邀请失败，请稍后重试'), 'error')
+        return false
+      } finally {
+        this.submitting = false
+      }
+    },
+    async refreshInvitesAfterCancel(): Promise<void> {
+      await Promise.all([this.fetchInvites(), this.fetchSummary()])
+      if (!this.invites.length && this.invitesQuery.page > 1) {
+        this.invitesQuery.page -= 1
+        await this.fetchInvites()
       }
     },
     async quit(): Promise<boolean> {

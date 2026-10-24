@@ -52,8 +52,9 @@ const countText = computed(() => (attachments.value.length ? `已附 ${attachmen
 const charCount = computed(() => [...store.draft].length)
 const placeholder = computed(() => {
   if (attachments.value.length) return '描述这些照片里的问题…'
-  if (store.currentSessionId) return '继续追问…'
-  return '输入你的养殖问题'
+  // 新建的空会话已有 session_id，但仍算新对话：没有问答时按新对话提示
+  const hasConversation = !!store.currentSessionId && (store.messagesStatus !== 'empty' || store.messages.length > 0)
+  return hasConversation ? '继续追问…' : '输入你的养殖问题'
 })
 const uploadHint = computed(() => {
   if (hasFailed.value) {

@@ -1,16 +1,26 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { ApiError } from '@zmt/shared'
 import { useAdminStore } from '@/stores/admin'
 import { useRecoveryStore } from '@/stores/audit/recovery'
 import { useAuditPendingStore } from '@/stores/audit/pending'
-import type { RecoveryItem } from '@/api/audit'
+import { useUiStore } from '@/stores/ui'
+import {
+  getRecoveryVerificationRecords,
+  proxyRecovery,
+  resendRecoverySms,
+  type RecoveryItem,
+  type RecoveryVerificationRecord
+} from '@/api/audit'
+import { revealUserPhone } from '@/api/system'
 import { fmtDateTime, fmtFull, fmtShortDate } from '@/views/audit/shared'
 
 const route = useRoute()
 const admin = useAdminStore()
 const store = useRecoveryStore()
 const pending = useAuditPendingStore()
+const ui = useUiStore()
 
 const canHandle = computed(() => admin.hasPerm('WA-R04:HANDLE'))
 const detail = computed(() => store.detail)
@@ -83,15 +93,15 @@ const afterItems = computed(() => {
   ]
 })
 
-const verifyLogs = computed(() =>
-  (detail.value?.verify_logs || []).map((log) => ({
-    title: log.result_text || log.result,
-    time: fmtFull(log.checked_at),
-    desc: [log.result_desc, log.submit_channel_text].filter(Boolean).join(' · '),
-    tone: log.result === 'CODE_CORRECT' ? 'success' : log.result === 'LOCKED' ? 'error' : 'warning',
-    icon: log.result === 'CODE_CORRECT' ? 'check' : log.result === 'LOCKED' ? 'lock' : 'close'
-  }))
-)
+function verifyTone(result?: string): string {
+  if (result === 'CODE_CORRECT') return 'success'
+  if (result === 'LOCKED') return 'error'
+  return 'warning'
+}
+
+function isHandled(status?: string): boolean {
+  return status === 'APPROVED' || status === 'REJECTED'
+}
 
 function checkTone(level?: string): string {
   if (level === 'PASS') return 'success'
@@ -120,6 +130,194 @@ function refreshAll(): void {
   void pending.refresh()
 }
 
+/* ---------------- 恢复码校验记录 ---------------- */
+const verifyRecords = ref<RecoveryVerificationRecord[]>([])
+const verifyTotal = ref(0)
+const verifyLoading = ref(false)
+const verifyError = ref('')
+let verifyToken = 0
+
+async function loadVerifyRecords(id: number): Promise<void> {
+  const token = ++verifyToken
+  verifyLoading.value = true
+  verifyError.value = ''
+  try {
+    const data = await getRecoveryVerificationRecords(id)
+    if (token !== verifyToken) return
+    verifyRecords.value = data.records || []
+    verifyTotal.value = data.total || 0
+  } catch (error) {
+    if (token !== verifyToken) return
+    verifyRecords.value = []
+    verifyTotal.value = 0
+    verifyError.value = error instanceof Error ? error.message : '校验记录加载失败'
+    if (error instanceof ApiError && error.code === 40308) {
+      ui.toast(error.message, 'error')
+      await admin.me().catch(() => undefined)
+    }
+  } finally {
+    if (token === verifyToken) verifyLoading.value = false
+  }
+}
+
+/* ---------------- 查看完整手机号 ---------------- */
+const revealedPhone = ref('')
+const revealLoading = ref(false)
+
+async function toastError(error: unknown, fallback: string): Promise<void> {
+  ui.toast(error instanceof Error ? error.message : fallback, 'error')
+  if (error instanceof ApiError && error.code === 40308) {
+    await admin.me().catch(() => undefined)
+  }
+}
+
+async function revealCurrentPhone(): Promise<void> {
+  if (!detail.value || revealLoading.value) return
+  const userId = detail.value.user_id
+  revealLoading.value = true
+  try {
+    const data = await revealUserPhone(userId)
+    revealedPhone.value = data.phone
+    ui.toast(`已显示${data.name}的完整手机号`)
+  } catch (error) {
+    await toastError(error, '完整手机号查看失败')
+  } finally {
+    revealLoading.value = false
+  }
+}
+
+/* ---------------- 重发找回结果短信 ---------------- */
+const resendOpen = ref(false)
+const resendSaving = ref(false)
+
+async function submitResend(): Promise<void> {
+  const current = detail.value
+  if (!current || resendSaving.value) return
+  resendSaving.value = true
+  try {
+    const result = await resendRecoverySms(current.id)
+    resendOpen.value = false
+    ui.toast(result.note ? `已重新发送到${result.phone}；${result.note}` : `已重新发送到${result.phone}`)
+    await store.loadDetail(current.id)
+  } catch (error) {
+    await toastError(error, '重发短信失败')
+  } finally {
+    resendSaving.value = false
+  }
+}
+
+/* ---------------- 客服代登记 ---------------- */
+const proxyOpen = ref(false)
+const proxySaving = ref(false)
+const proxyError = ref('')
+const proxyFieldErrors = reactive<Record<string, string>>({})
+const proxyHasFieldError = computed(() => Object.keys(proxyFieldErrors).length > 0)
+const proxyForm = reactive({
+  phone: '',
+  new_phone: '',
+  recovery_code: '',
+  description: ''
+})
+
+function clearProxyErrors(): void {
+  Object.keys(proxyFieldErrors).forEach((key) => delete proxyFieldErrors[key])
+  proxyError.value = ''
+}
+
+function openProxy(): void {
+  if (!canHandle.value) {
+    ui.toast('你没有处理账号找回的权限', 'error')
+    return
+  }
+  proxyForm.phone = ''
+  proxyForm.new_phone = ''
+  proxyForm.recovery_code = ''
+  proxyForm.description = ''
+  clearProxyErrors()
+  proxyOpen.value = true
+}
+
+function normalizeCode(value: string): string {
+  return value.replace(/[\s\u3000-]/g, '').toUpperCase()
+}
+
+function validateProxy(): boolean {
+  clearProxyErrors()
+  if (!/^1\d{10}$/.test(proxyForm.phone.trim())) {
+    proxyFieldErrors.phone = '请输入正确的 11 位手机号'
+  }
+  if (proxyForm.new_phone.trim() && !/^1\d{10}$/.test(proxyForm.new_phone.trim())) {
+    proxyFieldErrors.new_phone = '请输入正确的 11 位手机号'
+  }
+  if (!/^[A-Z0-9]{16}$/.test(normalizeCode(proxyForm.recovery_code))) {
+    proxyFieldErrors.recovery_code = '恢复码应为 16 位字母和数字'
+  }
+  if (!proxyForm.description.trim()) {
+    proxyFieldErrors.description = '请填写情况说明'
+  }
+  const first = Object.values(proxyFieldErrors)[0]
+  if (first) proxyError.value = first
+  return !first
+}
+
+async function submitProxy(): Promise<void> {
+  if (!validateProxy()) return
+  proxySaving.value = true
+  proxyError.value = ''
+  try {
+    const result = await proxyRecovery({
+      phone: proxyForm.phone.trim(),
+      new_phone: proxyForm.new_phone.trim() || undefined,
+      recovery_code: normalizeCode(proxyForm.recovery_code),
+      description: proxyForm.description.trim()
+    })
+    proxyOpen.value = false
+    ui.toast(`已代登记${result.user_name}的找回申请`)
+    if (store.tab !== 'PENDING') {
+      store.tab = 'PENDING'
+      store.page = 1
+    }
+    await Promise.all([store.fetchList(), pending.refresh()])
+    await store.openDetailById(result.id)
+  } catch (error) {
+    if (error instanceof ApiError) {
+      for (const field of error.fieldErrors) proxyFieldErrors[field.field] = field.message
+      proxyError.value = error.message
+      if (error.code === 40308) {
+        ui.toast(error.message, 'error')
+        await admin.me().catch(() => undefined)
+      }
+    } else {
+      proxyError.value = error instanceof Error ? error.message : '代登记失败'
+    }
+  } finally {
+    proxySaving.value = false
+  }
+}
+
+watch(
+  () => [store.drawer, store.activeId] as const,
+  ([open, id]) => {
+    if (open && id) void loadVerifyRecords(id)
+    if (!open) {
+      verifyToken += 1
+      verifyLoading.value = false
+      verifyRecords.value = []
+      verifyTotal.value = 0
+      verifyError.value = ''
+      revealedPhone.value = ''
+      resendOpen.value = false
+    }
+  }
+)
+
+watch(
+  () => store.activeId,
+  () => {
+    revealedPhone.value = ''
+  }
+)
+
 onMounted(() => {
   const id = Number(route.query.id || 0)
   void store.fetchList()
@@ -135,6 +333,7 @@ onMounted(() => {
       desc="凭恢复码找回账号的申请。系统先核对恢复码，正确的申请由你核实身份后重置密码并换绑新手机号；没有恢复码的申请不受理。"
     >
       <template #actions>
+        <v-btn v-if="canHandle" variant="outlined" prepend-icon="person_add" @click="openProxy">代登记找回</v-btn>
         <v-btn variant="outlined" prepend-icon="refresh" :loading="store.status === 'loading'" @click="refreshAll">刷新</v-btn>
       </template>
       <v-tabs :model-value="store.tab" class="zw-tabs-line" @update:model-value="store.setTab(String($event))">
@@ -264,6 +463,14 @@ onMounted(() => {
           <div class="zw-section-title">申请与账号</div>
           <zw-desc :cols="1" bordered :label-width="104">
             <zw-desc-item label="情况说明">{{ detail.description || '—' }}</zw-desc-item>
+            <zw-desc-item label="手机号">
+              <span class="num">{{ revealedPhone || detail.old_phone }}</span>
+              <template v-if="detail.can_reveal_phone">
+                <a v-if="!revealedPhone" class="zw-link reveal-link" @click="revealCurrentPhone">{{ revealLoading ? '加载中…' : '查看完整手机号' }}</a>
+                <a v-else class="zw-link reveal-link" @click="revealedPhone = ''">隐藏</a>
+              </template>
+              <span class="reveal-new">新手机号 <span class="num">{{ detail.new_phone }}</span></span>
+            </zw-desc-item>
             <zw-desc-item label="账号">
               {{ detail.user_name }} · {{ fmtShortDate(detail.account?.registered_at) }}注册
               <template v-if="detail.account?.recovery_code_created_at"> · 恢复码 {{ fmtShortDate(detail.account.recovery_code_created_at) }}生成</template>
@@ -277,9 +484,37 @@ onMounted(() => {
         </section>
 
         <section class="recovery-sec">
-          <div class="zw-section-title">恢复码校验记录</div>
-          <zw-timeline v-if="verifyLogs.length" :items="verifyLogs" />
-          <div v-else class="zw-faint">暂无校验记录</div>
+          <div class="zw-section-title">
+            恢复码校验记录
+            <span v-if="verifyTotal" class="zw-faint body-s normal-weight">共 {{ verifyTotal }} 条</span>
+          </div>
+          <v-skeleton-loader v-if="verifyLoading" type="table-row@2" />
+          <zw-empty v-else-if="verifyError" icon="cloud_off" title="校验记录加载失败" :desc="verifyError" tone="error">
+            <v-btn variant="text" color="primary" @click="loadVerifyRecords(detail.id)">重新加载</v-btn>
+          </zw-empty>
+          <div v-else-if="!verifyRecords.length" class="zw-faint">暂无校验记录</div>
+          <div v-else class="verify-table-wrap">
+            <table class="verify-table">
+              <thead>
+                <tr><th>时间</th><th>结果</th><th class="verify-num">剩余次数</th><th>IP / 属地</th><th>设备</th></tr>
+              </thead>
+              <tbody>
+                <tr v-for="record in verifyRecords" :key="record.seq">
+                  <td class="num verify-time">{{ fmtFull(record.checked_at) }}</td>
+                  <td>
+                    <zw-tag :type="verifyTone(record.result)" size="small">{{ record.result_text || record.result }}</zw-tag>
+                    <div v-if="record.result_desc" class="verify-sub">{{ record.result_desc }}</div>
+                  </td>
+                  <td class="num verify-num">{{ record.remaining_attempts === undefined || record.remaining_attempts === null ? '—' : record.remaining_attempts }}</td>
+                  <td>
+                    <span class="num">{{ record.ip || '—' }}</span>
+                    <div v-if="record.ip_region" class="verify-sub">{{ record.ip_region }}</div>
+                  </td>
+                  <td>{{ record.device || record.submit_channel_text || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <template v-if="detail.status === 'PENDING'">
@@ -348,7 +583,10 @@ onMounted(() => {
             </template>
             <span v-else class="zw-foot-note">你没有处理权限，仅可查看</span>
           </template>
-          <v-btn v-else variant="outlined" @click="store.drawer = false">关闭</v-btn>
+          <template v-else>
+            <v-btn v-if="canHandle && isHandled(detail.status)" variant="outlined" prepend-icon="sms" @click="resendOpen = true">重发短信</v-btn>
+            <v-btn variant="outlined" @click="store.drawer = false">关闭</v-btn>
+          </template>
         </template>
         <v-btn v-else variant="outlined" @click="store.drawer = false">关闭</v-btn>
       </template>
@@ -384,6 +622,49 @@ onMounted(() => {
         >
           {{ store.confirmAction === 'approve' ? '通过' : '驳回' }}
         </v-btn>
+      </template>
+    </zw-dialog>
+
+    <zw-dialog v-model="resendOpen" title="重发找回结果短信？" width="480" icon="sms" tone="warning">
+      <p class="dialog-p">
+        将向 <b class="num">{{ detail?.new_phone }}</b> 重新发送{{ detail?.status === 'APPROVED' ? '通过结果和新的临时密码' : '驳回结果' }}短信。
+      </p>
+      <p v-if="detail?.status === 'APPROVED'" class="dialog-muted">重新发送会重新生成临时密码，之前发出的临时密码立即失效。</p>
+      <p class="dialog-muted">发送结果可在账号消息中查看，本次操作记入操作日志。</p>
+      <template #actions>
+        <v-btn variant="outlined" :disabled="resendSaving" @click="resendOpen = false">取消</v-btn>
+        <v-btn color="primary" :loading="resendSaving" @click="submitResend">确认重发</v-btn>
+      </template>
+    </zw-dialog>
+
+    <zw-dialog v-model="proxyOpen" title="代用户登记找回申请" width="560" icon="person_add" tone="primary">
+      <zw-notice type="info" class="proxy-notice">
+        代登记前请核对来电人身份和恢复码；提交后进入待审核队列，不会立即换绑手机号。
+      </zw-notice>
+      <zw-form-item label="手机号" required :error="proxyFieldErrors.phone" class="proxy-form-item">
+        <v-text-field v-model="proxyForm.phone" maxlength="11" placeholder="账号当前手机号" :error="!!proxyFieldErrors.phone" />
+      </zw-form-item>
+      <zw-form-item label="恢复码" required :error="proxyFieldErrors.recovery_code" hint="16 位字母和数字，不区分大小写" class="proxy-form-item">
+        <v-text-field v-model="proxyForm.recovery_code" maxlength="19" placeholder="请输入 16 位恢复码" :error="!!proxyFieldErrors.recovery_code" />
+      </zw-form-item>
+      <zw-form-item label="新手机号" optional :error="proxyFieldErrors.new_phone" hint="留空表示与原手机号相同" class="proxy-form-item">
+        <v-text-field v-model="proxyForm.new_phone" maxlength="11" placeholder="选填，换绑后的新手机号" :error="!!proxyFieldErrors.new_phone" />
+      </zw-form-item>
+      <zw-form-item label="情况说明" required :error="proxyFieldErrors.description" hint="客服工单号、核实过程等，最多 200 字" class="proxy-form-item">
+        <v-textarea
+          v-model="proxyForm.description"
+          placeholder="请记录核实过程和代登记原因"
+          maxlength="200"
+          counter
+          persistent-counter
+          rows="3"
+          :error="!!proxyFieldErrors.description"
+        />
+      </zw-form-item>
+      <div v-if="proxyError && !proxyHasFieldError" class="proxy-error">{{ proxyError }}</div>
+      <template #actions>
+        <v-btn variant="outlined" :disabled="proxySaving" @click="proxyOpen = false">取消</v-btn>
+        <v-btn color="primary" :loading="proxySaving" @click="submitProxy">提交代登记</v-btn>
       </template>
     </zw-dialog>
   </zw-shell>
@@ -519,5 +800,70 @@ onMounted(() => {
   font-size: 13px;
   line-height: 20px;
   color: var(--text-3);
+}
+.dialog-p + .dialog-muted {
+  margin-top: 8px;
+}
+.normal-weight {
+  font-weight: 400;
+}
+.reveal-link {
+  margin-left: 8px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.reveal-new {
+  margin-left: 14px;
+  font-size: 12px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.verify-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line-1);
+  border-radius: var(--radius-sm);
+}
+.verify-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  line-height: 18px;
+}
+.verify-table th {
+  padding: 8px 10px;
+  background: var(--fill-1);
+  color: var(--text-2);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+.verify-table td {
+  padding: 8px 10px;
+  border-top: 1px solid var(--line-1);
+  vertical-align: top;
+  white-space: nowrap;
+}
+.verify-num {
+  width: 64px;
+  text-align: center;
+}
+.verify-sub {
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-3);
+  white-space: normal;
+}
+.proxy-notice {
+  margin-bottom: 16px;
+}
+.proxy-form-item {
+  margin-top: 14px;
+}
+.proxy-error {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--error);
 }
 </style>

@@ -174,6 +174,35 @@ export function changeSessionBatch(sessionId: number, batchId: number | null): P
   })
 }
 
+export interface AiSessionCreateBody {
+  /** 1–40 字；不传或空白时服务端入库并显示“新对话” */
+  title?: string
+  batch_id?: number | null
+}
+
+/**
+ * 新建空会话（API-K01 扩展）。
+ * 实测响应为 AiSessionDetail（id/title/round_count/batch_link_state 等），不含 batch_id、created_at、updated_at；
+ * 关联批次以 batch_link_state + batch 表达，列表项信息由 GET /ai/sessions 返回。
+ */
+export function createSession(body: AiSessionCreateBody = {}): Promise<AiSessionDetail> {
+  return http().post<AiSessionDetail>('/ai/sessions', body)
+}
+
+/** 重命名会话（API-K04 扩展）：只传 title 时保留原关联批次。 */
+export function renameSession(sessionId: number, title: string): Promise<AiSessionDetail> {
+  return http().request<AiSessionDetail>({
+    url: `/ai/sessions/${sessionId}`,
+    method: 'PATCH',
+    data: { title }
+  })
+}
+
+/** 删除会话（软删除，重复删除幂等返回成功）。 */
+export function deleteSession(sessionId: number): Promise<null> {
+  return http().del<null>(`/ai/sessions/${sessionId}`)
+}
+
 export function fetchLinkableBatches(signal?: AbortSignal): Promise<LinkableBatches> {
   return http().get<LinkableBatches>('/ai/linkable-batches', undefined, config(signal))
 }

@@ -2,6 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { useUiStore } from '@/stores/ui'
 import type { FarmLocationPayload } from '@/stores/farm/create'
+import FarmMapPicker from './FarmMapPicker.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -46,11 +47,24 @@ const form = reactive({
 
 const errors = reactive<Record<string, string>>({})
 const locating = ref(false)
+const mapMode = ref<'idle' | 'live' | 'fallback'>('idle')
+const mapReady = ref(false)
+
+const hasCoordinates = computed(() => {
+  if (!form.longitude.trim() || !form.latitude.trim()) return false
+  const lng = Number(form.longitude)
+  const lat = Number(form.latitude)
+  return Number.isFinite(lng) && Number.isFinite(lat)
+})
 
 watch(
   () => props.modelValue,
   (open) => {
-    if (!open) return
+    if (!open) {
+      mapMode.value = 'idle'
+      mapReady.value = false
+      return
+    }
     form.address = props.address
     form.province = props.province
     form.city = props.city
@@ -61,7 +75,10 @@ watch(
     form.latitude = props.latitude
     form.locAccuracy = props.locAccuracy === null || props.locAccuracy === undefined ? '' : String(props.locAccuracy)
     for (const key of Object.keys(errors)) delete errors[key]
-  }
+    mapReady.value = false
+    mapMode.value = 'live'
+  },
+  { immediate: true }
 )
 
 const marker = computed(() => {
@@ -73,6 +90,18 @@ const marker = computed(() => {
 
 function clearError(key: string): void {
   delete errors[key]
+}
+
+function onMapPick(value: { longitude: string; latitude: string }): void {
+  form.longitude = value.longitude
+  form.latitude = value.latitude
+  delete errors.longitude
+  delete errors.latitude
+}
+
+function onMapUnavailable(): void {
+  mapReady.value = false
+  mapMode.value = 'fallback'
 }
 
 function useCurrentLocation(): void {
@@ -128,16 +157,31 @@ function confirm(): void {
 </script>
 
 <template>
-  <zw-dialog v-model="visible" title="选择养殖场位置" width="800">
-    <zw-notice type="warning" icon="map" title="地图选点已降级为手动填写">
-      当前环境未配置高德地图 Key，下方地图仅作位置示意，不能搜索地址或自动逆地理编码。你可以点“使用当前位置”填入经纬度，再手动填写地址与行政区划；资料变更中确认位置后需重新审核。
+  <zw-dialog v-model="visible" class="floc-dialog" title="选择养殖场位置" width="800">
+    <zw-notice v-if="mapMode === 'fallback'" type="warning" icon="map" title="地图瓦片不可用">
+      地图瓦片不可用，可手动填写经纬度；也可以点“使用当前位置”填入经纬度后补充地址与行政区划。资料变更中确认位置后需重新审核。
     </zw-notice>
 
-    <div class="floc-map">
-      <zw-map :height="200" pick :controls="false" :scale="false" :labels="[]" :markers="marker" />
-      <span class="floc-map-tip">
+    <div class="floc-map" :data-map-mode="mapMode" :data-map-ready="mapReady">
+      <FarmMapPicker
+        v-if="mapMode === 'live'"
+        :longitude="form.longitude"
+        :latitude="form.latitude"
+        :fallback-longitude="longitude"
+        :fallback-latitude="latitude"
+        :label="farmName || '养殖场位置'"
+        @pick="onMapPick"
+        @ready="mapReady = true"
+        @unavailable="onMapUnavailable"
+      />
+      <zw-map v-else-if="mapMode === 'fallback'" height="100%" pick :controls="false" :scale="false" :labels="[]" :markers="marker" />
+      <span v-if="mapMode === 'live' && mapReady" class="floc-map-tip">
         <zw-icon name="info" :size="16" />
-        {{ marker.length ? '位置示意 · 经纬度以右侧填写为准' : '填写经纬度后显示位置示意' }}
+        {{ hasCoordinates ? '点击地图或拖动标记调整位置' : '点击地图选择养殖场位置' }}
+      </span>
+      <span v-else-if="mapMode === 'fallback'" class="floc-map-tip floc-map-tip--warn">
+        <zw-icon name="info" :size="16" />
+        地图瓦片不可用，可手动填写经纬度
       </span>
     </div>
 
@@ -200,23 +244,47 @@ function confirm(): void {
 <style scoped>
 .floc-map {
   position: relative;
+  height: 260px;
   margin-top: 12px;
+  overflow: hidden;
+  isolation: isolate;
+  z-index: 0;
+  border-radius: var(--radius-sm);
+  background: var(--map-land);
+}
+.floc-map :deep(.floc-leaflet) {
+  border: 1px solid var(--line-1);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.floc-map :deep(.zw-map) {
+  height: 100%;
+  box-sizing: border-box;
 }
 .floc-map-tip {
   position: absolute;
   left: 50%;
-  bottom: 8px;
+  bottom: 26px;
+  z-index: 900;
   transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  width: max-content;
+  max-width: calc(100% - 24px);
   padding: 3px 10px;
   border-radius: var(--radius-sm);
   background: #FFFFFFE6;
   color: var(--text-2);
   font-size: 12px;
   line-height: 18px;
-  white-space: nowrap;
+  text-align: center;
+  pointer-events: none;
+}
+.floc-map-tip--warn {
+  border: 1px solid var(--warning-container);
+  background: #FFF7E6F2;
+  color: var(--warning);
 }
 .floc-form {
   display: grid;
@@ -253,8 +321,34 @@ function confirm(): void {
   line-height: 20px;
   color: var(--text-3);
 }
-:deep(.zw-dialog-body) {
-  max-height: 650px;
+@media (max-width: 640px) {
+  .floc-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .floc-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+</style>
+
+<style>
+/* zw-dialog 的内容会 Teleport 到 body，scoped 选择器够不到，用 .floc-dialog 限定在本对话框。 */
+.floc-dialog .zw-dialog-body {
+  max-height: calc(100vh - 170px);
   overflow-y: auto;
+}
+@media (max-width: 860px) {
+  .floc-dialog .v-overlay__content {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+  .floc-dialog .zw-dialog {
+    width: 100%;
+    max-width: 100%;
+  }
+  .floc-dialog .zw-dialog-body {
+    max-height: calc(100vh - 150px);
+  }
 }
 </style>

@@ -5,6 +5,8 @@ import {
   askUrl,
   authHeaders,
   changeSessionBatch,
+  createSession as createSessionApi,
+  deleteSession as deleteSessionApi,
   fetchKnowledge,
   fetchLinkableBatches,
   fetchMessage,
@@ -13,6 +15,7 @@ import {
   fetchSessions,
   newRequestKey,
   rateMessage,
+  renameSession as renameSessionApi,
   retryUrl,
   type AiMessage,
   type AiRating,
@@ -72,6 +75,9 @@ export interface SessionGroup {
   items: AiSessionItem[]
 }
 
+const NEW_CHAT_TITLE = '新对话'
+const SESSION_TITLE_MAX = 40
+
 function timeNow(): string {
   return dayjs().tz(TZ).format('YYYY-MM-DD HH:mm:ss')
 }
@@ -88,7 +94,13 @@ export const useAiAssistantStore = defineStore('aiAssistant', {
     sessionsError: '',
     sessionKeyword: '',
     sessionsLoadingMore: false,
+    sessionsRequestId: 0,
     keywordTimer: 0,
+    /* 会话管理（新建 / 重命名 / 删除） */
+    creatingSession: false,
+    renamingSessionId: null as number | null,
+    deletingSessionId: null as number | null,
+    sessionOpsToken: 0,
     /* 当前会话与对话 */
     currentSessionId: 0,
     conversationVersion: 0,
@@ -221,16 +233,19 @@ export const useAiAssistantStore = defineStore('aiAssistant', {
     },
     /* ---------------- 历史会话 ---------------- */
     async loadSessions(silent = false): Promise<void> {
+      const requestId = ++this.sessionsRequestId
       if (!silent) this.sessionsStatus = this.sessions.length ? this.sessionsStatus : 'loading'
       this.sessionsError = ''
       try {
         const data = await fetchSessions({ page: 1, size: 20, keyword: this.sessionKeyword.trim() || undefined })
+        if (requestId !== this.sessionsRequestId) return
         this.sessions = data.list || []
         this.sessionsTotal = data.total || 0
         this.sessionsPage = data.page || 1
         this.sessionsHasMore = !!data.has_more
         this.sessionsStatus = this.sessions.length ? 'ready' : 'empty'
       } catch (error) {
+        if (requestId !== this.sessionsRequestId) return
         if (!silent) {
           this.sessionsStatus = statusForError(error)
           this.sessionsError = errorTextOf(error, '会话加载失败，请稍后重新加载')
@@ -246,6 +261,7 @@ export const useAiAssistantStore = defineStore('aiAssistant', {
     },
     async loadMoreSessions(): Promise<void> {
       if (this.sessionsLoadingMore || !this.sessionsHasMore) return
+      const requestId = this.sessionsRequestId
       this.sessionsLoadingMore = true
       try {
         const nextPage = this.sessionsPage + 1
@@ -254,21 +270,141 @@ export const useAiAssistantStore = defineStore('aiAssistant', {
           size: 20,
           keyword: this.sessionKeyword.trim() || undefined
         })
+        if (requestId !== this.sessionsRequestId) return
         const existing = new Set(this.sessions.map((item) => item.id))
         this.sessions = [...this.sessions, ...(data.list || []).filter((item) => !existing.has(item.id))]
         this.sessionsPage = data.page || nextPage
         this.sessionsHasMore = !!data.has_more
         this.sessionsTotal = data.total || this.sessionsTotal
       } catch (error) {
+        if (requestId !== this.sessionsRequestId) return
         useUiStore().toast(errorTextOf(error, '加载更多会话失败'), 'error')
       } finally {
         this.sessionsLoadingMore = false
+      }
+    },
+    /* ---------------- 会话管理（新建 / 重命名 / 删除） ---------------- */
+    /** 左栏“新对话”：真实创建空会话，插入列表顶部并选中；失败保留原列表。 */
+    async createSession(): Promise<AiSessionDetail | null> {
+      if (this.creatingSession) return null
+      const token = this.sessionOpsToken
+      const keepBatch = this.currentBatch
+      this.creatingSession = true
+      try {
+        const detail = await createSessionApi({})
+        if (token !== this.sessionOpsToken) return null
+        const title = detail.title || NEW_CHAT_TITLE
+        const item: AiSessionItem = {
+          id: detail.id,
+          title,
+          topic: 'OTHER',
+          round_count: 0,
+          last_asked_at: timeNow(),
+          date_group: 'TODAY',
+          date_group_text: '今天',
+          has_correction: !!detail.has_correction,
+          context_truncated: !!detail.context_truncated,
+          has_epidemic_alert: !!detail.has_epidemic_alert
+        }
+        const hadKeyword = !!this.sessionKeyword.trim()
+        if (this.keywordTimer) {
+          window.clearTimeout(this.keywordTimer)
+          this.keywordTimer = 0
+        }
+        this.sessionKeyword = ''
+        // 丢弃仍在途的旧列表响应，避免覆盖刚创建的会话
+        this.sessionsRequestId += 1
+        this.startNewConversation()
+        this.sessions = [item, ...this.sessions.filter((row) => row.id !== item.id)]
+        this.sessionsTotal = hadKeyword ? this.sessions.length : this.sessionsTotal + 1
+        this.sessionsStatus = 'ready'
+        this.currentSessionId = item.id
+        this.session = detail
+        this.sessionStatus = 'ready'
+        this.sessionError = ''
+        this.applySessionBatch(detail)
+        // 保留用户当前选择的关联批次（尚未写入空会话，首次提问时随消息关联）
+        this.localBatchId = keepBatch?.batch_id ?? null
+        useUiStore().toast('已开始新对话')
+        void this.loadSessions(true)
+        return detail
+      } catch (error) {
+        if (token === this.sessionOpsToken) {
+          useUiStore().toast(errorTextOf(error, '新建会话失败，请稍后重试'), 'error')
+        }
+        return null
+      } finally {
+        this.creatingSession = false
+      }
+    },
+    /** 重命名会话：成功返回空串，失败返回可展示的错误文案（同时 Snackbar）。 */
+    async renameSession(sessionId: number, title: string): Promise<string> {
+      if (!sessionId) return '会话不存在'
+      if (this.renamingSessionId) return '正在保存，请稍候'
+      const text = (title || '').trim()
+      if (!text) return '标题不能为空'
+      if (text.length > SESSION_TITLE_MAX) return '标题不能超过 40 字'
+      const token = this.sessionOpsToken
+      this.renamingSessionId = sessionId
+      try {
+        const detail = await renameSessionApi(sessionId, text)
+        if (token !== this.sessionOpsToken) return ''
+        const finalTitle = detail.title || text
+        const item = this.sessions.find((row) => row.id === sessionId)
+        if (item) item.title = finalTitle
+        if (this.currentSessionId === sessionId && this.session) this.session.title = finalTitle
+        this.sessionsRequestId += 1
+        useUiStore().toast('已修改会话标题')
+        return ''
+      } catch (error) {
+        const message = errorTextOf(error, '重命名失败，请稍后重试')
+        if (token === this.sessionOpsToken) useUiStore().toast(message, 'error')
+        return message
+      } finally {
+        if (this.renamingSessionId === sessionId) this.renamingSessionId = null
+      }
+    },
+    /** 删除会话：成功移除；删的是当前会话时自动选中下一条，没有下一条则回到空态。 */
+    async deleteSession(sessionId: number): Promise<boolean> {
+      if (!sessionId || this.deletingSessionId) return false
+      const token = this.sessionOpsToken
+      this.deletingSessionId = sessionId
+      try {
+        await deleteSessionApi(sessionId)
+        if (token !== this.sessionOpsToken) return false
+        const wasCurrent = sessionId === this.currentSessionId
+        const index = this.sessions.findIndex((row) => row.id === sessionId)
+        this.sessionsRequestId += 1
+        this.sessions = this.sessions.filter((row) => row.id !== sessionId)
+        this.sessionsTotal = Math.max(0, this.sessionsTotal - 1)
+        if (!this.sessions.length) {
+          this.sessionsStatus = this.sessionKeyword.trim() ? 'filtered_empty' : 'empty'
+        }
+        if (wasCurrent) {
+          if (this.abortController) this.abortController.abort()
+          this.clearStream()
+          this.resolveAsk({ ok: false })
+          this.startNewConversation()
+          const next = this.sessions[index] || this.sessions[index - 1] || this.sessions[0] || null
+          if (next) await this.openSession(next.id)
+        }
+        useUiStore().toast('已删除会话')
+        return true
+      } catch (error) {
+        if (token === this.sessionOpsToken) {
+          useUiStore().toast(errorTextOf(error, '删除会话失败，请稍后重试'), 'error')
+        }
+        return false
+      } finally {
+        if (this.deletingSessionId === sessionId) this.deletingSessionId = null
       }
     },
     /* ---------------- 会话与对话 ---------------- */
     startNewConversation(): void {
       if (this.abortController) this.abortController.abort()
       this.clearStream()
+      // 让仍在途的会话详情/消息响应失效，避免旧会话内容回填
+      this.sessionRequestId += 1
       this.currentSessionId = 0
       this.session = null
       this.sessionStatus = 'idle'
@@ -283,7 +419,7 @@ export const useAiAssistantStore = defineStore('aiAssistant', {
       this.conversationVersion += 1
       this.scrollBottomSignal += 1
     },
-    /** 左栏“新对话”：当前会话还没有问答时不做处理。 */
+    /** 仅在本地开启空对话，不请求服务端；左栏“新对话”已改用 createSession。 */
     newChat(): boolean {
       if (!this.currentSessionId && !this.messages.length) return false
       const keep = this.currentBatch
@@ -824,6 +960,13 @@ export const useAiAssistantStore = defineStore('aiAssistant', {
       if (this.abortController) this.abortController.abort()
       this.clearStream()
       this.resolveAsk({ ok: false })
+      // 切换养殖场时作废在途的会话请求与操作，避免旧场数据回填
+      this.sessionsRequestId += 1
+      this.sessionRequestId += 1
+      this.sessionOpsToken += 1
+      this.creatingSession = false
+      this.renamingSessionId = null
+      this.deletingSessionId = null
       this.sessions = []
       this.sessionsTotal = 0
       this.sessionsPage = 1
