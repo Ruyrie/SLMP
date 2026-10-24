@@ -18,6 +18,53 @@
         android:paddingEnd="@dimen/base_sheet_padding_horizontal"
         android:paddingBottom="@dimen/base_space_4">
 
+        <TextView
+            style="@style/account_style_section_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_2"
+            android:text="@string/account_edit_avatar_title" />
+
+        <TextView
+            style="@style/account_style_desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/account_edit_avatar_hint" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/account_edit_avatar_pick"
+            style="@style/Widget.Zmt.Button.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_2"
+            android:gravity="start|center_vertical"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            android:text="@string/account_edit_avatar_pick"
+            app:icon="@drawable/ic_photo_camera"
+            app:iconGravity="textStart" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/account_edit_avatar_clear"
+            style="@style/Widget.Zmt.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            android:text="@string/account_edit_avatar_clear"
+            android:textColor="?attr/colorError"
+            app:icon="@drawable/account_ic_delete_forever"
+            app:iconGravity="textStart"
+            app:iconTint="?attr/colorError"
+            app:visibleIf="@{vm.hasAvatar}" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/base_space_4"
+            android:background="?attr/colorOutlineVariant" />
+
         <com.zhimu.slmp.base.widget.ZmtTextInputLayout
             android:id="@+id/account_edit_name_field"
             style="@style/account_style_field"

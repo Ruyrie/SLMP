@@ -1,16 +1,23 @@
 package com.zhimu.slmp.account.ui.mine;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.zhimu.slmp.account.BuildConfig;
 import com.zhimu.slmp.account.databinding.AccountFragmentMineBinding;
 import com.zhimu.slmp.account.di.AccountInjector;
@@ -72,6 +79,7 @@ public class MineFragment extends BaseFragment {
         binding.setVm(vm);
         observeBase(vm);
         vm.setVersionName(versionName());
+        vm.getAvatarUrl().observe(getViewLifecycleOwner(), this::renderAvatar);
 
         binding.accountMineTopBar.bind(requireActivity(), getViewLifecycleOwner());
         binding.accountMineTopBar.bindLiftOnScroll(binding.accountMineScroll);
@@ -146,6 +154,50 @@ public class MineFragment extends BaseFragment {
         }
     }
 
+    /**
+     * 个人信息卡头像：有 avatar_url 时 Glide 加载圆形图片，加载成功隐藏姓名首字；
+     * 地址为空或加载失败时保留姓名首字回退。
+     */
+    private void renderAvatar(@Nullable String url) {
+        if (binding == null) {
+            return;
+        }
+        ImageView image = binding.accountMineAvatarImage;
+        View initial = binding.accountMineAvatarInitial;
+        if (url == null || url.isEmpty()) {
+            Glide.with(this).clear(image);
+            image.setVisibility(View.GONE);
+            initial.setVisibility(View.VISIBLE);
+            return;
+        }
+        Glide.with(this)
+                .load(url)
+                .centerCrop()
+                .listener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, @Nullable Object model,
+                                                @NonNull Target<Drawable> target, boolean isFirstResource) {
+                        if (binding != null) {
+                            image.setVisibility(View.GONE);
+                            initial.setVisibility(View.VISIBLE);
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model,
+                                                   @NonNull Target<Drawable> target,
+                                                   @NonNull DataSource dataSource, boolean isFirstResource) {
+                        if (binding != null) {
+                            image.setVisibility(View.VISIBLE);
+                            initial.setVisibility(View.GONE);
+                        }
+                        return false;
+                    }
+                })
+                .into(image);
+    }
+
     private void navigate(@NonNull String entry) {
         switch (entry) {
             case MineViewModel.ENTRY_FARMS:
@@ -189,6 +241,9 @@ public class MineFragment extends BaseFragment {
 
     @Override
     public void onDestroyView() {
+        if (binding != null) {
+            Glide.with(this).clear(binding.accountMineAvatarImage);
+        }
         binding = null;
         super.onDestroyView();
     }
