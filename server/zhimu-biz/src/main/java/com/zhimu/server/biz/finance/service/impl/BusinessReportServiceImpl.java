@@ -334,8 +334,15 @@ public class BusinessReportServiceImpl implements BusinessReportService {
         Period period = resolve(query);
         Scope scope = scope(request.getScope());
         ReportVos.BusinessReportVO view = view(query);
-        String farmLabel = scope.all() || scope.farms().isEmpty() ? "全部养殖场"
-                : scope.farms().get(0).getName();
+        String farmLabel = "全部养殖场";
+        if (!scope.all()) {
+            farmLabel = farmQueryService.listFarmsOfUser(UserContext.requireUserId()).stream()
+                    .filter(f -> support.farmId().equals(f.getFarmId()))
+                    .map(FarmBriefVO::getName)
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse("当前养殖场");
+        }
         String fileName = farmLabel + "_经营报表_" + FinanceSupport.format(period.start()) + "_"
                 + FinanceSupport.format(period.end()) + ".xlsx";
         byte[] bytes = xlsx(view);

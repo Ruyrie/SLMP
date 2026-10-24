@@ -14,9 +14,12 @@ public class RecoveryVerifyLogRow {
     private LocalDateTime checkedAt;
     private String oldPhone;
     private String result;
+    private Integer failCount;
     private Integer remainingAttempts;
     private LocalDateTime lockUntil;
     private String submitChannel;
     private Long proxyAdminId;
     private String proxyAdminName;
+    private String ip;
+    private String ipRegion;
 }

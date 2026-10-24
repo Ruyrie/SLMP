@@ -1,10 +1,12 @@
 package com.zhimu.server.biz.inspect.controller;
 
+import com.zhimu.server.biz.inspect.query.AbnormalReportListQuery;
 import com.zhimu.server.biz.inspect.query.LinkableQuery;
 import com.zhimu.server.biz.inspect.query.ReportFormQuery;
 import com.zhimu.server.biz.inspect.request.AbnormalReportCreateRequest;
 import com.zhimu.server.biz.inspect.request.HandleSaveRequest;
 import com.zhimu.server.biz.inspect.service.AbnormalReportService;
+import com.zhimu.server.biz.inspect.vo.AbnormalReportListItemVO;
 import com.zhimu.server.biz.inspect.vo.DiagnosisDetailVO;
 import com.zhimu.server.biz.inspect.vo.DiagnosisStateVO;
 import com.zhimu.server.biz.inspect.vo.HandleSaveResultVO;
@@ -13,6 +15,7 @@ import com.zhimu.server.biz.inspect.vo.ReportCreateResultVO;
 import com.zhimu.server.biz.inspect.vo.ReportFormVO;
 import com.zhimu.server.biz.inspect.vo.SymptomVO;
 import com.zhimu.server.common.api.ApiResponse;
+import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.common.enums.FarmRole;
 import com.zhimu.server.framework.idempotent.Idempotent;
 import com.zhimu.server.framework.security.annotation.FarmRoles;
@@ -67,6 +70,12 @@ public class AbnormalReportController {
     @GetMapping("/abnormal-reports/linkable")
     public ApiResponse<List<LinkableReportVO>> linkable(LinkableQuery query) {
         return ApiResponse.ok(abnormalReportService.linkable(query));
+    }
+
+    /** API-I27 异常上报列表（真实服务端分页 + 状态角标） */
+    @GetMapping("/abnormal-reports")
+    public ApiResponse<PageVO<AbnormalReportListItemVO>> list(AbnormalReportListQuery query) {
+        return ApiResponse.ok(abnormalReportService.list(query));
     }
 
     /** API-I19 诊断详情 */

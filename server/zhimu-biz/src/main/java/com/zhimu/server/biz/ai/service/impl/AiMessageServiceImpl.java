@@ -69,7 +69,7 @@ public class AiMessageServiceImpl implements AiMessageService {
 
     private AiMessage requireOwn(Long userId, Long messageId) {
         AiMessage message = Asserts.found(messageMapper.selectById(messageId));
-        if (!userId.equals(message.getUserId())) {
+        if (!userId.equals(message.getUserId()) || AiCodes.STATUS_DELETED.equals(message.getStatus())) {
             throw AiErrors.notFound();
         }
         return message;

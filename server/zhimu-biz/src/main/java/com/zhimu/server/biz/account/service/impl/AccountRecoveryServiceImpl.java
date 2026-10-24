@@ -315,6 +315,180 @@ public class AccountRecoveryServiceImpl implements AccountRecoveryService, Accou
                 .eq(AccountRecovery::getStatus, "PENDING"));
     }
 
+    @Override
+    @Transactional
+    public AccountRecoveryAdminService.SmsResendResult resendResultSms(Long recoveryId, Long adminId, String reason) {
+        AccountRecovery recovery = recoveryId == null ? null : accountRecoveryMapper.selectById(recoveryId);
+        if (recovery == null) {
+            throw new BizException(ErrorCode.NOT_FOUND, "这条找回申请不存在，列表已刷新");
+        }
+        boolean approved = "APPROVED".equals(recovery.getStatus());
+        if (!approved && !"REJECTED".equals(recovery.getStatus())) {
+            throw new BizException(ErrorCode.STATE_CHANGED, "这条申请还未处理，不能重发短信");
+        }
+        LocalDateTime now = BeijingTime.now();
+        String oldSmsStatus = recovery.getResultSmsStatus();
+        String note;
+        if (approved) {
+            User user = recovery.getUserId() == null ? null : userMapper.selectByIdForUpdate(recovery.getUserId());
+            if (user == null) {
+                throw new BizException(ErrorCode.NOT_FOUND);
+            }
+            String tempPassword = Secrets.tempPassword();
+            LocalDateTime expireAt = now.plus(properties.getTempPasswordTtl());
+            userMapper.update(null, Wrappers.<User>lambdaUpdate()
+                    .eq(User::getId, user.getId())
+                    .set(User::getPasswordHash, passwordEncoder.encode(tempPassword))
+                    .set(User::getMustChangePassword, true)
+                    .set(User::getTempPasswordExpireAt, expireAt)
+                    .set(User::getUpdatedAt, now));
+            user.setMustChangePassword(true);
+            user.setTempPasswordExpireAt(expireAt);
+            // 重新生成临时密码后旧会话立即失效；明文只交给后续短信任务，不返回、不写日志
+            accountState.invalidateTokens(user, TokenRevokeReason.ACCOUNT_RECOVERED);
+            note = "已重新生成临时密码，等待短信任务发送";
+        } else {
+            note = "已重新排队发送驳回结果短信";
+        }
+        recovery.setResultSmsStatus("PENDING");
+        recovery.setResultSmsRetryCount(0);
+        recovery.setResultSmsNextAt(null);
+        int rows = accountRecoveryMapper.update(null, Wrappers.<AccountRecovery>lambdaUpdate()
+                .eq(AccountRecovery::getId, recovery.getId())
+                .eq(AccountRecovery::getVersion, recovery.getVersion())
+                .set(AccountRecovery::getResultSmsStatus, "PENDING")
+                .set(AccountRecovery::getResultSmsRetryCount, 0)
+                .set(AccountRecovery::getResultSmsNextAt, null)
+                .set(AccountRecovery::getUpdatedAt, now)
+                .setSql("version = version + 1"));
+        if (rows == 0) {
+            throw new BizException(ErrorCode.VERSION_CONFLICT, "内容已更新，请刷新后再修改");
+        }
+        recovery.setVersion(recovery.getVersion() == null ? 1 : recovery.getVersion() + 1);
+        operationLogRecorder.record(OperationLogEntry.builder()
+                .operatorType("ADMIN")
+                .operatorId(adminId)
+                .opType("ACCOUNT_RECOVERY")
+                .opAction("RESEND_SMS")
+                .bizType("ACCOUNT_RECOVERY")
+                .bizId(recovery.getId())
+                .targetName(Masks.phone(recovery.getNewPhone()))
+                .reason(reason == null || reason.isBlank() ? "短信发送失败后手动重发" : reason.trim())
+                .before(Map.of("result_sms_status", oldSmsStatus == null ? "NONE" : oldSmsStatus))
+                .after(Map.of("result_sms_status", "PENDING"))
+                .build());
+        return new AccountRecoveryAdminService.SmsResendResult(recovery.getId(),
+                Masks.phone(recovery.getNewPhone()), "PENDING", 0, now, note);
+    }
+
+    @Override
+    @Transactional
+    public AccountRecoveryAdminService.ProxyCreateResult proxyCreate(Long adminId, String phone, String newPhoneRaw,
+                                                                     String recoveryCode, String description) {
+        String oldPhone = AccountValidation.phone(phone);
+        if (!AccountValidation.isValidPhone(oldPhone)) {
+            throw fieldError("phone", oldPhone.isEmpty()
+                    ? AccountValidation.MSG_PHONE_EMPTY : AccountValidation.MSG_PHONE_FORMAT);
+        }
+        String newPhone = newPhoneRaw == null || newPhoneRaw.isBlank()
+                ? oldPhone : AccountValidation.phone(newPhoneRaw);
+        if (!AccountValidation.isValidPhone(newPhone)) {
+            throw fieldError("new_phone", AccountValidation.MSG_PHONE_FORMAT);
+        }
+        String code = AccountValidation.recoveryCode(recoveryCode);
+        if (!AccountValidation.isValidRecoveryCode(code)) {
+            throw fieldError("recovery_code", AccountValidation.MSG_RECOVERY_CODE);
+        }
+        String note = AccountValidation.trim(description);
+        if (note.isEmpty()) {
+            throw fieldError("description", AccountValidation.MSG_DESCRIPTION);
+        }
+        if (AccountValidation.length(note) > AccountValidation.DESCRIPTION_MAX) {
+            throw fieldError("description", "情况说明不能超过 200 字");
+        }
+        User user = userMapper.selectByPhone(oldPhone);
+        if (user == null || UserStatus.CANCELLED.name().equals(user.getStatus())) {
+            throw fieldError("phone", "这个手机号没有注册过账号");
+        }
+        if (UserStatus.DISABLED.name().equals(user.getStatus())) {
+            throw new BizException(ErrorCode.ACCOUNT_DISABLED,
+                    "这个账号已被平台停用。如有疑问，请拨打客服电话 400-123-4567。");
+        }
+        long pending = accountRecoveryMapper.selectCount(Wrappers.<AccountRecovery>lambdaQuery()
+                .eq(AccountRecovery::getUserId, user.getId())
+                .eq(AccountRecovery::getStatus, "PENDING"));
+        if (pending > 0) {
+            throw new BizException(ErrorCode.PENDING_EXISTS, "这个账号已有待审核的找回申请");
+        }
+        if (!newPhone.equals(oldPhone)) {
+            User occupied = userMapper.selectByPhone(newPhone);
+            if (occupied != null && !occupied.getId().equals(user.getId())) {
+                throw new BizException(ErrorCode.PHONE_REGISTERED, "这个手机号已注册其他账号");
+            }
+        }
+        RecoveryCode live = accountState.liveCode(user.getId());
+        if (live == null || !passwordEncoder.matches(code, live.getCodeHash())) {
+            throw new BizException(ErrorCode.RECOVERY_CODE_WRONG, "恢复码不正确");
+        }
+        LocalDateTime now = BeijingTime.now();
+        AccountRecovery recovery = new AccountRecovery();
+        recovery.setUserId(user.getId());
+        recovery.setOldPhone(oldPhone);
+        recovery.setNewPhone(newPhone);
+        recovery.setNewPhoneVerifiedAt(now);
+        recovery.setDescription(note);
+        recovery.setCodeAttemptNo(1);
+        recovery.setCodeFailCount(0);
+        recovery.setSubmitChannel("CS_PROXY");
+        recovery.setProxyAdminId(adminId);
+        recovery.setSubmitIp(RequestContext.ip());
+        recovery.setSubmitIpRegion(resolveRegion(RequestContext.ip()));
+        recovery.setSubmitDevice("管理端（客服代登记）");
+        recovery.setStatus("PENDING");
+        recovery.setPendingFlag(1);
+        recovery.setResultSmsStatus("PENDING");
+        recovery.setResultSmsRetryCount(0);
+        recovery.setVersion(0);
+        recovery.setCreatedAt(now);
+        recovery.setUpdatedAt(now);
+        try {
+            accountRecoveryMapper.insert(recovery);
+        } catch (DuplicateKeyException e) {
+            throw new BizException(ErrorCode.PENDING_EXISTS, "这个账号已有待审核的找回申请");
+        }
+        RecoveryVerifyLog verifyLog = new RecoveryVerifyLog();
+        verifyLog.setUserId(user.getId());
+        verifyLog.setOldPhone(oldPhone);
+        verifyLog.setResult(RecoveryVerifyResult.CODE_CORRECT.name());
+        verifyLog.setFailCountAfter(0);
+        verifyLog.setRemainingAttempts(null);
+        verifyLog.setRecoveryId(recovery.getId());
+        verifyLog.setSubmitChannel("CS_PROXY");
+        verifyLog.setProxyAdminId(adminId);
+        verifyLog.setIp(RequestContext.ip());
+        verifyLog.setIpRegion(recovery.getSubmitIpRegion());
+        verifyLogMapper.insert(verifyLog);
+        operationLogRecorder.record(OperationLogEntry.builder()
+                .operatorType("ADMIN")
+                .operatorId(adminId)
+                .opType("ACCOUNT_RECOVERY")
+                .opAction("PROXY_SUBMIT")
+                .bizType("ACCOUNT_RECOVERY")
+                .bizId(recovery.getId())
+                .targetName(Masks.phone(newPhone))
+                .reason(note)
+                .before(Map.of("status", "NONE"))
+                .after(Map.of("status", "PENDING", "submit_channel", "CS_PROXY"))
+                .build());
+        return new AccountRecoveryAdminService.ProxyCreateResult(recovery.getId(), user.getId(), user.getName(),
+                Masks.phone(oldPhone), Masks.phone(newPhone), recovery.getStatus(), now);
+    }
+
+    private static BizException fieldError(String field, String message) {
+        return new BizException(ErrorCode.PARAM_INVALID, message,
+                Map.of("field_errors", List.of(new FieldErrorVO(field, message))));
+    }
+
     private AccountRecovery requirePending(Long recoveryId, int version) {
         AccountRecovery recovery = recoveryId == null ? null : accountRecoveryMapper.selectById(recoveryId);
         if (recovery == null) {

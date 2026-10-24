@@ -15,6 +15,7 @@ public class AdminUserDetailVO {
     private Long userId;
     private String name;
     private String phone;
+    private Boolean canRevealPhone;
     private String status;
     private String statusText;
     private Integer version;

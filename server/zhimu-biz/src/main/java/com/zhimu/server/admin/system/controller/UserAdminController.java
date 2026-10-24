@@ -6,9 +6,11 @@ import com.zhimu.server.admin.system.service.UserAdminService;
 import com.zhimu.server.admin.system.vo.AdminUserDetailVO;
 import com.zhimu.server.admin.system.vo.AdminUserItemVO;
 import com.zhimu.server.admin.system.vo.ExportVO;
+import com.zhimu.server.admin.system.vo.PhoneRevealVO;
 import com.zhimu.server.common.api.ApiResponse;
 import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.framework.security.annotation.AdminPermission;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,5 +66,14 @@ public class UserAdminController {
     public ApiResponse<ExportVO> export(@Valid AdminUserQuery query) {
         ExportVO result = userAdminService.export(query);
         return new ApiResponse<>(0, "已导出 " + result.getRowCount() + " 条记录", result);
+    }
+
+    /** ADM-R24 查看完整手机号：WA-S03:HANDLE，响应 no-store，写 VIEW_PHONE 留痕。 */
+    @AdminPermission("WA-S03:HANDLE")
+    @PostMapping("/{id:\\d+}/reveal-phone")
+    public ApiResponse<PhoneRevealVO> revealPhone(@PathVariable("id") Long id, HttpServletResponse response) {
+        PhoneRevealVO result = userAdminService.revealPhone(id);
+        response.setHeader("Cache-Control", "no-store");
+        return new ApiResponse<>(0, "已显示" + result.getName() + "的完整手机号", result);
     }
 }

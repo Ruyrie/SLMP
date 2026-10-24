@@ -9,10 +9,13 @@ import com.zhimu.server.biz.ai.mapper.AiMessageMapper;
 import com.zhimu.server.biz.ai.mapper.AiSessionMapper;
 import com.zhimu.server.biz.ai.query.AiMessageQuery;
 import com.zhimu.server.biz.ai.query.AiSessionQuery;
+import com.zhimu.server.biz.ai.request.AiSessionBatchRequest;
+import com.zhimu.server.biz.ai.request.AiSessionCreateRequest;
 import com.zhimu.server.biz.ai.service.AiSessionService;
 import com.zhimu.server.biz.ai.support.AiBatchContextService;
 import com.zhimu.server.biz.ai.support.AiCodes;
 import com.zhimu.server.biz.ai.support.AiErrors;
+import com.zhimu.server.biz.ai.support.AiText;
 import com.zhimu.server.biz.ai.vo.AiMessageSliceVO;
 import com.zhimu.server.biz.ai.vo.AiSessionDetailVO;
 import com.zhimu.server.biz.ai.vo.AiSessionItemVO;
@@ -33,7 +36,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * API-K01–K05。
+ * API-K01–K05，以及新建空会话、重命名、逻辑删除。
+ * <p>
+ * t_ai_session / t_ai_message 现有表结构没有 deleted 列：会话删除用 batch_link_state = DELETED 标记，
+ * 消息删除用 status = DELETED 标记；查询、详情、提问等入口统一按不存在（40401）处理。
  */
 @Service
 @RequiredArgsConstructor
@@ -41,6 +47,7 @@ public class AiSessionServiceImpl implements AiSessionService {
 
     private static final int MAX_KEYWORD = 50;
     private static final int MAX_SLICE_SIZE = 50;
+    private static final int MAX_TITLE = 40;
 
     private final AiSessionMapper sessionMapper;
     private final AiMessageMapper messageMapper;
@@ -56,7 +63,9 @@ public class AiSessionServiceImpl implements AiSessionService {
         }
         int page = query.pageOrDefault();
         int size = query.sizeOrDefault();
-        var wrapper = Wrappers.<AiSession>lambdaQuery().eq(AiSession::getUserId, userId);
+        var wrapper = Wrappers.<AiSession>lambdaQuery()
+                .eq(AiSession::getUserId, userId)
+                .ne(AiSession::getBatchLinkState, AiCodes.LINK_DELETED);
         if (keyword != null && !keyword.isEmpty()) {
             List<Long> sessionIds = messageMapper.selectSessionIdsByQuestion(userId, keyword);
             wrapper.and(w -> {
@@ -113,29 +122,73 @@ public class AiSessionServiceImpl implements AiSessionService {
 
     @Override
     @Transactional
+    public AiSessionDetailVO create(Long userId, AiSessionCreateRequest request) {
+        FarmContext.FarmMember member = FarmContext.require();
+        AiSession session = new AiSession();
+        session.setFarmId(member.farmId());
+        session.setUserId(userId);
+        session.setTitle(newSessionTitle(request == null ? null : request.getTitle()));
+        session.setTopic(AiCodes.TOPIC_OTHER);
+        session.setBatchLinkState(AiCodes.LINK_NONE);
+        session.setRoundCount(0);
+        session.setContextTruncated(0);
+        session.setLastAskedAt(BeijingTime.now());
+        session.setHasCorrection(0);
+        session.setHasEpidemicAlert(0);
+        if (request != null && request.getBatchId() != null) {
+            applyBatch(session, member, request.getBatchId());
+        }
+        sessionMapper.insert(session);
+        return sessionConvert.toDetail(session);
+    }
+
+    @Override
+    @Transactional
+    public AiSessionDetailVO update(Long userId, Long sessionId, AiSessionBatchRequest request) {
+        AiSession session = requireOwn(userId, sessionId);
+        boolean titlePresent = request != null && request.isTitlePresent();
+        boolean batchPresent = request != null && request.isBatchIdPresent();
+        if (titlePresent) {
+            session.setTitle(normalizeTitle(request.getTitle()));
+        }
+        if (batchPresent) {
+            applyBatch(session, FarmContext.require(), request.getBatchId());
+        }
+        if (titlePresent || batchPresent) {
+            persistSession(session);
+        }
+        return sessionConvert.toDetail(session);
+    }
+
+    @Override
+    @Transactional
     public AiSessionDetailVO changeBatch(Long userId, Long sessionId, Long batchId) {
         AiSession session = requireOwn(userId, sessionId);
-        FarmContext.FarmMember member = FarmContext.require();
-        if (batchId == null) {
-            session.setBatchId(null);
-            session.setBatchSnapshotJson(null);
-            session.setBatchLinkState(AiCodes.LINK_NONE);
-        } else {
-            LinkedBatchVO batch = batchContextService.resolve(member.farmId(), batchId, member.isStaff(), member.penIds());
-            if (batch == null) {
-                LinkedBatchVO any = batchContextService.resolve(member.farmId(), batchId, false, member.penIds());
-                if (any != null) {
-                    throw new BizException(ErrorCode.PEN_FORBIDDEN,
-                            "你已不负责这个批次所在的栏舍，之后的提问不再带上该批次的数据");
-                }
-                throw AiErrors.notFound();
-            }
-            session.setBatchId(batchId);
-            session.setBatchSnapshotJson(batchContextService.toSnapshot(batch));
-            session.setBatchLinkState(AiCodes.LINK_VALID);
-        }
-        sessionMapper.updateById(session);
+        applyBatch(session, FarmContext.require(), batchId);
+        persistSession(session);
         return sessionConvert.toDetail(session);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long userId, Long sessionId) {
+        AiSession session = Asserts.found(sessionMapper.selectById(sessionId));
+        if (!userId.equals(session.getUserId())) {
+            throw AiErrors.notFound();
+        }
+        if (AiCodes.LINK_DELETED.equals(session.getBatchLinkState())) {
+            return;
+        }
+        LocalDateTime now = BeijingTime.now();
+        sessionMapper.update(null, Wrappers.<AiSession>lambdaUpdate()
+                .eq(AiSession::getId, sessionId)
+                .eq(AiSession::getUserId, userId)
+                .set(AiSession::getBatchLinkState, AiCodes.LINK_DELETED)
+                .set(AiSession::getUpdatedAt, now));
+        messageMapper.update(null, Wrappers.<AiMessage>lambdaUpdate()
+                .eq(AiMessage::getSessionId, sessionId)
+                .set(AiMessage::getStatus, AiCodes.STATUS_DELETED)
+                .set(AiMessage::getUpdatedAt, now));
     }
 
     @Override
@@ -156,10 +209,62 @@ public class AiSessionServiceImpl implements AiSessionService {
 
     private AiSession requireOwn(Long userId, Long sessionId) {
         AiSession session = Asserts.found(sessionMapper.selectById(sessionId));
-        if (!userId.equals(session.getUserId())) {
+        if (!userId.equals(session.getUserId()) || AiCodes.LINK_DELETED.equals(session.getBatchLinkState())) {
             throw AiErrors.notFound();
         }
         return session;
+    }
+
+    /** 关联/取消关联批次；batchId 为 null 表示取消关联 */
+    private void applyBatch(AiSession session, FarmContext.FarmMember member, Long batchId) {
+        if (batchId == null) {
+            session.setBatchId(null);
+            session.setBatchSnapshotJson(null);
+            session.setBatchLinkState(AiCodes.LINK_NONE);
+            return;
+        }
+        LinkedBatchVO batch = batchContextService.resolve(member.farmId(), batchId, member.isStaff(), member.penIds());
+        if (batch == null) {
+            LinkedBatchVO any = batchContextService.resolve(member.farmId(), batchId, false, member.penIds());
+            if (any != null) {
+                throw new BizException(ErrorCode.PEN_FORBIDDEN,
+                        "你已不负责这个批次所在的栏舍，之后的提问不再带上该批次的数据");
+            }
+            throw AiErrors.notFound();
+        }
+        session.setBatchId(batchId);
+        session.setBatchSnapshotJson(batchContextService.toSnapshot(batch));
+        session.setBatchLinkState(AiCodes.LINK_VALID);
+    }
+
+    /**
+     * 显式 set 更新：MyBatis-Plus 默认跳过 null 字段，取消关联批次时必须把 batch_id、
+     * batch_snapshot_json 写成 NULL，不能只靠 updateById。
+     */
+    private void persistSession(AiSession session) {
+        sessionMapper.update(null, Wrappers.<AiSession>lambdaUpdate()
+                .eq(AiSession::getId, session.getId())
+                .set(AiSession::getTitle, session.getTitle())
+                .set(AiSession::getBatchId, session.getBatchId())
+                .set(AiSession::getBatchSnapshotJson, session.getBatchSnapshotJson())
+                .set(AiSession::getBatchLinkState, session.getBatchLinkState())
+                .set(AiSession::getUpdatedAt, BeijingTime.now()));
+    }
+
+    private static String newSessionTitle(String raw) {
+        String title = raw == null ? "" : raw.trim();
+        return title.isEmpty() ? AiText.NEW_CHAT_TITLE : normalizeTitle(title);
+    }
+
+    private static String normalizeTitle(String raw) {
+        String title = raw == null ? "" : raw.trim();
+        if (title.isEmpty()) {
+            throw AiErrors.fieldError("title", "标题不能为空");
+        }
+        if (title.length() > MAX_TITLE) {
+            throw AiErrors.fieldError("title", "标题不能超过 40 字");
+        }
+        return title;
     }
 
     /** 批次状态实时计算：快照存在但批次已不可解析时标为已不在栏 */

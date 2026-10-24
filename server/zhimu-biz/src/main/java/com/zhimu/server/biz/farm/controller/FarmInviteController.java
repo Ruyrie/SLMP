@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** API-F19–F22：邀请列表、发送、同意、拒绝。 */
+import java.util.Map;
+
+/** API-F19–F23：邀请列表、发送、同意、拒绝、撤销。 */
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
@@ -43,6 +45,17 @@ public class FarmInviteController {
                                           @RequestBody InviteMemberRequest request) {
         InviteItemVO vo = inviteService.send(farmId, UserContext.requireUserId(), request);
         return new ApiResponse<>(0, "已发送邀请，对方同意后加入", vo);
+    }
+
+    /** F23 撤销尚未接受的邀请（所有者/场长） */
+    @PostMapping("/farms/{farmId:\\d+}/invites/{inviteId:\\d+}/cancel")
+    @FarmRoles({FarmRole.OWNER, FarmRole.MANAGER})
+    public ApiResponse<Object> cancel(@PathVariable("farmId") Long farmId,
+                                      @PathVariable("inviteId") Long inviteId,
+                                      @RequestBody(required = false) Map<String, String> body) {
+        inviteService.cancel(farmId, inviteId, UserContext.requireUserId(),
+                body == null ? null : body.get("reason"));
+        return new ApiResponse<>(0, "已撤销邀请", null);
     }
 
     /** F21 同意邀请（被邀请人本人） */

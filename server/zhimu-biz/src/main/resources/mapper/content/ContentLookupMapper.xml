@@ -28,6 +28,15 @@
         SELECT category_id FROM t_breed WHERE id = #{breedId}
     </select>
 
+    <select id="selectEnabledBreedIdByName" resultType="java.lang.Long">
+        SELECT id
+        FROM t_breed
+        WHERE category_id = #{categoryId}
+          AND name = #{name}
+          AND status = 'ENABLED'
+        LIMIT 1
+    </select>
+
     <select id="selectUserNames" resultType="com.zhimu.server.admin.content.mapper.NameRow">
         SELECT id, name FROM t_user
         WHERE id IN

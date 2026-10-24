@@ -55,6 +55,21 @@ public class FeedTaskService {
     private final FeedRecordMapper recordMapper;
     private final FeedLookup lookup;
 
+    /**
+     * 手动补生成当前养殖场今天任务（所有者/场长）：为在养批次生成当天全部餐次，已存在则跳过。
+     * 与每日 00:05 定时任务复用同一生成方法，不覆盖已有任务。
+     */
+    @Transactional
+    public FeedTaskVO.GenerateToday generateToday() {
+        FarmContext.FarmMember context = lookup.context();
+        lookup.requireManager("只有所有者或场长可以生成今日饲喂任务");
+        DailyGenerateResult result = generateDailyForFarm(context.farmId(), BeijingTime.today());
+        FeedTaskVO.GenerateToday vo = new FeedTaskVO.GenerateToday();
+        vo.setGenerated(result.generated());
+        vo.setSkipped(result.skipped());
+        return vo;
+    }
+
     /** G01 今日饲喂指标与横幅 */
     public FeedTaskVO.TodaySummary todaySummary() {
         FarmContext.FarmMember context = lookup.context();
@@ -231,6 +246,16 @@ public class FeedTaskService {
                 .eq(FeedTask::getTaskDate, BeijingTime.today())));
     }
 
+    /** 指定养殖场在某天是否已有饲喂任务（启动补生成只在场内完全无任务时执行） */
+    public boolean hasTasksOn(Long farmId, LocalDate date) {
+        if (farmId == null || date == null) {
+            return false;
+        }
+        return taskMapper.selectCount(Wrappers.<FeedTask>lambdaQuery()
+                .eq(FeedTask::getFarmId, farmId)
+                .eq(FeedTask::getTaskDate, date)) > 0;
+    }
+
     /** 首次保存方案或转入新栏舍时，为今天投喂时间晚于当前时刻的餐次补生成任务 */
     @Transactional
     public void generateForBatch(BatchInfo batch, FeedPlan plan, List<FeedPlanStage> stages) {
@@ -247,14 +272,15 @@ public class FeedTaskService {
 
     /**
      * 定时任务：为指定养殖场的全部在养批次按方案生成指定日期的任务。
-     * 幂等：同批次 + 栏舍 + 日期 + 餐次已存在时跳过，不覆盖已生成任务；返回新生成条数。
+     * 幂等：同批次 + 栏舍 + 日期 + 餐次已存在时跳过，不覆盖已生成任务；返回新生成与跳过的槽位数。
      */
     @Transactional
-    public int generateDailyForFarm(Long farmId, LocalDate date) {
+    public DailyGenerateResult generateDailyForFarm(Long farmId, LocalDate date) {
         if (farmId == null || date == null) {
-            return 0;
+            return new DailyGenerateResult(0, 0);
         }
         int created = 0;
+        int skipped = 0;
         for (BatchInfo batch : lookup.requireActiveBatches(farmId)) {
             FeedPlan plan = planMapper.selectOne(Wrappers.<FeedPlan>lambdaQuery()
                     .eq(FeedPlan::getBatchId, batch.batchId()).last("LIMIT 1"));
@@ -268,9 +294,11 @@ public class FeedTaskService {
             if (stages.isEmpty()) {
                 continue;
             }
-            created += generateForFarm(farmId, batch, plan, stages, date, null, true);
+            DailyGenerateResult result = generateForFarm(farmId, batch, plan, stages, date, null, true);
+            created += result.generated();
+            skipped += result.skipped();
         }
-        return created;
+        return new DailyGenerateResult(created, skipped);
     }
 
     /**
@@ -280,20 +308,21 @@ public class FeedTaskService {
      * @param includePast   是否生成投喂时间已经过去的餐次（定时任务在 00:05 执行，正常不会遇到；
      *                      服务停机后补跑时仍应生成当天全部餐次）
      */
-    private int generateForFarm(Long farmId, BatchInfo batch, FeedPlan plan, List<FeedPlanStage> stages,
-                                LocalDate date, LocalDateTime now, boolean includePast) {
+    private DailyGenerateResult generateForFarm(Long farmId, BatchInfo batch, FeedPlan plan, List<FeedPlanStage> stages,
+                                                LocalDate date, LocalDateTime now, boolean includePast) {
         int dayAge = FeedCalc.generationDayAge(batch, date);
         FeedPlanStage stage = stageForAge(stages, dayAge);
         if (stage == null) {
-            return 0;
+            return new DailyGenerateResult(0, 0);
         }
         List<FeedPlanMeal> meals = mealMapper.selectList(Wrappers.<FeedPlanMeal>lambdaQuery()
                 .eq(FeedPlanMeal::getStageId, stage.getId())
                 .orderByAsc(FeedPlanMeal::getMealNo));
         if (meals.isEmpty()) {
-            return 0;
+            return new DailyGenerateResult(0, 0);
         }
         int created = 0;
+        int skipped = 0;
         for (com.zhimu.server.biz.feeding.support.FeedBatchPenRow pen : lookup.batchPens(batch)) {
             Integer headCount = pen.getStockCount();
             if (headCount == null || headCount <= 0) {
@@ -313,6 +342,7 @@ public class FeedTaskService {
                         .eq(FeedTask::getTaskDate, date)
                         .eq(FeedTask::getMealNo, meal.getMealNo()));
                 if (exists > 0) {
+                    skipped++;
                     continue;
                 }
                 FeedTask task = new FeedTask();
@@ -342,11 +372,16 @@ public class FeedTaskService {
                     taskMapper.insert(task);
                     created++;
                 } catch (DuplicateKeyException e) {
-                    // 方案保存与定时任务并发时由 uk_feed_task 兜底；已存在即视为幂等成功
+                    // 方案保存与定时任务并发时由 uk_feed_task 兜底；已存在即视为幂等跳过
+                    skipped++;
                 }
             }
         }
-        return created;
+        return new DailyGenerateResult(created, skipped);
+    }
+
+    /** 一批任务生成结果：generated 新生成，skipped 已存在而跳过 */
+    public record DailyGenerateResult(int generated, int skipped) {
     }
 
     /** 任务（当前养殖场）；不存在返回 40401 */

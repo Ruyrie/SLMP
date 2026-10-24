@@ -477,11 +477,14 @@
                l.created_at AS checked_at,
                l.old_phone AS old_phone,
                l.result AS result,
+               l.fail_count_after AS fail_count,
                l.remaining_attempts AS remaining_attempts,
                l.lock_until AS lock_until,
                l.submit_channel AS submit_channel,
                l.proxy_admin_id AS proxy_admin_id,
-               a.name AS proxy_admin_name
+               a.name AS proxy_admin_name,
+               l.ip AS ip,
+               l.ip_region AS ip_region
         FROM t_recovery_verify_log l
                  LEFT JOIN t_admin a ON a.id = l.proxy_admin_id
         WHERE (l.user_id = #{userId} OR l.old_phone = #{oldPhone})

@@ -9,12 +9,14 @@ import com.zhimu.server.admin.base.request.DrugStatusRequest;
 import com.zhimu.server.admin.base.request.LotRecallRequest;
 import com.zhimu.server.admin.base.service.BannedDrugAdminService;
 import com.zhimu.server.admin.base.service.DrugCatalogAdminService;
+import com.zhimu.server.admin.base.service.DrugCatalogImportService;
 import com.zhimu.server.admin.base.service.DrugLotRecallAdminService;
 import com.zhimu.server.admin.base.vo.BannedDrugVO;
 import com.zhimu.server.admin.base.vo.BannedHitRowVO;
 import com.zhimu.server.admin.base.vo.BannedImpactVO;
 import com.zhimu.server.admin.base.vo.DrugCatalogDetailVO;
 import com.zhimu.server.admin.base.vo.DrugCatalogRowVO;
+import com.zhimu.server.admin.base.vo.DrugImportResultVO;
 import com.zhimu.server.admin.base.vo.DrugLotRecallVO;
 import com.zhimu.server.admin.base.vo.RecallFarmVO;
 import com.zhimu.server.admin.base.vo.RecallPreviewVO;
@@ -25,6 +27,10 @@ import com.zhimu.server.framework.idempotent.Idempotent;
 import com.zhimu.server.framework.security.annotation.AdminPermission;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +39,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.nio.charset.StandardCharsets;
 
 /** 管理端-03 WA-D03：ADM-D24–D38 兽药疫苗目录、禁用药、批号停用。 */
 @RestController
@@ -42,8 +51,31 @@ import org.springframework.web.bind.annotation.RestController;
 public class DrugCatalogAdminController {
 
     private final DrugCatalogAdminService catalogService;
+    private final DrugCatalogImportService catalogImportService;
     private final BannedDrugAdminService bannedService;
     private final DrugLotRecallAdminService recallService;
+
+    /** ADM-D29 目录导入模板（xlsx）。 */
+    @GetMapping("/drug-catalog/import-template")
+    @AdminPermission("WA-D03:HANDLE")
+    public ResponseEntity<byte[]> importTemplate() {
+        byte[] data = catalogImportService.template();
+        String fileName = "兽药疫苗目录导入模板.xlsx";
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename(fileName, StandardCharsets.UTF_8).build().toString())
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(data);
+    }
+
+    /** ADM-D29 目录导入：整文件事务，任一行失败回滚并按行返回错误。 */
+    @PostMapping("/drug-catalog/import")
+    @AdminPermission("WA-D03:HANDLE")
+    public ApiResponse<DrugImportResultVO> importCatalog(@RequestParam("file") MultipartFile file) {
+        DrugImportResultVO result = catalogImportService.importXlsx(file);
+        return new ApiResponse<>(0, "已导入 " + result.getSuccess() + " 条目录", result);
+    }
 
     /** ADM-D24 目录列表（总表页签计数在 tab_counts） */
     @GetMapping("/drug-catalog")

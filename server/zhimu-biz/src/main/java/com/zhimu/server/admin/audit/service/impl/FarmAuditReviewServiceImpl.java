@@ -5,6 +5,7 @@ import com.zhimu.server.admin.audit.query.FarmAuditAdminQuery;
 import com.zhimu.server.admin.audit.query.FarmBriefRow;
 import com.zhimu.server.admin.audit.request.AuditApproveRequest;
 import com.zhimu.server.admin.audit.request.FarmAuditRejectRequest;
+import com.zhimu.server.admin.audit.request.SmsResendRequest;
 import com.zhimu.server.admin.audit.service.FarmAuditReviewService;
 import com.zhimu.server.admin.audit.support.AuditReasonTemplates;
 import com.zhimu.server.admin.audit.support.AuditSupport;
@@ -18,14 +19,18 @@ import com.zhimu.server.admin.audit.vo.FarmAuditDetailVO;
 import com.zhimu.server.admin.audit.vo.FarmAuditItemVO;
 import com.zhimu.server.admin.audit.vo.FarmAuditPageVO;
 import com.zhimu.server.admin.audit.vo.ReviewVO;
+import com.zhimu.server.admin.audit.vo.SmsResendVO;
 import com.zhimu.server.admin.base.api.BaseDataQueryService;
 import com.zhimu.server.admin.base.api.CategoryInfo;
+import com.zhimu.server.admin.system.api.AdminLogCommand;
+import com.zhimu.server.admin.system.api.OperationLogService;
 import com.zhimu.server.biz.account.entity.User;
 import com.zhimu.server.biz.common.entity.FileEntity;
 import com.zhimu.server.biz.common.service.impl.FileVoAssembler;
 import com.zhimu.server.biz.farm.api.FarmAuditAdminService;
 import com.zhimu.server.biz.farm.entity.Farm;
 import com.zhimu.server.biz.farm.entity.FarmAudit;
+import com.zhimu.server.biz.farm.support.FarmNotify;
 import com.zhimu.server.biz.farm.support.FarmSnapshot;
 import com.zhimu.server.biz.farm.support.JsonLists;
 import com.zhimu.server.common.context.AdminContext;
@@ -63,6 +68,8 @@ public class FarmAuditReviewServiceImpl implements FarmAuditReviewService {
     private final FarmAuditAdminService farmAuditAdminService;
     private final BaseDataQueryService baseData;
     private final FileVoAssembler fileVoAssembler;
+    private final FarmNotify farmNotify;
+    private final OperationLogService operationLogService;
 
     @Override
     public FarmAuditPageVO list(FarmAuditAdminQuery query) {
@@ -200,6 +207,57 @@ public class FarmAuditReviewServiceImpl implements FarmAuditReviewService {
         return AuditResultVO.builder()
                 .targetName(target.farm().getName())
                 .notifiedNames(target.ownerName() == null ? List.of() : List.of(target.ownerName()))
+                .build();
+    }
+
+    @Override
+    public SmsResendVO resendSms(Long auditId, SmsResendRequest request) {
+        FarmAudit audit = auditId == null ? null : queryMapper.selectFarmAudit(auditId);
+        if (audit == null) {
+            throw new BizException(ErrorCode.NOT_FOUND, MSG_NOT_FOUND);
+        }
+        boolean approved = "APPROVED".equals(audit.getStatus());
+        if (!approved && !"REJECTED".equals(audit.getStatus())) {
+            throw new BizException(ErrorCode.STATE_CHANGED, "这条申请还未处理，不能重发短信");
+        }
+        Farm farm = queryMapper.selectFarmIncludingDeleted(audit.getFarmId());
+        if (farm == null || Boolean.TRUE.equals(farm.getDeleted())) {
+            throw new BizException(ErrorCode.RECORD_DELETED, MSG_DELETED);
+        }
+        User owner = queryMapper.selectUser(farm.getOwnerUserId());
+        if (owner == null || owner.getPhone() == null || owner.getPhone().isBlank()) {
+            throw new BizException(ErrorCode.NOT_FOUND, "找不到所有者手机号");
+        }
+        String reason = request == null ? null : trimToNull(request.getReason());
+        if (reason != null && reason.length() > 200) {
+            throw new BizException(ErrorCode.PARAM_INVALID, "原因不能超过 200 字");
+        }
+        String logReason = reason == null ? "重新发送审核结果短信" : reason;
+        farmNotify.auditResult(farm, audit.getId(), approved,
+                approved ? audit.getAuditOpinion() : audit.getRejectReason());
+        operationLogService.writeAdminLog(AdminLogCommand.builder()
+                .opType("FARM_AUDIT")
+                .opAction("RESEND_SMS")
+                .bizType("FARM_AUDIT")
+                .bizId(audit.getId())
+                .farmId(farm.getId())
+                .targetName(farm.getName() + " · 所有者 " + Masks.phone(owner.getPhone()))
+                .searchText(farm.getName())
+                .reason(logReason)
+                .extraText("审核结果通知已重新发送")
+                .notifyText("已发到" + owner.getName() + "的消息中心")
+                .before(Map.of("audit_status", audit.getStatus()))
+                .after(Map.of("resend", "MESSAGE_CENTER"))
+                .result("SUCCESS")
+                .build());
+        return SmsResendVO.builder()
+                .id(audit.getId())
+                .phone(Masks.phone(owner.getPhone()))
+                .smsStatus("QUEUED")
+                .smsStatusText("待发送")
+                .retryCount(0)
+                .queuedAt(BeijingTime.now())
+                .note("审核结果通知已重新发送到消息中心；当前项目未配置审核结果短信模板，短信通道接入后同一操作会发送短信")
                 .build();
     }
 

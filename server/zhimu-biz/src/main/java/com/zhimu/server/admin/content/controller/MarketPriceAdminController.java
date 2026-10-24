@@ -3,6 +3,7 @@ package com.zhimu.server.admin.content.controller;
 import com.zhimu.server.admin.content.query.ContentQueries;
 import com.zhimu.server.admin.content.request.ContentRequests;
 import com.zhimu.server.admin.content.service.MarketPriceAdminService;
+import com.zhimu.server.admin.content.service.MarketPriceImportService;
 import com.zhimu.server.admin.content.vo.MarketPriceAdminVos;
 import com.zhimu.server.common.api.ApiResponse;
 import com.zhimu.server.common.api.PageVO;
@@ -11,14 +12,21 @@ import com.zhimu.server.framework.idempotent.Idempotent;
 import com.zhimu.server.framework.security.annotation.AdminPermission;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -30,6 +38,31 @@ import java.util.List;
 public class MarketPriceAdminController {
 
     private final MarketPriceAdminService service;
+    private final MarketPriceImportService importService;
+
+    /** ADM-C15 行情导入模板（xlsx）。 */
+    @GetMapping("/market-prices/import-template")
+    @AdminPermission("WA-C02:HANDLE")
+    public ResponseEntity<byte[]> importTemplate() {
+        byte[] data = importService.template();
+        String fileName = "行情导入模板.xlsx";
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename(fileName, StandardCharsets.UTF_8).build().toString())
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(data);
+    }
+
+    /** ADM-C15 行情导入：整文件事务，任一行失败回滚并按行返回错误。 */
+    @PostMapping("/market-prices/import")
+    @Idempotent
+    @AdminPermission("WA-C02:HANDLE")
+    public ApiResponse<MarketPriceAdminVos.ImportResultVO> importPrices(
+            @RequestParam("file") MultipartFile file) {
+        MarketPriceAdminVos.ImportResultVO result = importService.importXlsx(file);
+        return new ApiResponse<>(0, "已导入 " + result.getSuccess() + " 行行情", result);
+    }
 
     /** ADM-C11 某日价格表与分段计数 */
     @GetMapping("/market-prices")

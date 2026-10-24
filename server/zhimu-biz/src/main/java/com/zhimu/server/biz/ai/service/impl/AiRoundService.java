@@ -61,7 +61,8 @@ public class AiRoundService {
             created = true;
         } else {
             session = sessionMapper.selectById(sessionId);
-            if (session == null || !userId.equals(session.getUserId())) {
+            if (session == null || !userId.equals(session.getUserId())
+                    || AiCodes.LINK_DELETED.equals(session.getBatchLinkState())) {
                 throw AiErrors.notFound();
             }
             if (batchId != null) {
@@ -73,6 +74,11 @@ public class AiRoundService {
             }
         }
         int roundNo = messageMapper.maxRoundNo(session.getId()) + 1;
+        // 新建的空会话（标题“新对话”）在首个提问时用问题摘要替换标题；用户自定义标题保持不变
+        if (!created && roundNo == 1 && AiText.isPlaceholderTitle(session.getTitle())
+                && title != null && !title.isBlank()) {
+            session.setTitle(title);
+        }
         session.setRoundCount(roundNo);
         session.setLastAskedAt(now);
         session.setContextTruncated(roundNo > 10 ? 1 : 0);
@@ -125,7 +131,7 @@ public class AiRoundService {
                        String topic) {
         LocalDateTime now = BeijingTime.now();
         AiMessage message = messageMapper.selectById(round.messageId());
-        if (message == null) {
+        if (message == null || AiCodes.STATUS_DELETED.equals(message.getStatus())) {
             return;
         }
         message.setStatus(AiCodes.STATUS_ANSWERED);
@@ -170,7 +176,7 @@ public class AiRoundService {
     @Transactional
     public void fail(AiRound round, String status, Integer errorCode, String errorMessage, String partialText) {
         AiMessage message = messageMapper.selectById(round.messageId());
-        if (message == null) {
+        if (message == null || AiCodes.STATUS_DELETED.equals(message.getStatus())) {
             return;
         }
         message.setStatus(status);
@@ -187,7 +193,8 @@ public class AiRoundService {
     @Transactional
     public AiRound reset(Long userId, Long messageId, String clientMsgId) {
         AiMessage message = messageMapper.selectById(messageId);
-        if (message == null || !userId.equals(message.getUserId())) {
+        if (message == null || !userId.equals(message.getUserId())
+                || AiCodes.STATUS_DELETED.equals(message.getStatus())) {
             throw AiErrors.notFound();
         }
         if (AiCodes.STATUS_ANSWERING.equals(message.getStatus())) {
@@ -204,7 +211,7 @@ public class AiRoundService {
         messageMapper.updateById(message);
         citationMapper.deleteByMessageId(messageId);
         AiSession session = sessionMapper.selectById(message.getSessionId());
-        if (session == null) {
+        if (session == null || AiCodes.LINK_DELETED.equals(session.getBatchLinkState())) {
             throw AiErrors.notFound();
         }
         List<Long> imageFileIds = com.zhimu.server.biz.ai.convert.AiMessageConvert.parseFileIds(

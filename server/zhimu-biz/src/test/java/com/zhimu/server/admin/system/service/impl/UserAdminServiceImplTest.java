@@ -1,6 +1,7 @@
 package com.zhimu.server.admin.system.service.impl;
 
 import com.zhimu.server.admin.system.api.ExportService;
+import com.zhimu.server.admin.system.api.OperationLogService;
 import com.zhimu.server.admin.system.mapper.readonly.AdminUserQueryMapper;
 import com.zhimu.server.admin.system.query.AdminUserListRow;
 import com.zhimu.server.admin.system.query.AdminUserQuery;
@@ -36,7 +37,7 @@ class UserAdminServiceImplTest {
     private final AdminUserQueryMapper mapper = mock(AdminUserQueryMapper.class);
     private final AccountAdminService accountAdminService = mock(AccountAdminService.class);
     private final UserAdminServiceImpl service = new UserAdminServiceImpl(mapper, accountAdminService,
-            mock(ExportService.class));
+            mock(ExportService.class), mock(OperationLogService.class));
 
     @BeforeEach
     void setUp() {

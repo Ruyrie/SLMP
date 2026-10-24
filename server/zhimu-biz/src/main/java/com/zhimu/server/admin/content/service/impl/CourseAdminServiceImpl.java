@@ -305,6 +305,14 @@ public class CourseAdminServiceImpl implements CourseAdminService {
         if (courseMapper.updateById(course) == 0) {
             throw ContentErrors.versionConflict();
         }
+        if (topic == null) {
+            // MyBatis-Plus NOT_NULL 策略会忽略 null，移出专题需显式置空
+            courseMapper.update(null, Wrappers.<Course>lambdaUpdate()
+                    .eq(Course::getId, id)
+                    .set(Course::getTopicId, null)
+                    .set(Course::getTopicName, null)
+                    .set(Course::getSectionNo, null));
+        }
         if (video != null && !Objects.equals(oldVideo, video.getId())) {
             media.markBound(oldVideo, false);
             media.markBound(video.getId(), true);

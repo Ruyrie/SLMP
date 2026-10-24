@@ -6,11 +6,13 @@ import com.zhimu.server.admin.audit.request.AuditApproveRequest;
 import com.zhimu.server.admin.audit.vo.FarmAuditItemVO;
 import com.zhimu.server.admin.audit.vo.FarmAuditPageVO;
 import com.zhimu.server.admin.base.api.BaseDataQueryService;
+import com.zhimu.server.admin.system.api.OperationLogService;
 import com.zhimu.server.biz.account.entity.User;
 import com.zhimu.server.biz.common.service.impl.FileVoAssembler;
 import com.zhimu.server.biz.farm.api.FarmAuditAdminService;
 import com.zhimu.server.biz.farm.entity.Farm;
 import com.zhimu.server.biz.farm.entity.FarmAudit;
+import com.zhimu.server.biz.farm.support.FarmNotify;
 import com.zhimu.server.common.context.AdminContext;
 import com.zhimu.server.common.error.BizException;
 import com.zhimu.server.common.error.ErrorCode;
@@ -44,7 +46,8 @@ class FarmAuditReviewServiceImplTest {
     private final FarmAuditAdminService auditAdminService = mock(FarmAuditAdminService.class);
     private final BaseDataQueryService baseData = mock(BaseDataQueryService.class);
     private final FarmAuditReviewServiceImpl service = new FarmAuditReviewServiceImpl(queryMapper,
-            auditAdminService, baseData, mock(FileVoAssembler.class));
+            auditAdminService, baseData, mock(FileVoAssembler.class), mock(FarmNotify.class),
+            mock(OperationLogService.class));
 
     @BeforeEach
     void setUp() {

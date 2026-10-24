@@ -25,16 +25,19 @@ import com.zhimu.server.biz.inspect.mapper.AiDiagnosisCauseMapper;
 import com.zhimu.server.biz.inspect.mapper.AiDiagnosisMapper;
 import com.zhimu.server.biz.inspect.mapper.DiagnosisHandleMapper;
 import com.zhimu.server.biz.inspect.mapper.InspectionMapper;
+import com.zhimu.server.biz.inspect.query.AbnormalReportListQuery;
 import com.zhimu.server.biz.inspect.query.FarmMemberRow;
 import com.zhimu.server.biz.inspect.query.LinkableQuery;
 import com.zhimu.server.biz.inspect.query.LinkableRow;
 import com.zhimu.server.biz.inspect.query.ReportFormQuery;
+import com.zhimu.server.biz.inspect.query.ReportListRow;
 import com.zhimu.server.biz.inspect.request.AbnormalReportCreateRequest;
 import com.zhimu.server.biz.inspect.request.HandleSaveRequest;
 import com.zhimu.server.biz.inspect.service.AbnormalReportService;
 import com.zhimu.server.biz.inspect.service.DiagnosisService;
 import com.zhimu.server.biz.inspect.support.InspectRules;
 import com.zhimu.server.biz.inspect.support.InspectSupport;
+import com.zhimu.server.biz.inspect.vo.AbnormalReportListItemVO;
 import com.zhimu.server.biz.inspect.vo.DiagnosisDetailVO;
 import com.zhimu.server.biz.inspect.vo.DiagnosisResultVO;
 import com.zhimu.server.biz.inspect.vo.DiagnosisStateVO;
@@ -45,6 +48,7 @@ import com.zhimu.server.biz.inspect.vo.ReportCreateResultVO;
 import com.zhimu.server.biz.inspect.vo.ReportFormVO;
 import com.zhimu.server.biz.inspect.vo.SymptomVO;
 import com.zhimu.server.common.context.FarmContext;
+import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.common.enums.BizType;
 import com.zhimu.server.common.enums.FileScene;
 import com.zhimu.server.common.error.BizException;
@@ -303,6 +307,138 @@ public class AbnormalReportServiceImpl implements AbnormalReportService {
     }
 
     // ===== API-I19 诊断详情 =====
+
+    @Override
+    public PageVO<AbnormalReportListItemVO> list(AbnormalReportListQuery query) {
+        AbnormalReportListQuery q = query == null ? new AbnormalReportListQuery() : query;
+        int page = q.getPage() == null || q.getPage() < 1 ? 1 : q.getPage();
+        int size = q.getSize() == null || q.getSize() < 1 ? 20 : Math.min(q.getSize(), 100);
+        String status = normalizeFilter(q.getStatus(), "PENDING", "DIAGNOSED", "HANDLED", "CLOSED");
+        String urgency = normalizeFilter(q.getUrgency(), "NORMAL", "ATTENTION", "URGENT");
+        String keyword = q.getKeyword() == null || q.getKeyword().isBlank() ? null : q.getKeyword().trim();
+        LocalDate today = BeijingTime.today();
+        LocalDate start = parseQueryDate(q.getStartDate(), today.minusDays(29), "start_date");
+        LocalDate end = parseQueryDate(q.getEndDate(), today, "end_date");
+        if (start.isAfter(end)) {
+            throw new BizException(ErrorCode.PARAM_INVALID, "开始日期不能晚于结束日期");
+        }
+        if (q.getPenId() != null) {
+            support.requirePen(q.getPenId());
+        }
+        FarmContext.FarmMember member = support.member();
+        Long staffUserId = member.isStaff() || Boolean.TRUE.equals(q.getMine()) ? member.userId() : null;
+        LocalDateTime from = start.atStartOfDay();
+        LocalDateTime toExclusive = end.plusDays(1).atStartOfDay();
+        List<ReportListRow> rows = reportMapper.selectReportPage(support.farmId(), staffUserId, status,
+                q.getPenId(), q.getBatchId(), urgency, keyword, from, toExclusive, (page - 1) * size, size);
+        long total = reportMapper.countReports(support.farmId(), staffUserId, status, q.getPenId(),
+                q.getBatchId(), urgency, keyword, from, toExclusive);
+        List<AbnormalReportListItemVO> items = new ArrayList<>();
+        for (ReportListRow row : rows) {
+            items.add(listItem(row, member));
+        }
+        Map<String, Integer> tabs = new LinkedHashMap<>();
+        tabs.put("ALL", 0);
+        tabs.put("PENDING", 0);
+        tabs.put("DIAGNOSED", 0);
+        tabs.put("HANDLED", 0);
+        tabs.put("CLOSED", 0);
+        for (Map<String, Object> row : reportMapper.countByStatus(support.farmId(), staffUserId,
+                q.getPenId(), q.getBatchId(), urgency, keyword, from, toExclusive)) {
+            String key = mapValue(row, "status");
+            Integer count = mapInt(row, "cnt");
+            if (key != null && count != null) {
+                tabs.put(key, count);
+                tabs.merge("ALL", count, Integer::sum);
+            }
+        }
+        PageVO<AbnormalReportListItemVO> result = PageVO.of(items, total, page, size);
+        result.setTabCounts(tabs);
+        return result;
+    }
+
+    private AbnormalReportListItemVO listItem(ReportListRow row, FarmContext.FarmMember member) {
+        AbnormalReportListItemVO vo = new AbnormalReportListItemVO();
+        vo.setReportId(row.getReportId() == null ? 0 : row.getReportId());
+        vo.setVersion(row.getVersion() == null ? 0 : row.getVersion());
+        vo.setReportedAt(row.getReportedAt() == null ? null : BeijingTime.format(row.getReportedAt()));
+        vo.setReportDate(row.getReportDate() == null ? null : row.getReportDate().toString());
+        vo.setPenId(row.getPenId() == null ? 0 : row.getPenId());
+        vo.setPenName(row.getPenName());
+        vo.setBatchId(row.getBatchId() == null ? 0 : row.getBatchId());
+        vo.setBatchNo(row.getBatchNo());
+        vo.setSickCount(row.getSickCount() == null ? 0 : row.getSickCount());
+        vo.setStockSnapshot(row.getStockSnapshot() == null ? 0 : row.getStockSnapshot());
+        vo.setSickRate(row.getSickRate());
+        vo.setDescription(row.getDescription());
+        vo.setStatus(row.getStatus());
+        vo.setStatusText(DiagnosisConvert.reportStatusText(row.getStatus()));
+        vo.setAiState(row.getAiState());
+        vo.setAiStateText(DiagnosisConvert.aiStateText(row.getAiState()));
+        vo.setUrgency(row.getUrgency());
+        vo.setUrgencyText(DiagnosisConvert.urgencyText(row.getUrgency()));
+        vo.setMajorEpidemic(Boolean.TRUE.equals(row.getIsMajorEpidemic()));
+        vo.setTopCauseName(row.getTopCauseName());
+        vo.setReporterId(row.getReporterId() == null ? 0 : row.getReporterId());
+        vo.setReporterName(row.getReporterName());
+        vo.setInspectionId(row.getInspectionId());
+        vo.setSource(row.getSource());
+        if (row.getSymptomNames() != null && !row.getSymptomNames().isBlank()) {
+            for (String name : row.getSymptomNames().split("、")) {
+                if (!name.isBlank()) {
+                    vo.getSymptomNames().add(name);
+                }
+            }
+        }
+        boolean manager = !member.isStaff();
+        vo.setCanHandle(manager && ("DIAGNOSED".equals(row.getStatus()) || "HANDLED".equals(row.getStatus())));
+        vo.setCanRediagnose("PENDING".equals(row.getStatus())
+                && (manager || Objects.equals(row.getReporterId(), member.userId()))
+                && !"DONE".equals(row.getAiState()));
+        return vo;
+    }
+
+    private String normalizeFilter(String value, String... allowed) {
+        if (value == null || value.isBlank() || "ALL".equalsIgnoreCase(value)) {
+            return null;
+        }
+        String upper = value.trim().toUpperCase();
+        for (String item : allowed) {
+            if (item.equals(upper)) {
+                return upper;
+            }
+        }
+        throw new BizException(ErrorCode.PARAM_INVALID, "筛选值不合法：" + value);
+    }
+
+    private LocalDate parseQueryDate(String value, LocalDate fallback, String field) {
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+        try {
+            return LocalDate.parse(value.trim());
+        } catch (RuntimeException ex) {
+            throw new BizException(ErrorCode.PARAM_INVALID, field + " 格式应为 yyyy-MM-dd");
+        }
+    }
+
+    private String mapValue(Map<String, Object> row, String key) {
+        for (Map.Entry<String, Object> entry : row.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(key) && entry.getValue() != null) {
+                return String.valueOf(entry.getValue());
+            }
+        }
+        return null;
+    }
+
+    private Integer mapInt(Map<String, Object> row, String key) {
+        for (Map.Entry<String, Object> entry : row.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(key) && entry.getValue() != null) {
+                return ((Number) entry.getValue()).intValue();
+            }
+        }
+        return null;
+    }
 
     @Override
     public DiagnosisDetailVO detail(Long reportId) {

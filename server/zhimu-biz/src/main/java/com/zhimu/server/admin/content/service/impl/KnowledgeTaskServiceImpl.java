@@ -222,6 +222,7 @@ public class KnowledgeTaskServiceImpl implements KnowledgeTaskService {
     private KnowledgeTaskVO toVO(KnowledgeTask task) {
         KnowledgeTaskVO vo = new KnowledgeTaskVO();
         vo.setId(task.getId());
+        vo.setVersion(task.getVersion() == null ? 0 : task.getVersion());
         vo.setTitle(task.getTitle());
         vo.setSourceType(task.getSourceType());
         vo.setSourceTypeText(ContentTexts.taskSource(task.getSourceType()));

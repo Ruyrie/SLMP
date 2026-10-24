@@ -141,6 +141,23 @@ public final class MarketPriceAdminVos {
         private List<ImportRow> rows = new ArrayList<>();
     }
 
+    /** ADM-C15 导入结果中的逐行错误。row 为 Excel 行号（表头为第 1 行）。 */
+    @Data
+    public static class ImportError {
+        private Integer row;
+        private String message;
+    }
+
+    /** ADM-C15 导入结果：成功时 total=success、failed=0；失败时事务已回滚并返回逐行错误。 */
+    @Data
+    public static class ImportResultVO {
+        private Integer total = 0;
+        private Integer success = 0;
+        private Integer failed = 0;
+        private List<ImportError> errors = new ArrayList<>();
+        private String fileName;
+    }
+
     @Data
     public static class CorrectionVO {
         private Long correctionId;

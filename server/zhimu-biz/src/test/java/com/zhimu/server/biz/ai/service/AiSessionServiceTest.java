@@ -144,7 +144,7 @@ class AiSessionServiceTest {
         AiSessionDetailVO vo = service.changeBatch(10001L, 1021L, null);
         assertThat(vo.getBatchLinkState()).isEqualTo("NONE");
         assertThat(session.getBatchId()).isNull();
-        verify(sessionMapper).updateById(session);
+        verify(sessionMapper).update(org.mockito.ArgumentMatchers.isNull(), any());
     }
 
     @Test

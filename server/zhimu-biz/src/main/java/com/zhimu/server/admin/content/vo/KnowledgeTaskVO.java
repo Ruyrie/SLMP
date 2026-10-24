@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public class KnowledgeTaskVO {
 
     private Long id;
+    private Integer version;
     private String title;
     private String sourceType;
     private String sourceTypeText;

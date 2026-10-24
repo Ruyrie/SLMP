@@ -107,6 +107,20 @@ class FeedingControllerMappingTest {
                 .andExpect(jsonPath("$.data.block_reason").value("DONE"));
     }
 
+    // 今日任务补生成
+    @Test
+    void generateTodayTasks() throws Exception {
+        FeedTaskVO.GenerateToday result = new FeedTaskVO.GenerateToday();
+        result.setGenerated(4);
+        result.setSkipped(2);
+        when(taskService.generateToday()).thenReturn(result);
+        mvc.perform(post("/api/v1/feed-tasks/generate-today"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.data.generated").value(4))
+                .andExpect(jsonPath("$.data.skipped").value(2));
+    }
+
     // G04
     @Test
     void createRecord() throws Exception {

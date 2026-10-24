@@ -2,8 +2,10 @@ package com.zhimu.server.admin.system.service.impl;
 
 import com.zhimu.server.admin.audit.support.AuditSupport;
 import com.zhimu.server.admin.audit.support.AuditTexts;
+import com.zhimu.server.admin.system.api.AdminLogCommand;
 import com.zhimu.server.admin.system.api.ExportRequest;
 import com.zhimu.server.admin.system.api.ExportService;
+import com.zhimu.server.admin.system.api.OperationLogService;
 import com.zhimu.server.admin.system.mapper.readonly.AdminUserQueryMapper;
 import com.zhimu.server.admin.system.query.AdminLoginLogRow;
 import com.zhimu.server.admin.system.query.AdminUserFarmRow;
@@ -14,6 +16,7 @@ import com.zhimu.server.admin.system.service.UserAdminService;
 import com.zhimu.server.admin.system.vo.AdminUserDetailVO;
 import com.zhimu.server.admin.system.vo.AdminUserItemVO;
 import com.zhimu.server.admin.system.vo.ExportVO;
+import com.zhimu.server.admin.system.vo.PhoneRevealVO;
 import com.zhimu.server.biz.account.api.AccountAdminService;
 import com.zhimu.server.biz.account.entity.User;
 import com.zhimu.server.common.api.PageVO;
@@ -46,6 +49,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     private final AdminUserQueryMapper queryMapper;
     private final AccountAdminService accountAdminService;
     private final ExportService exportService;
+    private final OperationLogService operationLogService;
 
     @Override
     public PageVO<AdminUserItemVO> list(AdminUserQuery query) {
@@ -83,6 +87,7 @@ public class UserAdminServiceImpl implements UserAdminService {
                 .userId(user.getId())
                 .name(user.getName())
                 .phone(Masks.phone(user.getPhone()))
+                .canRevealPhone(canRevealPhone())
                 .status(user.getStatus())
                 .statusText(userStatusText(user.getStatus()))
                 .version(user.getVersion())
@@ -98,6 +103,11 @@ public class UserAdminServiceImpl implements UserAdminService {
                 .loginLogs(loginLogs(user.getId()))
                 .identityTip(identityTip(user, farms));
         return builder.build();
+    }
+
+    private boolean canRevealPhone() {
+        AdminContext.LoginAdmin admin = AdminContext.get();
+        return admin != null && (admin.isSuperAdmin() || admin.hasPermission("WA-S03:HANDLE"));
     }
 
     @Override
@@ -164,6 +174,34 @@ public class UserAdminServiceImpl implements UserAdminService {
                 .bizType("USER")
                 .filters(filters)
                 .build());
+    }
+
+    @Override
+    public PhoneRevealVO revealPhone(Long userId) {
+        User user = userId == null ? null : queryMapper.selectUser(userId);
+        if (user == null || "CANCELLED".equals(user.getStatus())) {
+            throw new BizException(ErrorCode.NOT_FOUND, MSG_NOT_FOUND);
+        }
+        String phone = user.getPhone();
+        if (phone == null || phone.isBlank()) {
+            throw new BizException(ErrorCode.NOT_FOUND, "这个账号没有登记手机号");
+        }
+        operationLogService.writeAdminLog(AdminLogCommand.builder()
+                .opType("USER")
+                .opAction("VIEW_PHONE")
+                .bizType("USER")
+                .bizId(user.getId())
+                .targetName(user.getName() + " · 手机号 " + Masks.phone(phone))
+                .searchText(user.getName())
+                .reason("查看完整手机号")
+                .after(Map.of("phone_revealed", true))
+                .result("SUCCESS")
+                .build());
+        return PhoneRevealVO.builder()
+                .userId(user.getId())
+                .name(user.getName())
+                .phone(phone)
+                .build();
     }
 
     private List<AdminUserItemVO> toItems(List<AdminUserListRow> rows) {

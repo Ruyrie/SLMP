@@ -3,10 +3,12 @@ package com.zhimu.server.admin.audit.controller;
 import com.zhimu.server.admin.audit.query.FarmAuditAdminQuery;
 import com.zhimu.server.admin.audit.request.AuditApproveRequest;
 import com.zhimu.server.admin.audit.request.FarmAuditRejectRequest;
+import com.zhimu.server.admin.audit.request.SmsResendRequest;
 import com.zhimu.server.admin.audit.service.FarmAuditReviewService;
 import com.zhimu.server.admin.audit.vo.AuditResultVO;
 import com.zhimu.server.admin.audit.vo.FarmAuditDetailVO;
 import com.zhimu.server.admin.audit.vo.FarmAuditPageVO;
+import com.zhimu.server.admin.audit.vo.SmsResendVO;
 import com.zhimu.server.common.api.ApiResponse;
 import com.zhimu.server.framework.security.annotation.AdminPermission;
 import jakarta.validation.Valid;
@@ -60,5 +62,14 @@ public class FarmAuditAdminController {
         String owner = result.getNotifiedNames().isEmpty() ? "所有者" : result.getNotifiedNames().get(0);
         return new ApiResponse<>(0, "已驳回" + result.getTargetName() + "的注册申请，原因已发到"
                 + owner + "的消息中心", result);
+    }
+
+    /** ADM-R18 重发审核结果通知；只对已处理申请。 */
+    @AdminPermission("WA-R01:HANDLE")
+    @PostMapping("/{id:\\d+}/resend-sms")
+    public ApiResponse<SmsResendVO> resendSms(@PathVariable("id") Long id,
+                                               @Valid @RequestBody(required = false) SmsResendRequest request) {
+        SmsResendVO result = service.resendSms(id, request);
+        return new ApiResponse<>(0, "已重新发送审核结果通知到" + result.getPhone(), result);
     }
 }

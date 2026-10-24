@@ -640,6 +640,12 @@ public class InspectionServiceImpl implements InspectionService {
         FarmContext.FarmMember member = support.member();
         Map<Long, FarmMemberRow> members = support.memberMap();
         List<PenInspectionRowVO> rows = new ArrayList<>();
+        Map<String, Integer> tabs = new LinkedHashMap<>();
+        tabs.put("ALL", 0);
+        tabs.put("ABNORMAL", 0);
+        tabs.put("OVERDUE", 0);
+        tabs.put("BACKFILL", 0);
+        tabs.put("OFF_SITE", 0);
         if (inspections != null) {
             for (Inspection inspection : inspections) {
                 if (!InspectRules.DONE.equals(inspection.getInspectStatus())
@@ -650,6 +656,19 @@ public class InspectionServiceImpl implements InspectionService {
                 boolean overdue = Boolean.TRUE.equals(inspection.getIsOverdue());
                 boolean backfill = Boolean.TRUE.equals(inspection.getIsBackfill());
                 boolean offSite = "OFF_SITE".equals(inspection.getLocationStatus());
+                tabs.merge("ALL", 1, Integer::sum);
+                if (abnormal) {
+                    tabs.merge("ABNORMAL", 1, Integer::sum);
+                }
+                if (overdue) {
+                    tabs.merge("OVERDUE", 1, Integer::sum);
+                }
+                if (backfill) {
+                    tabs.merge("BACKFILL", 1, Integer::sum);
+                }
+                if (offSite) {
+                    tabs.merge("OFF_SITE", 1, Integer::sum);
+                }
                 boolean include = switch (filter) {
                     case "ABNORMAL" -> abnormal;
                     case "OVERDUE" -> overdue;
@@ -690,7 +709,8 @@ public class InspectionServiceImpl implements InspectionService {
         int total = rows.size();
         int from = Math.min((targetPage - 1) * size, total);
         int to = Math.min(from + size, total);
-        return PageVO.of(new ArrayList<>(rows.subList(from, to)), total, targetPage, size);
+        return PageVO.of(new ArrayList<>(rows.subList(from, to)), total, targetPage, size)
+                .withTabCounts(tabs);
     }
 
     // ===== API-I12 近 7 天概况 =====

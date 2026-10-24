@@ -37,10 +37,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -133,11 +133,28 @@ class AiControllerMockMvcTest {
 
     @Test
     void k04ChangesBatchWithNullBodyValue() throws Exception {
-        when(sessionService.changeBatch(eq(10001L), eq(1021L), isNull())).thenReturn(AiFixtures.sessionDetail());
+        when(sessionService.update(eq(10001L), eq(1021L), any())).thenReturn(AiFixtures.sessionDetail());
         mvc.perform(patch("/api/v1/ai/sessions/1021")
                         .contentType(MediaType.APPLICATION_JSON).content("{\"batch_id\":null}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value(1015));
+    }
+
+    @Test
+    void createsEmptySession() throws Exception {
+        when(sessionService.create(eq(10001L), any())).thenReturn(AiFixtures.sessionDetail());
+        mvc.perform(post("/api/v1/ai/sessions")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"title\":\"新的会话\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.data.id").value(1015));
+    }
+
+    @Test
+    void deletesOwnSession() throws Exception {
+        mvc.perform(delete("/api/v1/ai/sessions/1021"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0));
     }
 
     @Test

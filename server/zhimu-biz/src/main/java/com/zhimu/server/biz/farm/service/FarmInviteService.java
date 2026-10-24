@@ -16,4 +16,7 @@ public interface FarmInviteService {
     InviteAcceptVO accept(Long inviteId, Long userId);
 
     void reject(Long inviteId, Long userId);
+
+    /** 撤销尚未接受的邀请（所有者/场长）。 */
+    void cancel(Long farmId, Long inviteId, Long userId, String reason);
 }

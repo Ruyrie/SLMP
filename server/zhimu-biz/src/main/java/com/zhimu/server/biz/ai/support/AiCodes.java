@@ -14,6 +14,8 @@ public final class AiCodes {
     public static final String STATUS_INTERRUPTED = "INTERRUPTED";
     public static final String STATUS_TIMEOUT = "TIMEOUT";
     public static final String STATUS_FAILED = "FAILED";
+    /** 逻辑删除：t_ai_message 没有 deleted 列，会话删除后把其消息 status 置为该值 */
+    public static final String STATUS_DELETED = "DELETED";
 
     // AI_ANSWER_TYPE
     public static final String ANSWER_NORMAL = "NORMAL";
@@ -31,6 +33,11 @@ public final class AiCodes {
     public static final String LINK_VALID = "VALID";
     public static final String LINK_NOT_IN_STOCK = "NOT_IN_STOCK";
     public static final String LINK_NO_PERMISSION = "NO_PERMISSION";
+    /**
+     * 逻辑删除：t_ai_session 没有 deleted 列，会话删除后把 batch_link_state 置为该值。
+     * 列表、详情、提问、重新生成均按 40401 处理。
+     */
+    public static final String LINK_DELETED = "DELETED";
 
     // AI_TOPIC
     public static final String TOPIC_MEDICATION = "MEDICATION";

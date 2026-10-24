@@ -13,6 +13,9 @@ import java.util.regex.Pattern;
  */
 public final class AiText {
 
+    /** 新建空会话的默认标题；首个提问后替换为问题摘要 */
+    public static final String NEW_CHAT_TITLE = "新对话";
+
     private static final Pattern PUNCTUATION = Pattern.compile("[\\s\\p{Punct}，。！？、；：“”‘’（）《》【】…—·]+");
     private static final DateTimeFormatter MONTH_DAY_TIME = DateTimeFormatter.ofPattern("M月d日 HH:mm");
 
@@ -29,6 +32,11 @@ public final class AiText {
             return "图片提问";
         }
         return text.length() <= 50 ? text : text.substring(0, 50);
+    }
+
+    /** 空会话标题：没有标题或仍是默认“新对话”时，首个提问可覆盖 */
+    public static boolean isPlaceholderTitle(String title) {
+        return title == null || title.isBlank() || NEW_CHAT_TITLE.equals(title.trim());
     }
 
     /** 会话列表日期分组：今天 TODAY、昨天 YESTERDAY、近 7 天 LAST_7_DAYS、更早 EARLIER */

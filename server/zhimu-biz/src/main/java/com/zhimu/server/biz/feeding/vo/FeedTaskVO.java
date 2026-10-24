@@ -100,6 +100,15 @@ public final class FeedTaskVO {
         private String action;
     }
 
+    /** 今日任务补生成结果（POST /feed-tasks/generate-today） */
+    @Data
+    public static class GenerateToday {
+        /** 新生成的任务数 */
+        private Integer generated;
+        /** 已存在而跳过的任务数 */
+        private Integer skipped;
+    }
+
     /** G02 登记表单上下文（API-G03） */
     @Data
     public static class Form {

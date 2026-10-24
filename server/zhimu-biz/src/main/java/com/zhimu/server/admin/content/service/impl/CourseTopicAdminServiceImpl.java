@@ -180,11 +180,12 @@ public class CourseTopicAdminServiceImpl implements CourseTopicAdminService {
         for (Course course : courseMapper.selectList(Wrappers.<Course>lambdaQuery()
                 .eq(Course::getTopicId, topic.getId()))) {
             if (!keep.contains(course.getId())) {
-                course.setTopicId(null);
-                course.setTopicName(null);
-                course.setSectionNo(null);
-                course.setUpdatedBy(AdminContext.requireAdminId());
-                courseMapper.updateById(course);
+                courseMapper.update(null, Wrappers.<Course>lambdaUpdate()
+                        .eq(Course::getId, course.getId())
+                        .set(Course::getTopicId, null)
+                        .set(Course::getTopicName, null)
+                        .set(Course::getSectionNo, null)
+                        .set(Course::getUpdatedBy, AdminContext.requireAdminId()));
             }
         }
     }

@@ -25,7 +25,7 @@ public class AiSessionConvert {
     public AiSessionItemVO toItem(AiSession session) {
         AiSessionItemVO vo = new AiSessionItemVO();
         vo.setId(session.getId());
-        vo.setTitle(session.getTitle());
+        vo.setTitle(displayTitle(session));
         vo.setTopic(session.getTopic());
         vo.setTopicText(null);
         LinkedBatchVO batch = batchContextService.fromSnapshot(session.getBatchSnapshotJson());
@@ -44,7 +44,7 @@ public class AiSessionConvert {
     public AiSessionDetailVO toDetail(AiSession session) {
         AiSessionDetailVO vo = new AiSessionDetailVO();
         vo.setId(session.getId());
-        vo.setTitle(session.getTitle());
+        vo.setTitle(displayTitle(session));
         int rounds = session.getRoundCount() == null ? 0 : session.getRoundCount();
         vo.setRoundCount(rounds);
         vo.setLastRoundNo(rounds);
@@ -70,5 +70,11 @@ public class AiSessionConvert {
 
     private static boolean isTrue(Integer value) {
         return value != null && value == 1;
+    }
+
+    /** 空会话、标题缺失时统一显示“新对话” */
+    private static String displayTitle(AiSession session) {
+        String title = session.getTitle();
+        return title == null || title.isBlank() ? AiText.NEW_CHAT_TITLE : title;
     }
 }

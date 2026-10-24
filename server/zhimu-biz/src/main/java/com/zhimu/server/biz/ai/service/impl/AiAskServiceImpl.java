@@ -135,12 +135,16 @@ public class AiAskServiceImpl implements AiAskService {
         AiSession session = null;
         if (request.getSessionId() != null) {
             session = sessionMapper.selectById(request.getSessionId());
-            if (session == null || !userId.equals(session.getUserId())) {
+            if (session == null || !userId.equals(session.getUserId())
+                    || AiCodes.LINK_DELETED.equals(session.getBatchLinkState())) {
                 throw AiErrors.notFound();
             }
         }
         AiMessage existing = messageMapper.selectByClientMsgId(userId, key);
         if (existing != null) {
+            if (AiCodes.STATUS_DELETED.equals(existing.getStatus())) {
+                throw AiErrors.notFound();
+            }
             if (AiCodes.STATUS_ANSWERING.equals(existing.getStatus())) {
                 throw AiErrors.stateChanged("请求正在处理，请勿重复提交");
             }
@@ -205,7 +209,12 @@ public class AiAskServiceImpl implements AiAskService {
     public SseEmitter retry(Long userId, Long messageId) {
         FarmContext.FarmMember member = FarmContext.require();
         AiMessage message = messageMapper.selectById(messageId);
-        if (message == null || !userId.equals(message.getUserId())) {
+        if (message == null || !userId.equals(message.getUserId())
+                || AiCodes.STATUS_DELETED.equals(message.getStatus())) {
+            throw AiErrors.notFound();
+        }
+        AiSession session = sessionMapper.selectById(message.getSessionId());
+        if (session == null || AiCodes.LINK_DELETED.equals(session.getBatchLinkState())) {
             throw AiErrors.notFound();
         }
         if (AiCodes.STATUS_ANSWERED.equals(message.getStatus())) {

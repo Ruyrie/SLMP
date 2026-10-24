@@ -991,6 +991,14 @@ public class MarketPriceAdminService {
         recalculateAfter(config, date, price.getId());
     }
 
+    /**
+     * ADM-C15 导入后重算后续已发布日期的 prev_price / change_rate。
+     * 与补录、更正使用同一套口径；只更新显示，不触发复核。
+     */
+    public void recalculateAfterImport(MarketPriceConfig config, LocalDate date, Long currentPriceId) {
+        recalculateAfter(config, date, currentPriceId);
+    }
+
     private List<MarketPriceAdminVos.RecalculatedItem> recalculated(MarketPrice price, LocalDate date) {
         List<MarketPrice> rows = priceMapper.selectList(Wrappers.<MarketPrice>lambdaQuery()
                 .eq(MarketPrice::getProvinceCode, price.getProvinceCode())

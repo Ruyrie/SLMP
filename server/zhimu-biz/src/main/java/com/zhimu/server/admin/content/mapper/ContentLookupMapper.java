@@ -19,6 +19,9 @@ public interface ContentLookupMapper {
     /** 品种所属品类，校验发布配置时使用；品种不存在返回 null */
     Long selectBreedCategoryId(@Param("breedId") Long breedId);
 
+    /** 按品类与名称取启用品种 ID，导入行情时匹配“品种”列；未找到返回 null */
+    Long selectEnabledBreedIdByName(@Param("categoryId") Long categoryId, @Param("name") String name);
+
     List<NameRow> selectUserNames(@Param("ids") List<Long> ids);
 
     List<Long> selectFarmIdsByName(@Param("keyword") String keyword);

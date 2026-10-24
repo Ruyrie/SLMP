@@ -430,6 +430,43 @@ public class FarmInviteServiceImpl implements FarmInviteService {
         }
     }
 
+    @Override
+    @Transactional
+    public void cancel(Long farmId, Long inviteId, Long userId, String reason) {
+        Viewer viewer = viewer(farmId, userId);
+        if (!"OWNER".equals(viewer.member().getRole()) && !"MANAGER".equals(viewer.member().getRole())) {
+            throw FarmErrors.roleForbidden(FarmErrors.MSG_NO_PERMISSION);
+        }
+        FarmInvite invite = TenantSkip.call(() -> inviteMapper.selectById(inviteId));
+        if (invite == null || !Objects.equals(invite.getFarmId(), farmId)) {
+            throw FarmErrors.notFound("邀请");
+        }
+        if (!"PENDING".equals(invite.getStatus())) {
+            throw FarmErrors.stateChanged("这条邀请已处理，列表已刷新");
+        }
+        LocalDateTime now = BeijingTime.now();
+        String cancelReason = reason == null || reason.isBlank() ? "所有者撤销邀请" : reason.trim();
+        TenantSkip.run(() -> inviteMapper.update(new FarmInvite(), Wrappers.<FarmInvite>lambdaUpdate()
+                .eq(FarmInvite::getId, invite.getId())
+                .eq(FarmInvite::getStatus, "PENDING")
+                .set(FarmInvite::getStatus, "CANCELED")
+                .set(FarmInvite::getPendingFlag, null)
+                .set(FarmInvite::getHandledAt, now)
+                .set(FarmInvite::getCancelReason, cancelReason)));
+        logs.record(OperationLogEntry.builder()
+                .operatorType("USER")
+                .operatorId(userId)
+                .opType("RECORD_EDIT")
+                .opAction("CANCEL")
+                .bizType(BizType.FARM_INVITE.name())
+                .bizId(invite.getId())
+                .farmId(farmId)
+                .targetName(FarmValidations.maskedPhone(invite.getInviteePhone()))
+                .searchText(viewer.farm().getName())
+                .after("CANCELED")
+                .build());
+    }
+
     private record Viewer(Farm farm, FarmMember member, FarmStatus status) {
     }
 }

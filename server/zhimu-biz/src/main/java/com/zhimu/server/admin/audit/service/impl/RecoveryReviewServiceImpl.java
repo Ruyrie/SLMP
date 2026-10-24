@@ -5,13 +5,18 @@ import com.zhimu.server.admin.audit.query.RecoveryAdminQuery;
 import com.zhimu.server.admin.audit.query.RecoveryFarmRow;
 import com.zhimu.server.admin.audit.query.RecoveryVerifyLogRow;
 import com.zhimu.server.admin.audit.request.RecoveryHandleRequest;
+import com.zhimu.server.admin.audit.request.RecoveryProxyRequest;
+import com.zhimu.server.admin.audit.request.SmsResendRequest;
 import com.zhimu.server.admin.audit.service.RecoveryReviewService;
 import com.zhimu.server.admin.audit.support.AuditSupport;
 import com.zhimu.server.admin.audit.support.AuditTexts;
 import com.zhimu.server.admin.audit.support.AuditWaitCalculator;
 import com.zhimu.server.admin.audit.vo.AuditResultVO;
+import com.zhimu.server.admin.audit.vo.ProxyRecoveryVO;
 import com.zhimu.server.admin.audit.vo.RecoveryDetailVO;
 import com.zhimu.server.admin.audit.vo.RecoveryItemVO;
+import com.zhimu.server.admin.audit.vo.RecoveryVerificationRecordsVO;
+import com.zhimu.server.admin.audit.vo.SmsResendVO;
 import com.zhimu.server.biz.account.api.AccountRecoveryAdminService;
 import com.zhimu.server.biz.account.entity.AccountRecovery;
 import com.zhimu.server.biz.account.entity.User;
@@ -174,6 +179,92 @@ public class RecoveryReviewServiceImpl implements RecoveryReviewService {
                 .build();
     }
 
+    @Override
+    public SmsResendVO resendSms(Long id, SmsResendRequest request) {
+        AccountRecoveryAdminService.SmsResendResult result = accountRecoveryAdminService.resendResultSms(
+                id, AdminContext.requireAdminId(), request == null ? null : request.getReason());
+        return SmsResendVO.builder()
+                .id(result.id())
+                .phone(result.phone())
+                .smsStatus(result.smsStatus())
+                .smsStatusText(AuditTexts.smsStatusText(result.smsStatus()))
+                .retryCount(result.retryCount())
+                .queuedAt(result.queuedAt())
+                .note(result.note())
+                .build();
+    }
+
+    @Override
+    public RecoveryVerificationRecordsVO verificationRecords(Long id) {
+        AccountRecovery recovery = requireRecovery(id);
+        List<RecoveryVerifyLogRow> logs = queryMapper.selectRecoveryVerifyLogs(recovery.getUserId(),
+                recovery.getOldPhone(), 100);
+        RecoveryVerificationRecordsVO vo = new RecoveryVerificationRecordsVO();
+        vo.setRecoveryId(recovery.getId());
+        vo.setTotal(logs.size());
+        int seq = 1;
+        for (RecoveryVerifyLogRow row : logs) {
+            String channel = AuditTexts.submitChannelText(row.getSubmitChannel());
+            if ("CS_PROXY".equals(row.getSubmitChannel()) && row.getProxyAdminName() != null) {
+                channel = channel + " · " + row.getProxyAdminName();
+            }
+            vo.getRecords().add(RecoveryVerificationRecordsVO.Record.builder()
+                    .seq(seq++)
+                    .checkedAt(row.getCheckedAt())
+                    .result(row.getResult())
+                    .resultText(AuditTexts.recoveryResultText(row.getResult()))
+                    .resultDesc(resultDesc(row))
+                    .failCount(row.getFailCount())
+                    .remainingAttempts(row.getRemainingAttempts())
+                    .lockUntil(row.getLockUntil())
+                    .ip(row.getIp())
+                    .ipRegion(row.getIpRegion())
+                    .device(deviceText(row.getSubmitChannel()))
+                    .submitChannelText(channel)
+                    .proxyAdminId(row.getProxyAdminId())
+                    .proxyAdminName(row.getProxyAdminName())
+                    .build());
+        }
+        return vo;
+    }
+
+    @Override
+    public ProxyRecoveryVO proxy(RecoveryProxyRequest request) {
+        if (request == null) {
+            throw new BizException(ErrorCode.PARAM_INVALID, "请填写代登记信息");
+        }
+        AccountRecoveryAdminService.ProxyCreateResult result = accountRecoveryAdminService.proxyCreate(
+                AdminContext.requireAdminId(), request.getPhone(), request.getNewPhone(),
+                request.getRecoveryCode(), request.getDescription());
+        return ProxyRecoveryVO.builder()
+                .id(result.id())
+                .userId(result.userId())
+                .userName(result.userName())
+                .oldPhone(result.oldPhone())
+                .newPhone(result.newPhone())
+                .status(result.status())
+                .statusText(AuditTexts.statusText(result.status()))
+                .submittedAt(result.submittedAt())
+                .build();
+    }
+
+    private AccountRecovery requireRecovery(Long id) {
+        AccountRecovery recovery = id == null ? null : queryMapper.selectAccountRecovery(id);
+        if (recovery == null) {
+            throw new BizException(ErrorCode.NOT_FOUND, MSG_NOT_FOUND);
+        }
+        return recovery;
+    }
+
+    private static String deviceText(String submitChannel) {
+        return switch (submitChannel == null ? "" : submitChannel) {
+            case "CS_PROXY" -> "管理端（客服代登记）";
+            case "APP_ANDROID" -> "App（Android）";
+            case "WEB" -> "网页版";
+            default -> submitChannel;
+        };
+    }
+
     private Target target(Long id) {
         AccountRecovery recovery = id == null ? null : queryMapper.selectAccountRecovery(id);
         if (recovery == null) {
@@ -294,8 +385,8 @@ public class RecoveryReviewServiceImpl implements RecoveryReviewService {
     }
 
     private static boolean canRevealPhone() {
-        // R24（查看完整号码）不在本期范围，避免前端显示一个没有后端的入口。
-        return false;
+        AdminContext.LoginAdmin admin = AdminContext.get();
+        return admin != null && admin.hasPermission("WA-S03:HANDLE");
     }
 
     private static String trimToNull(String value) {
