@@ -41,6 +41,7 @@ import com.zhimu.slmp.common.service.IPushService;
 import com.zhimu.slmp.common.service.ServiceHub;
 import com.zhimu.slmp.common.session.SessionManager;
 import com.zhimu.slmp.network.RxResult;
+import com.zhimu.slmp.network.di.NetworkModule;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -50,6 +51,7 @@ import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
@@ -75,16 +77,21 @@ public class AccountRepository {
     static final long LOGOUT_API_TIMEOUT_SECONDS = 5;
 
     private final AccountApi api;
+    /** 上传 Retrofit 创建的同一接口（写入超时 120 秒，头像文件可能较大） */
+    private final AccountApi uploadApi;
     private final SessionManager sessionManager;
     private final FarmContext farmContext;
     private final DirectSmsGateway directSms;
     private final Context context;
 
     @Inject
-    public AccountRepository(@NonNull AccountApi api, @NonNull SessionManager sessionManager,
+    public AccountRepository(@NonNull AccountApi api,
+                             @Named(NetworkModule.UPLOAD) @NonNull AccountApi uploadApi,
+                             @NonNull SessionManager sessionManager,
                              @NonNull FarmContext farmContext, @NonNull DirectSmsGateway directSms,
                              @NonNull Context context) {
         this.api = api;
+        this.uploadApi = uploadApi;
         this.sessionManager = sessionManager;
         this.farmContext = farmContext;
         this.directSms = directSms;
@@ -227,7 +234,7 @@ public class AccountRepository {
     public Single<AccountUserVO> uploadAvatar(@NonNull Uri uri) {
         return Single.defer(() -> {
             PreparedAvatar prepared = prepareAvatar(uri);
-            return api.uploadAvatar(prepared.part, SCENE_AVATAR)
+            return uploadApi.uploadAvatar(prepared.part, SCENE_AVATAR)
                     .compose(RxResult.unwrap())
                     .flatMap(file -> {
                         long fileId = file == null ? 0 : file.resolvedFileId();
@@ -362,8 +369,12 @@ public class AccountRepository {
 
         PreparedAvatar(@NonNull File file, @NonNull String mime) {
             this.file = file;
+            MediaType mediaType = MediaType.parse(mime);
+            if (mediaType == null) {
+                mediaType = MediaType.parse("image/jpeg");
+            }
             this.part = MultipartBody.Part.createFormData("file", file.getName(),
-                    RequestBody.create(file, MediaType.parse(mime)));
+                    RequestBody.create(file, mediaType));
         }
 
         void delete() {

@@ -23,6 +23,7 @@ import com.zhimu.slmp.common.farm.FarmContext;
 import com.zhimu.slmp.common.model.vo.AccountUserVO;
 import com.zhimu.slmp.common.model.vo.FileVO;
 import com.zhimu.slmp.common.session.SessionManager;
+import com.zhimu.slmp.network.GsonFactory;
 import com.zhimu.slmp.network.model.ApiResponse;
 
 import org.junit.Before;
@@ -52,6 +53,7 @@ public class AccountRepositoryAvatarTest {
     public TemporaryFolder cacheDir = new TemporaryFolder();
 
     private AccountApi api;
+    private AccountApi uploadApi;
     private ContentResolver resolver;
     private Uri uri;
     private AccountRepository repository;
@@ -59,11 +61,12 @@ public class AccountRepositoryAvatarTest {
     @Before
     public void setUp() throws Exception {
         api = mock(AccountApi.class);
+        uploadApi = mock(AccountApi.class);
         resolver = mock(ContentResolver.class);
         Context context = mock(Context.class);
         when(context.getCacheDir()).thenReturn(cacheDir.getRoot());
         when(context.getContentResolver()).thenReturn(resolver);
-        repository = new AccountRepository(api, mock(SessionManager.class), mock(FarmContext.class),
+        repository = new AccountRepository(api, uploadApi, mock(SessionManager.class), mock(FarmContext.class),
                 mock(DirectSmsGateway.class), context);
 
         uri = mock(Uri.class);
@@ -77,14 +80,15 @@ public class AccountRepositoryAvatarTest {
         FileVO file = TestData.fromJson("{\"file_id\":123,\"url\":\"" + AVATAR_URL + "\"}", FileVO.class);
         AccountUserVO user = TestData.fromJson("{\"user_id\":10001,\"name\":\"王建国\",\"name_initial\":\"王\","
                 + "\"avatar_url\":\"" + AVATAR_URL + "\"}", AccountUserVO.class);
-        when(api.uploadAvatar(any(), eq(AccountRepository.SCENE_AVATAR)))
+        when(uploadApi.uploadAvatar(any(), eq(AccountRepository.SCENE_AVATAR)))
                 .thenReturn(Single.just(new ApiResponse<>(0, "ok", file, null)));
         when(api.bindAvatar(any())).thenReturn(Single.just(new ApiResponse<>(0, "ok", user, null)));
 
         AccountUserVO result = repository.uploadAvatar(uri).blockingGet();
 
         ArgumentCaptor<MultipartBody.Part> partCaptor = ArgumentCaptor.forClass(MultipartBody.Part.class);
-        verify(api).uploadAvatar(partCaptor.capture(), eq("AVATAR"));
+        verify(uploadApi).uploadAvatar(partCaptor.capture(), eq("AVATAR"));
+        verify(api, never()).uploadAvatar(any(), any());
         MultipartBody.Part part = partCaptor.getValue();
         assertEquals("image/png", part.body().contentType().toString());
         String disposition = String.valueOf(part.headers().get("Content-Disposition"));
@@ -103,7 +107,7 @@ public class AccountRepositoryAvatarTest {
         FileVO file = TestData.fromJson("{\"id\":456,\"url\":\"" + AVATAR_URL + "\"}", FileVO.class);
         AccountUserVO user = TestData.fromJson("{\"user_id\":10001,\"avatar_url\":\"" + AVATAR_URL + "\"}",
                 AccountUserVO.class);
-        when(api.uploadAvatar(any(), eq(AccountRepository.SCENE_AVATAR)))
+        when(uploadApi.uploadAvatar(any(), eq(AccountRepository.SCENE_AVATAR)))
                 .thenReturn(Single.just(new ApiResponse<>(0, "ok", file, null)));
         when(api.bindAvatar(any())).thenReturn(Single.just(new ApiResponse<>(0, "ok", user, null)));
 
@@ -117,7 +121,7 @@ public class AccountRepositoryAvatarTest {
     @Test
     public void uploadAvatar_missingFileId_errorsWithoutBinding() {
         FileVO file = TestData.fromJson("{\"url\":\"" + AVATAR_URL + "\"}", FileVO.class);
-        when(api.uploadAvatar(any(), eq(AccountRepository.SCENE_AVATAR)))
+        when(uploadApi.uploadAvatar(any(), eq(AccountRepository.SCENE_AVATAR)))
                 .thenReturn(Single.just(new ApiResponse<>(0, "ok", file, null)));
 
         repository.uploadAvatar(uri).test().assertError(ApiException.class);
@@ -128,7 +132,7 @@ public class AccountRepositoryAvatarTest {
 
     @Test
     public void uploadAvatar_networkFailure_cleansTempFileAndDoesNotBind() {
-        when(api.uploadAvatar(any(), eq(AccountRepository.SCENE_AVATAR)))
+        when(uploadApi.uploadAvatar(any(), eq(AccountRepository.SCENE_AVATAR)))
                 .thenReturn(Single.error(new ApiException(ErrorCodes.FILE_INVALID, "图片格式不支持")));
 
         repository.uploadAvatar(uri).test().assertError(ApiException.class);
@@ -158,6 +162,12 @@ public class AccountRepositoryAvatarTest {
         assertEquals("https://cdn.example.com/next.png",
                 user.withAvatarUrl("https://cdn.example.com/next.png").getAvatarUrl());
         assertNull(user.withAvatarUrl(null).getAvatarUrl());
+        assertTrue(GsonFactory.get().toJson(user).contains("\"avatar_url\":\"" + AVATAR_URL + "\""));
+    }
+
+    @Test
+    public void avatarBindRequest_serializesFileIdAsSnakeCase() {
+        assertEquals("{\"file_id\":123}", GsonFactory.get().toJson(new AvatarBindRequest(123)));
     }
 
     private void assertCacheEmpty() {
