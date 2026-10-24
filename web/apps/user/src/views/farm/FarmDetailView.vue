@@ -354,6 +354,7 @@ function transferConfirmText(): string {
                 v-for="(avatar, index) in detail.member_summary?.avatars || []"
                 :key="index"
                 :name="avatar"
+                :src="detail.member_summary?.avatar_urls?.[index]"
                 :size="32"
               />
               <span v-if="!detail.member_summary?.avatars?.length" class="zw-faint">暂无成员</span>
@@ -505,7 +506,7 @@ function transferConfirmText(): string {
                   @click="transferSelected = candidate.member_id"
                   @keydown.enter="transferSelected = candidate.member_id"
                 >
-                  <zw-avatar :name="candidate.name" :size="32" />
+                  <zw-avatar :name="candidate.name" :src="candidate.avatar_url" :size="32" />
                   <div>
                     <div>{{ candidate.name }}</div>
                     <div class="f03-farm-d num">场长 · {{ candidate.phone_masked || '—' }}</div>

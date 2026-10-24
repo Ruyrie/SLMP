@@ -22,6 +22,8 @@ import com.zhimu.server.biz.farm.vo.FarmDetailVO;
 import com.zhimu.server.biz.farm.vo.FarmListItemVO;
 import com.zhimu.server.biz.farm.vo.MemberDetailVO;
 import com.zhimu.server.biz.farm.vo.MemberItemVO;
+import com.zhimu.server.biz.farm.vo.MemberSummaryVO;
+import com.zhimu.server.biz.farm.vo.TransferCandidateVO;
 import com.zhimu.server.biz.herd.api.PenInfo;
 import com.zhimu.server.biz.herd.api.PenQueryService;
 import com.zhimu.server.common.enums.BizType;
@@ -283,6 +285,32 @@ class FarmAssemblerTest {
         assertThat(vo.getPermissions().getCanInvite()).isTrue();
         assertThat(vo.getStatusText()).isEqualTo("正常");
         assertThat(vo.getCurrentStock()).isEqualTo(870);
+    }
+
+    @Test
+    void memberSummaryAndTransferCandidateCarryAvatarUrls() {
+        Farm farm = farm(FarmStatus.NORMAL);
+        when(lookup.activeMembers(1001L)).thenReturn(List.of(member(5001L, 10001L, "OWNER"),
+                member(5002L, 10002L, "MANAGER"), member(5003L, 10003L, "STAFF")));
+        when(lookup.pensOfFarm(1001L)).thenReturn(List.of());
+        when(accountQuery.avatarUrl(10001L)).thenReturn("http://8.208.12.217/zmt-private/avatar/a.png?X-Amz-Signature=1");
+        when(accountQuery.avatarUrl(10002L)).thenReturn(null);
+        when(accountQuery.avatarUrl(10003L)).thenReturn("http://8.208.12.217/zmt-private/avatar/c.png?X-Amz-Signature=3");
+
+        MemberSummaryVO summary = assembler.memberSummary(farm);
+
+        // App 仍按 avatars 显示首字；Web 用同序的 avatar_urls 显示照片，没有头像的位置为 null
+        assertThat(summary.getAvatars()).containsExactly("王", "刘", "李");
+        assertThat(summary.getAvatarUrls()).containsExactly(
+                "http://8.208.12.217/zmt-private/avatar/a.png?X-Amz-Signature=1", null,
+                "http://8.208.12.217/zmt-private/avatar/c.png?X-Amz-Signature=3");
+
+        TransferCandidateVO candidate = assembler.candidate(member(5003L, 10003L, "MANAGER"),
+                new AccountBrief(10003L, "李明", "13700005678", "NORMAL", false));
+        assertThat(candidate.getAvatarUrl()).isEqualTo("http://8.208.12.217/zmt-private/avatar/c.png?X-Amz-Signature=3");
+        TransferCandidateVO cancelled = assembler.candidate(member(5003L, 10003L, "MANAGER"),
+                new AccountBrief(10003L, "李明", "13700005678", "CANCELLED", true));
+        assertThat(cancelled.getAvatarUrl()).isNull();
     }
 
     private static Farm farm(FarmStatus status) {

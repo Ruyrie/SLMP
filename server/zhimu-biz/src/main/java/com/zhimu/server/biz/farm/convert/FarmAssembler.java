@@ -484,6 +484,7 @@ public class FarmAssembler {
 
         Map<Long, AccountBrief> accounts = accounts(members.stream().map(FarmMember::getUserId).toList());
         List<String> avatars = new ArrayList<>();
+        List<String> avatarUrls = new ArrayList<>();
         for (FarmMember member : members) {
             if (avatars.size() >= 4) {
                 break;
@@ -491,9 +492,11 @@ public class FarmAssembler {
             AccountBrief account = accounts.get(member.getUserId());
             if (account != null) {
                 avatars.add(account.nameInitial());
+                avatarUrls.add(account.cancelled() ? null : accountQuery.avatarUrl(account.userId()));
             }
         }
         vo.setAvatars(avatars);
+        vo.setAvatarUrls(avatarUrls);
         List<PenBriefVO> unassigned = unassignedPens(farm.getId(), members);
         vo.setUnassignedPens(unassigned);
         vo.setShowUnassignedBanner(staff > 0 && !unassigned.isEmpty());
@@ -759,6 +762,7 @@ public class FarmAssembler {
         vo.setUserId(member.getUserId());
         vo.setName(account == null ? "已注销用户" : account.name());
         vo.setNameInitial(account == null ? null : account.nameInitial());
+        vo.setAvatarUrl(account == null || account.cancelled() ? null : accountQuery.avatarUrl(account.userId()));
         vo.setPhoneMasked(account == null ? null : account.phoneMasked());
         return vo;
     }

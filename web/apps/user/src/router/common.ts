@@ -1,11 +1,12 @@
-import { pageRoute, placeholder } from './helpers'
+import { pageRoute } from './helpers'
 
 export const commonRoutes = [
   pageRoute('WU-U01', '/change-requests', '我的修改申请', () => import('@/views/common/ChangeRequestView.vue'), {
     needsFarm: false,
     roles: ['owner', 'manager']
   }),
-  pageRoute('WU-U02', '/status/:type', '状态页', placeholder, { public: true, needsFarm: false }),
+  // 无权限、加载失败等状态页（守卫跳转 forbidden 时进入），不能再用“页面建设中”的占位页
+  pageRoute('WU-U02', '/status/:type', '状态页', () => import('@/views/common/StatusView.vue'), { public: true, needsFarm: false }),
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
