@@ -37,5 +37,7 @@ public class DrugCatalog extends BaseAdminEntity {
     /** 已列入禁用药：1 是 */
     private Boolean banned;
     private Long bannedDrugId;
+    /** 管理端列表顺序，新建时排最后（V1_23_2） */
+    private Integer sortNo;
     private String lastChangeNote;
 }

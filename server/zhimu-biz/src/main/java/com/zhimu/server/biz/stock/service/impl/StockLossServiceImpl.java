@@ -8,6 +8,7 @@ import com.zhimu.server.biz.stock.entity.StockLoss;
 import com.zhimu.server.biz.stock.enums.StockCodes;
 import com.zhimu.server.biz.stock.mapper.DrugMapper;
 import com.zhimu.server.biz.stock.mapper.FeedMapper;
+import com.zhimu.server.biz.stock.mapper.RecallProgressMapper;
 import com.zhimu.server.biz.stock.mapper.StockLossMapper;
 import com.zhimu.server.biz.stock.request.DrugScrapRequest;
 import com.zhimu.server.biz.stock.request.FeedLossRequest;
@@ -47,6 +48,7 @@ public class StockLossServiceImpl implements StockLossService {
     private final StockLedger ledger;
     private final StockFlowWriter flowWriter;
     private final StockLookups lookups;
+    private final RecallProgressMapper recallProgressMapper;
 
     @Override
     @Transactional
@@ -146,6 +148,10 @@ public class StockLossServiceImpl implements StockLossService {
         lossMapper.updateById(loss);
         lookups.log("CREATE", "LOSS_CREATE", StockCodes.BIZ_LOSS, loss.getId(), drug.getName(), null,
                 move.amount());
+        if (StockCodes.SCRAP_PLATFORM_RECALL.equals(request.getReason()) && lot.getRecallId() != null) {
+            recallProgressMapper.addScrap(lot.getRecallId(), lot.getFarmId(), qty, loss.getLossDate(),
+                    BeijingTime.now());
+        }
         return get(loss.getId());
     }
 
