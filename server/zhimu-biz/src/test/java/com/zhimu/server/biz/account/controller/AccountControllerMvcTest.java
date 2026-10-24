@@ -3,6 +3,7 @@ package com.zhimu.server.biz.account.controller;
 import com.zhimu.server.biz.account.service.AccountCancelService;
 import com.zhimu.server.biz.account.service.AccountService;
 import com.zhimu.server.biz.account.service.AuthService;
+import com.zhimu.server.biz.account.service.AvatarService;
 import com.zhimu.server.biz.account.service.RecoveryCodeService;
 import com.zhimu.server.biz.account.test.AccountTestMvc;
 import com.zhimu.server.biz.account.vo.AccountFarmStatsVO;
@@ -50,13 +51,14 @@ class AccountControllerMvcTest {
     private final RecoveryCodeService recoveryCodeService = mock(RecoveryCodeService.class);
     private final AccountService accountService = mock(AccountService.class);
     private final AccountCancelService accountCancelService = mock(AccountCancelService.class);
+    private final AvatarService avatarService = mock(AvatarService.class);
     private final WebRefreshCookie webRefreshCookie = mock(WebRefreshCookie.class);
     private MockMvc mvc;
 
     @BeforeEach
     void setUp() {
         AccountController controller = new AccountController(authService, recoveryCodeService, accountService,
-                accountCancelService, webRefreshCookie);
+                accountCancelService, avatarService, webRefreshCookie);
         mvc = AccountTestMvc.builder(controller).build();
         UserContext.set(new UserContext.LoginUser(10001L, ClientType.APP_ANDROID, 0, "jti"));
     }

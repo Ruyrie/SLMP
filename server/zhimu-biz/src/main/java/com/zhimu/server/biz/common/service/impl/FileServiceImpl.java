@@ -65,8 +65,9 @@ import java.util.Set;
 public class FileServiceImpl implements FileService {
 
     /** API-U05 开放的上传场景（管理端-04 2.5.10） */
-    public static final Set<FileScene> API_SCENES = EnumSet.of(FileScene.FARM_QUAL, FileScene.INSPECTION,
-            FileScene.ABNORMAL, FileScene.DISINFECT, FileScene.DEATH, FileScene.VOUCHER, FileScene.AI_IMAGE);
+    public static final Set<FileScene> API_SCENES = EnumSet.of(FileScene.FARM_QUAL, FileScene.AVATAR,
+            FileScene.INSPECTION, FileScene.ABNORMAL, FileScene.DISINFECT, FileScene.DEATH, FileScene.VOUCHER,
+            FileScene.AI_IMAGE);
 
     /** FARM_QUAL、AI_IMAGE 不校验养殖场状态且 farm_id 存空 */
     private static final Set<FileScene> NO_FARM_SCENES = EnumSet.of(FileScene.FARM_QUAL, FileScene.AI_IMAGE);

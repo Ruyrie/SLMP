@@ -12,6 +12,8 @@ import com.zhimu.server.biz.account.enums.TokenRevokeReason;
 import com.zhimu.server.biz.account.enums.UserStatus;
 import com.zhimu.server.biz.account.mapper.RecoveryCodeMapper;
 import com.zhimu.server.biz.account.mapper.UserMapper;
+import com.zhimu.server.biz.account.service.AvatarService;
+import com.zhimu.server.biz.account.vo.AccountUserVO;
 import com.zhimu.server.biz.account.vo.AuthTokenVO;
 import com.zhimu.server.biz.account.vo.RecoveryCodeVO;
 import com.zhimu.server.biz.account.vo.RecoveryInfoVO;
@@ -50,6 +52,7 @@ public class AccountStateService {
     private final UserTokenService userTokenService;
     private final AuthStateCache authStateCache;
     private final FarmAccountService farmAccountService;
+    private final AvatarService avatarService;
 
     public User findByPhone(String phone) {
         return phone == null ? null : userMapper.selectByPhone(phone);
@@ -233,7 +236,7 @@ public class AccountStateService {
                 .refreshToken(pair.refreshToken())
                 .nextStep(step.name())
                 .nextStepText(step.getText())
-                .user(UserConvert.toAccountUser(user))
+                .user(accountUser(user))
                 .lastFarmId(lastFarmId)
                 .recoveryInfo(info)
                 .recoveryCode(recoveryCode)
@@ -243,13 +246,22 @@ public class AccountStateService {
     public SessionVO toSessionVO(User user, ClientType client) {
         NextStep step = resolveNextStep(user, client);
         return SessionVO.builder()
-                .user(UserConvert.toAccountUser(user))
+                .user(accountUser(user))
                 .nextStep(step.name())
                 .nextStepText(step.getText())
                 .recoveryInfo(step == NextStep.RECOVERY_CHANGE_PASSWORD
                         ? UserConvert.toRecoveryInfo(user, properties) : null)
                 .lastFarmId(defaultFarm(user))
                 .build();
+    }
+
+    /** 登录/刷新/会话的 user：一次头像文件查询补 avatar_url，没有头像时为 null */
+    private AccountUserVO accountUser(User user) {
+        AccountUserVO vo = UserConvert.toAccountUser(user);
+        if (vo != null) {
+            vo.setAvatarUrl(avatarService.avatarUrl(user.getAvatarFileId()));
+        }
+        return vo;
     }
 
     /** A08/A15 的 last_farm_id：排除冻结/删除后的默认养殖场 */

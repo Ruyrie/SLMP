@@ -50,6 +50,23 @@ class VoJsonTest {
     }
 
     @Test
+    void 账号用户VO输出avatar_url_没有头像时为null() {
+        User user = new User();
+        user.setId(10001L);
+        user.setName("王建国");
+        user.setPhone("13800006620");
+        AccountUserVO vo = UserConvert.toAccountUser(user);
+
+        JsonNode withoutAvatar = AccountTestMvc.MAPPER.valueToTree(vo);
+        assertThat(withoutAvatar.has("avatar_url")).isTrue();
+        assertThat(withoutAvatar.get("avatar_url").isNull()).isTrue();
+
+        vo.setAvatarUrl("https://files.test/avatar/900.jpg");
+        JsonNode withAvatar = AccountTestMvc.MAPPER.valueToTree(vo);
+        assertThat(withAvatar.get("avatar_url").asString()).isEqualTo("https://files.test/avatar/900.jpg");
+    }
+
+    @Test
     void 空字段不输出_布尔计数必须有值() {
         AccountOverviewVO vo = AccountOverviewVO.builder().profileVersion(0).build();
         JsonNode json = AccountTestMvc.MAPPER.valueToTree(vo);

@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.account.controller;
 
+import com.zhimu.server.biz.account.request.AccountAvatarRequest;
 import com.zhimu.server.biz.account.request.AccountCancelRequest;
 import com.zhimu.server.biz.account.request.AfterRecoveryPasswordRequest;
 import com.zhimu.server.biz.account.request.PasswordChangeRequest;
@@ -8,9 +9,11 @@ import com.zhimu.server.biz.account.request.RecoveryCodeRegenerateRequest;
 import com.zhimu.server.biz.account.service.AccountCancelService;
 import com.zhimu.server.biz.account.service.AccountService;
 import com.zhimu.server.biz.account.service.AuthService;
+import com.zhimu.server.biz.account.service.AvatarService;
 import com.zhimu.server.biz.account.service.RecoveryCodeService;
 import com.zhimu.server.biz.account.support.Clients;
 import com.zhimu.server.biz.account.vo.AccountOverviewVO;
+import com.zhimu.server.biz.account.vo.AccountUserVO;
 import com.zhimu.server.biz.account.vo.AuthTokenVO;
 import com.zhimu.server.biz.account.vo.CancellationPreviewVO;
 import com.zhimu.server.biz.account.vo.ProfileVO;
@@ -24,6 +27,7 @@ import com.zhimu.server.framework.security.annotation.AllowForcedStep;
 import com.zhimu.server.framework.security.token.WebRefreshCookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,6 +48,7 @@ public class AccountController {
     private final RecoveryCodeService recoveryCodeService;
     private final AccountService accountService;
     private final AccountCancelService accountCancelService;
+    private final AvatarService avatarService;
     private final WebRefreshCookie webRefreshCookie;
 
     /** API-A11 找回后修改密码（强制步骤） */
@@ -95,6 +100,26 @@ public class AccountController {
                                                 @RequestHeader(value = "X-Client", required = false) String client) {
         Clients.orApp(client);
         return ApiResponse.ok(accountService.updateProfile(request));
+    }
+
+    /** 绑定真实头像：file_id 来自 POST /api/v1/files?scene=AVATAR */
+    @Idempotent
+    @PutMapping("/avatar")
+    public ApiResponse<AccountUserVO> updateAvatar(@RequestBody AccountAvatarRequest request,
+                                                   @RequestHeader(value = "X-Client", required = false) String client) {
+        Clients.orApp(client);
+        UserContext.requireUserId();
+        return ApiResponse.ok(avatarService.updateAvatar(request == null ? null : request.fileId()));
+    }
+
+    /** 清除真实头像 */
+    @Idempotent
+    @DeleteMapping("/avatar")
+    public ApiResponse<AccountUserVO> clearAvatar(
+            @RequestHeader(value = "X-Client", required = false) String client) {
+        Clients.orApp(client);
+        UserContext.requireUserId();
+        return ApiResponse.ok(avatarService.clearAvatar());
     }
 
     /** API-A17 修改密码 */

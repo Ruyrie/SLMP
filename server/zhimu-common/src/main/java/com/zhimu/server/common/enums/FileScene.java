@@ -8,6 +8,7 @@ import lombok.Getter;
 @Getter
 public enum FileScene implements CodeEnum {
     FARM_QUAL("资质图", false, Bucket.PRIVATE),
+    AVATAR("头像", false, Bucket.PRIVATE),
     INSPECTION("巡检", true, Bucket.PRIVATE),
     ABNORMAL("异常上报", true, Bucket.PRIVATE),
     DISINFECT("消毒照片", false, Bucket.PRIVATE),

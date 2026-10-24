@@ -8,12 +8,14 @@ import com.zhimu.server.biz.account.entity.User;
 import com.zhimu.server.biz.account.enums.UserStatus;
 import com.zhimu.server.biz.account.request.ProfileUpdateRequest;
 import com.zhimu.server.biz.account.service.AccountService;
+import com.zhimu.server.biz.account.service.AvatarService;
 import com.zhimu.server.biz.account.support.AccountStateService;
 import com.zhimu.server.biz.account.support.AccountValidation;
 import com.zhimu.server.biz.account.support.Errors;
 import com.zhimu.server.biz.account.vo.AccountFarmStatsVO;
 import com.zhimu.server.biz.account.vo.AccountOverviewVO;
 import com.zhimu.server.biz.account.vo.AccountSecurityVO;
+import com.zhimu.server.biz.account.vo.AccountUserVO;
 import com.zhimu.server.biz.account.vo.ProfileVO;
 import com.zhimu.server.biz.common.api.ChangeRequestService;
 import com.zhimu.server.biz.farm.api.AccountFarmStats;
@@ -42,6 +44,7 @@ public class AccountServiceImpl implements AccountService {
     private final ChangeRequestService changeRequestService;
     private final ReminderSettingQueryService reminderSettingQueryService;
     private final AccountProperties properties;
+    private final AvatarService avatarService;
 
     @Override
     public AccountOverviewVO overview(Long userId, Long farmId, ClientType client) {
@@ -61,8 +64,12 @@ public class AccountServiceImpl implements AccountService {
         if (reminder == null) {
             reminder = com.zhimu.server.common.vo.ReminderSummaryVO.builder().digestEnabled(false).build();
         }
+        AccountUserVO accountUser = UserConvert.toAccountUser(user);
+        if (accountUser != null) {
+            accountUser.setAvatarUrl(avatarService.avatarUrl(user.getAvatarFileId()));
+        }
         return AccountOverviewVO.builder()
-                .user(UserConvert.toAccountUser(user))
+                .user(accountUser)
                 .profileVersion(user.getProfileVersion() == null ? 0 : user.getProfileVersion())
                 .currentFarm(currentFarm)
                 .farmStats(AccountFarmStatsVO.builder()

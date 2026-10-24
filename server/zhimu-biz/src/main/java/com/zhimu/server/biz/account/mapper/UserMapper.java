@@ -28,4 +28,10 @@ public interface UserMapper extends BaseMapper<User> {
 
     /** token_version 加 1 并写入失效原因 */
     int bumpTokenVersion(@Param("id") Long id, @Param("reason") String reason, @Param("now") LocalDateTime now);
+
+    /** 绑定头像：写入 avatar_file_id，同时 profile_version 加 1 */
+    int updateAvatar(@Param("id") Long id, @Param("fileId") Long fileId, @Param("now") LocalDateTime now);
+
+    /** 清除头像：avatar_file_id 置空 */
+    int clearAvatar(@Param("id") Long id, @Param("now") LocalDateTime now);
 }
