@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 启动器图标单色层（Android 13 主题图标）：系统只取透明度着色，眼睛、猪鼻用 evenOdd 挖空，鼻孔在挖空里再填回 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 双耳 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M33,47C31,40 32,33 35,29C36.5,27.5 38.5,27.5 40,28.6C44,31.5 47.5,35 50,38.5Z M75,47C77,40 76,33 73,29C71.5,27.5 69.5,27.5 68,28.6C64,31.5 60.5,35 58,38.5Z" />
+    <!-- 脸（挖出眼睛、猪鼻，鼻孔填回） -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M33,59a21,18.5 0,1 0,42 0a21,18.5 0,1 0,-42 0Z M42.9,54a2.6,2.6 0,1 0,5.2 0a2.6,2.6 0,1 0,-5.2 0Z M59.9,54a2.6,2.6 0,1 0,5.2 0a2.6,2.6 0,1 0,-5.2 0Z M43.5,65a10.5,7.5 0,1 0,21 0a10.5,7.5 0,1 0,-21 0Z M48.2,65a2,3 0,1 0,4 0a2,3 0,1 0,-4 0Z M55.8,65a2,3 0,1 0,4 0a2,3 0,1 0,-4 0Z" />
+    <!-- 星光 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M54,23C54.9,27.6 56.4,29.1 61,30C56.4,30.9 54.9,32.4 54,37C53.1,32.4 51.6,30.9 47,30C51.6,29.1 53.1,27.6 54,23Z" />
+</vector>
