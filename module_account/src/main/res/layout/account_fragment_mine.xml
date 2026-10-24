@@ -83,10 +83,37 @@
                                     android:paddingStart="@dimen/base_page_margin"
                                     android:paddingEnd="@dimen/base_space_3">
 
-                                    <com.zhimu.slmp.base.widget.AvatarView
+                                    <FrameLayout
                                         android:layout_width="56dp"
-                                        android:layout_height="56dp"
-                                        app:avatarName="@{vm.user.name}" />
+                                        android:layout_height="56dp">
+
+                                        <!-- 姓名首字回退；有真实头像并加载成功时隐藏 -->
+                                        <com.zhimu.slmp.base.widget.AvatarView
+                                            android:id="@+id/account_mine_avatar_initial"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            app:avatarName="@{vm.user.name}" />
+
+                                        <com.google.android.material.imageview.ShapeableImageView
+                                            android:id="@+id/account_mine_avatar_image"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:contentDescription="@string/account_mine_avatar_desc"
+                                            android:scaleType="centerCrop"
+                                            android:visibility="gone"
+                                            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Zmt.Circle" />
+
+                                        <ProgressBar
+                                            android:id="@+id/account_mine_avatar_progress"
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:layout_gravity="center"
+                                            android:contentDescription="@string/account_avatar_uploading"
+                                            android:indeterminate="true"
+                                            android:indeterminateTint="?attr/colorPrimary"
+                                            android:visibility="gone"
+                                            app:visibleIf="@{vm.uploadingAvatar}" />
+                                    </FrameLayout>
 
                                     <LinearLayout
                                         android:layout_width="0dp"

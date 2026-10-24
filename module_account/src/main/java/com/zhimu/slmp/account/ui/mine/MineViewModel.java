@@ -1,5 +1,6 @@
 package com.zhimu.slmp.account.ui.mine;
 
+import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -54,6 +55,10 @@ public class MineViewModel extends BaseViewModel {
 
     public static final String MSG_NAME_SAVED = "已保存姓名";
     public static final String MSG_LOGGED_OUT = "已退出登录";
+    public static final String MSG_AVATAR_UPDATED = "已更新头像";
+    public static final String MSG_AVATAR_REMOVED = "已恢复默认头像";
+    public static final String MSG_AVATAR_UPLOAD_FAILED = "头像上传失败，请稍后重试";
+    public static final String MSG_AVATAR_CLEAR_FAILED = "恢复默认头像失败，请稍后重试";
     public static final String FARM_EMPTY = "还没有养殖场，点按新建";
     public static final String MSG_LOAD_FAILED = "个人信息加载失败，下拉可重新加载";
     public static final String MSG_PROFILE_NOT_LOADED = "个人信息还没有加载完成，请下拉刷新后再修改";
@@ -79,6 +84,11 @@ public class MineViewModel extends BaseViewModel {
     private final MutableLiveData<String> nameError = new MutableLiveData<>(null);
     private final MutableLiveData<Boolean> submitting = new MutableLiveData<>(false);
     private final MutableLiveData<Boolean> loggingOut = new MutableLiveData<>(false);
+    /** 头像上传/清除中：个人信息卡显示环形进度，面板按钮不再响应 */
+    private final MutableLiveData<Boolean> uploadingAvatar = new MutableLiveData<>(false);
+    /** 真实头像地址；为空时个人信息卡回退显示姓名首字 */
+    private final LiveData<String> avatarUrl;
+    private final LiveData<Boolean> hasAvatar;
 
     private final SingleLiveEvent<Boolean> showNameSheet = new SingleLiveEvent<>();
     private final SingleLiveEvent<Boolean> dismissNameSheet = new SingleLiveEvent<>();
@@ -107,6 +117,8 @@ public class MineViewModel extends BaseViewModel {
                 ctx -> ctx == null ? null : ctx.getName() + " · " + ctx.getRoleText());
         user.addSource(overview, o -> user.setValue(pickUser()));
         user.addSource(sessionManager.getUser(), u -> user.setValue(pickUser()));
+        avatarUrl = Transformations.map(user, u -> u == null ? null : u.getAvatarUrl());
+        hasAvatar = Transformations.map(avatarUrl, url -> url != null && !url.isEmpty());
         // 概况未取到（降级显示）时养殖场数未知，副文字留空，不误显示“还没有养殖场”
         farmSubtitle = Transformations.map(overview, o -> o == null ? null : farmSubtitleOf(o.getFarmStats()));
         farmTags = Transformations.map(overview, o -> farmTagsOf(o == null ? null : o.getFarmStats()));
@@ -235,6 +247,20 @@ public class MineViewModel extends BaseViewModel {
 
     public LiveData<String> getVersionText() {
         return versionText;
+    }
+
+    /** 真实头像地址；为空表示显示姓名首字 */
+    public LiveData<String> getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    /** 当前是否有真实头像（面板据此显示“恢复默认头像”） */
+    public LiveData<Boolean> getHasAvatar() {
+        return hasAvatar;
+    }
+
+    public LiveData<Boolean> getUploadingAvatar() {
+        return uploadingAvatar;
     }
 
     public LiveData<String> getNameError() {
@@ -401,6 +427,78 @@ public class MineViewModel extends BaseViewModel {
             return true;
         }
         return false;
+    }
+
+    // ===== 头像 =====
+
+    /**
+     * 选择图片后上传：POST files?scene=AVATAR → PUT account/avatar，
+     * 成功用返回的 avatar_url 立即更新个人信息卡与会话缓存；失败提示固定文案（登录失效仍交给全局处理）。
+     */
+    public void uploadAvatar(@NonNull Uri uri) {
+        if (Boolean.TRUE.equals(uploadingAvatar.getValue())) {
+            return;
+        }
+        uploadingAvatar.setValue(true);
+        launch(repository.uploadAvatar(uri), vo -> {
+            uploadingAvatar.setValue(false);
+            String avatarUrl = vo.getAvatarUrl();
+            if (avatarUrl == null || avatarUrl.isEmpty() || !applyAvatarUrl(avatarUrl)) {
+                // 返回值没带头像地址，或本机没有可合并的用户信息：用一次汇总请求拿到权威头像
+                refresh();
+            }
+            showMessage(MSG_AVATAR_UPDATED);
+        }, e -> {
+            uploadingAvatar.setValue(false);
+            handleAvatarError(e, MSG_AVATAR_UPLOAD_FAILED);
+        });
+    }
+
+    /** 恢复默认头像：DELETE account/avatar，成功后立即回退为姓名首字 */
+    public void clearAvatar() {
+        if (Boolean.TRUE.equals(uploadingAvatar.getValue())) {
+            return;
+        }
+        uploadingAvatar.setValue(true);
+        launch(repository.clearAvatar(), vo -> {
+            uploadingAvatar.setValue(false);
+            if (!applyAvatarUrl(null)) {
+                refresh();
+            }
+            showMessage(MSG_AVATAR_REMOVED);
+        }, e -> {
+            uploadingAvatar.setValue(false);
+            handleAvatarError(e, MSG_AVATAR_CLEAR_FAILED);
+        });
+    }
+
+    /**
+     * 把头像地址写回 overview 与 SessionManager（改名后立即保存到本机，不用等下一次汇总）。
+     *
+     * @return 是否找到可更新的用户；false 时调用方需要重新加载汇总
+     */
+    private boolean applyAvatarUrl(@Nullable String newAvatarUrl) {
+        AccountOverviewVO o = overview.getValue();
+        AccountUserVO old = o != null && o.getUser() != null ? o.getUser() : sessionManager.currentUser();
+        if (old == null) {
+            return false;
+        }
+        AccountUserVO updated = old.withAvatarUrl(newAvatarUrl);
+        if (o != null) {
+            o.applyProfile(updated, o.getProfileVersion());
+            overview.setValue(o);
+        }
+        sessionManager.updateUser(updated);
+        return true;
+    }
+
+    private void handleAvatarError(@NonNull ApiException e, @NonNull String fallback) {
+        Log.w(TAG, "头像操作失败 code=" + e.getCode() + " trace_id=" + e.getTraceId());
+        if (ErrorCodes.isAuthHandled(e.getCode()) || e.getCode() == ErrorCodes.FORCED_STEP_REQUIRED) {
+            handleError(e);
+        } else {
+            showMessage(fallback);
+        }
     }
 
     @Override

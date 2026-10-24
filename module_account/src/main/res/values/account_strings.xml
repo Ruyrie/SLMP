@@ -98,6 +98,7 @@
     <!-- A07 我的 -->
     <string name="account_mine_title">我的</string>
     <string name="account_mine_profile_suffix">%1$s · 个人信息</string>
+    <string name="account_mine_avatar_desc">个人头像</string>
     <string name="account_mine_farms">我的养殖场</string>
     <string name="account_mine_change_requests">我的修改申请</string>
     <string name="account_mine_quit_farm">退出当前养殖场</string>
@@ -113,8 +114,14 @@
     <string name="account_mine_error_title">个人信息加载失败</string>
     <string name="account_mine_error_message">请检查网络后重新加载。</string>
     <string name="account_edit_name_title">修改姓名</string>
+    <string name="account_edit_name_desc">修改头像和姓名</string>
     <string name="account_edit_name_field">姓名</string>
     <string name="account_edit_name_helper">养殖场成员和登记记录中显示这个姓名</string>
+    <string name="account_edit_avatar_title">头像</string>
+    <string name="account_edit_avatar_pick">更换头像</string>
+    <string name="account_edit_avatar_clear">恢复默认头像</string>
+    <string name="account_edit_avatar_hint">从相册选择图片，选好后自动上传</string>
+    <string name="account_avatar_uploading">头像上传中</string>
 
     <!-- A08 账号与安全 -->
     <string name="account_security_title">账号与安全</string>
