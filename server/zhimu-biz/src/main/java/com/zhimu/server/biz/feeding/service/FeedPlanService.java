@@ -528,8 +528,16 @@ public class FeedPlanService {
                 || !java.util.Objects.equals(old.getDayAgeStart(), request.getDayAgeStart())
                 || !java.util.Objects.equals(old.getDayAgeEnd(), request.getDayAgeEnd())
                 || !java.util.Objects.equals(old.getFeedId(), request.getFeedId())
-                || !java.util.Objects.equals(old.getDailyQtyPerHead(), request.getDailyQtyPerHead())
+                || !sameDecimal(old.getDailyQtyPerHead(), request.getDailyQtyPerHead())
                 || !java.util.Objects.equals(old.getMealsPerDay(), request.getMealsPerDay());
+    }
+
+    /** 数值比较用 compareTo：JSON 的 1.2 与 DECIMAL(10,3) 的 1.200 equals 不相等 */
+    private boolean sameDecimal(java.math.BigDecimal left, java.math.BigDecimal right) {
+        if (left == null || right == null) {
+            return left == right;
+        }
+        return left.compareTo(right) == 0;
     }
 
     private String state(FeedPlanStage stage, int dayAge) {

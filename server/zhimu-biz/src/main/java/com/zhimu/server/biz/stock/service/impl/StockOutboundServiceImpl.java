@@ -137,6 +137,9 @@ public class StockOutboundServiceImpl implements StockOutboundService {
         outbound.setVersion(0);
         outbound.setCreatedBy(userId);
         outbound.setUpdatedBy(userId);
+        // unit_price / amount 列 NOT NULL，先写 0，出库流水算出实际金额后再更新
+        outbound.setUnitPrice(BigDecimal.ZERO);
+        outbound.setAmount(BigDecimal.ZERO);
         outboundMapper.insert(outbound);
 
         StockLedger.Move move = ledger.outFeed(feed, qty);
@@ -265,6 +268,9 @@ public class StockOutboundServiceImpl implements StockOutboundService {
         outbound.setVersion(0);
         outbound.setCreatedBy(userId);
         outbound.setUpdatedBy(userId);
+        // unit_price / amount 列 NOT NULL，先写 0，出库流水算出实际金额后再更新
+        outbound.setUnitPrice(BigDecimal.ZERO);
+        outbound.setAmount(BigDecimal.ZERO);
         outboundMapper.insert(outbound);
 
         StockLedger.Move move = ledger.outLot(lot, qty, unitText);
