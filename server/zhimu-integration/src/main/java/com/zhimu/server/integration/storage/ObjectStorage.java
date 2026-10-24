@@ -47,6 +47,10 @@ public interface ObjectStorage {
     /** 某个分片的预签名 PUT 地址（按 public-endpoint 签名），浏览器上传后从响应头取 ETag */
     String presignedPartUrl(String bucket, String objectKey, String uploadId, int partNumber, Duration ttl);
 
+    /** 服务端代传一个分片（浏览器无法直传 MinIO 时使用），返回分片 ETag */
+    UploadedPart uploadPart(String bucket, String objectKey, String uploadId, int partNumber,
+                            InputStream in, long size);
+
     /** 合并分片（按 partNumber 排序后提交） */
     void completeMultipart(String bucket, String objectKey, String uploadId, List<UploadedPart> parts);
 
@@ -70,6 +74,12 @@ public interface ObjectStorage {
     /** 课程 HLS 播放地址：{hls.base-url}/{fileId}/{variant}/index.m3u8 */
     String hlsUrl(long fileId, String variant);
 
+    /** 课程 HLS 主播放列表：{hls.base-url}/{fileId}/index.m3u8 */
+    String hlsMasterUrl(long fileId);
+
     /** 课程桶中某个文件 HLS 输出的对象前缀：hls/{fileId}/ */
     String hlsObjectPrefix(long fileId);
+
+    /** 公开只读对象的固定地址（课程 HLS / 封面），用于用户端持久展示，不带签名 */
+    String publicUrl(String bucket, String objectKey);
 }
