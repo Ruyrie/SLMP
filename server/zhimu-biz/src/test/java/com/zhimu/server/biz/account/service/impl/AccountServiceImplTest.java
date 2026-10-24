@@ -5,6 +5,7 @@ import com.zhimu.server.biz.account.entity.RecoveryCode;
 import com.zhimu.server.biz.account.entity.User;
 import com.zhimu.server.biz.account.mapper.UserMapper;
 import com.zhimu.server.biz.account.request.ProfileUpdateRequest;
+import com.zhimu.server.biz.account.service.AvatarService;
 import com.zhimu.server.biz.account.support.AccountStateService;
 import com.zhimu.server.biz.account.test.FixedTime;
 import com.zhimu.server.biz.account.vo.AccountOverviewVO;
@@ -42,13 +43,14 @@ class AccountServiceImplTest {
     private final ReminderSettingQueryService reminderService = mock(ReminderSettingQueryService.class);
     private final UserMapper userMapper = mock(UserMapper.class);
     private final AccountProperties properties = new AccountProperties();
+    private final AvatarService avatarService = mock(AvatarService.class);
     private AccountServiceImpl service;
 
     @BeforeEach
     void setUp() {
         FixedTime.set();
         service = new AccountServiceImpl(accountState, farmAccountService, changeRequestService, reminderService,
-                properties);
+                properties, avatarService);
         UserContext.set(new UserContext.LoginUser(10001L, ClientType.APP_ANDROID, 0, "jti"));
     }
 
@@ -123,6 +125,23 @@ class AccountServiceImplTest {
         assertThat(vo.getCurrentFarm()).isNull();
         assertThat(vo.getChangeRequestPendingCount()).isNull();
         assertThat(vo.getFarmStats().getTotalCount()).isZero();
+    }
+
+    @Test
+    void A15返回头像地址且没有头像时为空() {
+        User user = user();
+        user.setAvatarFileId(900L);
+        when(accountState.requireUser(10001L)).thenReturn(user);
+        when(farmAccountService.farmStats(10001L)).thenReturn(new AccountFarmStats(0, 0, 0));
+        when(reminderService.summary(10001L)).thenReturn(ReminderSummaryVO.builder().digestEnabled(false).build());
+        when(avatarService.avatarUrl(900L)).thenReturn("https://files.test/avatar/900.jpg");
+
+        AccountOverviewVO withAvatar = service.overview(10001L, null, ClientType.APP_ANDROID);
+        assertThat(withAvatar.getUser().getAvatarUrl()).isEqualTo("https://files.test/avatar/900.jpg");
+
+        user.setAvatarFileId(null);
+        AccountOverviewVO withoutAvatar = service.overview(10001L, null, ClientType.APP_ANDROID);
+        assertThat(withoutAvatar.getUser().getAvatarUrl()).isNull();
     }
 
     @Test

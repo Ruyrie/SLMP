@@ -17,7 +17,7 @@ public interface FileService {
      * API-U05 上传图片或视频。
      *
      * @param file       multipart 字段 file
-     * @param scene      上传场景（FARM_QUAL、INSPECTION、ABNORMAL、DISINFECT、DEATH、VOUCHER、AI_IMAGE）
+     * @param scene      上传场景（FARM_QUAL、AVATAR、INSPECTION、ABNORMAL、DISINFECT、DEATH、VOUCHER、AI_IMAGE）
      * @param cover      视频封面（选填，JPG）；为空时服务端截第 1 秒画面
      * @param durationMs 视频时长（App 已压缩时可选，服务端以 ffprobe 为准）
      * @param shotAt     视频拍摄时间（选填，图片忽略）

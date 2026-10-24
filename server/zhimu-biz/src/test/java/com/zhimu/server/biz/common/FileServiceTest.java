@@ -179,6 +179,16 @@ class FileServiceTest {
     }
 
     @Test
+    void uploadAvatarImageAcceptsAvatarScene() {
+        FileVO vo = service.upload(new MockMultipartFile("file", "avatar.png", "image/png", png(200, 200)),
+                FileScene.AVATAR, null, null, null, null);
+
+        assertThat(vo.getMediaType()).isEqualTo("IMAGE");
+        assertThat(vo.getUrl()).startsWith("https://files.test/avatar/");
+        assertThat(files.get(vo.getFileId()).getScene()).isEqualTo("AVATAR");
+    }
+
+    @Test
     void farmQualAndAiImageStoreEmptyFarmId() {
         byte[] png = png(100, 100);
         FileVO qual = service.upload(new MockMultipartFile("file", "qual.png", "image/png", png),

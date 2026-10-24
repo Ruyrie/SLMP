@@ -21,6 +21,8 @@ public class User extends AuditEntity {
     private String phone;
     private String passwordHash;
     private String name;
+    /** 头像文件 ID（t_file.id，scene = AVATAR） */
+    private Long avatarFileId;
     private String status;
     private Integer tokenVersion;
     private String tokenRevokeReason;
