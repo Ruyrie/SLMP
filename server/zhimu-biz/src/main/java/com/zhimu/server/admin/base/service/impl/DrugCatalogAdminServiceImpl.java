@@ -179,6 +179,7 @@ public class DrugCatalogAdminServiceImpl implements DrugCatalogAdminService {
         catalog.setLastChangeNote(StringUtils.hasText(request.getChangeReason())
                 ? request.getChangeReason().trim() : "修改目录信息");
         catalog.setUpdatedBy(adminId);
+        LocalDateTime now = BeijingTime.now();
         int rows = catalogMapper.update(null, Wrappers.<DrugCatalog>lambdaUpdate()
                 .eq(DrugCatalog::getId, id)
                 .eq(DrugCatalog::getVersion, catalog.getVersion())
@@ -196,7 +197,7 @@ public class DrugCatalogAdminServiceImpl implements DrugCatalogAdminService {
                 .set(DrugCatalog::getDisinfectMethodCodes, catalog.getDisinfectMethodCodes())
                 .set(DrugCatalog::getLastChangeNote, catalog.getLastChangeNote())
                 .set(DrugCatalog::getUpdatedBy, adminId)
-                .set(DrugCatalog::getUpdatedAt, BeijingTime.now())
+                .set(DrugCatalog::getUpdatedAt, now)
                 .set(DrugCatalog::getVersion, catalog.getVersion() + 1));
         if (rows == 0) {
             throw BaseErrors.versionConflict();
@@ -208,6 +209,7 @@ public class DrugCatalogAdminServiceImpl implements DrugCatalogAdminService {
             usageMapper.insert(usage);
         }
         catalog.setVersion(catalog.getVersion() + 1);
+        catalog.setUpdatedAt(now);
         logs.record(OperationLogEntry.builder()
                 .opType("BASE_DRUG_CATALOG").opAction("UPDATE").bizType("DRUG_CATALOG")
                 .bizId(id).targetName(catalog.getName()).searchText(catalog.getName())
@@ -240,13 +242,14 @@ public class DrugCatalogAdminServiceImpl implements DrugCatalogAdminService {
             drugSupport.assertEnableAllowed(catalog);
         }
         String reason = "DISABLED".equals(status) ? request.getReason().trim() : null;
+        LocalDateTime now = BeijingTime.now();
         int rows = catalogMapper.update(null, Wrappers.<DrugCatalog>lambdaUpdate()
                 .eq(DrugCatalog::getId, id)
                 .eq(DrugCatalog::getVersion, catalog.getVersion())
                 .set(DrugCatalog::getStatus, status)
                 .set(DrugCatalog::getDisableReason, reason)
                 .set(DrugCatalog::getUpdatedBy, adminId)
-                .set(DrugCatalog::getUpdatedAt, BeijingTime.now())
+                .set(DrugCatalog::getUpdatedAt, now)
                 .set(DrugCatalog::getVersion, catalog.getVersion() + 1));
         if (rows == 0) {
             throw BaseErrors.versionConflict();
@@ -254,6 +257,7 @@ public class DrugCatalogAdminServiceImpl implements DrugCatalogAdminService {
         catalog.setStatus(status);
         catalog.setDisableReason(reason);
         catalog.setVersion(catalog.getVersion() + 1);
+        catalog.setUpdatedAt(now);
         logs.record(OperationLogEntry.builder()
                 .opType("BASE_DRUG_CATALOG").opAction("DISABLED".equals(status) ? "DISABLE" : "ENABLE")
                 .bizType("DRUG_CATALOG").bizId(id).targetName(catalog.getName())
