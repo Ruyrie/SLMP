@@ -41,8 +41,6 @@ WHERE c.id <> d.keep_id
 ALTER TABLE t_ai_correction
     ADD UNIQUE KEY uk_ai_correction_published (message_id, published_flag);
 
-CREATE INDEX idx_ai_message_handle ON t_ai_message (handle_status, asked_at);
-
 CREATE TABLE t_ai_qa_review
 (
     id                  BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '抽查与处理记录 ID',

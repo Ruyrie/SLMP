@@ -18,3 +18,7 @@ local.properties
 /.tech-prep/
 /原型导出/
 /第六组_智牧通_UI设计与技术准备文档/
+
+# Local runtime logs
+/logs/
+
