@@ -73,9 +73,9 @@ public interface HealthReferenceMapper {
             + "FROM t_immune_template_item WHERE version_id = #{versionId} ORDER BY sort_no, id")
     List<ImmuneTemplateItemRow> selectTemplateItems(@Param("versionId") Long versionId);
 
-    /** 本场药品档案（含疫苗、消毒剂） */
+    /** 本场药品档案（含疫苗、消毒剂）；t_drug 没有 status 列，停用按目录与批号判断 */
     @Select("SELECT id, catalog_id AS catalogId, category, name, spec, unit, pack_unit AS packUnit, "
-            + "pack_size AS packSize, status FROM t_drug "
+            + "pack_size AS packSize FROM t_drug "
             + "WHERE farm_id = #{farmId} AND deleted = 0 ORDER BY id")
     List<FarmDrugRow> selectDrugs(@Param("farmId") Long farmId);
 

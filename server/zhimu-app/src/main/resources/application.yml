@@ -88,7 +88,8 @@ zhimu:
     admin-session-cookie-name: ZMT_ADMIN_SESSION
     admin-session-ttl: 30m
     jwt-admin-secret: ${JWT_ADMIN_SECRET:}
-    cookie-secure: true
+    # 公网 HTTP 部署时设为 false（否则浏览器不会回传 Secure Cookie）；HTTPS 保持 true
+    cookie-secure: ${COOKIE_SECURE:true}
     # 凭 Cookie 认证的请求校验 Origin（Web 用户端与管理端站点）
     allowed-origins: ${ALLOWED_ORIGINS:}
   app-version:
