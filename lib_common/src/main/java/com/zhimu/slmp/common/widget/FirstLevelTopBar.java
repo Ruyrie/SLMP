@@ -2,6 +2,7 @@ package com.zhimu.slmp.common.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -17,10 +18,16 @@ import androidx.annotation.OptIn;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LifecycleOwner;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.badge.BadgeUtils;
 import com.google.android.material.badge.ExperimentalBadgeUtils;
 import com.google.android.material.color.MaterialColors;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.zhimu.slmp.base.util.ClickThrottle;
 import com.zhimu.slmp.base.widget.AvatarView;
 import com.zhimu.slmp.common.R;
@@ -65,6 +72,7 @@ public class FirstLevelTopBar extends LinearLayout {
     private final ImageView messagesIcon;
     private final View avatarCell;
     private final AvatarView avatar;
+    private final ShapeableImageView avatarImage;
 
     @Nullable
     private BadgeDrawable badge;
@@ -98,6 +106,7 @@ public class FirstLevelTopBar extends LinearLayout {
         messagesIcon = findViewById(R.id.common_ui_messages_icon);
         avatarCell = findViewById(R.id.common_ui_avatar_cell);
         avatar = findViewById(R.id.common_ui_avatar);
+        avatarImage = findViewById(R.id.common_ui_avatar_image);
 
         boolean showScan = true;
         if (attrs != null) {
@@ -214,9 +223,12 @@ public class FirstLevelTopBar extends LinearLayout {
         return unread;
     }
 
-    /** 头像：显示 name_initial，没有时取姓名首字 */
+    /** 头像：有 avatar_url 时加载图片，失败或为空时回退 name_initial */
     public void setUser(@Nullable AccountUserVO user) {
         if (user == null) {
+            Glide.with(this).clear(avatarImage);
+            avatarImage.setVisibility(View.GONE);
+            avatar.setVisibility(View.VISIBLE);
             avatar.setInitial(null);
             return;
         }
@@ -225,6 +237,37 @@ public class FirstLevelTopBar extends LinearLayout {
             initial = AvatarView.initialOf(user.getName());
         }
         avatar.setInitial(initial);
+        String url = user.getAvatarUrl();
+        if (TextUtils.isEmpty(url)) {
+            Glide.with(this).clear(avatarImage);
+            avatarImage.setVisibility(View.GONE);
+            avatar.setVisibility(View.VISIBLE);
+            return;
+        }
+        avatar.setVisibility(View.VISIBLE);
+        avatarImage.setVisibility(View.GONE);
+        Glide.with(this)
+                .load(url)
+                .centerCrop()
+                .listener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, @Nullable Object model,
+                                                @NonNull Target<Drawable> target, boolean isFirstResource) {
+                        avatarImage.setVisibility(View.GONE);
+                        avatar.setVisibility(View.VISIBLE);
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model,
+                                                   @NonNull Target<Drawable> target,
+                                                   @NonNull DataSource dataSource, boolean isFirstResource) {
+                        avatarImage.setVisibility(View.VISIBLE);
+                        avatar.setVisibility(View.GONE);
+                        return false;
+                    }
+                })
+                .into(avatarImage);
     }
 
     // ---------------- 滚动变色 ----------------

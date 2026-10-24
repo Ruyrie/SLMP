@@ -94,5 +94,15 @@
             android:layout_height="@dimen/base_avatar_top_bar"
             android:layout_gravity="center"
             android:importantForAccessibility="no" />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/common_ui_avatar_image"
+            android:layout_width="@dimen/base_avatar_top_bar"
+            android:layout_height="@dimen/base_avatar_top_bar"
+            android:layout_gravity="center"
+            android:contentDescription="@string/common_ui_cd_mine"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Zmt.Circle" />
     </FrameLayout>
 </merge>
