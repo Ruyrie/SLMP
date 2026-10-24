@@ -276,7 +276,7 @@ watch(() => [route.query.action, route.query.penId], () => {
           <div class="zw-section-title">负责员工</div>
           <template v-if="store.detail.staff?.length">
             <div v-for="member in store.detail.staff" :key="member.user_id" class="l02-row">
-              <zw-avatar :name="member.name || '员'" :size="32" />
+              <zw-avatar :name="member.name || '员'" :src="member.avatar_url" :size="32" />
               <div class="l02-row-main">
                 <div class="zw-cell-main">{{ member.name }}</div>
                 <div class="zw-cell-sub">{{ member.role_text || '员工' }} · 在成员管理中分配</div>

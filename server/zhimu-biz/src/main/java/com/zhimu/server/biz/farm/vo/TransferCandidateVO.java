@@ -9,5 +9,7 @@ public class TransferCandidateVO {
     private Long userId;
     private String name;
     private String nameInitial;
+    /** 头像临时地址，没有头像为 null */
+    private String avatarUrl;
     private String phoneMasked;
 }

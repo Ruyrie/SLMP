@@ -93,6 +93,8 @@ export interface MemberSummaryVO {
   invite_count?: number
   invite_pending_count?: number
   avatars?: string[]
+  /** 与 avatars 同序的头像地址，没有头像为 null */
+  avatar_urls?: Array<string | null>
   unassigned_pens?: PenBriefVO[]
   show_unassigned_banner?: boolean
 }
@@ -300,6 +302,7 @@ export interface TransferCandidateVO {
   user_id?: number
   name: string
   name_initial?: string
+  avatar_url?: string | null
   phone_masked?: string
 }
 

@@ -393,6 +393,11 @@ public class HerdSupport {
                 .build();
     }
 
+    /** 用户头像临时地址（栏舍负责员工等少量成员显示用），没有头像为 null */
+    public String avatarUrl(Long userId) {
+        return userId == null ? null : accountQueryService.avatarUrl(userId);
+    }
+
     public static boolean isManager(FarmContext.FarmMember member) {
         return member.role() == FarmRole.OWNER || member.role() == FarmRole.MANAGER;
     }

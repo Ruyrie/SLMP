@@ -110,6 +110,32 @@ class PenServiceImplTest {
     }
 
     @Test
+    void detailStaffCarriesAvatarUrl() {
+        Pen pen = pen(2003L, "YF-03", "3 号育肥舍", 220, 0, 4);
+        when(support.pensOfFarm(1001L)).thenReturn(List.of(pen));
+        when(support.activeBatches(1001L)).thenReturn(List.of());
+        FarmMember staff = new FarmMember();
+        staff.setId(5003L);
+        staff.setUserId(10003L);
+        staff.setRole("STAFF");
+        when(farmLookup.activeMembers(1001L)).thenReturn(List.of(staff));
+        com.zhimu.server.biz.farm.entity.MemberPen assigned = new com.zhimu.server.biz.farm.entity.MemberPen();
+        assigned.setMemberId(5003L);
+        assigned.setUserId(10003L);
+        assigned.setPenId(2003L);
+        when(farmLookup.pensOfFarm(1001L)).thenReturn(List.of(assigned));
+        when(support.userBrief(10003L, "STAFF")).thenReturn(com.zhimu.server.common.vo.UserBriefVO.builder()
+                .userId(10003L).name("李明").role("STAFF").roleText("员工").build());
+        when(support.avatarUrl(10003L)).thenReturn("http://8.208.12.217/zmt-private/avatar/c.png?X-Amz-Signature=3");
+
+        PenDetailVO vo = service.detail(2003L);
+
+        assertThat(vo.getStaff()).hasSize(1);
+        assertThat(vo.getStaff().get(0).getName()).isEqualTo("李明");
+        assertThat(vo.getStaff().get(0).getAvatarUrl()).isEqualTo("http://8.208.12.217/zmt-private/avatar/c.png?X-Amz-Signature=3");
+    }
+
+    @Test
     void disablePenWithStockReturns42210() {
         Pen pen = pen(2001L, "BY-01", "1 号保育舍", 360, 320, 4);
         when(support.pensOfFarm(1001L)).thenReturn(List.of(pen));

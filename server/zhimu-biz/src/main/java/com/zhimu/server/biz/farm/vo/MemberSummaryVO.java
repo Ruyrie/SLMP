@@ -15,6 +15,8 @@ public class MemberSummaryVO {
     private Integer inviteCount;
     private Integer invitePendingCount;
     private List<String> avatars;
+    /** 与 avatars 同序的头像临时地址，没有头像的成员为 null（Web 显示照片；App 仍按 avatars 显示首字） */
+    private List<String> avatarUrls;
     private List<PenBriefVO> unassignedPens;
     private Boolean showUnassignedBanner;
 }

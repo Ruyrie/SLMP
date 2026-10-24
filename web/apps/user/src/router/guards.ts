@@ -29,6 +29,15 @@ export function installGuards(router: Router): void {
       if (to.name === 'WU-A01' && auth.accessToken) {
         return { name: farm.role === 'staff' ? 'WU-T02' : 'WU-T01' }
       }
+      // 状态页、404 带侧栏和顶栏：刷新后先尝试恢复会话，失败（未登录）也照常显示
+      if (to.meta.layout === 'shell' && !auth.accessToken) {
+        try {
+          await ensureSession()
+          if (!farm.loaded) await farm.load()
+        } catch {
+          /* 未登录也可以看状态页 */
+        }
+      }
       return true
     }
 

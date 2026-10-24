@@ -292,6 +292,7 @@ public class PenServiceImpl implements PenService {
             }
             UserBriefVO brief = support.userBrief(row.getUserId(), staffMember.getRole());
             if (brief != null) {
+                brief.setAvatarUrl(support.avatarUrl(row.getUserId()));
                 result.add(brief);
             }
         }

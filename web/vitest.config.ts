@@ -17,6 +17,6 @@ function project(name: string, app: 'admin' | 'user') {
 
 export default defineConfig({
   test: {
-    projects: [project('admin', 'admin'), project('avatar', 'user')]
+    projects: [project('admin', 'admin'), project('avatar', 'user'), project('user', 'user')]
   }
 })
