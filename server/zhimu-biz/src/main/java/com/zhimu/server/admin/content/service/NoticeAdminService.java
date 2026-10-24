@@ -140,7 +140,8 @@ public class NoticeAdminService {
                 farmIds.add(parseLong(t.getTargetValue()));
             }
         }));
-        Map<Long, String> categoryNames = names(lookupMapper.selectCategoryNames(new ArrayList<>(categoryIds)));
+        Map<Long, String> categoryNames = categoryIds.isEmpty() ? Map.of()
+                : names(lookupMapper.selectCategoryNames(new ArrayList<>(categoryIds)));
         Map<Long, String> farmNames = new HashMap<>();
         if (!farmIds.isEmpty()) {
             audienceService.farms(new ArrayList<>(farmIds)).forEach(f -> farmNames.put(f.getFarmId(), f.getName()));
