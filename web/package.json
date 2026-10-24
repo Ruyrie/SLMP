@@ -1,0 +1,48 @@
+{
+  "name": "zhimu-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "智牧通 Web 用户端 + 管理端",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:user": "npm run dev -w @zmt/user",
+    "dev:admin": "npm run dev -w @zmt/admin",
+    "build": "npm run build:user && npm run build:admin",
+    "build:user": "npm run build -w @zmt/user",
+    "build:admin": "npm run build -w @zmt/admin",
+    "typecheck:user": "vue-tsc --noEmit -p apps/user/tsconfig.json",
+    "typecheck:admin": "vue-tsc --noEmit -p apps/admin/tsconfig.json",
+    "typecheck": "npm run typecheck:user && npm run typecheck:admin",
+    "test": "vitest run",
+    "gen:api": "node tools/openapi-to-snake.mjs ../docs/api/openapi.json ../docs/api/openapi.snake.json && openapi-typescript ../docs/api/openapi.snake.json -o packages/shared/src/types/generated.ts"
+  },
+  "dependencies": {
+    "@amap/amap-jsapi-loader": "1.0.1",
+    "axios": "1.20.0",
+    "dayjs": "1.11.23",
+    "dompurify": "3.4.16",
+    "echarts": "6.1.0",
+    "hls.js": "1.7.3",
+    "pinia": "4.0.3",
+    "qrcode": "1.5.4",
+    "vue": "3.5.43",
+    "vue-router": "5.3.1",
+    "vuetify": "3.13.6"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@vitejs/plugin-vue": "6.0.9",
+    "@vue/test-utils": "2.5.1",
+    "jsdom": "30.1.2",
+    "openapi-typescript": "7.13.0",
+    "sass": "1.105.1",
+    "typescript": "6.0.3",
+    "vite": "8.3.3",
+    "vitest": "5.0.3",
+    "vue-tsc": "3.3.12"
+  }
+}

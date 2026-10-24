@@ -1,0 +1,25 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch({ channel: 'chrome', headless: true })
+const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+const page = await context.newPage()
+await page.goto('http://127.0.0.1:5173/login', { waitUntil: 'networkidle' })
+const loginResponse = page.waitForResponse((r) => r.url().includes('/auth/login/password'))
+await page.getByPlaceholder('请输入手机号').fill('13800006620')
+await page.getByPlaceholder('请输入密码').fill('Zmt12345')
+await page.getByRole('button', { name: '登录' }).click()
+const res = await loginResponse
+console.log('login status:', res.status())
+console.log('login set-cookie:', JSON.stringify((await res.headersArray()).filter((h) => h.name.toLowerCase() === 'set-cookie'), null, 2))
+await page.waitForTimeout(1500)
+console.log('url:', page.url())
+console.log('cookies all:', JSON.stringify(await context.cookies(), null, 2))
+console.log('cookies url:', JSON.stringify(await context.cookies('http://127.0.0.1:5173/api/v1/auth/token/refresh'), null, 2))
+
+const refreshResponse = page.waitForResponse((r) => r.url().includes('/auth/token/refresh'))
+await page.goto('http://127.0.0.1:5173/', { waitUntil: 'networkidle' })
+const refresh = await refreshResponse
+console.log('refresh status:', refresh.status())
+console.log('refresh set-cookie:', JSON.stringify((await refresh.headersArray()).filter((h) => h.name.toLowerCase() === 'set-cookie'), null, 2))
+console.log('url after:', page.url())
+console.log('cookies after:', JSON.stringify(await context.cookies(), null, 2))
+await browser.close()

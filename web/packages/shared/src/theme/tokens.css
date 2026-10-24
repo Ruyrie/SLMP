@@ -1,0 +1,95 @@
+/* 智牧通 Web — generated from tokens.json */
+:root, [data-theme="light"] {
+  --primary: #0B57D0;
+  --primary-hover: #0A4DB8;
+  --primary-active: #08409A;
+  --on-primary: #FFFFFF;
+  --primary-subtle: #EDF3FE;
+  --primary-container: #D3E3FD;
+  --on-primary-container: #041E49;
+  --tertiary: #6E4FA0;
+  --tertiary-container: #EADDFF;
+  --on-tertiary-container: #25005A;
+  --error: #B3261E;
+  --on-error: #FFFFFF;
+  --error-container: #F9DEDC;
+  --on-error-container: #410E0B;
+  --warning: #8A5100;
+  --warning-container: #FFDDB8;
+  --on-warning-container: #2C1700;
+  --success: #146C2E;
+  --success-container: #C4EED0;
+  --on-success-container: #072711;
+  --bg-page: #F0F2F5;
+  --bg-card: #FFFFFF;
+  --fill-1: #F7F8FA;
+  --fill-2: #F2F3F5;
+  --fill-3: #E5E6EB;
+  --text-1: #1D2129;
+  --text-2: #4E5969;
+  --text-3: #5F6B7A;
+  --text-disabled: #A9AEB8;
+  --line-1: #E5E6EB;
+  --line-2: #C9CDD4;
+  --control-border: #7F8996;
+  --sider-bg: #001529;
+  --sider-bg-sub: #000C17;
+  --sider-hover: #0F2A45;
+  --sider-text: #B8BFC9;
+  --sider-text-active: #FFFFFF;
+  --sider-group: #8A94A3;
+  --inverse-surface: #1D2129;
+  --inverse-on-surface: #F2F3F5;
+  --inverse-primary: #A8C7FA;
+  --scrim: #00000073;
+  --media-backdrop: #0B0B0C;
+  --on-media: #FFFFFF;
+  --chart-1: #0B57D0;
+  --chart-2: #C25E00;
+  --chart-3: #00838F;
+  --chart-ref: #86909C;
+  --map-land: #EEF1F5;
+  --map-block: #E1E6ED;
+  --map-road: #FFFFFF;
+  --map-water: #C8DCF5;
+  --shadow-popover: 0 4px 10px #0000001a;
+  --shadow-dialog: 0 6px 16px #00000014, 0 3px 6px -4px #0000001f, 0 9px 28px 8px #0000000d;
+  --focus-ring: 0 0 0 2px #FFFFFF, 0 0 0 4px #0B57D0;
+}
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-full: 9999px;
+  --web-width: 1440px;
+  --web-height: 900px;
+  --header-height: 56px;
+  --sider-width: 220px;
+  --sider-collapsed: 64px;
+  --control-height: 32px;
+  --control-height-l: 40px;
+  --table-row: 48px;
+  --table-row-compact: 40px;
+  --dialog-width: 560px;
+  --dialog-width-s: 420px;
+  --drawer-width: 560px;
+  --drawer-width-l: 760px;
+  --font-sans: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+}
+.stat-xl { font-family: var(--font-sans); font-size: 32px; line-height: 40px; font-weight: 600; }
+.stat-l { font-family: var(--font-sans); font-size: 24px; line-height: 32px; font-weight: 600; }
+.title-page { font-family: var(--font-sans); font-size: 20px; line-height: 28px; font-weight: 600; }
+.title-card { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 600; }
+.title-s { font-family: var(--font-sans); font-size: 14px; line-height: 22px; font-weight: 600; }
+.body { font-family: var(--font-sans); font-size: 14px; line-height: 22px; font-weight: 400; }
+.body-s { font-family: var(--font-sans); font-size: 12px; line-height: 20px; font-weight: 400; }
+.label { font-family: var(--font-sans); font-size: 14px; line-height: 22px; font-weight: 400; }
+.tag { font-family: var(--font-sans); font-size: 12px; line-height: 20px; font-weight: 400; }
