@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.admin.content.mapper.NoticeRecipientMapper">
+
+    <select id="selectRoleStats" resultType="com.zhimu.server.admin.content.mapper.RoleStatRow">
+        SELECT notice_id,
+               role_snapshot,
+               COUNT(*)                                             AS delivered,
+               SUM(CASE WHEN read_at IS NOT NULL THEN 1 ELSE 0 END) AS read_count
+        FROM t_notice_recipient
+        WHERE notice_id = #{noticeId}
+        GROUP BY notice_id, role_snapshot
+    </select>
+
+    <select id="selectRoleStatsBatch" resultType="com.zhimu.server.admin.content.mapper.RoleStatRow">
+        SELECT notice_id,
+               role_snapshot,
+               COUNT(*)                                             AS delivered,
+               SUM(CASE WHEN read_at IS NOT NULL THEN 1 ELSE 0 END) AS read_count
+        FROM t_notice_recipient
+        WHERE notice_id IN
+        <foreach collection="noticeIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+        GROUP BY notice_id, role_snapshot
+    </select>
+
+    <update id="markUnreadHidden">
+        UPDATE t_notice_recipient
+        SET is_hidden  = 1,
+            updated_at = NOW()
+        WHERE notice_id = #{noticeId}
+          AND read_at IS NULL
+          AND is_hidden = 0
+    </update>
+
+    <insert id="insertIgnore">
+        INSERT IGNORE INTO t_notice_recipient
+        (notice_id, user_id, role_snapshot, farm_id, message_id, push_record_id,
+         read_at, push_opened_at, is_hidden, created_at, updated_at)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.noticeId}, #{item.userId}, #{item.roleSnapshot}, #{item.farmId}, #{item.messageId},
+             #{item.pushRecordId}, #{item.readAt}, #{item.pushOpenedAt}, #{item.isHidden},
+             #{item.createdAt}, #{item.updatedAt})
+        </foreach>
+    </insert>
+
+    <update id="updateReadState">
+        UPDATE t_notice_recipient r
+            JOIN t_message m ON m.id = r.message_id
+            LEFT JOIN t_push_record p ON p.id = r.push_record_id
+        SET r.read_at        = COALESCE(r.read_at, m.read_at),
+            r.push_opened_at = COALESCE(r.push_opened_at, p.clicked_at),
+            r.updated_at     = NOW()
+        WHERE r.notice_id = #{noticeId}
+          AND (r.read_at IS NULL OR r.push_opened_at IS NULL)
+    </update>
+</mapper>

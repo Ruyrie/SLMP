@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.admin.content.mapper.AiQaAdminMapper">
+
+    <sql id="qaFilters">
+        <where>
+            m.asked_at &gt;= #{from}
+            AND m.asked_at &lt; #{to}
+            <if test="q.keyword != null and q.keyword != ''">
+                AND (
+                    m.question_text LIKE CONCAT('%', #{q.keyword}, '%')
+                    <if test="farmIds != null and farmIds.size() > 0">
+                        OR m.farm_id IN
+                        <foreach collection="farmIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+                    </if>
+                    <if test="userIds != null and userIds.size() > 0">
+                        OR m.user_id IN
+                        <foreach collection="userIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+                    </if>
+                )
+            </if>
+            <if test="onlySpotCheck">
+                AND r.is_spot_check = 1
+            </if>
+            <choose>
+                <when test="segment == 'PENDING_USELESS'">
+                    AND m.rating = 'USELESS' AND m.handle_status = 'PENDING'
+                </when>
+                <when test="segment == 'NO_BASIS'">
+                    AND m.answer_type = 'NO_BASIS'
+                </when>
+                <when test="segment == 'SPECIAL'">
+                    AND m.answer_type IN ('OFF_TOPIC', 'BANNED_DRUG', 'EPIDEMIC')
+                </when>
+                <when test="segment == 'CORRECTED'">
+                    AND m.handle_status = 'CORRECTED'
+                </when>
+            </choose>
+        </where>
+    </sql>
+
+    <select id="selectPage" resultType="com.zhimu.server.admin.content.mapper.QaRow">
+        SELECT m.id            AS message_id,
+               m.session_id,
+               m.round_no,
+               m.question_text,
+               m.image_file_ids,
+               m.farm_id,
+               f.name          AS farm_name,
+               m.user_id       AS asker_id,
+               u.name          AS asker_name,
+               m.batch_no,
+               m.answer_type,
+               m.rating,
+               m.handle_status,
+               m.asked_at,
+               COALESCE(r.is_spot_check, 0) AS is_spot_check
+        FROM t_ai_message m
+                 LEFT JOIN t_farm f ON f.id = m.farm_id
+                 LEFT JOIN t_user u ON u.id = m.user_id
+                 LEFT JOIN t_ai_qa_review r ON r.message_id = m.id
+        <include refid="qaFilters"/>
+        ORDER BY m.asked_at DESC, m.id DESC
+    </select>
+
+    <select id="countPage" resultType="long">
+        SELECT COUNT(*)
+        FROM t_ai_message m
+                 LEFT JOIN t_ai_qa_review r ON r.message_id = m.id
+        <include refid="qaFilters"/>
+    </select>
+
+    <select id="selectForExport" resultType="com.zhimu.server.admin.content.mapper.QaRow">
+        SELECT m.id            AS message_id,
+               m.session_id,
+               m.round_no,
+               m.question_text,
+               m.image_file_ids,
+               m.farm_id,
+               f.name          AS farm_name,
+               m.user_id       AS asker_id,
+               u.name          AS asker_name,
+               m.batch_no,
+               m.answer_type,
+               m.rating,
+               m.handle_status,
+               m.asked_at,
+               COALESCE(r.is_spot_check, 0) AS is_spot_check
+        FROM t_ai_message m
+                 LEFT JOIN t_farm f ON f.id = m.farm_id
+                 LEFT JOIN t_user u ON u.id = m.user_id
+                 LEFT JOIN t_ai_qa_review r ON r.message_id = m.id
+        <include refid="qaFilters"/>
+        ORDER BY m.asked_at DESC, m.id DESC
+        LIMIT 50000
+    </select>
+
+    <select id="selectDetail" resultType="com.zhimu.server.admin.content.mapper.QaDetailRow">
+        SELECT m.id                     AS message_id,
+               m.session_id,
+               m.round_no,
+               m.question_text,
+               m.image_file_ids,
+               m.farm_id,
+               f.name                   AS farm_name,
+               m.user_id,
+               u.name                   AS asker_name,
+               (SELECT fm.role FROM t_farm_member fm
+                WHERE fm.farm_id = m.farm_id AND fm.user_id = m.user_id
+                  AND fm.status = 'ACTIVE' AND fm.active_flag = 1 LIMIT 1) AS asker_role,
+               m.batch_id,
+               m.batch_no,
+               s.batch_snapshot_json,
+               m.context_course_id,
+               m.context_course_title,
+               m.context_knowledge_id,
+               m.status,
+               m.answer_type,
+               m.answer_text,
+               m.rating,
+               m.handle_status,
+               m.asked_at,
+               m.answered_at,
+               s.created_at             AS session_started_at,
+               s.round_count
+        FROM t_ai_message m
+                 JOIN t_ai_session s ON s.id = m.session_id
+                 LEFT JOIN t_farm f ON f.id = m.farm_id
+                 LEFT JOIN t_user u ON u.id = m.user_id
+        WHERE m.id = #{messageId}
+    </select>
+
+    <select id="selectRounds" resultType="com.zhimu.server.admin.content.mapper.QaRoundRow">
+        SELECT id AS message_id, round_no, asked_at, question_text, image_file_ids,
+               status, answer_type, answer_text, rating, rated_at
+        FROM t_ai_message
+        WHERE session_id = #{sessionId}
+        ORDER BY round_no
+    </select>
+
+    <select id="selectCitations" resultType="com.zhimu.server.admin.content.mapper.CitationRow">
+        SELECT message_id, seq_no, knowledge_id, knowledge_version_no, para_key,
+               source_type, icon_type, title_snapshot, category_name_snapshot
+        FROM t_ai_citation
+        WHERE message_id IN
+        <foreach collection="messageIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+        ORDER BY message_id, seq_no
+    </select>
+
+    <select id="selectSummary" resultType="com.zhimu.server.admin.content.mapper.QaSummaryRow">
+        SELECT COUNT(*)                                                        AS qa_count,
+               COUNT(DISTINCT m.user_id)                                       AS asker_count,
+               SUM(CASE WHEN m.rating IS NOT NULL THEN 1 ELSE 0 END)            AS rated_count,
+               SUM(CASE WHEN m.rating = 'USEFUL' THEN 1 ELSE 0 END)             AS useful_count,
+               SUM(CASE WHEN m.rating = 'USELESS' AND m.handle_status = 'PENDING' THEN 1 ELSE 0 END) AS pending_useless_count,
+               SUM(CASE WHEN m.answer_type = 'NO_BASIS' THEN 1 ELSE 0 END)      AS no_basis_count,
+               CASE
+                   WHEN SUM(CASE WHEN m.rating IS NOT NULL THEN 1 ELSE 0 END) = 0 THEN NULL
+                   ELSE ROUND(SUM(CASE WHEN m.rating = 'USEFUL' THEN 1 ELSE 0 END) /
+                              SUM(CASE WHEN m.rating IS NOT NULL THEN 1 ELSE 0 END), 4)
+                   END                                                         AS useful_rate
+        FROM t_ai_message m
+        WHERE m.asked_at &gt;= #{from}
+          AND m.asked_at &lt; #{to}
+    </select>
+
+    <update id="updateHandleStatus">
+        UPDATE t_ai_message
+        SET handle_status = #{newStatus},
+            updated_at    = NOW()
+        WHERE id = #{messageId}
+        <if test="oldStatus != null">
+            AND handle_status = #{oldStatus}
+        </if>
+        <if test="oldStatus == null">
+            AND handle_status IS NULL
+        </if>
+    </update>
+
+    <update id="recomputeSessionCorrection">
+        UPDATE t_ai_session s
+        SET s.has_correction = (SELECT COUNT(*)
+                                FROM t_ai_correction c
+                                WHERE c.session_id = s.id AND c.status = 'PUBLISHED'),
+            s.updated_at = NOW()
+        WHERE s.id = #{sessionId}
+    </update>
+
+    <select id="countSimilarNoBasis" resultType="long">
+        SELECT COUNT(*) FROM t_ai_message
+        WHERE answer_type = 'NO_BASIS'
+          AND asked_at &gt;= #{from}
+          AND id &lt;&gt; #{excludeMessageId}
+        <if test="keywords != null and keywords.size() > 0">
+            AND (
+            <foreach collection="keywords" item="keyword" separator=" OR ">
+                question_text LIKE CONCAT('%', #{keyword}, '%')
+            </foreach>
+            )
+        </if>
+    </select>
+</mapper>
