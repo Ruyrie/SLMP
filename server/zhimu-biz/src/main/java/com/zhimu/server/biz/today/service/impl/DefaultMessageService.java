@@ -3,6 +3,8 @@ package com.zhimu.server.biz.today.service.impl;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.zhimu.server.biz.farm.api.FarmQueryService;
 import com.zhimu.server.biz.today.api.MessageCommand;
+import com.zhimu.server.biz.today.api.MessageReadState;
+import com.zhimu.server.biz.today.api.MessageRef;
 import com.zhimu.server.biz.today.api.MessageService;
 import com.zhimu.server.biz.today.entity.Message;
 import com.zhimu.server.biz.today.entity.PushRecord;
@@ -31,7 +33,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -82,7 +88,8 @@ public class DefaultMessageService implements MessageService {
             message.setTodoId(todoId);
             message.setRoute(command.getRoute());
             message.setExtraJson(extras.isEmpty() ? null : TodayJson.write(extras));
-            message.setMergeKey(todoId == null ? null : "TODO:" + todoId);
+            message.setMergeKey(command.getMergeKey() != null ? command.getMergeKey()
+                    : (todoId == null ? null : "TODO:" + todoId));
             message.setMergeCount(1);
             message.setSortTime(now);
             message.setHidden(false);
@@ -117,6 +124,85 @@ public class DefaultMessageService implements MessageService {
                 .eq(Message::getFarmId, farmId)
                 .eq(Message::getUserId, userId)
                 .ne(Message::getMsgType, MsgType.MEMBER_REMOVED.name()));
+    }
+
+    @Override
+    @Transactional
+    public int hideUnreadByBiz(BizType bizType, Long bizId, String hiddenReason) {
+        if (bizType == null || bizId == null) {
+            return 0;
+        }
+        List<Message> unread = messageMapper.selectList(Wrappers.<Message>lambdaQuery()
+                .eq(Message::getBizType, bizType.name())
+                .eq(Message::getBizId, bizId)
+                .isNull(Message::getReadAt));
+        if (unread.isEmpty()) {
+            return 0;
+        }
+        int updated = messageMapper.update(null, Wrappers.<Message>lambdaUpdate()
+                .set(Message::getHidden, true)
+                .set(Message::getHiddenReason, hiddenReason)
+                .eq(Message::getBizType, bizType.name())
+                .eq(Message::getBizId, bizId)
+                .isNull(Message::getReadAt));
+        List<Long> messageIds = unread.stream().map(Message::getId).toList();
+        pushRecordMapper.update(null, Wrappers.<PushRecord>lambdaUpdate()
+                .set(PushRecord::getStatus, "SKIPPED")
+                .set(PushRecord::getFailReason, "通知已撤回，取消尚未发出的推送")
+                .in(PushRecord::getMessageId, messageIds)
+                .in(PushRecord::getStatus, "WAITING", "DEFERRED"));
+        return updated;
+    }
+
+    @Override
+    public List<MessageRef> listByBiz(BizType bizType, Long bizId) {
+        if (bizType == null || bizId == null) {
+            return List.of();
+        }
+        List<Message> messages = messageMapper.selectList(Wrappers.<Message>lambdaQuery()
+                .eq(Message::getBizType, bizType.name())
+                .eq(Message::getBizId, bizId)
+                .orderByAsc(Message::getId));
+        List<MessageRef> refs = new ArrayList<>(messages.size());
+        for (Message message : messages) {
+            refs.add(new MessageRef(message.getId(), message.getUserId(), message.getFarmId(),
+                    message.getReadAt()));
+        }
+        return refs;
+    }
+
+    @Override
+    public Map<Long, MessageReadState> listReadState(Collection<Long> messageIds) {
+        if (messageIds == null || messageIds.isEmpty()) {
+            return Map.of();
+        }
+        List<Long> ids = messageIds.stream().filter(java.util.Objects::nonNull).distinct().toList();
+        Map<Long, LocalDateTime> readAt = new HashMap<>();
+        Map<Long, LocalDateTime> clickedAt = new HashMap<>();
+        for (int from = 0; from < ids.size(); from += 1000) {
+            List<Long> chunk = ids.subList(from, Math.min(from + 1000, ids.size()));
+            for (Message message : messageMapper.selectList(Wrappers.<Message>lambdaQuery()
+                    .in(Message::getId, chunk))) {
+                if (message.getReadAt() != null) {
+                    readAt.put(message.getId(), message.getReadAt());
+                }
+            }
+            for (PushRecord record : pushRecordMapper.selectList(Wrappers.<PushRecord>lambdaQuery()
+                    .in(PushRecord::getMessageId, chunk)
+                    .isNotNull(PushRecord::getClickedAt)
+                    .orderByAsc(PushRecord::getId))) {
+                clickedAt.putIfAbsent(record.getMessageId(), record.getClickedAt());
+            }
+        }
+        Map<Long, MessageReadState> result = new HashMap<>();
+        for (Long id : ids) {
+            LocalDateTime read = readAt.get(id);
+            LocalDateTime clicked = clickedAt.get(id);
+            if (read != null || clicked != null) {
+                result.put(id, new MessageReadState(read, clicked));
+            }
+        }
+        return result;
     }
 
     // ===================== 推送 =====================

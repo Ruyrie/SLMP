@@ -32,6 +32,8 @@ public class MessageCommand {
     String content;
     BizType bizType;
     Long bizId;
+    /** 合并键：同一接收人同一键只保留一条；平台通知用 NOTICE:{notice_id} */
+    String mergeKey;
     String route;
     @Singular
     Map<String, Object> extras;

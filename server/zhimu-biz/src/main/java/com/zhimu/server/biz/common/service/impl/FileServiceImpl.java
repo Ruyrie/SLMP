@@ -338,6 +338,11 @@ public class FileServiceImpl implements FileService {
         return id == null ? null : fileMapper.selectById(id);
     }
 
+    @Override
+    public FileVO fileVo(Long id) {
+        return fileVoAssembler.toFileVo(find(id));
+    }
+
     /** 本人上传的文件，或文件已关联到本人可查看养殖场的记录 */
     private boolean canView(FileEntity file, Long userId) {
         if (userId == null) {

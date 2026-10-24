@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.admin.content.mapper.ContentLookupMapper">
+
+    <select id="selectAdminNames" resultType="com.zhimu.server.admin.content.mapper.NameRow">
+        SELECT id, name FROM t_admin
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+
+    <select id="selectCategoryNames" resultType="com.zhimu.server.admin.content.mapper.NameRow">
+        SELECT id, name FROM t_category
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+
+    <select id="selectCategoryIdByName" resultType="java.lang.Long">
+        SELECT id FROM t_category WHERE name = #{name} AND status = 'ENABLED' LIMIT 1
+    </select>
+
+    <select id="selectBreedNames" resultType="com.zhimu.server.admin.content.mapper.NameRow">
+        SELECT id, name FROM t_breed
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+
+    <select id="selectBreedCategoryId" resultType="java.lang.Long">
+        SELECT category_id FROM t_breed WHERE id = #{breedId}
+    </select>
+
+    <select id="selectUserNames" resultType="com.zhimu.server.admin.content.mapper.NameRow">
+        SELECT id, name FROM t_user
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+
+    <select id="selectFarmIdsByName" resultType="java.lang.Long">
+        SELECT id FROM t_farm
+        WHERE deleted = 0 AND name LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY id LIMIT 100
+    </select>
+
+    <select id="selectUserIdsByName" resultType="java.lang.Long">
+        SELECT id FROM t_user
+        WHERE status = 'NORMAL' AND name LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY id LIMIT 100
+    </select>
+
+    <select id="selectTimeline" resultType="com.zhimu.server.admin.content.mapper.TimelineRow">
+        SELECT op_action, operator_name, target_name, reason, extra_text, notify_text, created_at
+        FROM t_operation_log
+        WHERE biz_type = #{bizType}
+          AND biz_id = #{bizId}
+        ORDER BY created_at DESC, id DESC
+        LIMIT 100
+    </select>
+
+    <select id="selectAdminIdsByPermission" resultType="java.lang.Long">
+        SELECT DISTINCT a.id
+        FROM t_admin a
+                 JOIN t_admin_permission p ON p.perm_code = #{permission}
+                 LEFT JOIN t_admin_role_permission rp
+                           ON rp.role_id = a.role_id AND rp.permission_id = p.id
+        WHERE a.status = 'NORMAL'
+          AND (a.role_id = 1 OR rp.id IS NOT NULL)
+    </select>
+</mapper>
