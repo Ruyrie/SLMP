@@ -64,7 +64,6 @@ dependencies {
     }
     implementation libs.core.splashscreen
     annotationProcessor libs.dagger.compiler
-    debugImplementation libs.leakcanary
 
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
