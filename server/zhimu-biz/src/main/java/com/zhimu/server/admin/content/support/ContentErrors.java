@@ -14,6 +14,10 @@ public final class ContentErrors {
     public static final String MSG_VERSION_CONFLICT = "内容已更新，请刷新后再修改";
     public static final String MSG_NOT_FOUND = "记录不存在或已删除";
     public static final String MSG_NOTICE_DELETED = "该记录已被删除";
+    public static final String MSG_REASON_OFF_SHELF = "请填写下架原因";
+    public static final String MSG_REASON_PUBLISH = "请填写修改说明";
+    public static final String MSG_REASON_ROLLBACK = "请填写回退原因";
+    public static final String MSG_REASON_CLOSE = "请填写关闭原因";
 
     private ContentErrors() {
     }
@@ -61,4 +65,10 @@ public final class ContentErrors {
     public static BizException forbidden(String message) {
         return new BizException(ErrorCode.ROLE_FORBIDDEN, message);
     }
-}
+    public static BizException deleted() {
+        return new BizException(ErrorCode.RECORD_DELETED, "该记录已被删除");
+    }
+
+    public static BizException fileInvalid(String message) {
+        return new BizException(ErrorCode.FILE_INVALID, message);
+    }}

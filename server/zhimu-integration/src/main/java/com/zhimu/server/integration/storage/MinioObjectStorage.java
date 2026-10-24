@@ -96,8 +96,11 @@ public class MinioObjectStorage implements ObjectStorage {
             }
             client.setBucketPolicy(SetBucketPolicyArgs.builder().bucket(props.getCourseBucket())
                     .config(coursePolicy(props.getCourseBucket())).build());
-            log.info("存储桶就绪 private={} course={}（hls/、cover/ 匿名只读） endpoint={}", props.getPrivateBucket(),
-                    props.getCourseBucket(), props.getEndpoint());
+            // 知识条目图片存私有桶的知识前缀，用户端原文需要固定地址；只开放该前缀的匿名只读
+            client.setBucketPolicy(SetBucketPolicyArgs.builder().bucket(props.getPrivateBucket())
+                    .config(privateKnowledgePolicy(props.getPrivateBucket())).build());
+            log.info("存储桶就绪 private={} course={}（hls/、cover/、知识图片匿名只读） endpoint={}",
+                    props.getPrivateBucket(), props.getCourseBucket(), props.getEndpoint());
             return true;
         } catch (Exception e) {
             log.warn("MinIO 暂不可用，存储桶检查跳过 endpoint={}：{}", props.getEndpoint(), describe(e));
@@ -108,7 +111,15 @@ public class MinioObjectStorage implements ObjectStorage {
     static String coursePolicy(String bucket) {
         return "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},"
                 + "\"Action\":[\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::" + bucket + "/hls/*\","
-                + "\"arn:aws:s3:::" + bucket + "/cover/*\"]}]}";
+                + "\"arn:aws:s3:::" + bucket + "/cover/*\","
+                + "\"arn:aws:s3:::" + bucket + "/course_cover/*\","
+                + "\"arn:aws:s3:::" + bucket + "/topic_cover/*\","
+                + "\"arn:aws:s3:::" + bucket + "/knowledge_media/*\"]}]}";
+    }
+
+    static String privateKnowledgePolicy(String bucket) {
+        return "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},"
+                + "\"Action\":[\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::" + bucket + "/knowledge_media/*\"]}]}";
     }
 
     @Override
@@ -255,6 +266,18 @@ public class MinioObjectStorage implements ObjectStorage {
     }
 
     @Override
+    public UploadedPart uploadPart(String bucket, String objectKey, String uploadId, int partNumber,
+                                   InputStream in, long size) {
+        try {
+            io.minio.UploadPartResponse response = asyncClient.uploadPartAsync(bucket, null, objectKey, in, size,
+                    uploadId, partNumber, null, null).get();
+            return new UploadedPart(partNumber, response.etag(), size);
+        } catch (Exception e) {
+            throw failure("上传分片", bucket, objectKey, e);
+        }
+    }
+
+    @Override
     public void completeMultipart(String bucket, String objectKey, String uploadId, List<UploadedPart> parts) {
         Part[] sorted = parts.stream().sorted(Comparator.comparingInt(UploadedPart::partNumber))
                 .map(p -> new Part(p.partNumber(), p.etag())).toArray(Part[]::new);
@@ -336,8 +359,33 @@ public class MinioObjectStorage implements ObjectStorage {
     }
 
     @Override
+    public String hlsMasterUrl(long fileId) {
+        String base = hls.getBaseUrl();
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        return base + "/" + fileId + "/index.m3u8";
+    }
+
+    @Override
     public String hlsObjectPrefix(long fileId) {
         return "hls/" + fileId + "/";
+    }
+
+    @Override
+    public String publicUrl(String bucket, String objectKey) {
+        if (bucket == null || objectKey == null) {
+            return null;
+        }
+        String base = props.getPublicEndpoint();
+        if (base == null || base.isBlank()) {
+            base = props.getEndpoint();
+        }
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        String key = objectKey.startsWith("/") ? objectKey.substring(1) : objectKey;
+        return base + "/" + bucket + "/" + key;
     }
 
     // ===== 错误处理 =====
