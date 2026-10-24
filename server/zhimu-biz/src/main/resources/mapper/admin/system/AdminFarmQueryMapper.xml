@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.admin.system.mapper.readonly.AdminFarmQueryMapper">
+
+    <sql id="farmWhere">
+        f.deleted = 0
+        <choose>
+            <when test="status == 'NORMAL'">
+                AND f.audit_status = 'APPROVED' AND f.disabled = 0 AND f.frozen = 0
+            </when>
+            <when test="status == 'DISABLED'">
+                AND f.audit_status = 'APPROVED' AND f.disabled = 1 AND f.frozen = 0
+            </when>
+            <when test="status == 'FROZEN'">
+                AND f.frozen = 1
+            </when>
+            <when test="status == 'PENDING'">
+                AND f.audit_status = 'PENDING' AND f.frozen = 0
+            </when>
+            <when test="status == 'REJECTED'">
+                AND f.audit_status = 'REJECTED' AND f.frozen = 0
+            </when>
+        </choose>
+        <if test="keyword != null and keyword != ''">
+            AND (f.name LIKE CONCAT('%', #{keyword}, '%')
+                 OR u.name LIKE CONCAT('%', #{keyword}, '%')
+                 OR (#{keyword} REGEXP '^[0-9]{11}$' AND u.phone = #{keyword}))
+        </if>
+        <if test="categoryId != null">AND f.main_category_id = #{categoryId}</if>
+        <if test="provincePrefix != null and provincePrefix != ''">
+            AND LEFT(f.adcode, 2) = #{provincePrefix}
+        </if>
+    </sql>
+
+    <select id="selectFarms" resultType="com.zhimu.server.admin.system.vo.AdminFarmItemVO">
+        SELECT f.id AS farm_id,
+               f.name AS name,
+               c.name AS category_name,
+               u.name AS owner_name,
+               u.phone AS owner_phone,
+               f.audit_status AS audit_status,
+               f.disabled AS disabled,
+               f.frozen AS frozen,
+               CONCAT(f.province, ' · ', f.district) AS region_text,
+               (SELECT COUNT(*) FROM t_farm_member m
+                WHERE m.farm_id = f.id AND m.active_flag = 1 AND m.status = 'ACTIVE') AS member_count,
+               (SELECT COALESCE(SUM(b.current_count), 0) FROM t_batch b
+                WHERE b.farm_id = f.id AND b.status = 'ACTIVE' AND b.deleted = 0) AS stock_count,
+               CASE c.count_unit WHEN 'HEAD' THEN '头' WHEN 'BIRD' THEN '只' ELSE c.count_unit END AS stock_unit,
+               f.approved_at AS approved_at,
+               (SELECT COALESCE(SUM(record_count), 0) FROM t_user_active_day uad
+                WHERE uad.farm_id = f.id AND uad.stat_date BETWEEN #{start} AND #{end}) AS records_7d,
+               (SELECT fc.id FROM t_farm_change fc
+                WHERE fc.farm_id = f.id AND fc.status = 'PENDING' LIMIT 1) AS pending_change_id,
+               CASE WHEN f.audit_status = 'PENDING' THEN f.latest_audit_id END AS pending_audit_id,
+               f.version AS version
+        FROM t_farm f
+                 JOIN t_user u ON u.id = f.owner_user_id
+                 LEFT JOIN t_category c ON c.id = f.main_category_id
+        WHERE <include refid="farmWhere"/>
+        ORDER BY f.id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countFarms" resultType="long">
+        SELECT COUNT(*)
+        FROM t_farm f JOIN t_user u ON u.id = f.owner_user_id
+        WHERE <include refid="farmWhere"/>
+    </select>
+
+    <select id="countFarmsByStatus" resultType="long">
+        SELECT COUNT(*)
+        FROM t_farm f JOIN t_user u ON u.id = f.owner_user_id
+        WHERE f.deleted = 0
+        <choose>
+            <when test="status == 'NORMAL'">
+                AND f.audit_status = 'APPROVED' AND f.disabled = 0 AND f.frozen = 0
+            </when>
+            <when test="status == 'DISABLED'">
+                AND f.audit_status = 'APPROVED' AND f.disabled = 1 AND f.frozen = 0
+            </when>
+            <when test="status == 'FROZEN'">
+                AND f.frozen = 1
+            </when>
+            <when test="status == 'PENDING'">
+                AND f.audit_status = 'PENDING' AND f.frozen = 0
+            </when>
+            <when test="status == 'REJECTED'">
+                AND f.audit_status = 'REJECTED' AND f.frozen = 0
+            </when>
+        </choose>
+        <if test="keyword != null and keyword != ''">
+            AND (f.name LIKE CONCAT('%', #{keyword}, '%')
+                 OR u.name LIKE CONCAT('%', #{keyword}, '%')
+                 OR (#{keyword} REGEXP '^[0-9]{11}$' AND u.phone = #{keyword}))
+        </if>
+        <if test="categoryId != null">AND f.main_category_id = #{categoryId}</if>
+        <if test="provincePrefix != null and provincePrefix != ''">
+            AND LEFT(f.adcode, 2) = #{provincePrefix}
+        </if>
+    </select>
+
+    <select id="selectFarm" resultType="com.zhimu.server.biz.farm.entity.Farm">
+        SELECT * FROM t_farm WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="selectOwner" resultType="com.zhimu.server.admin.system.query.AdminFarmOwnerRow">
+        SELECT u.id AS user_id, u.name AS name, u.phone AS phone
+        FROM t_farm f JOIN t_user u ON u.id = f.owner_user_id
+        WHERE f.id = #{farmId}
+    </select>
+
+    <select id="selectStockCount" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(current_count), 0) FROM t_batch
+        WHERE farm_id = #{farmId} AND status = 'ACTIVE' AND deleted = 0
+    </select>
+
+    <select id="selectActiveBatchCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM t_batch
+        WHERE farm_id = #{farmId} AND status = 'ACTIVE' AND deleted = 0
+    </select>
+
+    <select id="selectRecords7d" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(record_count), 0) FROM t_user_active_day
+        WHERE farm_id = #{farmId} AND stat_date BETWEEN #{start} AND #{end}
+    </select>
+
+    <select id="selectActiveMembers7d" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT m.user_id)
+        FROM t_farm_member m
+                 JOIN t_user_active_day uad ON uad.user_id = m.user_id AND uad.farm_id = m.farm_id
+        WHERE m.farm_id = #{farmId}
+          AND m.active_flag = 1
+          AND m.status = 'ACTIVE'
+          AND uad.stat_date BETWEEN #{start} AND #{end}
+          AND uad.op_count &gt; 0
+    </select>
+
+    <select id="selectMemberTotal" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM t_farm_member
+        WHERE farm_id = #{farmId} AND active_flag = 1 AND status = 'ACTIVE'
+    </select>
+
+    <select id="selectMembers" resultType="com.zhimu.server.admin.system.query.AdminFarmMemberRow">
+        SELECT m.user_id AS user_id,
+               u.name AS name,
+               u.phone AS phone,
+               m.role AS role,
+               m.joined_at AS joined_at,
+               u.last_login_at AS last_login_at,
+               GROUP_CONCAT(p.pen_name ORDER BY p.id SEPARATOR '、') AS pen_text
+        FROM t_farm_member m
+                 JOIN t_user u ON u.id = m.user_id
+                 LEFT JOIN t_member_pen mp ON mp.member_id = m.id AND mp.farm_id = m.farm_id
+                 LEFT JOIN t_pen p ON p.id = mp.pen_id AND p.farm_id = mp.farm_id
+        WHERE m.farm_id = #{farmId}
+          AND m.active_flag = 1
+          AND m.status = 'ACTIVE'
+        GROUP BY m.user_id, u.name, u.phone, m.role, m.joined_at, u.last_login_at
+        ORDER BY FIELD(m.role, 'OWNER', 'MANAGER', 'STAFF'), m.joined_at ASC
+    </select>
+
+    <select id="countInvites" resultType="int">
+        SELECT COUNT(*) FROM t_farm_invite
+        WHERE farm_id = #{farmId} AND status = #{status}
+    </select>
+
+    <select id="selectTimeline"
+            resultType="com.zhimu.server.admin.system.query.AdminFarmTimelineRow">
+        SELECT CONCAT('第 ', a.submit_no, ' 次提交') AS event,
+               a.submitted_at AS time,
+               u.name AS actor,
+               a.status AS tag,
+               COALESCE(a.change_summary,
+                        CONCAT('提交注册信息，资质图 ',
+                               COALESCE(JSON_LENGTH(a.snapshot_json, '$.qualificationFileIds'), 0), ' 张')) AS description
+        FROM t_farm_audit a
+                 LEFT JOIN t_user u ON u.id = a.created_by
+        WHERE a.farm_id = #{farmId}
+        UNION ALL
+        SELECT CASE a.status WHEN 'APPROVED' THEN '注册审核通过' ELSE '注册审核驳回' END,
+               a.audited_at,
+               ad.name,
+               a.status,
+               CASE a.status WHEN 'APPROVED' THEN a.audit_opinion ELSE a.reject_reason END
+        FROM t_farm_audit a
+                 LEFT JOIN t_admin ad ON ad.id = a.audited_by
+        WHERE a.farm_id = #{farmId} AND a.audited_at IS NOT NULL
+        UNION ALL
+        SELECT '所有者提交资料变更',
+               c.created_at,
+               u.name,
+               c.status,
+               COALESCE(c.remark, '')
+        FROM t_farm_change c
+                 LEFT JOIN t_user u ON u.id = c.created_by
+        WHERE c.farm_id = #{farmId}
+        UNION ALL
+        SELECT CASE c.status WHEN 'APPROVED' THEN '资料变更审核通过' ELSE '资料变更审核驳回' END,
+               c.audited_at,
+               ad.name,
+               c.status,
+               CASE c.status WHEN 'APPROVED' THEN c.audit_opinion ELSE c.reject_reason END
+        FROM t_farm_change c
+                 LEFT JOIN t_admin ad ON ad.id = c.audited_by
+        WHERE c.farm_id = #{farmId} AND c.audited_at IS NOT NULL
+        UNION ALL
+        SELECT CASE o.op_action WHEN 'FREEZE' THEN '冻结养殖场' ELSE '解冻养殖场' END,
+               o.created_at,
+               o.operator_name,
+               o.result,
+               o.reason
+        FROM t_operation_log o
+        WHERE o.biz_type = 'FARM' AND o.biz_id = #{farmId}
+          AND o.op_type = 'FARM' AND o.op_action IN ('FREEZE', 'UNFREEZE')
+        ORDER BY time DESC
+        LIMIT 50
+    </select>
+    <select id="selectPendingChangeId" resultType="java.lang.Long">
+        SELECT id FROM t_farm_change
+        WHERE farm_id = #{farmId} AND status = 'PENDING'
+        ORDER BY id DESC LIMIT 1
+    </select>
+
+    <select id="selectAdminName" resultType="java.lang.String">
+        SELECT name FROM t_admin WHERE id = #{adminId} LIMIT 1
+    </select>
+</mapper>

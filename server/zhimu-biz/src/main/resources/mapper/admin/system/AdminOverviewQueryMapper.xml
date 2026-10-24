@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.admin.system.mapper.readonly.AdminOverviewQueryMapper">
+
+    <select id="selectFarmStats" resultType="com.zhimu.server.admin.system.query.FarmStatRow">
+        SELECT COUNT(*) AS total,
+               COALESCE(SUM(CASE WHEN audit_status = 'APPROVED' THEN 1 ELSE 0 END), 0) AS approved,
+               COALESCE(SUM(CASE WHEN audit_status = 'APPROVED' AND disabled = 0 AND frozen = 0
+                                 THEN 1 ELSE 0 END), 0) AS normal,
+               COALESCE(SUM(CASE WHEN audit_status = 'APPROVED' AND disabled = 1 AND frozen = 0
+                                 THEN 1 ELSE 0 END), 0) AS disabled,
+               COALESCE(SUM(CASE WHEN frozen = 1 THEN 1 ELSE 0 END), 0) AS frozen,
+               COALESCE(SUM(CASE WHEN audit_status = 'PENDING' THEN 1 ELSE 0 END), 0) AS pending,
+               COALESCE(SUM(CASE WHEN audit_status = 'REJECTED' THEN 1 ELSE 0 END), 0) AS rejected
+        FROM t_farm
+        WHERE deleted = 0
+    </select>
+
+    <select id="selectUserStats" resultType="com.zhimu.server.admin.system.query.UserStatRow">
+        SELECT COUNT(*) AS total,
+               COALESCE(SUM(CASE WHEN status = 'NORMAL' THEN 1 ELSE 0 END), 0) AS normal,
+               COALESCE(SUM(CASE WHEN status = 'DISABLED' THEN 1 ELSE 0 END), 0) AS disabled,
+               COALESCE(SUM(CASE WHEN created_at &gt;= #{monthStart} THEN 1 ELSE 0 END), 0) AS new_this_month
+        FROM t_user
+        WHERE status &lt;&gt; 'CANCELLED'
+    </select>
+
+    <select id="selectActiveStats" resultType="com.zhimu.server.admin.system.query.ActiveStatRow">
+        SELECT
+            (SELECT COUNT(DISTINCT uad.user_id)
+             FROM t_user_active_day uad
+                      JOIN t_user u ON u.id = uad.user_id AND u.status = 'NORMAL'
+             WHERE uad.stat_date BETWEEN #{start} AND #{end} AND uad.op_count &gt; 0) AS users_7d,
+            (SELECT COUNT(DISTINCT uad.user_id)
+             FROM t_user_active_day uad
+                      JOIN t_user u ON u.id = uad.user_id AND u.status = 'NORMAL'
+             WHERE uad.stat_date = #{today} AND uad.op_count &gt; 0) AS users_today,
+            (SELECT COUNT(DISTINCT uad.farm_id)
+             FROM t_user_active_day uad
+                      JOIN t_farm f ON f.id = uad.farm_id AND f.deleted = 0
+                          AND f.audit_status = 'APPROVED' AND f.disabled = 0 AND f.frozen = 0
+             WHERE uad.stat_date BETWEEN #{start} AND #{end} AND uad.record_count &gt; 0
+               AND uad.farm_id &gt; 0) AS farms_7d
+    </select>
+
+    <select id="selectCategoryDistribution"
+            resultType="com.zhimu.server.admin.system.query.CategoryDistRow">
+        SELECT c.species AS species, COUNT(*) AS count
+        FROM t_farm f
+                 JOIN t_category c ON c.id = f.main_category_id
+        WHERE f.deleted = 0 AND f.audit_status = 'APPROVED'
+        GROUP BY c.species
+        ORDER BY COUNT(*) DESC
+    </select>
+
+    <select id="selectMonthAudit" resultType="com.zhimu.server.admin.system.query.MonthAuditRow">
+        SELECT 'FARM_AUDIT' AS type,
+               COALESCE(SUM(CASE WHEN status = 'APPROVED' THEN 1 ELSE 0 END), 0) AS approved,
+               COALESCE(SUM(CASE WHEN status = 'REJECTED' THEN 1 ELSE 0 END), 0) AS rejected,
+               ROUND(AVG(CASE WHEN audited_at IS NOT NULL
+                                   THEN TIMESTAMPDIFF(SECOND, submitted_at, audited_at) / 3600.0 END), 1) AS avg_handle_hours
+        FROM t_farm_audit
+        WHERE audited_at &gt;= #{monthStart} AND audited_at &lt;= #{now}
+        UNION ALL
+        SELECT 'FARM_CHANGE',
+               COALESCE(SUM(CASE WHEN status = 'APPROVED' THEN 1 ELSE 0 END), 0),
+               COALESCE(SUM(CASE WHEN status = 'REJECTED' THEN 1 ELSE 0 END), 0),
+               ROUND(AVG(CASE WHEN audited_at IS NOT NULL
+                                   THEN TIMESTAMPDIFF(SECOND, created_at, audited_at) / 3600.0 END), 1)
+        FROM t_farm_change
+        WHERE audited_at &gt;= #{monthStart} AND audited_at &lt;= #{now}
+        UNION ALL
+        SELECT 'CHANGE_REQUEST',
+               COALESCE(SUM(CASE WHEN status = 'APPROVED' THEN 1 ELSE 0 END), 0),
+               COALESCE(SUM(CASE WHEN status = 'REJECTED' THEN 1 ELSE 0 END), 0),
+               ROUND(AVG(CASE WHEN reviewed_at IS NOT NULL
+                                   THEN TIMESTAMPDIFF(SECOND, submitted_at, reviewed_at) / 3600.0 END), 1)
+        FROM t_change_request
+        WHERE reviewed_at &gt;= #{monthStart} AND reviewed_at &lt;= #{now}
+        UNION ALL
+        SELECT 'ACCOUNT_RECOVERY',
+               COALESCE(SUM(CASE WHEN status = 'APPROVED' THEN 1 ELSE 0 END), 0),
+               COALESCE(SUM(CASE WHEN status = 'REJECTED' THEN 1 ELSE 0 END), 0),
+               ROUND(AVG(CASE WHEN handled_at IS NOT NULL
+                                   THEN TIMESTAMPDIFF(SECOND, created_at, handled_at) / 3600.0 END), 1)
+        FROM t_account_recovery
+        WHERE handled_at &gt;= #{monthStart} AND handled_at &lt;= #{now}
+    </select>
+
+    <select id="selectFarmMap" resultType="com.zhimu.server.admin.system.query.FarmMapRow">
+        SELECT
+            CASE #{level}
+                WHEN 'PROVINCE' THEN CONCAT(LEFT(f.adcode, 2), '0000')
+                WHEN 'CITY' THEN CONCAT(LEFT(f.adcode, 4), '00')
+                WHEN 'DISTRICT' THEN f.adcode
+                ELSE CAST(f.id AS CHAR)
+            END AS region_code,
+            CASE #{level}
+                WHEN 'PROVINCE' THEN f.province
+                WHEN 'CITY' THEN f.city
+                WHEN 'DISTRICT' THEN f.district
+                ELSE f.name
+            END AS region_name,
+            AVG(f.longitude) AS lng,
+            AVG(f.latitude) AS lat,
+            COALESCE(SUM(CASE WHEN f.audit_status = 'APPROVED' AND f.frozen = 0 THEN 1 ELSE 0 END), 0) AS approved,
+            COALESCE(SUM(CASE WHEN f.audit_status = 'PENDING' THEN 1 ELSE 0 END), 0) AS pending,
+            COALESCE(SUM(CASE WHEN f.frozen = 1 THEN 1 ELSE 0 END), 0) AS frozen,
+            CASE WHEN #{level} = 'POINT' THEN f.id END AS farm_id,
+            CASE WHEN #{level} = 'POINT' THEN
+                CASE WHEN f.frozen = 1 THEN 'FROZEN'
+                     WHEN f.audit_status = 'PENDING' THEN 'PENDING'
+                     WHEN f.disabled = 1 THEN 'DISABLED'
+                     ELSE 'NORMAL' END
+            END AS farm_status
+        FROM t_farm f
+                 JOIN t_category c ON c.id = f.main_category_id
+        WHERE f.deleted = 0
+          AND f.audit_status IN ('APPROVED', 'PENDING')
+        <if test="parentCode != null and parentCode != ''">
+            AND LEFT(f.adcode, LENGTH(#{parentCode})) = #{parentCode}
+        </if>
+        <if test="species != null and species != ''">
+            AND c.species = #{species}
+        </if>
+        GROUP BY region_code, region_name, farm_id, farm_status
+        ORDER BY region_code ASC
+    </select>
+
+    <select id="selectRegionCounts" resultType="com.zhimu.server.admin.system.query.RegionCountRow">
+        SELECT COUNT(*) AS total,
+               COALESCE(SUM(CASE WHEN audit_status = 'APPROVED' AND frozen = 0 THEN 1 ELSE 0 END), 0) AS approved,
+               COALESCE(SUM(CASE WHEN audit_status = 'PENDING' THEN 1 ELSE 0 END), 0) AS pending,
+               COALESCE(SUM(CASE WHEN frozen = 1 THEN 1 ELSE 0 END), 0) AS frozen
+        FROM t_farm
+        WHERE deleted = 0
+          AND audit_status &lt;&gt; 'REJECTED'
+          AND LEFT(adcode, LENGTH(#{adcodePrefix})) = #{adcodePrefix}
+    </select>
+
+    <select id="selectRegionName" resultType="java.lang.String">
+        SELECT CASE LENGTH(#{adcodePrefix})
+                   WHEN 2 THEN MAX(province)
+                   WHEN 4 THEN MAX(city)
+                   ELSE MAX(district)
+               END
+        FROM t_farm
+        WHERE deleted = 0
+          AND LEFT(adcode, LENGTH(#{adcodePrefix})) = #{adcodePrefix}
+    </select>
+
+    <select id="selectPendingFarms" resultType="com.zhimu.server.admin.system.query.PendingFarmRow">
+        SELECT f.id AS farm_id,
+               a.id AS audit_id,
+               f.name AS farm_name,
+               c.name AS category_name,
+               a.submitted_at AS submitted_at,
+               a.submit_no AS submit_no
+        FROM t_farm_audit a
+                 JOIN t_farm f ON f.id = a.farm_id AND f.deleted = 0
+                 LEFT JOIN t_category c ON c.id = f.main_category_id
+        WHERE a.status = 'PENDING'
+          AND LEFT(f.adcode, LENGTH(#{adcodePrefix})) = #{adcodePrefix}
+        ORDER BY a.submitted_at ASC, a.id ASC
+        LIMIT 20
+    </select>
+
+    <select id="selectPlatformDailyStats" resultType="com.zhimu.server.admin.system.query.DailyStatRow">
+        SELECT stat_date AS stat_date,
+               CASE #{metric}
+                   WHEN 'ACTIVE_USER' THEN active_user_count
+                   WHEN 'NEW_USER' THEN new_user_count
+                   ELSE production_record_count
+               END AS value
+        FROM t_platform_daily_stat
+        WHERE stat_date BETWEEN #{start} AND #{end}
+        ORDER BY stat_date
+    </select>
+
+    <select id="selectActiveDailyStats" resultType="com.zhimu.server.admin.system.query.DailyStatRow">
+        SELECT stat_date AS stat_date, COUNT(DISTINCT user_id) AS value
+        FROM t_user_active_day
+        WHERE stat_date BETWEEN #{start} AND #{end} AND op_count &gt; 0
+        GROUP BY stat_date
+        ORDER BY stat_date
+    </select>
+
+    <select id="selectNewUserDailyStats" resultType="com.zhimu.server.admin.system.query.DailyStatRow">
+        SELECT DATE(created_at) AS stat_date, COUNT(*) AS value
+        FROM t_user
+        WHERE created_at &gt;= #{start}
+          AND created_at &lt; DATE_ADD(#{end}, INTERVAL 1 DAY)
+          AND status &lt;&gt; 'CANCELLED'
+        GROUP BY DATE(created_at)
+        ORDER BY stat_date
+    </select>
+
+    <select id="selectProductionDailyStats" resultType="com.zhimu.server.admin.system.query.DailyStatRow">
+        SELECT stat_date AS stat_date, COALESCE(SUM(record_count), 0) AS value
+        FROM t_user_active_day
+        WHERE stat_date BETWEEN #{start} AND #{end}
+        GROUP BY stat_date
+        ORDER BY stat_date
+    </select>
+</mapper>
