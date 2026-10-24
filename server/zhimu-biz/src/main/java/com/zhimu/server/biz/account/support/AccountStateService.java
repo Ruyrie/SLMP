@@ -140,6 +140,11 @@ public class AccountStateService {
         code.setCreatedAt(now);
         code.setUpdatedAt(now);
         recoveryCodeMapper.insert(code);
+        if (scene != RecoveryCodeScene.REGENERATE) {
+            // 注册、找回场景的待确认码对所有客户端都是强制步骤；REGENERATE 只约束发起端，
+            // auth:state 缓存不区分客户端，这里不删，避免另一端被误判为须保存恢复码
+            evictAuthState(user.getId());
+        }
         return RecoveryCodeConvert.toVO(code, plaintext, user.getPhone());
     }
 
@@ -149,6 +154,16 @@ public class AccountStateService {
         RecoveryCode live = liveCode(userId);
         if (live != null) {
             doRevoke(live, reason);
+        }
+    }
+
+    /**
+     * 恢复码确认、注册或找回生成新码后强制步骤会变化：提交后删除 auth:state 缓存，下一次请求按数据库重新判定。
+     * 否则注册或找回后确认恢复码，缓存里仍是 SAVE_RECOVERY_CODE，10 分钟内其余接口一律返回 40309。
+     */
+    public void evictAuthState(Long userId) {
+        if (userId != null) {
+            AfterCommit.run(() -> authStateCache.evict(userId));
         }
     }
 

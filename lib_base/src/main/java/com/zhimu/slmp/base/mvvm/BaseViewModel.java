@@ -188,7 +188,7 @@ public abstract class BaseViewModel extends ViewModel {
     }
 
     /**
-     * 操作失败（提交、刷新等）：网络错误提示“网络连接失败，请检查网络后重试”；40302/40303/40304 交给 onNoPermission（默认整页切换为无权查看）；
+     * 操作失败（提交、刷新等）：网络错误提示“网络连接失败，请检查网络后重试”（超时提示“服务器响应超时，请稍后重试”）；40302/40303/40304 交给 onNoPermission（默认整页切换为无权查看）；
      * 40902/40903 提示后回调 onDataChanged；40001 先交给 onFieldErrors；40101/40104/40901 不提示；其余显示服务端 message。
      */
     @CallSuper
@@ -209,10 +209,7 @@ public abstract class BaseViewModel extends ViewModel {
             onNoPermission(e);
             return;
         }
-        if (e.isNetwork()) {
-            showMessage(ApiException.MSG_NETWORK);
-            return;
-        }
+        // 网络失败的 message 为 MSG_NETWORK（超时为 MSG_TIMEOUT）
         showMessage(e.getMessage());
         if (ErrorCodes.isDataChanged(code)) {
             onDataChanged(e);

@@ -465,7 +465,7 @@ public class ImmuneRegisterViewModel extends BaseViewModel {
                 showMessage(e.getMessage());
                 return;
             }
-            showMessage(e.isNetwork() ? ApiException.MSG_NETWORK : e.getMessage());
+            showMessage(e.getMessage());
         });
     }
 
@@ -787,7 +787,7 @@ public class ImmuneRegisterViewModel extends BaseViewModel {
             return;
         }
         if (e.isNetwork()) {
-            showMessage(SubmitSupport.MSG_NETWORK_KEEP);
+            showMessage(e.keptMessage(SubmitSupport.MSG_NETWORK_KEEP));
             return;
         }
         handleError(e);

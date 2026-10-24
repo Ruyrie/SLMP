@@ -182,7 +182,7 @@ public abstract class AccountFormViewModel extends BaseViewModel {
     protected void handleError(@NonNull Throwable t) {
         ApiException e = ApiException.from(t);
         if (e.isNetwork()) {
-            showMessage(AccountForm.MSG_NETWORK);
+            showMessage(e.keptMessage(AccountForm.MSG_NETWORK));
             return;
         }
         super.handleError(e);

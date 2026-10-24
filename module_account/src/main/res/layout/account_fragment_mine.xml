@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A07 我的（一级页）：一级页顶部栏；大标题“我的”；个人信息卡；我的养殖场、我的修改申请（员工不渲染）；提醒设置、账号与安全；关于；退出登录 -->
+<!-- A07 我的（一级页）：一级页顶部栏；大标题“我的”；个人信息卡；我的养殖场、我的修改申请（员工、没有可用养殖场时不渲染）；提醒设置、账号与安全；关于；退出登录。
+     卡片与大标题同为 16 dp 页边距；骨架屏 account_skeleton_mine 与内容同结构，不再额外加页边距 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -52,9 +53,10 @@
                         android:id="@+id/account_mine_state"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/base_space_4"
+                        android:layout_marginTop="@dimen/base_space_3"
                         android:minHeight="480dp"
                         app:stateErrorTitle="@string/account_mine_error_title"
+                        app:stateSkeletonLayout="@layout/account_skeleton_mine"
                         app:uiState="@{vm.uiState}">
 
                         <LinearLayout
@@ -84,7 +86,7 @@
                                     <com.zhimu.slmp.base.widget.AvatarView
                                         android:layout_width="56dp"
                                         android:layout_height="56dp"
-                                        app:avatarName="@{vm.overview.user.name}" />
+                                        app:avatarName="@{vm.user.name}" />
 
                                     <LinearLayout
                                         android:layout_width="0dp"
@@ -97,7 +99,7 @@
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
                                             android:maxLines="1"
-                                            android:text="@{vm.overview.user.name}"
+                                            android:text="@{vm.user.name}"
                                             android:textAppearance="@style/TextAppearance.Zmt.TitleLarge"
                                             android:textColor="?attr/colorOnSurface" />
 
@@ -105,7 +107,7 @@
                                             style="@style/account_style_desc"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
-                                            android:text="@{@string/account_mine_profile_suffix(vm.overview.user.phoneMasked ?? ``)}" />
+                                            android:text="@{@string/account_mine_profile_suffix(vm.user.phoneMasked ?? ``)}" />
                                     </LinearLayout>
 
                                     <ImageView
@@ -237,7 +239,7 @@
                                 android:text="@string/account_mine_logout"
                                 app:icon="@drawable/ic_logout"
                                 app:iconSize="20dp"
-                                app:loading="@{vm.submitting}" />
+                                app:loading="@{vm.loggingOut}" />
                         </LinearLayout>
                     </com.zhimu.slmp.base.widget.StateLayout>
                 </LinearLayout>

@@ -24,6 +24,10 @@ public class ApiException extends RuntimeException {
     public static final int EMPTY_DATA = ErrorCodes.EMPTY_DATA;
 
     public static final String MSG_NETWORK = "网络连接失败，请检查网络后重试";
+    /** 连上了但服务器在超时时间内没有响应（网络慢或服务器忙），与断网区分 */
+    public static final String MSG_TIMEOUT = "服务器响应超时，请稍后重试";
+    /** 表单提交超时：内容保留（对应各模块“网络连接失败，已保留填写的内容”） */
+    public static final String MSG_TIMEOUT_KEEP = "服务器响应超时，已填写的内容会保留，请稍后重试";
     public static final String MSG_UNKNOWN = "出了点问题，请稍后重试";
 
     private final int code;
@@ -50,8 +54,13 @@ public class ApiException extends RuntimeException {
                 : Collections.unmodifiableMap(new LinkedHashMap<>(fieldErrors));
     }
 
+    /** 网络失败；cause 为超时（SocketTimeoutException 等 InterruptedIOException）时提示文案为 {@link #MSG_TIMEOUT} */
     public static ApiException network(@Nullable Throwable cause) {
-        return new ApiException(NETWORK, MSG_NETWORK, null, null, null, cause);
+        return new ApiException(NETWORK, isTimeoutCause(cause) ? MSG_TIMEOUT : MSG_NETWORK, null, null, null, cause);
+    }
+
+    private static boolean isTimeoutCause(@Nullable Throwable cause) {
+        return cause instanceof java.io.InterruptedIOException;
     }
 
     public static ApiException unknown(@Nullable Throwable cause) {
@@ -100,8 +109,23 @@ public class ApiException extends RuntimeException {
         return data;
     }
 
+    /** 网络失败，含超时（保留表单、重试等按网络失败处理的逻辑不区分超时） */
     public boolean isNetwork() {
         return code == NETWORK;
+    }
+
+    /** 网络失败中的超时：连上了但服务器没有及时响应 */
+    public boolean isTimeout() {
+        return code == NETWORK && isTimeoutCause(getCause());
+    }
+
+    /**
+     * 网络失败且保留表单时的提示：超时返回 {@link #MSG_TIMEOUT_KEEP}，其余返回传入的断网提示
+     * （各模块的“网络连接失败，已保留填写的内容”等）。
+     */
+    @NonNull
+    public String keptMessage(@NonNull String offlineText) {
+        return isTimeout() ? MSG_TIMEOUT_KEEP : offlineText;
     }
 
     public boolean hasFieldErrors() {

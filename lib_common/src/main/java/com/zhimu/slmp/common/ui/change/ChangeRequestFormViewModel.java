@@ -366,7 +366,7 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
     private void onSubmitError(@NonNull ApiException e) {
         int code = e.getCode();
         if (e.isNetwork()) {
-            showMessage(UiMessage.withAction(MSG_NETWORK, "重试", ACTION_RETRY));
+            showMessage(UiMessage.withAction(e.keptMessage(MSG_NETWORK), "重试", ACTION_RETRY));
             return;
         }
         if (ErrorCodes.isDataChanged(code)) {

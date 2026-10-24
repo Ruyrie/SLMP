@@ -783,7 +783,7 @@ public abstract class InspectFormViewModel extends BaseViewModel {
         }
         submitting.setValue(false);
         if (e.isNetwork()) {
-            showMessage(UiMessage.withAction(MSG_NETWORK_KEEP, "重试", ACTION_RETRY));
+            showMessage(UiMessage.withAction(e.keptMessage(MSG_NETWORK_KEEP), "重试", ACTION_RETRY));
             return;
         }
         if (code == ErrorCodes.VERSION_CONFLICT) {

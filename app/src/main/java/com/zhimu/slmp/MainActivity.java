@@ -10,6 +10,9 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -17,7 +20,6 @@ import androidx.lifecycle.Lifecycle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.zhimu.slmp.base.ui.BaseActivity;
-import com.zhimu.slmp.base.ui.InsetsHelper;
 import com.zhimu.slmp.common.di.CoreInjector;
 import com.zhimu.slmp.common.model.vo.FarmContextVO;
 import com.zhimu.slmp.common.router.RouterPath;
@@ -91,7 +93,7 @@ public class MainActivity extends BaseActivity implements MainTabHost {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.app_activity_main);
         nav = findViewById(R.id.main_bottom_nav);
-        InsetsHelper.applyTopPadding(findViewById(R.id.main_container));
+        applyInsets();
         if (savedInstanceState != null) {
             currentKey = savedInstanceState.getString(STATE_TAB, TabRegistry.TODAY);
             restoredLayout = savedInstanceState.getString(STATE_LAYOUT);
@@ -153,10 +155,47 @@ public class MainActivity extends BaseActivity implements MainTabHost {
         return false;
     }
 
+    /**
+     * 系统栏与软键盘 insets 由主页统一处理：
+     * <ul>
+     *     <li>一级页容器：顶部避让状态栏；软键盘弹出时底部按键盘高度加内边距（一级页变矮，内容贴在键盘上方）。
+     *     已处理的底部从下发给一级页的 insets 中扣除（收起时扣除底部导航已避让的导航栏），一级页不要再自己加；</li>
+     *     <li>底部导航：只避让导航栏，替换 BottomNavigationView 自带的处理（它按 systemWindowInsets 加底部内边距，
+     *     adjustResize 下包含软键盘高度，会被整体顶到键盘上方）；软键盘弹出时隐藏，收起后恢复
+     *     （UI 文档 K01：软键盘弹出时底部导航被键盘遮住）。</li>
+     * </ul>
+     */
+    private void applyInsets() {
+        View container = findViewById(R.id.main_container);
+        final int pt = container.getPaddingTop();
+        final int pb = container.getPaddingBottom();
+        ViewCompat.setOnApplyWindowInsetsListener(container, (v, insets) -> {
+            Insets top = insets.getInsets(WindowInsetsCompat.Type.statusBars()
+                    | WindowInsetsCompat.Type.displayCutout());
+            int navBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
+            boolean imeShown = insets.isVisible(WindowInsetsCompat.Type.ime());
+            int bottom = imeShown
+                    ? Math.max(insets.getInsets(WindowInsetsCompat.Type.ime()).bottom, navBottom) : 0;
+            v.setPadding(v.getPaddingLeft(), pt + top.top, v.getPaddingRight(), pb + bottom);
+            nav.setVisibility(imeShown ? View.GONE : View.VISIBLE);
+            return insets.inset(0, 0, 0, imeShown ? bottom : navBottom);
+        });
+        final int nl = nav.getPaddingLeft();
+        final int nr = nav.getPaddingRight();
+        final int nb = nav.getPaddingBottom();
+        ViewCompat.setOnApplyWindowInsetsListener(nav, (v, insets) -> {
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.navigationBars()
+                    | WindowInsetsCompat.Type.displayCutout());
+            v.setPadding(nl + bars.left, v.getPaddingTop(), nr + bars.right, nb + bars.bottom);
+            return insets;
+        });
+    }
+
+    /** 底部导航上方；软键盘弹出、底部导航隐藏时改用页面中可见的锚点，没有则显示在底部（键盘上方） */
     @Nullable
     @Override
     public View getSnackbarAnchor() {
-        return nav;
+        return nav != null && nav.getVisibility() == View.VISIBLE ? nav : super.getSnackbarAnchor();
     }
 
     @Override

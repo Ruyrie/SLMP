@@ -4,8 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -34,7 +34,8 @@ import java.util.List;
 
 /**
  * K03 知识原文：从 K01 角标进入时自动滚到被引用段落（引用块顶部位于顶部栏下方 16 dp）；内嵌教学视频原位播放
- * （控件同 K05，无画中画；点全屏进入 K05 横屏并接着播）；相关条目进入新的 K03（不带引用标注）；share 调起系统分享。
+ * （控件同 K05，无画中画；点全屏进入 K05 横屏并接着播，退出全屏回到本页接着播）；相关条目进入新的 K03（不带引用标注）；
+ * share 调起系统分享。
  */
 public class KnowledgeDetailActivity extends BaseActivity {
 
@@ -43,6 +44,15 @@ public class KnowledgeDetailActivity extends BaseActivity {
     private KnowledgeBlockAdapter blockAdapter;
     private PlayerController player;
     private boolean playerStarted;
+    /** 全屏（K05 横屏）返回：从全屏看到的位置原位接着播 */
+    private final ActivityResultLauncher<Intent> fullscreenLauncher = Router.registerForResult(this, r -> {
+        Intent data = r.getData();
+        long ms = data == null ? -1 : data.getLongExtra(RouterPath.EXTRA_START_MS, -1);
+        if (r.getResultCode() == RESULT_OK && ms >= 0 && playerStarted) {
+            player.seekTo(ms);
+            player.resume();
+        }
+    });
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,11 +76,7 @@ public class KnowledgeDetailActivity extends BaseActivity {
         binding.aiKnowledgeBlocks.setLayoutManager(new LinearLayoutManager(this));
         binding.aiKnowledgeBlocks.setAdapter(blockAdapter);
 
-        binding.aiKnowledgeVideo.post(() -> {
-            ViewGroup.LayoutParams lp = binding.aiKnowledgeVideo.getLayoutParams();
-            lp.height = Math.round(binding.aiKnowledgeVideo.getWidth() * 9f / 16f);
-            binding.aiKnowledgeVideo.setLayoutParams(lp);
-        });
+        // 视频区高度由 VideoFrameLayout 测量时按宽度取 16:9（视频块初始隐藏，不能在 post 里取宽度）
         float radius = 16 * getResources().getDisplayMetrics().density;
         binding.aiKnowledgeVideo.setOutlineProvider(new android.view.ViewOutlineProvider() {
             @Override
@@ -223,7 +229,7 @@ public class KnowledgeDetailActivity extends BaseActivity {
         });
     }
 
-    /** 内嵌视频点全屏：暂停原位播放，打开 K05 横屏从当前位置接着播 */
+    /** 内嵌视频点全屏：暂停原位播放，打开 K05 横屏从当前位置接着播；退出全屏回到本页，从全屏看到的位置接着播 */
     private void openFullscreen() {
         if (vm.getEmbeddedPlay().getValue() == null) {
             return;
@@ -234,7 +240,7 @@ public class KnowledgeDetailActivity extends BaseActivity {
         b.putString(RouterPath.EXTRA_ENTRY_TYPE, AiCodes.ENTRY_KNOWLEDGE);
         b.putBoolean(RouterPath.EXTRA_FULLSCREEN, true);
         b.putLong(RouterPath.EXTRA_START_MS, player.position());
-        Router.open(this, RouterPath.K05, b);
+        Router.openForResult(this, fullscreenLauncher, RouterPath.K05, b);
     }
 
     @Override

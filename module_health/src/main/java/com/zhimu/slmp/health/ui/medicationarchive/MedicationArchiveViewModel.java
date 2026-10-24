@@ -365,7 +365,7 @@ public class MedicationArchiveViewModel extends BaseListViewModel<Long, Medicati
                 refresh();
                 return;
             }
-            showMessage(e.isNetwork() ? ApiException.MSG_NETWORK : e.getMessage());
+            showMessage(e.getMessage());
         });
         return null;
     }

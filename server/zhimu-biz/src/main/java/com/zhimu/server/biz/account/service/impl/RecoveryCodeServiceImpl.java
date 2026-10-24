@@ -87,6 +87,7 @@ public class RecoveryCodeServiceImpl implements RecoveryCodeService {
             throw new BizException(ErrorCode.NOT_FOUND);
         }
         if (RecoveryCodeStatus.ACTIVE.name().equals(code.getStatus())) {
+            accountState.evictAuthState(user.getId());
             return RecoveryCodeConvert.toConfirm(code, accountState.resolveNextStep(user, clientOf()).name());
         }
         RecoveryCode live = accountState.liveCode(user.getId());
@@ -99,6 +100,8 @@ public class RecoveryCodeServiceImpl implements RecoveryCodeService {
         code.setConfirmedAt(BeijingTime.now());
         code.setUpdatedAt(BeijingTime.now());
         recoveryCodeMapper.updateById(code);
+        // 强制步骤已完成：清掉鉴权状态缓存，否则缓存期内其余接口仍返回 40309
+        accountState.evictAuthState(user.getId());
         return RecoveryCodeConvert.toConfirm(code, accountState.resolveNextStep(user, clientOf()).name());
     }
 

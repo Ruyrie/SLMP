@@ -553,7 +553,7 @@ public class DisinfectRegisterViewModel extends BaseViewModel {
             } else {
                 clearError(F_LOT);
             }
-        }, e -> showMessage(e.isNetwork() ? ApiException.MSG_NETWORK : e.getMessage()));
+        }, e -> showMessage(e.getMessage()));
     }
 
     public void onLotFieldClick() {
@@ -848,7 +848,7 @@ public class DisinfectRegisterViewModel extends BaseViewModel {
             return;
         }
         if (e.isNetwork()) {
-            showMessage(SubmitSupport.MSG_NETWORK_KEEP);
+            showMessage(e.keptMessage(SubmitSupport.MSG_NETWORK_KEEP));
             return;
         }
         handleError(e);

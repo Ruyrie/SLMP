@@ -33,6 +33,8 @@ import com.zhimu.slmp.common.service.ServiceHub;
 import com.zhimu.slmp.common.session.SessionManager;
 import com.zhimu.slmp.network.RxResult;
 
+import java.util.concurrent.TimeUnit;
+
 import javax.inject.Inject;
 
 import io.reactivex.rxjava3.core.Completable;
@@ -46,6 +48,9 @@ import io.reactivex.rxjava3.core.Single;
  */
 @FeatureScope
 public class AccountRepository {
+
+    /** 退出登录时等待 API-A07 的最长秒数 */
+    static final long LOGOUT_API_TIMEOUT_SECONDS = 5;
 
     private final AccountApi api;
     private final SessionManager sessionManager;
@@ -110,7 +115,8 @@ public class AccountRepository {
 
     /**
      * 退出登录（2.6.7）：退出前回调（IPushService.unbindCurrent，删除别名并调 API-T21；服务未注册时跳过）
-     * → API-A07（失败不阻断）→ SessionManager.logout 清除本机令牌、用户、养殖场上下文与 Room 三张表。
+     * → API-A07（失败或超过 {@link #LOGOUT_API_TIMEOUT_SECONDS} 秒不阻断）→ SessionManager.logout
+     * 清除本机令牌、用户、养殖场上下文与 Room 三张表。服务端不可用时也能尽快回到登录页。
      */
     @NonNull
     public Completable logoutAndClear() {
@@ -121,7 +127,7 @@ public class AccountRepository {
                     }
                 })
                 .onErrorComplete()
-                .andThen(logout().onErrorComplete())
+                .andThen(logout().timeout(LOGOUT_API_TIMEOUT_SECONDS, TimeUnit.SECONDS).onErrorComplete())
                 .andThen(Completable.fromAction(sessionManager::logout));
     }
 

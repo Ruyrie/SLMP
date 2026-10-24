@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A07 骨架行：列表项外框 + 40 dp 图标块 + 主、副文字两条；圆角由外层 GroupedListLayout 按位置设置 -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Zmt.Card.ListItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/base_list_item_two_line_min_height"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/base_space_4"
+        android:paddingEnd="@dimen/base_space_4">
+
+        <com.zhimu.slmp.base.widget.SkeletonView
+            android:layout_width="@dimen/base_list_leading_size"
+            android:layout_height="@dimen/base_list_leading_size"
+            android:layout_marginEnd="@dimen/base_space_4"
+            app:skeletonCornerRadius="@dimen/base_radius_md" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <com.zhimu.slmp.base.widget.SkeletonView
+                android:layout_width="96dp"
+                android:layout_height="20dp" />
+
+            <com.zhimu.slmp.base.widget.SkeletonView
+                android:layout_width="160dp"
+                android:layout_height="16dp"
+                android:layout_marginTop="@dimen/base_space_2" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

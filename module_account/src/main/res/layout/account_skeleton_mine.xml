@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A07 首次加载骨架（UI 文档 2.5 节“A07 加载中”）：与内容同结构，个人信息卡和各列表项保留外框，
+     头像、图标、文字位置为圆角色块；页边距由外层容器提供，这里不再加，卡片与大标题左右对齐 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:importantForAccessibility="noHideDescendants"
+    android:orientation="vertical">
+
+    <!-- 个人信息卡：88 dp，56 dp 圆形头像 + 姓名、手机号两条 -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="88dp"
+        app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+        app:cardCornerRadius="@dimen/base_radius_lg_plus"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/base_page_margin"
+            android:paddingEnd="@dimen/base_space_3">
+
+            <com.zhimu.slmp.base.widget.SkeletonView
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                app:skeletonShape="circle" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/base_space_4"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <com.zhimu.slmp.base.widget.SkeletonView
+                    android:layout_width="96dp"
+                    android:layout_height="24dp" />
+
+                <com.zhimu.slmp.base.widget.SkeletonView
+                    android:layout_width="160dp"
+                    android:layout_height="16dp"
+                    android:layout_marginTop="@dimen/base_space_2" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- 养殖场与申请分组：2 项 -->
+    <com.zhimu.slmp.base.widget.GroupedListLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_4">
+
+        <include layout="@layout/account_skeleton_mine_row" />
+
+        <include layout="@layout/account_skeleton_mine_row" />
+    </com.zhimu.slmp.base.widget.GroupedListLayout>
+
+    <!-- 设置分组：提醒设置、账号与安全 -->
+    <com.zhimu.slmp.base.widget.GroupedListLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_4">
+
+        <include layout="@layout/account_skeleton_mine_row" />
+
+        <include layout="@layout/account_skeleton_mine_row" />
+    </com.zhimu.slmp.base.widget.GroupedListLayout>
+
+    <!-- 关于：单项 -->
+    <com.zhimu.slmp.base.widget.GroupedListLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_4">
+
+        <include layout="@layout/account_skeleton_mine_row" />
+    </com.zhimu.slmp.base.widget.GroupedListLayout>
+
+    <!-- 退出登录按钮位置：40 dp 全圆 -->
+    <com.zhimu.slmp.base.widget.SkeletonView
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginTop="@dimen/base_space_6"
+        app:skeletonCornerRadius="@dimen/base_radius_lg_plus" />
+</LinearLayout>

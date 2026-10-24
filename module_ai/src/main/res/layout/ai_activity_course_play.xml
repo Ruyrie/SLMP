@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- K05 视频播放 · 竖屏 / K06 全屏：media-backdrop 视频区（16:9，全屏时铺满）叠控制层；下方标题、元信息、
-     “问 AI / 图文原文 / 倍速”、本专题标题行与课程列表（全屏时隐藏） -->
+<!-- K05 视频播放 · 竖屏 / K06 全屏：media-backdrop 视频区（VideoFrameLayout 测量时按宽度取 16:9，全屏时铺满）
+     叠控制层；下方标题、元信息、“问 AI / 图文原文 / 倍速”、本专题标题行与课程列表（全屏时隐藏） -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -16,7 +16,7 @@
         android:layout_height="0dp"
         android:background="@color/zm_media_backdrop" />
 
-    <FrameLayout
+    <com.zhimu.slmp.ai.ui.play.VideoFrameLayout
         android:id="@+id/ai_play_video"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -34,7 +34,7 @@
         <include
             android:id="@+id/ai_play_controls"
             layout="@layout/ai_view_player_controls" />
-    </FrameLayout>
+    </com.zhimu.slmp.ai.ui.play.VideoFrameLayout>
 
     <com.zhimu.slmp.base.widget.StateLayout
         android:id="@+id/ai_play_state"

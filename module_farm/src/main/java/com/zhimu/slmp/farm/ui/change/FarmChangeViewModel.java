@@ -387,7 +387,7 @@ public class FarmChangeViewModel extends BaseViewModel {
         submitting.setValue(false);
         int code = e.getCode();
         if (e.isNetwork()) {
-            showMessage(FarmRules.MSG_NETWORK_KEPT);
+            showMessage(e.keptMessage(FarmRules.MSG_NETWORK_KEPT));
         } else if (code == ErrorCodes.PENDING_EXISTS) {
             showMessage(e.getMessage() != null ? e.getMessage() : MSG_PENDING);
             readOnly.setValue(true);

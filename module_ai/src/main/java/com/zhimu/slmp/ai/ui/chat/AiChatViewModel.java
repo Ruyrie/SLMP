@@ -555,7 +555,7 @@ public class AiChatViewModel extends BaseViewModel {
             if (ae.getCode() == ErrorCodes.STATE_CHANGED) {
                 showMessage(AiText.MSG_NOT_IN_STOCK_RETRY);
             } else {
-                showMessage(ae.isNetwork() ? ApiException.MSG_NETWORK : ae.getMessage());
+                showMessage(ae.getMessage());
             }
         });
     }
@@ -928,7 +928,7 @@ public class AiChatViewModel extends BaseViewModel {
                 if (code == ErrorCodes.DUPLICATE_SUBMIT) {
                     fixFromServer(r);
                 } else {
-                    showMessage(e.isNetwork() ? ApiException.MSG_NETWORK : e.getMessage());
+                    showMessage(e.getMessage());
                 }
                 return;
             }
@@ -1157,7 +1157,7 @@ public class AiChatViewModel extends BaseViewModel {
             showMessage(AiText.MSG_RATED);
         }, e -> {
             ApiException ae = ApiException.from(e);
-            showMessage(ae.isNetwork() ? ApiException.MSG_NETWORK : ae.getMessage());
+            showMessage(ae.getMessage());
         });
     }
 
@@ -1224,7 +1224,7 @@ public class AiChatViewModel extends BaseViewModel {
     @NonNull
     static String speechError(@NonNull ApiException e) {
         if (e.isNetwork()) {
-            return AiText.MSG_NETWORK_FAILED;
+            return e.isTimeout() ? ApiException.MSG_TIMEOUT : AiText.MSG_NETWORK_FAILED;
         }
         switch (e.getCode()) {
             case ErrorCodes.PARAM_INVALID:

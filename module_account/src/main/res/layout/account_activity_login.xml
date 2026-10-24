@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- A01 登录（UI 设计文档 A01）：无顶部栏，左右 24 dp；品牌区、标题、登录失效横幅、方式切换、手机号、密码 / 验证码、登录、手机号无法使用；底部注册入口 -->
+<!-- 描边框上方另有半个浮动标签高（约 6 dp），相邻输入框上边距取 18 dp，描边间距即为文档的 24 dp -->
+<!-- 手机号框 drawablePadding 作用在 MDC 为前缀“+86”留出的占位 drawable 上，加上 MDC 自带 2 dp，前缀与号码相隔约 10 dp -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -107,6 +109,7 @@
                     <com.google.android.material.textfield.TextInputEditText
                         style="@style/account_style_edit"
                         android:autofillHints="phone"
+                        android:drawablePadding="@dimen/base_space_2"
                         android:imeOptions="actionNext"
                         android:inputType="phone"
                         android:text="@={vm.phone}" />
@@ -115,6 +118,7 @@
                 <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_login_password"
                     style="@style/account_style_field"
+                    android:layout_marginTop="18dp"
                     android:hint="@string/account_field_password"
                     app:endIconMode="password_toggle"
                     app:visibleIf="@{!LoginViewModel.MODE_SMS.equals(vm.loginMode)}">
@@ -130,6 +134,7 @@
                 <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_login_sms"
                     style="@style/account_style_field"
+                    android:layout_marginTop="18dp"
                     android:hint="@string/account_field_sms_code"
                     android:visibility="gone"
                     app:visibleIf="@{LoginViewModel.MODE_SMS.equals(vm.loginMode)}">
@@ -149,6 +154,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
                     android:layout_marginEnd="-12dp"
+                    android:minWidth="@dimen/base_touch_target"
                     android:text="@string/account_login_forgot"
                     app:visibleIf="@{!LoginViewModel.MODE_SMS.equals(vm.loginMode)}" />
 
@@ -157,7 +163,7 @@
                     style="@style/Widget.Zmt.Button.Large"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/base_space_4"
+                    android:layout_marginTop="@dimen/base_space_3"
                     android:enabled="@{vm.canSubmit}"
                     android:text="@string/account_login_submit"
                     app:loading="@{vm.submitting}" />
@@ -168,7 +174,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="18dp"
+                    android:layout_marginTop="@dimen/base_space_2"
                     android:text="@string/account_login_phone_unusable"
                     app:icon="@drawable/account_ic_phonelink_erase"
                     app:iconSize="20dp" />
@@ -179,7 +185,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="@dimen/base_space_2"
+            android:layout_marginBottom="@dimen/base_space_3"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -194,6 +200,7 @@
                 style="@style/Widget.Zmt.Button.Text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:minWidth="@dimen/base_touch_target"
                 android:text="@string/account_login_register" />
         </LinearLayout>
     </LinearLayout>

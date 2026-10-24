@@ -50,16 +50,19 @@ public interface AccountApi {
     @POST("api/v1/account/sms-codes")
     Single<ApiResponse<SmsCodeSendVO>> sendAccountSmsCode(@Body AccountSmsCodeRequest body);
 
-    /** API-A03 注册 */
+    /** API-A03 注册（读取超时 60 秒） */
+    @retrofit2.http.Headers(Headers.READ_TIMEOUT_60S)
     @POST("api/v1/auth/register")
     Single<ApiResponse<AuthTokenVO>> register(@Body RegisterRequest body,
                                               @Header(Headers.IDEMPOTENCY_KEY) String idemKey);
 
-    /** API-A04 密码登录 */
+    /** API-A04 密码登录（读取超时 60 秒） */
+    @retrofit2.http.Headers(Headers.READ_TIMEOUT_60S)
     @POST("api/v1/auth/login/password")
     Single<ApiResponse<AuthTokenVO>> loginByPassword(@Body PasswordLoginRequest body);
 
-    /** API-A05 验证码登录 */
+    /** API-A05 验证码登录（读取超时 60 秒） */
+    @retrofit2.http.Headers(Headers.READ_TIMEOUT_60S)
     @POST("api/v1/auth/login/sms")
     Single<ApiResponse<AuthTokenVO>> loginBySms(@Body SmsLoginRequest body);
 

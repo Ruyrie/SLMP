@@ -260,7 +260,7 @@ public class CourseHomeFragment extends BaseFragment {
         }
         if (refresh instanceof LoadState.Error && courseAdapter.getItemCount() > 0) {
             ApiException e = ApiException.from(((LoadState.Error) refresh).getError());
-            showMessage(e.isNetwork() ? ApiException.MSG_NETWORK : String.valueOf(e.getMessage()));
+            showMessage(e.getMessage());
         }
         return Unit.INSTANCE;
     }
