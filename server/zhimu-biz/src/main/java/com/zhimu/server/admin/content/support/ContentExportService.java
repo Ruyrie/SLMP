@@ -25,7 +25,7 @@ import java.util.UUID;
 /**
  * 内容运营导出：生成 xlsx，写 t_file（scene = EXPORT、7 天有效），返回 10 分钟下载地址。
  */
-@Component
+@Component("adminContentSupportExportService")
 @RequiredArgsConstructor
 public class ContentExportService {
 

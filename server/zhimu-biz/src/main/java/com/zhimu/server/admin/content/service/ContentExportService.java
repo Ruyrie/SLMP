@@ -28,7 +28,7 @@ import java.util.List;
  * 内容运营导出（ADM-C10、C65）：同步生成 xlsx、写 t_file（scene = EXPORT、7 天过期）并返回 10 分钟有效的下载地址。
  * 行数上限 5 万；正式环境应与管理端-04 的异步导出任务统一，当前实现保证接口可用。
  */
-@Service
+@Service("adminContentExportService")
 @RequiredArgsConstructor
 public class ContentExportService {
 

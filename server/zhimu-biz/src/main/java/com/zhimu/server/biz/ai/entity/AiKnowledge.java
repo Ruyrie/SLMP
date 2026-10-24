@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.ai.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.Version;
@@ -38,7 +39,9 @@ public class AiKnowledge extends AuditEntity {
     private Integer sortNo;
     private LocalDateTime publishedAt;
     private Long publishedBy;
+    @TableField("cite_count_30d")
     private Integer citeCount30d;
+    @TableField("useful_rate_30d")
     private BigDecimal usefulRate30d;
     private LocalDateTime statAt;
     private String offReason;

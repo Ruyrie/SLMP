@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.ai.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.zhimu.server.framework.mybatis.BaseEntity;
 import lombok.Getter;
@@ -25,6 +26,7 @@ public class AiKnowledgeParagraph extends BaseEntity {
     private String imageUrl;
     private Long imageFileId;
     private Long courseId;
+    @TableField("cite_count_30d")
     private Integer citeCount30d;
     private Integer isOnline;
 }
