@@ -13,6 +13,7 @@ public class AdminUserItemVO {
 
     private Long userId;
     private String name;
+    private String avatarUrl;
     private String phone;
     private String farmNamesText;
     private Integer farmCount;

@@ -519,6 +519,22 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         return TenantSkip.call(() -> todoMapper.selectByDedupIncludingDeleted(farmId, todoType, dedupKey));
     }
 
+    @Override
+    @Transactional
+    public boolean reopenAutoIgnoredFromSource(Long farmId, String todoType, String dedupKey, String ignoreReason) {
+        Todo todo = findByDedup(farmId, todoType, dedupKey);
+        if (todo == null || Boolean.TRUE.equals(todo.getDeleted()) || ignoreReason == null
+                || !TodoStatus.IGNORED.name().equals(todo.getStatus())
+                || !"AUTO".equals(todo.getIgnoreWay()) || !ignoreReason.equals(todo.getIgnoreReason())) {
+            return false;
+        }
+        return todoMapper.update(new Todo(), Wrappers.<Todo>lambdaUpdate()
+                .eq(Todo::getId, todo.getId()).eq(Todo::getStatus, TodoStatus.IGNORED.name())
+                .eq(Todo::getIgnoreWay, "AUTO").eq(Todo::getIgnoreReason, ignoreReason)
+                .set(Todo::getStatus, TodoStatus.PENDING.name()).set(Todo::getIgnoredAt, null)
+                .set(Todo::getIgnoredBy, null).set(Todo::getIgnoreReason, null).set(Todo::getIgnoreWay, null)) > 0;
+    }
+
     private Todo fromDraft(Long farmId, TodoSource.TodoDraft draft) {
         Todo todo = new Todo();
         todo.setFarmId(farmId);

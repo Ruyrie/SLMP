@@ -21,6 +21,7 @@ interface ShellState {
   side: ShellSide
   role: 'owner' | 'manager' | 'staff'
   userName: string
+  avatarUrl: string
   phone: string
   userId: number
   farmId: number
@@ -41,6 +42,7 @@ export const shellState = reactive<ShellState>({
   side: 'user',
   role: 'owner',
   userName: '',
+  avatarUrl: '',
   phone: '',
   userId: 0,
   farmId: 0,

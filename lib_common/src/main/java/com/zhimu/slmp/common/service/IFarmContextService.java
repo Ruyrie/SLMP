@@ -38,6 +38,13 @@ public interface IFarmContextService {
     @NonNull
     Single<FarmContextVO> switchTo(long farmId);
 
+    /**
+     * 登录或冷启动恢复养殖场；farmId 为 0 时选择首个可用养殖场。
+     * 服务器确认没有养殖场时清空上下文并正常完成，网络或服务器错误交给调用方重试。
+     */
+    @NonNull
+    Completable restore(long farmId);
+
     /** 重新获取当前养殖场上下文（API-F02，启动时与角色变化后），没有可用养殖场时按模块02 2.6.1 节处理 */
     @NonNull
     Completable refreshContext();

@@ -130,6 +130,62 @@ public class FarmContextServiceImplTest {
     }
 
     @Test
+    public void restore_missingLastFarm_selectsFirstSwitchableFarm() {
+        when(repository.getFarms(anyString(), anyInt(), anyInt())).thenReturn(Single.just(TestData.page(
+                TestData.item(1003, "北湾牛场", "PENDING", false, false),
+                TestData.item(1001, "东山猪场", "NORMAL", true, false))));
+        when(repository.switchFarm(1001)).thenReturn(Single.just(ctx1001));
+
+        service.restore(0).test().assertComplete();
+
+        verify(farmContext).update(ctx1001);
+        verify(farmContext, never()).clear();
+    }
+
+    @Test
+    public void restore_noFarmOnServer_clearsContextAndCompletes() {
+        when(repository.getFarms(anyString(), anyInt(), anyInt())).thenReturn(Single.just(TestData.page()));
+
+        service.restore(0).test().assertComplete();
+
+        verify(farmContext).clear();
+        verify(repository, never()).switchFarm(anyLong());
+    }
+
+    @Test
+    public void restore_removedLastFarmAndNoFarmLeft_clearsContextAndCompletes() {
+        when(repository.switchFarm(1001)).thenReturn(Single.error(
+                new ApiException(ErrorCodes.NOT_FARM_MEMBER, "你已不是该养殖场的成员")));
+        when(repository.getFarms(anyString(), anyInt(), anyInt())).thenReturn(Single.just(TestData.page()));
+
+        service.restore(1001).test().assertComplete();
+
+        verify(farmContext).clear();
+    }
+
+    @Test
+    public void restore_listNetworkFailure_preservesContextAndPropagatesError() {
+        ApiException failure = ApiException.network(new IOException("offline"));
+        when(repository.getFarms(anyString(), anyInt(), anyInt())).thenReturn(Single.error(failure));
+
+        service.restore(0).test().assertError(failure);
+
+        verify(farmContext, never()).clear();
+        verify(farmContext, never()).update(any());
+    }
+
+    @Test
+    public void restore_lastFarmNetworkFailure_doesNotTreatItAsNoFarm() {
+        ApiException failure = ApiException.network(new IOException("offline"));
+        when(repository.switchFarm(1001)).thenReturn(Single.error(failure));
+
+        service.restore(1001).test().assertError(failure);
+
+        verify(repository, never()).getFarms(anyString(), anyInt(), anyInt());
+        verify(farmContext, never()).clear();
+    }
+
+    @Test
     public void refreshContext_currentFarm_updatesFromF02() {
         when(farmContext.farmIdOrZero()).thenReturn(1001L);
         when(repository.getContext(1001)).thenReturn(Single.just(ctx1001));

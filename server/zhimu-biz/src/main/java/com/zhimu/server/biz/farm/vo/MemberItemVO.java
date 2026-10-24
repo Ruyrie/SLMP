@@ -12,6 +12,7 @@ public class MemberItemVO {
     private Long userId;
     private String name;
     private String nameInitial;
+    private String avatarUrl;
     private String phoneMasked;
     private String role;
     private String roleText;

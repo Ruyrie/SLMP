@@ -278,7 +278,6 @@ public class AfterRecoveryViewModel extends AccountFormViewModel {
         launch(repository.confirmRecoveryCode(c.getRecoveryCodeId())
                 .flatMap(vo -> repository.getSession()
                         .flatMapCompletable(s -> repository.restoreFarm(s.getLastFarmId()))
-                        .onErrorComplete()
                         .toSingleDefault(true)), ok -> {
             submitting.setValue(false);
             recoveryCode.setValue(null);

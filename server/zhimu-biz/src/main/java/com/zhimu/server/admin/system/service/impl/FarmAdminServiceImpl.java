@@ -19,6 +19,7 @@ import com.zhimu.server.admin.system.vo.ExportVO;
 import com.zhimu.server.admin.system.vo.FreezeResultVO;
 import com.zhimu.server.biz.common.api.BizMediaService;
 import com.zhimu.server.biz.farm.api.FarmPlatformService;
+import com.zhimu.server.biz.account.api.AccountQueryService;
 import com.zhimu.server.biz.farm.entity.Farm;
 import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.common.context.AdminContext;
@@ -53,6 +54,7 @@ public class FarmAdminServiceImpl implements FarmAdminService {
     private final BizMediaService bizMediaService;
     private final FarmPlatformService farmPlatformService;
     private final ExportService exportService;
+    private final AccountQueryService accountQueryService;
 
     @Override
     public PageVO<AdminFarmItemVO> list(AdminFarmQuery query) {
@@ -271,6 +273,7 @@ public class FarmAdminServiceImpl implements FarmAdminService {
             members.add(AdminFarmDetailVO.Member.builder()
                     .userId(row.getUserId())
                     .name(row.getName())
+                    .avatarUrl(accountQueryService.avatarUrl(row.getUserId()))
                     .phone(Masks.phone(row.getPhone()))
                     .role(row.getRole())
                     .roleText(AuditTexts.roleText(row.getRole()))

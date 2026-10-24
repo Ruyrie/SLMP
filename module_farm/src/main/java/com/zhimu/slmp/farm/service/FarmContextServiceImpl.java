@@ -75,6 +75,24 @@ public class FarmContextServiceImpl implements IFarmContextService {
 
     @NonNull
     @Override
+    public Completable restore(long farmId) {
+        if (farmId <= 0) {
+            return selectNext(0).ignoreElement();
+        }
+        return repository.switchFarm(farmId)
+                .doOnSuccess(farmContext::update)
+                .ignoreElement()
+                .onErrorResumeNext(t -> {
+                    ApiException e = ApiException.from(t);
+                    if (!needsReselect(e.getCode())) {
+                        return Completable.error(e);
+                    }
+                    return selectNext(farmId).ignoreElement();
+                });
+    }
+
+    @NonNull
+    @Override
     public Completable refreshContext() {
         long farmId = farmContext.farmIdOrZero();
         if (farmId <= 0) {

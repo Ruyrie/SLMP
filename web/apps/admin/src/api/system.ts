@@ -348,6 +348,7 @@ export interface AdminUserQuery {
 export interface AdminUserItem {
   user_id: number
   name: string
+  avatar_url?: string | null
   phone: string
   farm_names_text?: string
   farm_count?: number
@@ -366,6 +367,7 @@ export interface AdminUserItem {
 export interface AdminUserDetail {
   user_id: number
   name: string
+  avatar_url?: string | null
   phone: string
   status: string
   status_text: string
@@ -493,6 +495,7 @@ export interface AdminFarmDetail {
   members?: Array<{
     user_id: number
     name: string
+    avatar_url?: string | null
     phone: string
     role: string
     role_text: string

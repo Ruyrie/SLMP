@@ -14,6 +14,9 @@ public interface AccountQueryService {
     /** 按 ID 取账号（含已注销）；不存在返回 null */
     AccountBrief getBrief(Long userId);
 
+    /** 当前有效头像的临时地址；未设置头像、账号不存在或已注销时返回 null。 */
+    String avatarUrl(Long userId);
+
     /** 按 ID 批量取姓名等简要信息；已注销账号的 name 为“已注销用户”；不存在的 ID 不在结果中 */
     Map<Long, AccountBrief> listBriefs(Collection<Long> userIds);
 

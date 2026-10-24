@@ -69,6 +69,7 @@ public class ImmunePlanServiceImpl implements ImmunePlanService {
     private final HealthAudit audit;
     private final DrugStockPort drugStockPort;
     private final DrugCatalogQueryService drugCatalogQueryService;
+    private final HealthTodoSource todoSource;
 
     // ===== API-D01 概况 =====
 
@@ -77,6 +78,8 @@ public class ImmunePlanServiceImpl implements ImmunePlanService {
         BatchInfo batch = support.requireBatch(batchId);
         support.checkBatchAccess(batch);
         generator.ensureGenerated(batch);
+        todoSource.generate(com.zhimu.server.biz.today.api.TodoSource.TodoSourceContext.builder()
+                .farmId(batch.farmId()).build());
         List<ImmunePlan> plans = planMapper.selectList(Wrappers.<ImmunePlan>lambdaQuery()
                 .eq(ImmunePlan::getBatchId, batchId)
                 .orderByAsc(ImmunePlan::getPlanDate).orderByAsc(ImmunePlan::getId));
@@ -150,6 +153,8 @@ public class ImmunePlanServiceImpl implements ImmunePlanService {
         BatchInfo batch = support.requireBatch(batchId);
         support.checkBatchAccess(batch);
         generator.ensureGenerated(batch);
+        todoSource.generate(com.zhimu.server.biz.today.api.TodoSource.TodoSourceContext.builder()
+                .farmId(batch.farmId()).build());
         int pageNo = query == null ? 1 : query.pageOrDefault();
         int size = query == null ? 20 : query.sizeOrDefault();
         String status = query == null ? null : query.getStatus();

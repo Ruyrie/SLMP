@@ -37,6 +37,10 @@ import com.zhimu.server.biz.health.vo.DisinfectTaskVO;
 import com.zhimu.server.biz.health.vo.DisinfectantOptionVO;
 import com.zhimu.server.biz.herd.api.PenInfo;
 import com.zhimu.server.biz.stock.api.DrugLotOption;
+import com.zhimu.server.biz.stock.api.DrugStockCommand;
+import com.zhimu.server.biz.stock.api.DrugStockPort;
+import com.zhimu.server.biz.stock.api.StockConsumeResult;
+import com.zhimu.server.biz.today.api.TodoSource;
 import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.common.context.UserContext;
 import com.zhimu.server.common.enums.BizType;
@@ -77,6 +81,9 @@ public class DisinfectServiceImpl implements DisinfectService {
     private final HealthSupport support;
     private final HealthAudit audit;
     private final BizMediaService bizMediaService;
+    private final DrugStockPort drugStockPort;
+    private final DisinfectTaskGenerator taskGenerator;
+    private final HealthTodoSource todoSource;
 
     // ===== API-D28 计划列表 =====
 
@@ -329,6 +336,7 @@ public class DisinfectServiceImpl implements DisinfectService {
         audit.record(plan.getFarmId(), "DISINFECT_PLAN", planId, "PAUSE", plan.getDisinfectantName(), null,
                 Map.of("status", HealthCodes.DISINFECT_PLAN_ACTIVE),
                 Map.of("status", HealthCodes.DISINFECT_PLAN_PAUSED, "reason", reason == null ? "" : reason));
+        todoSource.generate(TodoSource.TodoSourceContext.builder().farmId(plan.getFarmId()).build());
         DisinfectPlanVO vo = toPlanVO(requirePlan(planId), penIdsOf(planId));
         return vo;
     }
@@ -441,6 +449,7 @@ public class DisinfectServiceImpl implements DisinfectService {
 
     @Override
     public DisinfectTaskPageVO tasks(DisinfectTaskQuery query) {
+        ensureTasks();
         int pageNo = query == null ? 1 : query.pageOrDefault();
         int size = query == null ? 20 : query.sizeOrDefault();
         String status = query == null || query.getStatus() == null ? "ALL" : query.getStatus().toUpperCase();
@@ -531,6 +540,7 @@ public class DisinfectServiceImpl implements DisinfectService {
 
     @Override
     public List<DisinfectTaskOptionVO> taskOptions() {
+        ensureTasks();
         LocalDate today = BeijingTime.today();
         List<DisinfectTask> tasks = taskMapper.selectList(Wrappers.<DisinfectTask>lambdaQuery()
                 .in(DisinfectTask::getStatus, HealthCodes.TASK_PENDING, HealthCodes.TASK_OVERDUE)
@@ -613,10 +623,14 @@ public class DisinfectServiceImpl implements DisinfectService {
                 throw new BizException(ErrorCode.PARAM_INVALID, "请选择消毒任务");
             }
             penId = task.getPenId();
+            support.checkPenAccess(penId);
             planConcentration = task.getConcentration();
             String taskStatus = taskStatus(task);
             if (HealthCodes.TASK_DONE.equals(taskStatus)) {
                 throw new BizException(ErrorCode.STATE_CHANGED, "这条消毒任务已由他人登记，无需重复登记");
+            }
+            if (!HealthCodes.TASK_PENDING.equals(taskStatus) && !HealthCodes.TASK_OVERDUE.equals(taskStatus)) {
+                throw new BizException(ErrorCode.STATE_CHANGED, "消毒任务已暂停或取消，请刷新后再登记");
             }
             if (HealthCodes.TASK_OVERDUE.equals(taskStatus) || task.getTaskDate().isBefore(BeijingTime.today())) {
                 support.requireManager("逾期任务需所有者或场长补录");
@@ -669,6 +683,7 @@ public class DisinfectServiceImpl implements DisinfectService {
         record.setDeleted(false);
         record.setVersion(0);
         recordMapper.insert(record);
+        consume(record);
         if (task != null) {
             int rows = taskMapper.update(null, Wrappers.<DisinfectTask>lambdaUpdate()
                     .eq(DisinfectTask::getId, task.getId())
@@ -679,6 +694,7 @@ public class DisinfectServiceImpl implements DisinfectService {
             if (rows == 0) {
                 throw new BizException(ErrorCode.STATE_CHANGED, "这条消毒任务已由他人登记，无需重复登记");
             }
+            todoSource.completeDisinfect(task, record.getId(), executorId);
         }
         bindPhotos(record.getId(), request.getFileIds());
         audit.record(record.getFarmId(), "DISINFECT_RECORD", record.getId(), "CREATE", drug.getName(),
@@ -748,7 +764,9 @@ public class DisinfectServiceImpl implements DisinfectService {
         Long lotId = request.getDrugLotId() == null ? record.getDrugLotId() : request.getDrugLotId();
         List<DrugLotOption> lots = support.lotsFor(record.getDrugId(), HealthCodes.PURPOSE_DISINFECT);
         DrugLotOption lot = support.findLot(lots, lotId);
-        support.assertLotUsable(lot, usageQty, record.getDisinfectantName(), record.getUsageUnit());
+        // 原用量会在同一事务中回滚，不能用尚未回滚的结存校验完整新用量。
+        support.assertLotUsable(lot, null, record.getDisinfectantName(), record.getUsageUnit());
+        drugStockPort.restore(DrugStockCommand.BIZ_DISINFECT_RECORD, recordId);
         record.setActualTime(actualTime);
         record.setDrugLotId(lot.lotId());
         record.setLotNo(lot.lotNo());
@@ -764,6 +782,7 @@ public class DisinfectServiceImpl implements DisinfectService {
         if (rows == 0) {
             throw new BizException(ErrorCode.VERSION_CONFLICT, "内容已更新，请刷新后再修改");
         }
+        consume(record);
         bindPhotos(recordId, request.getFileIds());
         audit.record(record.getFarmId(), "DISINFECT_RECORD", recordId, "UPDATE", record.getDisinfectantName(),
                 null, null, Map.of("usage_qty", usageQty, "concentration", concentration));
@@ -773,43 +792,33 @@ public class DisinfectServiceImpl implements DisinfectService {
     // ===== 任务生成与取消 =====
 
     private int generate(DisinfectPlan plan, List<Long> penIds, LocalDate from, LocalDate to) {
-        int count = 0;
-        for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
-            long diff = ChronoUnit.DAYS.between(plan.getStartDate(), date);
-            if (diff < 0 || plan.getCycleDays() == null || plan.getCycleDays() <= 0 || diff % plan.getCycleDays() != 0) {
-                continue;
-            }
-            for (Long penId : penIds) {
-                Long existing = taskMapper.selectCount(Wrappers.<DisinfectTask>lambdaQuery()
-                        .eq(DisinfectTask::getPlanId, plan.getId())
-                        .eq(DisinfectTask::getPenId, penId)
-                        .eq(DisinfectTask::getTaskDate, date)
-                        .isNotNull(DisinfectTask::getActiveFlag));
-                if (existing != null && existing > 0) {
-                    continue;
-                }
-                DisinfectTask task = new DisinfectTask();
-                task.setFarmId(plan.getFarmId());
-                task.setPenId(penId);
-                task.setPlanId(plan.getId());
-                task.setSource(HealthCodes.TASK_SOURCE_PLAN);
-                task.setTaskDate(date);
-                task.setDueTime(plan.getDueTime() == null ? DEFAULT_DUE_TIME : plan.getDueTime());
-                task.setCatalogId(plan.getCatalogId());
-                task.setDisinfectantName(plan.getDisinfectantName());
-                task.setConcentration(plan.getConcentration());
-                task.setMethodCode(plan.getMethodCode());
-                task.setStatus(HealthCodes.TASK_PENDING);
-                task.setActiveFlag(true);
-                task.setManualDone(false);
-                task.setOverdueNotified(false);
-                task.setVersion(0);
-                task.setCreatedBy(0L);
-                taskMapper.insert(task);
-                count++;
-            }
-        }
+        int count = taskGenerator.generate(plan, penIds, from, to);
+        todoSource.generate(TodoSource.TodoSourceContext.builder().farmId(plan.getFarmId()).build());
         return count;
+    }
+
+    private void ensureTasks() {
+        Long farmId = support.farmId();
+        taskGenerator.ensureGenerated(farmId, BeijingTime.today());
+        todoSource.generate(TodoSource.TodoSourceContext.builder().farmId(farmId).build());
+    }
+
+    private void consume(DisinfectRecord record) {
+        // 空栏消毒仍扣药品库存；不给批次/栏舍分摊对象，避免错误计入批次成本。
+        Long costPenId = Boolean.TRUE.equals(record.getInBatchCost()) ? record.getPenId() : null;
+        StockConsumeResult result = drugStockPort.deduct(new DrugStockCommand(
+                record.getFarmId(), record.getDrugId(), record.getDrugLotId(), record.getUsageQty(),
+                DrugStockCommand.FLOW_DISINFECT_USE, DrugStockCommand.BIZ_DISINFECT_RECORD, record.getId(),
+                null, costPenId, record.getExecutorId(), record.getActualTime(),
+                record.getActualTime().toLocalDate(), record.getDisinfectantName()));
+        recordMapper.update(null, Wrappers.<DisinfectRecord>lambdaUpdate()
+                .eq(DisinfectRecord::getId, record.getId())
+                .set(DisinfectRecord::getStockFlowId, result.flowId())
+                .set(DisinfectRecord::getUnitPrice, result.unitPrice())
+                .set(DisinfectRecord::getCostAmount, result.amount()));
+        record.setStockFlowId(result.flowId());
+        record.setUnitPrice(result.unitPrice());
+        record.setCostAmount(result.amount());
     }
 
     private void cancelFrom(Long planId, LocalDate from, String reason) {

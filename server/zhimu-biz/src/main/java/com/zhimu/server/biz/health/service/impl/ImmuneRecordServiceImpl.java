@@ -53,6 +53,7 @@ public class ImmuneRecordServiceImpl implements ImmuneRecordService {
     private final HealthAudit audit;
     private final DrugStockPort drugStockPort;
     private final DrugCatalogQueryService drugCatalogQueryService;
+    private final HealthTodoSource todoSource;
 
     // ===== API-D14 登记接种 =====
 
@@ -150,6 +151,7 @@ public class ImmuneRecordServiceImpl implements ImmuneRecordService {
         recordMapper.insert(record);
         consume(record, lot, totalDose, executorId, plan.getBatchId(), penId);
         completePlan(plan, record);
+        todoSource.completeImmune(plan, record.getId(), executorId);
         audit.record(record.getFarmId(), "IMMUNE_RECORD", record.getId(), "UPDATE", planTarget(plan),
                 support.batchNo(plan.getBatchId()), null,
                 Map.of("quantity", quantity, "vaccinate_date", vaccinateDate.toString()));

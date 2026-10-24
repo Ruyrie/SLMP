@@ -2,6 +2,7 @@
 import { h } from 'vue'
 import { createVuetify } from 'vuetify'
 import QRCode from 'qrcode'
+import ZwAvatar from './components/ZwAvatar.vue'
 
 /* 智牧通 Web 公共组件库（由原型 zw.js 迁移；Vue 模板在运行时编译） */
 const ZW: any = { pages: {} }
@@ -272,10 +273,7 @@ ZW.version = '1.0.0'
     template: '<span class="zw-mso" :class="{ \'zw-mso--fill\': fill }" :style="{ fontSize: size + \'px\', color: color ? \'var(--\' + color + \')\' : null }" aria-hidden="true">{{ name }}<slot/></span>'
   };
 
-  C.ZwAvatar = {
-    props: { name: { type: String, default: '王' }, size: { type: [Number, String], default: 32 }, tone: { type: String, default: 'primary' } },
-    template: '<span class="zw-avatar" :class="\'zw-avatar--\' + tone" :style="{ width: size + \'px\', height: size + \'px\', fontSize: Math.round(size * 0.42) + \'px\' }">{{ name.slice(0, 1) }}</span>'
-  };
+  C.ZwAvatar = ZwAvatar;
 
   C.ZwTag = {
     props: { type: { type: String, default: 'neutral' }, icon: String, dot: Boolean, size: { type: String, default: 'default' } },

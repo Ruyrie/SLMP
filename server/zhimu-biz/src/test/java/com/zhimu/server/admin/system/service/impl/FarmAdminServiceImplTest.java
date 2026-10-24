@@ -6,6 +6,7 @@ import com.zhimu.server.admin.system.mapper.readonly.AdminFarmQueryMapper;
 import com.zhimu.server.admin.system.request.FarmFreezeRequest;
 import com.zhimu.server.admin.system.vo.FreezeResultVO;
 import com.zhimu.server.biz.common.api.BizMediaService;
+import com.zhimu.server.biz.account.api.AccountQueryService;
 import com.zhimu.server.biz.farm.api.FarmPlatformService;
 import com.zhimu.server.biz.farm.entity.Farm;
 import com.zhimu.server.common.context.AdminContext;
@@ -30,7 +31,7 @@ class FarmAdminServiceImplTest {
     private final FarmPlatformService farmPlatformService = mock(FarmPlatformService.class);
     private final FarmAdminServiceImpl service = new FarmAdminServiceImpl(mapper,
             mock(BaseDataQueryService.class), mock(BizMediaService.class), farmPlatformService,
-            mock(ExportService.class));
+            mock(ExportService.class), mock(AccountQueryService.class));
 
     @BeforeEach
     void setUp() {

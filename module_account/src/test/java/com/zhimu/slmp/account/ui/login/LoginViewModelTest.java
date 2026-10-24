@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -141,6 +142,52 @@ public class LoginViewModelTest {
         verify(repository).loginBySms(req.capture());
         assertEquals("13700005678", req.getValue().getPhone());
         assertEquals("123456", req.getValue().getSmsCode());
+    }
+
+    @Test
+    public void smsLogin_farmLoadFailure_staysOnLoginAndRetriesWithoutConsumingCodeAgain() {
+        AuthTokenVO token = TestData.fromJson(TestData.TOKEN_OWNER, AuthTokenVO.class);
+        when(repository.loginBySms(any())).thenReturn(Single.just(token));
+        when(repository.restoreFarm(1001L)).thenReturn(Completable.error(ApiException.network(null)),
+                Completable.complete());
+        vm.switchMode(LoginViewModel.MODE_SMS);
+        vm.phone.setValue("13700005678");
+        vm.smsCode.setValue("123456");
+
+        vm.login();
+
+        assertNull(vm.getLoginSuccess().getValue());
+        assertFalse(vm.isSubmitting());
+        assertTrue(vm.getFarmRestoreFailed().getValue());
+        assertEquals(LoginViewModel.MSG_FARM_RESTORE_FAILED, vm.getBanner().getValue());
+        assertEquals(LoginViewModel.ACTION_RETRY_LOGIN, vm.getMessage().getValue().getActionId());
+
+        vm.login();
+
+        verify(repository, times(1)).loginBySms(any());
+        verify(repository, times(2)).restoreFarm(1001L);
+        assertSame(token, vm.getLoginSuccess().getValue());
+        assertFalse(vm.getFarmRestoreFailed().getValue());
+        assertNull(vm.getBanner().getValue());
+    }
+
+    @Test
+    public void changingCredentialsAfterFarmLoadFailure_authenticatesAgain() {
+        AuthTokenVO token = TestData.fromJson(TestData.TOKEN_OWNER, AuthTokenVO.class);
+        when(repository.loginByPassword(any())).thenReturn(Single.just(token));
+        when(repository.restoreFarm(1001L)).thenReturn(Completable.error(ApiException.network(null)),
+                Completable.complete());
+        vm.phone.setValue("13800476620");
+        vm.password.setValue("Zmt12345");
+        vm.login();
+
+        vm.password.setValue("NewPass123");
+
+        assertFalse(vm.getFarmRestoreFailed().getValue());
+        assertNull(vm.getBanner().getValue());
+        vm.login();
+        verify(repository, times(2)).loginByPassword(any());
+        assertSame(token, vm.getLoginSuccess().getValue());
     }
 
     @Test

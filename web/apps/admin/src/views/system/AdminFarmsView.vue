@@ -350,7 +350,7 @@ onMounted(() => {
               <tr v-for="member in detailMembers" :key="member.user_id">
                 <td>
                   <div class="member-cell">
-                    <zw-avatar :name="member.name" :size="24" />
+                    <zw-avatar :name="member.name" :src="member.avatar_url" :size="24" />
                     {{ member.name }}
                     <span class="zw-muted num">{{ member.phone }}</span>
                   </div>

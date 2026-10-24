@@ -65,6 +65,7 @@ public class AdminFarmDetailVO {
     public static class Member {
         private Long userId;
         private String name;
+        private String avatarUrl;
         private String phone;
         private String role;
         private String roleText;

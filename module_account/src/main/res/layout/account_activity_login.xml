@@ -165,7 +165,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/base_space_3"
                     android:enabled="@{vm.canSubmit}"
-                    android:text="@string/account_login_submit"
+                    android:text="@{vm.farmRestoreFailed ? @string/account_login_retry_enter : @string/account_login_submit}"
                     app:loading="@{vm.submitting}" />
 
                 <com.google.android.material.button.MaterialButton

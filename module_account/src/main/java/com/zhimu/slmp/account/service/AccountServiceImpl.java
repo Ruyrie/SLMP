@@ -7,11 +7,17 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleEventObserver;
+import androidx.lifecycle.LifecycleOwner;
 
+import com.zhimu.slmp.account.R;
 import com.zhimu.slmp.account.data.AccountRepository;
 import com.zhimu.slmp.account.util.NextStepRouter;
 import com.zhimu.slmp.base.error.ApiException;
 import com.zhimu.slmp.base.error.ErrorCodes;
+import com.zhimu.slmp.base.dialog.ConfirmDialogFragment;
 import com.zhimu.slmp.common.di.FeatureScope;
 import com.zhimu.slmp.common.model.vo.AuthTokenVO;
 import com.zhimu.slmp.common.model.vo.SessionVO;
@@ -31,8 +37,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
  * IAccountService 实现（2.6.2 节）：
  * <ul>
  * <li>checkSession：没有刷新令牌打开 A01；有则调 API-A08（访问令牌过期由认证器刷新），按 next_step 分发：
- * NONE 时按 last_farm_id 恢复当前养殖场（IFarmContextService.switchTo，未注册时直接调 API-F02）后进入 MainActivity；
- * 网络失败时用本机 user_json 与 farm_context_json 进入 MainActivity，强制步骤由服务端 40309 兜底；</li>
+ * NONE 时恢复上次或首个可用养殖场后进入 MainActivity；加载失败留在启动页并提供重试，避免空上下文进入主页；</li>
  * <li>openNextStep：40309 的 next_step（BaseApplication 转发）；</li>
  * <li>logout：IPushService.unbindCurrent → API-A07（失败不阻断）→ 清除会话 → 回到 A01。</li>
  * </ul>
@@ -41,6 +46,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class AccountServiceImpl implements IAccountService {
 
     private static final String TAG = "AccountService";
+    private static final String REQUEST_STARTUP_RETRY = "account_startup_retry";
 
     private final Context context;
     private final AccountRepository repository;
@@ -60,6 +66,17 @@ public class AccountServiceImpl implements IAccountService {
             NextStepRouter.openLogin(splash, null, null);
             return;
         }
+        if (splash instanceof FragmentActivity) {
+            FragmentActivity host = (FragmentActivity) splash;
+            host.getSupportFragmentManager().setFragmentResultListener(REQUEST_STARTUP_RETRY, host,
+                    (key, result) -> {
+                        if (ConfirmDialogFragment.isConfirmed(result)) {
+                            checkSession(host);
+                        } else {
+                            NextStepRouter.openLogin(host, null, null);
+                        }
+                    });
+        }
         WeakReference<Activity> ref = new WeakReference<>(splash);
         //noinspection ResultOfMethodCallIgnored
         repository.getSession()
@@ -78,7 +95,7 @@ public class AccountServiceImpl implements IAccountService {
         if (step != null && !AuthTokenVO.NEXT_NONE.equals(step)) {
             return Single.just(s);
         }
-        return repository.restoreFarm(s.getLastFarmId()).onErrorComplete().toSingleDefault(s);
+        return repository.restoreFarm(s.getLastFarmId()).toSingleDefault(s);
     }
 
     private void dispatch(@NonNull WeakReference<Activity> ref, @Nullable String nextStep) {
@@ -100,8 +117,44 @@ public class AccountServiceImpl implements IAccountService {
             dispatch(ref, e.dataString("next_step"));
             return;
         }
-        // 网络失败等：用本机缓存进入主页
-        dispatch(ref, AuthTokenVO.NEXT_NONE);
+        Activity activity = ref.get();
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+            return;
+        }
+        if (!(activity instanceof FragmentActivity)) {
+            NextStepRouter.openLogin(activity, null, e.getMessage());
+            return;
+        }
+        FragmentActivity host = (FragmentActivity) activity;
+        Runnable showError = () -> {
+            ConfirmDialogFragment dialog = ConfirmDialogFragment.builder(REQUEST_STARTUP_RETRY)
+                    .title(host.getString(R.string.account_startup_failed_title))
+                    .message(host.getString(R.string.account_startup_failed_message, e.getMessage()))
+                    .positive(host.getString(R.string.account_startup_retry))
+                    .negative(host.getString(R.string.account_startup_relogin))
+                    .cancelOnTouchOutside(false)
+                    .build();
+            dialog.setCancelable(false);
+            dialog.showSafely(host.getSupportFragmentManager());
+        };
+        if (host.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)
+                && !host.getSupportFragmentManager().isStateSaved()) {
+            showError.run();
+        } else {
+            host.getLifecycle().addObserver(new LifecycleEventObserver() {
+                @Override
+                public void onStateChanged(@NonNull LifecycleOwner owner, @NonNull Lifecycle.Event event) {
+                    if (event == Lifecycle.Event.ON_RESUME) {
+                        owner.getLifecycle().removeObserver(this);
+                        if (!host.isFinishing()) {
+                            showError.run();
+                        }
+                    } else if (event == Lifecycle.Event.ON_DESTROY) {
+                        owner.getLifecycle().removeObserver(this);
+                    }
+                }
+            });
+        }
     }
 
     private void openFromApp(@NonNull String action) {

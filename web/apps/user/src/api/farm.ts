@@ -227,6 +227,7 @@ export interface MemberItemVO {
   member_id: number
   user_id?: number
   name: string
+  avatar_url?: string | null
   name_initial?: string
   phone_masked?: string
   role: FarmRoleCode

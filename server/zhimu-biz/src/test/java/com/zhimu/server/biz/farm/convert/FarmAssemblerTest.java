@@ -234,9 +234,11 @@ class FarmAssemblerTest {
         FarmMember staff = member(5003L, 10003L, "STAFF");
         when(lookup.memberPens(1001L, 5003L)).thenReturn(List.of(memberPen(5003L, 2003L),
                 memberPen(5003L, 2004L)));
+        when(accountQuery.avatarUrl(10003L)).thenReturn("/zmt-private/avatar/staff.jpg?signature=example");
         MemberDetailVO ownerView = assembler.memberDetail(farm, staff, owner,
                 new AccountBrief(10003L, "李明", "13700005678", "NORMAL", false), FarmStatus.NORMAL);
         assertThat(ownerView.getActions().getCanChangeRole()).isTrue();
+        assertThat(ownerView.getAvatarUrl()).isEqualTo("/zmt-private/avatar/staff.jpg?signature=example");
         assertThat(ownerView.getActions().getCanAdjustPens()).isTrue();
         assertThat(ownerView.getActions().getCanRemove()).isTrue();
         assertThat(ownerView.getActions().getCanQuit()).isFalse();

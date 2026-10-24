@@ -57,7 +57,7 @@ public class BatchDetailVO {
     private String unit;
     private String unitText;
 
-    /** 休药信息（模块08 计算；当前未接入，只返回 in_withdrawal = false） */
+    /** 休药信息，与模块08 有效用药记录采用相同口径。 */
     @Data
     public static class WithdrawalInfo {
         private Boolean inWithdrawal;

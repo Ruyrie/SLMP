@@ -45,6 +45,7 @@ public class LoginViewModel extends AccountFormViewModel {
 
     /** Snackbar 操作：去注册 */
     public static final String ACTION_REGISTER = "register";
+    public static final String ACTION_RETRY_LOGIN = "retry_login";
 
     public static final String REASON_PASSWORD_CHANGED = "PASSWORD_CHANGED";
     public static final String REASON_ACCOUNT_RECOVERED = "ACCOUNT_RECOVERED";
@@ -56,6 +57,7 @@ public class LoginViewModel extends AccountFormViewModel {
     public static final String MSG_CANCELLED = "账号已注销";
     public static final String MSG_PASSWORD_RESET = "密码已重置，请用新密码登录";
     public static final String MSG_GO_REGISTER = "去注册";
+    public static final String MSG_FARM_RESTORE_FAILED = "登录已成功，养殖场数据加载失败，请重试进入。";
 
     private final AccountRepository repository;
     private final DeviceInfoProvider deviceInfo;
@@ -66,7 +68,12 @@ public class LoginViewModel extends AccountFormViewModel {
     public final MutableLiveData<String> password = new MutableLiveData<>("");
     public final MutableLiveData<String> smsCode = new MutableLiveData<>("");
     private final MutableLiveData<String> banner = new MutableLiveData<>(null);
+    private final MutableLiveData<Boolean> farmRestoreFailed = new MutableLiveData<>(false);
     private final MediatorLiveData<Boolean> canSubmit = new MediatorLiveData<>();
+
+    /** 认证成功但农场尚未恢复；重试不重复消费短信验证码。 */
+    @Nullable
+    private AuthTokenVO pendingLogin;
 
     private final SingleLiveEvent<AuthTokenVO> loginSuccess = new SingleLiveEvent<>();
     private final SingleLiveEvent<String> navigate = new SingleLiveEvent<>();
@@ -78,16 +85,22 @@ public class LoginViewModel extends AccountFormViewModel {
         this.deviceInfo = deviceInfo;
         this.settings = settings;
         canSubmit.setValue(false);
-        canSubmit.addSource(loginMode, v -> updateCanSubmit());
+        canSubmit.addSource(loginMode, v -> {
+            clearPendingLogin();
+            updateCanSubmit();
+        });
         canSubmit.addSource(phone, v -> {
+            clearPendingLogin();
             clearFieldError(FIELD_PHONE);
             updateCanSubmit();
         });
         canSubmit.addSource(password, v -> {
+            clearPendingLogin();
             clearFieldError(FIELD_PASSWORD);
             updateCanSubmit();
         });
         canSubmit.addSource(smsCode, v -> {
+            clearPendingLogin();
             clearFieldError(FIELD_SMS_CODE);
             updateCanSubmit();
         });
@@ -132,6 +145,10 @@ public class LoginViewModel extends AccountFormViewModel {
         return banner;
     }
 
+    public LiveData<Boolean> getFarmRestoreFailed() {
+        return farmRestoreFailed;
+    }
+
     public LiveData<Boolean> getCanSubmit() {
         return canSubmit;
     }
@@ -153,6 +170,14 @@ public class LoginViewModel extends AccountFormViewModel {
         if (!value.equals(canSubmit.getValue())) {
             canSubmit.setValue(value);
         }
+    }
+
+    private void clearPendingLogin() {
+        pendingLogin = null;
+        if (Boolean.TRUE.equals(farmRestoreFailed.getValue())) {
+            banner.setValue(null);
+        }
+        farmRestoreFailed.setValue(false);
     }
 
     // ===== 方法 =====
@@ -193,30 +218,40 @@ public class LoginViewModel extends AccountFormViewModel {
             return;
         }
         String phoneDigits = AccountForm.phone(phone.getValue());
-        Single<AuthTokenVO> source = smsMode
+        Single<AuthTokenVO> source = pendingLogin != null ? Single.just(pendingLogin) : (smsMode
                 ? repository.loginBySms(new SmsLoginRequest(phoneDigits, AccountForm.trim(smsCode.getValue()),
                 deviceInfo.get()))
                 : repository.loginByPassword(new PasswordLoginRequest(phoneDigits,
-                AccountForm.text(password.getValue()), deviceInfo.get()));
+                AccountForm.text(password.getValue()), deviceInfo.get())))
+                .doOnSuccess(token -> pendingLogin = token);
         submitting.setValue(true);
         launch(source.flatMap(this::restoreFarmIfNeeded), token -> {
             submitting.setValue(false);
             settings.setLastPhone(phoneDigits);
+            clearPendingLogin();
             loginSuccess.setValue(token);
         }, e -> {
             submitting.setValue(false);
+            if (pendingLogin != null && e.getCode() != ErrorCodes.SESSION_INVALID
+                    && e.getCode() != ErrorCodes.FORCED_STEP_REQUIRED) {
+                farmRestoreFailed.setValue(true);
+                banner.setValue(MSG_FARM_RESTORE_FAILED);
+                showMessage(UiMessage.withAction(e.getMessage(), "重试", ACTION_RETRY_LOGIN));
+                return;
+            }
+            clearPendingLogin();
             handleLoginError(e);
         });
     }
 
-    /** next_step 为 NONE 时按 last_farm_id 恢复当前养殖场（失败不阻断进入首页） */
+    /** next_step 为 NONE 时先恢复养殖场；失败留在登录页，可再次提交重试。 */
     @NonNull
     private Single<AuthTokenVO> restoreFarmIfNeeded(@NonNull AuthTokenVO token) {
         String step = token.getNextStep();
         if (step != null && !AuthTokenVO.NEXT_NONE.equals(step)) {
             return Single.just(token);
         }
-        return repository.restoreFarm(token.getLastFarmId()).onErrorComplete().toSingleDefault(token);
+        return repository.restoreFarm(token.getLastFarmId()).toSingleDefault(token);
     }
 
     private void handleLoginError(@NonNull ApiException e) {

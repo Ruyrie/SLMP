@@ -175,4 +175,9 @@
     <string name="account_cancel_error_title">注销信息加载失败</string>
     <string name="account_cancel_pick_transfer">选择要转让的养殖场</string>
     <string name="account_cancel_pick_disable">选择要停用的养殖场</string>
+    <string name="account_login_retry_enter">重试进入</string>
+    <string name="account_startup_failed_title">暂时无法进入首页</string>
+    <string name="account_startup_failed_message">%1$s。请重试加载账号和养殖场信息。</string>
+    <string name="account_startup_retry">重试</string>
+    <string name="account_startup_relogin">重新登录</string>
 </resources>

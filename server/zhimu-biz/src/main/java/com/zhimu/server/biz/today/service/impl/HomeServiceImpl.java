@@ -207,10 +207,16 @@ public class HomeServiceImpl implements HomeService {
                                  LocalDateTime now) {
         List<MyPenVO> pens = new ArrayList<>();
         Map<Long, HomeMetricProvider.PenMetric> extra = new LinkedHashMap<>();
+        Map<Long, Integer> withdrawalDays = new LinkedHashMap<>();
         for (HomeMetricProvider provider : metricProviders) {
             for (HomeMetricProvider.PenMetric pen : provider.pens(member)) {
                 extra.putIfAbsent(pen.penId(), pen);
             }
+            provider.withdrawalDaysByPen(member).forEach((penId, days) -> {
+                if (days != null && days > 0) {
+                    withdrawalDays.merge(penId, days, Math::max);
+                }
+            });
         }
         for (Long penId : member.penIds()) {
             HomeMetricProvider.PenMetric metric = extra.get(penId);
@@ -246,8 +252,9 @@ public class HomeServiceImpl implements HomeService {
             vo.setTodayTaskTotal(total);
             vo.setTodoNames(todoNames);
             vo.setBatches(batches(metric));
-            vo.setInWithdrawal(false);
-            vo.setWithdrawalDaysLeft(null);
+            Integer daysLeft = withdrawalDays.get(penId);
+            vo.setInWithdrawal(daysLeft != null);
+            vo.setWithdrawalDaysLeft(daysLeft);
             vo.setLink(penLink(member, penId, metric));
             pens.add(vo);
         }

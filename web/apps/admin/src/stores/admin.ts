@@ -7,6 +7,7 @@ export interface AdminProfile {
   username?: string
   role_code?: string
   role_code_text?: string
+  avatar_url?: string | null
 }
 
 export interface AdminLoginResult {
@@ -38,6 +39,7 @@ export const useAdminStore = defineStore('admin', {
     unread: 0,
     mustChangePassword: false,
     loaded: false,
+    sessionChecked: false,
     timer: 0 as number | ReturnType<typeof setInterval>
   }),
   getters: {
@@ -54,6 +56,7 @@ export const useAdminStore = defineStore('admin', {
       this.menus = result.menus || []
       this.mustChangePassword = !!result.must_change_password
       this.loaded = true
+      this.sessionChecked = true
     },
     async fetchCaptcha(): Promise<Captcha> {
       return http().get<Captcha>('/auth/captcha')
@@ -94,7 +97,7 @@ export const useAdminStore = defineStore('admin', {
     },
     async changePassword(currentPassword: string, newPassword: string, confirmPassword: string): Promise<void> {
       await http().put('/auth/password', {
-        current_password: currentPassword,
+        old_password: currentPassword,
         new_password: newPassword,
         confirm_password: confirmPassword
       })
@@ -116,6 +119,7 @@ export const useAdminStore = defineStore('admin', {
       this.unread = 0
       this.mustChangePassword = false
       this.loaded = false
+      this.sessionChecked = true
       this.stopPolling()
     }
   }

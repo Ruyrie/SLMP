@@ -4,19 +4,23 @@ import { useAdminStore } from '@/stores/admin'
 export function installGuards(router: Router): void {
   router.beforeEach(async (to) => {
     const admin = useAdminStore()
-    if (to.meta.public) {
-      if (to.name === 'WA-S01' && admin.loaded) return { name: 'WA-S02' }
-      return true
-    }
-    if (!admin.loaded) {
+    // Restore the Cookie session on both login and protected deep links.
+    if (!admin.loaded && !admin.sessionChecked) {
       try {
         await admin.me()
       } catch {
-        return { name: 'WA-S01', query: { redirect: to.fullPath } }
+        admin.reset()
       }
     }
+    if (to.meta.public) {
+      if (to.name === 'WA-S01' && admin.loaded && !admin.mustChangePassword) return { name: 'WA-S02' }
+      return true
+    }
+    if (!admin.loaded) {
+      return { name: 'WA-S01', query: { redirect: to.fullPath } }
+    }
     if (admin.mustChangePassword && to.name !== 'WA-S01') {
-      return { name: 'WA-S01' }
+      return { name: 'WA-S01', query: { redirect: to.fullPath } }
     }
     const perm = to.meta.perm as string | undefined
     if (perm && !admin.hasPerm(perm)) {

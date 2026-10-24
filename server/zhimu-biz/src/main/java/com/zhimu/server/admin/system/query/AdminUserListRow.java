@@ -12,6 +12,7 @@ public class AdminUserListRow {
 
     private Long userId;
     private String name;
+    private Long avatarFileId;
     private String phone;
     private String farmNamesText;
     private Integer farmCount;

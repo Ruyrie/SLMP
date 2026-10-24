@@ -35,6 +35,7 @@
     <select id="selectUsers" resultType="com.zhimu.server.admin.system.query.AdminUserListRow">
         SELECT u.id AS user_id,
                u.name AS name,
+               u.avatar_file_id AS avatar_file_id,
                u.phone AS phone,
                u.status AS status,
                u.version AS version,

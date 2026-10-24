@@ -28,6 +28,7 @@ import com.zhimu.server.biz.herd.request.EntryUpdateRequest;
 import com.zhimu.server.biz.herd.request.TransferCreateRequest;
 import com.zhimu.server.biz.herd.request.TransferUpdateRequest;
 import com.zhimu.server.biz.herd.service.BatchService;
+import com.zhimu.server.biz.health.service.MedicationService;
 import com.zhimu.server.biz.herd.support.BatchAccess;
 import com.zhimu.server.biz.herd.support.BatchNoGenerator;
 import com.zhimu.server.biz.herd.support.HerdErrors;
@@ -103,6 +104,7 @@ public class BatchServiceImpl implements BatchService {
     private final BizMediaService bizMediaService;
     private final OperationLogRecorder operationLogRecorder;
     private final ObjectProvider<BatchTimelineProvider> timelineProviders;
+    private final MedicationService medicationService;
     @Override
     public PageVO<BatchListItemVO> list(BatchListQuery query) {
         FarmContext.FarmMember member = support.context();
@@ -271,8 +273,13 @@ public class BatchServiceImpl implements BatchService {
         // 待接入公共修改申请统计：当前没有本批次的待审核申请数
         vo.setPendingChangeRequestCount(0);
         BatchDetailVO.WithdrawalInfo withdrawal = new BatchDetailVO.WithdrawalInfo();
-        // 待模块08接入：用药与休药
-        withdrawal.setInWithdrawal(false);
+        var health = medicationService.withdrawal(batchId);
+        withdrawal.setInWithdrawal("IN_WITHDRAWAL".equals(health.getStatus()));
+        withdrawal.setRemainingDays(health.getDaysLeft());
+        withdrawal.setWithdrawalDays(health.getWithdrawalDays());
+        withdrawal.setSellableDate(health.getReleaseDate() == null ? null : health.getReleaseDate().toString());
+        withdrawal.setLastDrugName(health.getDecisiveDrugName());
+        withdrawal.setLastDrugDate(health.getLastMedDate() == null ? null : health.getLastMedDate().toString());
         vo.setWithdrawal(withdrawal);
         vo.setActions(actions(batch, member));
         String unit = support.farmUnit(batch.getFarmId());

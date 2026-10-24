@@ -203,7 +203,7 @@ onMounted(() => {
         <v-data-table :headers="headers" :items="store.list" item-key="user_id" hide-default-footer density="compact" class="user-table">
           <template #item.user="{ item }">
             <div class="user-cell">
-              <zw-avatar :name="item.name" :size="28" :tone="item.status === 'NORMAL' ? 'primary' : 'neutral'" />
+              <zw-avatar :name="item.name" :src="item.avatar_url" :size="28" :tone="item.status === 'NORMAL' ? 'primary' : 'neutral'" />
               <a class="zw-link" :class="{ 'zw-muted': item.status !== 'NORMAL' }" @click="store.openDetail(item as AdminUserItem)">{{ item.name }}</a>
               <span class="zw-muted num">{{ item.phone }}</span>
             </div>
@@ -263,7 +263,7 @@ onMounted(() => {
       </zw-empty>
       <template v-else-if="detail">
         <div class="user-head">
-          <zw-avatar :name="detail.name" :size="48" :tone="detail.status === 'NORMAL' ? 'primary' : 'neutral'" />
+          <zw-avatar :name="detail.name" :src="detail.avatar_url" :size="48" :tone="detail.status === 'NORMAL' ? 'primary' : 'neutral'" />
           <div>
             <div class="user-head-name">
               {{ detail.name }}

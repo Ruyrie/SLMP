@@ -89,6 +89,7 @@ class ImmuneRecordServiceImplTest {
     @Mock private DrugStockPort drugStockPort;
     @Mock private DrugCatalogQueryService drugCatalogQueryService;
     @Mock private HealthAudit audit;
+    @Mock private HealthTodoSource todoSource;
 
     private ImmuneRecordServiceImpl service;
 
@@ -108,7 +109,7 @@ class ImmuneRecordServiceImplTest {
         HealthSupport support = new HealthSupport(referenceMapper, batchQueryService, penQueryService,
                 dictQueryService, categoryQueryService, drugStockPort);
         service = new ImmuneRecordServiceImpl(recordMapper, planMapper, referenceMapper, support, audit,
-                drugStockPort, drugCatalogQueryService);
+                drugStockPort, drugCatalogQueryService, todoSource);
 
         when(planMapper.selectById(PLAN_ID)).thenReturn(plan());
         when(planMapper.update(isNull(), any())).thenReturn(1);
@@ -156,6 +157,7 @@ class ImmuneRecordServiceImplTest {
 
         ArgumentCaptor<DrugStockCommand> captor = ArgumentCaptor.forClass(DrugStockCommand.class);
         verify(drugStockPort).deduct(captor.capture());
+        verify(todoSource).completeImmune(any(ImmunePlan.class), eq(8801L), eq(10003L));
         DrugStockCommand command = captor.getValue();
         assertThat(command.bizType()).isEqualTo(DrugStockCommand.BIZ_IMMUNE_RECORD);
         assertThat(command.flowType()).isEqualTo(DrugStockCommand.FLOW_VACCINE_USE);

@@ -466,7 +466,7 @@ onBeforeUnmount(() => {
               <v-data-table :headers="memberHeaders" :items="members" item-value="member_id" hide-default-footer class="f04-table">
                 <template #item.name="{ item }">
                   <div class="f04-who">
-                    <zw-avatar :name="item.name" :size="32" />
+                    <zw-avatar :name="item.name" :src="item.avatar_url" :size="32" />
                     <div>
                       <div class="zw-cell-main">{{ item.name }}<span v-if="item.is_me" class="f04-me">（你）</span></div>
                       <div class="zw-cell-sub num">{{ item.phone_masked || '—' }}</div>
@@ -693,7 +693,7 @@ onBeforeUnmount(() => {
         </zw-empty>
         <template v-else-if="detail">
           <div class="f04-dhead">
-            <zw-avatar :name="detail.name" :size="56" />
+            <zw-avatar :name="detail.name" :src="detail.avatar_url" :size="56" />
             <div>
               <div class="f04-dname">{{ detail.name }}<zw-tag :type="detail.role === 'OWNER' ? 'primary' : 'neutral'">{{ detail.role_text }}</zw-tag></div>
               <div class="f04-dsub">{{ joinedText(detail) }} {{ farmName }}</div>

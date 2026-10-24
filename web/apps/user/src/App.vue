@@ -18,6 +18,7 @@ watchEffect(() => {
   shellState.side = 'user'
   shellState.role = farm.role
   shellState.userName = auth.user?.name || ''
+  shellState.avatarUrl = auth.user?.avatar_url || ''
   shellState.phone = auth.phone
   shellState.userId = Number(auth.user?.user_id || 0)
   shellState.farmId = farm.currentFarmId

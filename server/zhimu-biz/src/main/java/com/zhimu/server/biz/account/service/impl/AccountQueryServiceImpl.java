@@ -6,6 +6,7 @@ import com.zhimu.server.biz.account.api.AccountQueryService;
 import com.zhimu.server.biz.account.entity.User;
 import com.zhimu.server.biz.account.enums.UserStatus;
 import com.zhimu.server.biz.account.mapper.UserMapper;
+import com.zhimu.server.biz.account.service.AvatarService;
 import com.zhimu.server.common.util.BeijingTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,14 @@ import java.util.Map;
 public class AccountQueryServiceImpl implements AccountQueryService {
 
     private final UserMapper userMapper;
+    private final AvatarService avatarService;
+
+    @Override
+    public String avatarUrl(Long userId) {
+        User user = userId == null ? null : userMapper.selectById(userId);
+        return user == null || UserStatus.CANCELLED.name().equals(user.getStatus())
+                ? null : avatarService.avatarUrl(user.getAvatarFileId());
+    }
 
     @Override
     public AccountBrief findByPhone(String phone) {

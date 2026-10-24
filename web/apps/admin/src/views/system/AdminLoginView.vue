@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ApiError } from '@zmt/shared'
 import { useAdminStore } from '@/stores/admin'
@@ -28,10 +28,20 @@ const newPassword = ref('')
 const confirmPassword = ref('')
 const changeSubmitting = ref(false)
 const changeError = ref('')
+const loggingOut = ref(false)
+
+watch(() => admin.mustChangePassword, (required, previous) => {
+  changeOpen.value = admin.loaded && required
+  if (changeOpen.value && admin.admin?.username) username.value = admin.admin.username
+  if (!required && previous) void loadCaptcha()
+}, { immediate: true })
 
 async function loadCaptcha(): Promise<void> {
+  if (captchaLoading.value) return
   captchaLoading.value = true
   captchaCode.value = ''
+  captchaId.value = ''
+  captchaImage.value = ''
   try {
     const data = await admin.fetchCaptcha()
     captchaId.value = data.captcha_id
@@ -44,16 +54,17 @@ async function loadCaptcha(): Promise<void> {
 }
 
 onMounted(() => {
-  void loadCaptcha()
+  if (!admin.mustChangePassword) void loadCaptcha()
   if (route.query.reason) error.value = String(route.query.reason)
 })
 
 function safeRedirect(): string {
   const redirect = String(route.query.redirect || '')
-  return redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/'
+  return redirect.startsWith('/') && !redirect.startsWith('//') && !/^\/login(?:[/?#]|$)/.test(redirect) ? redirect : '/'
 }
 
 async function submit(): Promise<void> {
+  if (submitting.value || captchaLoading.value || changeOpen.value) return
   error.value = ''
   fieldErrors.value = {}
   if (!username.value.trim()) {
@@ -66,6 +77,10 @@ async function submit(): Promise<void> {
   }
   if (!captchaCode.value.trim()) {
     fieldErrors.value.captcha_code = '请输入验证码'
+    return
+  }
+  if (!captchaId.value) {
+    await loadCaptcha()
     return
   }
   submitting.value = true
@@ -84,17 +99,23 @@ async function submit(): Promise<void> {
     if (e instanceof ApiError) {
       for (const item of e.fieldErrors) fieldErrors.value[item.field] = item.message
       error.value = e.message
-      if (e.code === 40103) void loadCaptcha()
     } else {
       error.value = '登录失败，请稍后重试'
     }
+    // Each submitted CAPTCHA is consumed before the server checks the password.
+    await loadCaptcha()
   } finally {
     submitting.value = false
   }
 }
 
 async function changePassword(): Promise<void> {
+  if (changeSubmitting.value || loggingOut.value) return
   changeError.value = ''
+  if (!currentPassword.value) {
+    changeError.value = '请输入当前密码'
+    return
+  }
   if (!newPassword.value || newPassword.value.length < 8) {
     changeError.value = '新密码至少 8 位'
     return
@@ -110,12 +131,32 @@ async function changePassword(): Promise<void> {
     changeOpen.value = false
     ui.toast('密码已修改，请使用新密码重新登录')
     password.value = ''
+    currentPassword.value = ''
+    newPassword.value = ''
+    confirmPassword.value = ''
     await router.replace({ name: 'WA-S01' })
     await loadCaptcha()
   } catch (e) {
     changeError.value = e instanceof ApiError ? e.message : '密码修改失败，请稍后重试'
   } finally {
     changeSubmitting.value = false
+  }
+}
+
+async function leavePasswordChange(): Promise<void> {
+  if (changeSubmitting.value || loggingOut.value) return
+  loggingOut.value = true
+  try {
+    await admin.logout()
+    password.value = ''
+    currentPassword.value = ''
+    newPassword.value = ''
+    confirmPassword.value = ''
+    changeError.value = ''
+    await router.replace({ name: 'WA-S01' })
+    await loadCaptcha()
+  } finally {
+    loggingOut.value = false
   }
 }
 </script>
@@ -167,17 +208,17 @@ async function changePassword(): Promise<void> {
           <zw-form-item label="图形验证码" :error="fieldErrors.captcha_code">
             <div class="admin-captcha-row">
               <v-text-field v-model="captchaCode" placeholder="请输入右侧字符" maxlength="4" :error="!!fieldErrors.captcha_code" @keydown.enter="submit" />
-              <button class="admin-captcha" type="button" :disabled="captchaLoading" @click="loadCaptcha">
+              <button class="admin-captcha" type="button" :disabled="captchaLoading || submitting" @click="loadCaptcha">
                 <img v-if="captchaImage" :src="captchaImage" alt="图形验证码" />
-                <span v-else>加载中…</span>
+                <span v-else>{{ captchaLoading ? '加载中…' : '点击重试' }}</span>
               </button>
             </div>
           </zw-form-item>
           <div class="admin-row">
             <v-checkbox v-model="remember" label="记住账号" hide-details density="compact" />
-            <a class="zw-link" @click="loadCaptcha">换一张验证码</a>
+            <button class="zw-link admin-captcha-refresh" type="button" :disabled="captchaLoading || submitting" @click="loadCaptcha">换一张验证码</button>
           </div>
-          <v-btn color="primary" size="large" block :loading="submitting" @click="submit">登录</v-btn>
+          <v-btn color="primary" size="large" block :loading="submitting" :disabled="captchaLoading" @click="submit">登录</v-btn>
         </div>
 
         <div class="admin-foot">
@@ -201,8 +242,8 @@ async function changePassword(): Promise<void> {
           <zw-notice v-if="changeError" type="error" icon="error">{{ changeError }}</zw-notice>
         </div>
         <footer class="zw-dialog-actions">
-          <v-btn variant="outlined" @click="changeOpen = false">稍后</v-btn>
-          <v-btn color="primary" :loading="changeSubmitting" @click="changePassword">修改密码</v-btn>
+          <v-btn variant="outlined" :loading="loggingOut" :disabled="changeSubmitting" @click="leavePasswordChange">退出登录</v-btn>
+          <v-btn color="primary" :loading="changeSubmitting" :disabled="loggingOut" @click="changePassword">修改密码</v-btn>
         </footer>
       </div>
     </v-dialog>
@@ -219,15 +260,17 @@ async function changePassword(): Promise<void> {
 .admin-brand-tag { height: 22px; padding: 0 8px; border-radius: var(--radius-xs); background: var(--primary); color: var(--on-primary); font-size: 12px; line-height: 22px; }
 .admin-feature { list-style: none; margin: 48px 0 0; padding: 0; display: flex; flex-direction: column; gap: 26px; }
 .admin-feature li { display: flex; gap: 14px; color: var(--sider-text); }
-.admin-feature li :deep(.zw-mso) { width: 36px; height: 36px; border-radius: var(--radius-sm); background: #ffffff14; color: #ffffff; font-size: 20px; flex-shrink: 0; }
+.admin-feature li :deep(.zw-mso) { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-sm); background: #ffffff14; color: #ffffff; font-size: 20px; flex-shrink: 0; }
 .admin-feature b { display: block; font-size: 15px; line-height: 22px; font-weight: 500; color: #ffffff; }
-.admin-feature span { display: block; margin-top: 2px; font-size: 12px; line-height: 18px; color: var(--sider-text); }
+.admin-feature li > div > span { display: block; margin-top: 2px; font-size: 12px; line-height: 18px; color: var(--sider-text); }
 .admin-form { margin-top: 24px; display: flex; flex-direction: column; gap: 18px; }
 .admin-captcha-row { display: flex; align-items: center; gap: 8px; }
 .admin-captcha-row :deep(.zw-form-control) { flex: 1; }
 .admin-captcha { width: 104px; height: 40px; border: 1px solid var(--control-border); border-radius: var(--radius-sm); background: var(--fill-1); display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; overflow: hidden; }
 .admin-captcha img { width: 100%; height: 100%; object-fit: cover; }
 .admin-row { display: flex; align-items: center; justify-content: space-between; margin-top: -8px; }
+.admin-captcha-refresh { border: 0; padding: 0; background: none; font: inherit; }
+.admin-captcha-refresh:disabled { opacity: .5; cursor: default; }
 .admin-notice { margin-top: 20px; }
 .admin-foot { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line-1); font-size: 12px; line-height: 20px; color: var(--text-3); }
 .admin-copyright { position: absolute; right: 32px; bottom: 24px; color: var(--text-3); font-size: 12px; }

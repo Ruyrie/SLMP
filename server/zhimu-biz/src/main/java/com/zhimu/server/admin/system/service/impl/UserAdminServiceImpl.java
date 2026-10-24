@@ -19,6 +19,7 @@ import com.zhimu.server.admin.system.vo.ExportVO;
 import com.zhimu.server.admin.system.vo.PhoneRevealVO;
 import com.zhimu.server.biz.account.api.AccountAdminService;
 import com.zhimu.server.biz.account.entity.User;
+import com.zhimu.server.biz.account.service.AvatarService;
 import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.common.context.AdminContext;
 import com.zhimu.server.common.error.BizException;
@@ -50,6 +51,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     private final AccountAdminService accountAdminService;
     private final ExportService exportService;
     private final OperationLogService operationLogService;
+    private final AvatarService avatarService;
 
     @Override
     public PageVO<AdminUserItemVO> list(AdminUserQuery query) {
@@ -86,6 +88,7 @@ public class UserAdminServiceImpl implements UserAdminService {
         AdminUserDetailVO.AdminUserDetailVOBuilder builder = AdminUserDetailVO.builder()
                 .userId(user.getId())
                 .name(user.getName())
+                .avatarUrl(avatarService.avatarUrl(user.getAvatarFileId()))
                 .phone(Masks.phone(user.getPhone()))
                 .canRevealPhone(canRevealPhone())
                 .status(user.getStatus())
@@ -212,6 +215,7 @@ public class UserAdminServiceImpl implements UserAdminService {
             AdminUserItemVO item = new AdminUserItemVO();
             item.setUserId(row.getUserId());
             item.setName(row.getName());
+            item.setAvatarUrl(avatarService.avatarUrl(row.getAvatarFileId()));
             item.setPhone(Masks.phone(row.getPhone()));
             item.setFarmNamesText(row.getFarmNamesText());
             item.setFarmCount(row.getFarmCount() == null ? 0 : row.getFarmCount());

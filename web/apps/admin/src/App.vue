@@ -12,6 +12,7 @@ const router = useRouter()
 watchEffect(() => {
   shellState.side = 'admin'
   shellState.userName = admin.displayName
+  shellState.avatarUrl = admin.admin?.avatar_url || ''
   shellState.adminRoleName = admin.roleName
   shellState.perms = admin.perms
   shellState.unread = admin.unread

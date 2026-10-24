@@ -56,6 +56,7 @@ public class AdminAuthController {
     }
 
     /** ADM-S03 退出：删除会话并清除 Cookie */
+    @AllowForcedStep
     @PostMapping("/logout")
     public ApiResponse<Void> logout(HttpServletResponse response) {
         adminAuthService.logout();

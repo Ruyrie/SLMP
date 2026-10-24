@@ -73,6 +73,7 @@ class BatchServiceImplTest {
     @Mock private BizMediaService bizMediaService;
     @Mock private OperationLogRecorder operationLogRecorder;
     @Mock private org.springframework.beans.factory.ObjectProvider<BatchTimelineProvider> timelineProviders;
+    @Mock private com.zhimu.server.biz.health.service.MedicationService medicationService;
 
     private BatchServiceImpl service;
 
@@ -82,7 +83,10 @@ class BatchServiceImplTest {
         lenient().when(timelineProviders.orderedStream()).thenReturn(java.util.stream.Stream.empty());
         service = new BatchServiceImpl(support, access, batchMapper, eventMapper, timelineMapper, batchPenMapper,
                 penMapper, batchNoGenerator, farmLookup, memberCache, bizMediaService, operationLogRecorder,
-                timelineProviders);
+                timelineProviders, medicationService);
+        var withdrawal = new com.zhimu.server.biz.health.vo.WithdrawalVO();
+        withdrawal.setStatus("NONE");
+        lenient().when(medicationService.withdrawal(anyLong())).thenReturn(withdrawal);
         BeijingTime.setClock(Clock.fixed(LocalDateTime.of(2026, 10, 19, 10, 0)
                 .atZone(BeijingTime.ZONE).toInstant(), BeijingTime.ZONE));
         FarmContext.set(new FarmContext.FarmMember(1001L, "东山猪场", 10001L, 5001L, FarmRole.OWNER,
@@ -226,6 +230,31 @@ class BatchServiceImplTest {
         } catch (BizException exception) {
             return exception;
         }
+    }
+
+    @Test
+    void batchDetailUsesTheSameWithdrawalAsMedicationPage() {
+        Batch batch = batch(3001L, 2003L, "ACTIVE", 7, 200, 205);
+        when(access.require(3001L)).thenReturn(batch);
+        when(support.positivePensOfBatch(3001L)).thenReturn(List.of());
+        when(support.pensByIds(any())).thenReturn(List.of(pen(2003L, "3 号育肥舍", 220, 200)));
+        var health = new com.zhimu.server.biz.health.vo.WithdrawalVO();
+        health.setStatus("IN_WITHDRAWAL");
+        health.setDaysLeft(10);
+        health.setWithdrawalDays(20);
+        health.setReleaseDate(LocalDate.of(2026, 10, 29));
+        health.setDecisiveDrugName("氟苯尼考粉");
+        health.setLastMedDate(LocalDate.of(2026, 10, 9));
+        when(medicationService.withdrawal(3001L)).thenReturn(health);
+
+        var withdrawal = service.detail(3001L).getWithdrawal();
+
+        assertThat(withdrawal.getInWithdrawal()).isTrue();
+        assertThat(withdrawal.getRemainingDays()).isEqualTo(10);
+        assertThat(withdrawal.getWithdrawalDays()).isEqualTo(20);
+        assertThat(withdrawal.getSellableDate()).isEqualTo("2026-10-29");
+        assertThat(withdrawal.getLastDrugName()).isEqualTo("氟苯尼考粉");
+        assertThat(withdrawal.getLastDrugDate()).isEqualTo("2026-10-09");
     }
 
     private static BatchCreateRequest createRequest(int count, Boolean capacityConfirmed) {

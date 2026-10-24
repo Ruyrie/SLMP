@@ -199,6 +199,26 @@ class TodoSourceWriteServiceTest {
         return captor;
     }
 
+    @Test
+    void autoPausedTaskCanResumeButManualIgnoreRemainsClosed() {
+        Todo ignored = existingTodo(95001L, "IGNORED", null);
+        ignored.setIgnoreWay("AUTO");
+        ignored.setIgnoreReason("消毒任务已暂停");
+        when(todoMapper.selectByDedupIncludingDeleted(1001L, "DISINFECTION", "DISINFECT_TASK:9404"))
+                .thenReturn(ignored);
+        when(todoMapper.update(any(Todo.class), any())).thenReturn(1);
+
+        assertThat(service.reopenAutoIgnoredFromSource(1001L, "DISINFECTION", "DISINFECT_TASK:9404", "消毒任务已暂停"))
+                .isTrue();
+        ignored.setIgnoreWay("MANUAL");
+        assertThat(service.reopenAutoIgnoredFromSource(1001L, "DISINFECTION", "DISINFECT_TASK:9404", "消毒任务已暂停"))
+                .isFalse();
+        ignored.setIgnoreWay("AUTO");
+        ignored.setIgnoreReason("消毒任务已取消");
+        assertThat(service.reopenAutoIgnoredFromSource(1001L, "DISINFECTION", "DISINFECT_TASK:9404", "消毒任务已暂停"))
+                .isFalse();
+    }
+
     private static Todo existingTodo(Long id, String status, String completeWay) {
         Todo todo = new Todo();
         todo.setId(id);

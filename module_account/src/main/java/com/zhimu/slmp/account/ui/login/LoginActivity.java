@@ -117,6 +117,8 @@ public class LoginActivity extends BaseActivity {
     protected void onMessageAction(@NonNull String actionId) {
         if (LoginViewModel.ACTION_REGISTER.equals(actionId)) {
             vm.openPage(RouterPath.A02);
+        } else if (LoginViewModel.ACTION_RETRY_LOGIN.equals(actionId)) {
+            vm.login();
         }
     }
 }

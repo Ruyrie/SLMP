@@ -37,4 +37,7 @@ public interface TodoSourceWriteService {
      * @return 是否恢复
      */
     boolean reopenFromSource(Long farmId, String todoType, String dedupKey, Long recordId);
+
+    /** 来源计划恢复时，只恢复被指定系统原因关闭的待办，不恢复用户手工忽略的待办。 */
+    boolean reopenAutoIgnoredFromSource(Long farmId, String todoType, String dedupKey, String ignoreReason);
 }

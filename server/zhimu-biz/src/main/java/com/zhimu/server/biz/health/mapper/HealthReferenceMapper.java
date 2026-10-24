@@ -23,6 +23,16 @@ import java.util.List;
  */
 public interface HealthReferenceMapper {
 
+    /** 日常任务只为正常营业、审核通过的养殖场生成。 */
+    @Select("SELECT id FROM t_farm WHERE deleted = 0 AND disabled = 0 AND frozen = 0 "
+            + "AND audit_status = 'APPROVED' ORDER BY id")
+    List<Long> selectActiveFarmIds();
+
+    @Select("SELECT pp.pen_id FROM t_disinfect_plan_pen pp JOIN t_pen p ON p.id = pp.pen_id "
+            + "WHERE pp.farm_id = #{farmId} AND pp.plan_id = #{planId} "
+            + "AND p.farm_id = #{farmId} AND p.status = 'ENABLED' ORDER BY pp.pen_id")
+    List<Long> selectEnabledPlanPenIds(@Param("farmId") Long farmId, @Param("planId") Long planId);
+
     /** 本场有效成员：用户、姓名、角色（按所有者、场长、员工排序） */
     @Select("SELECT m.user_id AS userId, u.name, m.role FROM t_farm_member m "
             + "JOIN t_user u ON u.id = m.user_id "

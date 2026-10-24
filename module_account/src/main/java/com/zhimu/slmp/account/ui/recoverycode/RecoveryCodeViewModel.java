@@ -202,7 +202,6 @@ public class RecoveryCodeViewModel extends BaseViewModel {
                     }
                     return repository.getSession()
                             .flatMapCompletable(s -> repository.restoreFarm(s.getLastFarmId()))
-                            .onErrorComplete()
                             .toSingleDefault(scene);
                 });
         launch(source, s -> {

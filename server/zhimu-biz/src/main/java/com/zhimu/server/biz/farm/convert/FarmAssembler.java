@@ -523,6 +523,7 @@ public class FarmAssembler {
         vo.setUserId(member.getUserId());
         vo.setName(account == null ? "已注销用户" : account.name());
         vo.setNameInitial(account == null ? null : account.nameInitial());
+        vo.setAvatarUrl(account == null || account.cancelled() ? null : accountQuery.avatarUrl(account.userId()));
         vo.setPhoneMasked(account == null ? null : account.phoneMasked());
         vo.setRole(member.getRole());
         vo.setRoleText(FarmRole.valueOf(member.getRole()).getText());

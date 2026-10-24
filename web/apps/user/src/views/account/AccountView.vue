@@ -26,7 +26,7 @@ const version = '1.0.0'
 
 const user = computed(() => store.user)
 const avatarUrl = computed(() => user.value?.avatar_url || '')
-const avatarName = computed(() => user.value?.name_initial || user.value?.name || '王')
+const avatarName = computed(() => user.value?.name || user.value?.name_initial || auth.user?.name || '')
 const farmStats = computed(() => store.farmStats)
 const pendingCount = computed(() => store.pendingChangeRequests)
 const showChangeRequest = computed(() => {
@@ -314,8 +314,7 @@ function goReminder(): void {
           <v-menu v-model="avatarMenu" location="bottom start">
             <template #activator="{ props: activatorProps }">
               <button v-bind="activatorProps" class="a04-avatar-btn" type="button" aria-label="头像">
-                <img v-if="avatarUrl" :src="avatarUrl" alt="头像" class="a04-avatar-img" />
-                <zw-avatar v-else :name="avatarName" :size="64" />
+                <zw-avatar :name="avatarName" :src="avatarUrl" :size="64" />
                 <span class="a04-avatar-edit"><zw-icon name="photo_camera" :size="14" /></span>
                 <span v-if="store.avatarUploading" class="a04-avatar-mask">
                   <v-progress-circular :model-value="store.avatarProgress" :size="30" :width="3" color="white" />
@@ -816,13 +815,6 @@ function goReminder(): void {
   background: transparent;
   cursor: pointer;
   flex-shrink: 0;
-}
-.a04-avatar-img {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
 }
 .a04-avatar-edit {
   position: absolute;

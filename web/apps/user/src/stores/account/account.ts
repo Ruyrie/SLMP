@@ -178,6 +178,7 @@ export const useAccountStore = defineStore('account', {
       this.error = ''
       try {
         this.overview = await getAccountOverview()
+        if (this.overview.user) this.applyUserToSession(this.overview.user)
         this.status = 'ready'
       } catch (e) {
         const err = e as ApiError
@@ -284,7 +285,7 @@ export const useAccountStore = defineStore('account', {
         ...(auth.user || {}),
         ...user,
         user_id: user.user_id ?? auth.user?.user_id,
-        avatar_url: user.avatar_url ?? auth.user?.avatar_url
+        avatar_url: user.avatar_url !== undefined ? user.avatar_url : auth.user?.avatar_url
       }
     },
     /* ---------------- 头像 ---------------- */
@@ -305,8 +306,9 @@ export const useAccountStore = defineStore('account', {
           this.avatarProgress = percent
         })
         const user = await bindAvatar(uploaded.file_id)
-        this.updateAvatarUrl(user.avatar_url || uploaded.url || null)
-        this.applyUserToSession(user)
+        const avatarUrl = user.avatar_url || uploaded.url || null
+        this.updateAvatarUrl(avatarUrl)
+        this.applyUserToSession({ ...user, avatar_url: avatarUrl })
         useUiStore().toast('已更新头像')
         await this.load()
       } catch (e) {
@@ -325,7 +327,7 @@ export const useAccountStore = defineStore('account', {
       try {
         const user = await clearAvatar()
         this.updateAvatarUrl(null)
-        this.applyUserToSession(user)
+        this.applyUserToSession({ ...user, avatar_url: null })
         useUiStore().toast('已恢复默认头像')
         await this.load()
       } catch (e) {

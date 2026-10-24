@@ -4,6 +4,7 @@ import com.zhimu.server.common.context.FarmContext;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 首页指标扩展点：后续模块注册为 Spring Bean 后，首页自动读取其指标；没有实现时返回 0 / 空。
@@ -74,6 +75,11 @@ public interface HomeMetricProvider {
     /** 负责栏舍（员工首页 my_pens 的栏舍信息由模块04 补全） */
     default List<PenMetric> pens(FarmContext.FarmMember member) {
         return List.of();
+    }
+
+    /** 栏舍内在养批次距离可出栏日的最长天数；仅返回仍在休药期的栏舍。 */
+    default Map<Long, Integer> withdrawalDaysByPen(FarmContext.FarmMember member) {
+        return Map.of();
     }
 
     /** 单个栏舍的扩展指标 */

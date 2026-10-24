@@ -281,17 +281,18 @@ public class AccountRepository {
     }
 
     /**
-     * 按 last_farm_id 恢复当前养殖场：IFarmContextService.switchTo（模块02，API-F03）；
-     * 服务未注册时直接调 API-F02 写入 FarmContext；没有养殖场时清空上下文。
+     * 恢复上次养殖场；没有 last_farm_id 或成员关系已失效时，由模块02 选择首个可用养殖场。
+     * 只有服务器确认没有养殖场才清空上下文；加载失败交给调用方重试。
+     * 模块02 未参与单独运行时，有 ID 直接调 API-F02，没有 ID 则进入无养殖场状态。
      */
     @NonNull
     public Completable restoreFarm(@Nullable Long lastFarmId) {
-        if (lastFarmId == null || lastFarmId <= 0) {
-            return Completable.fromAction(farmContext::clear);
-        }
         IFarmContextService farmService = ServiceHub.get(IFarmContextService.class);
         if (farmService != null) {
-            return farmService.switchTo(lastFarmId).ignoreElement();
+            return farmService.restore(lastFarmId == null ? 0 : lastFarmId);
+        }
+        if (lastFarmId == null || lastFarmId <= 0) {
+            return Completable.fromAction(farmContext::clear);
         }
         return api.getFarmContext(lastFarmId).compose(RxResult.unwrap())
                 .doOnSuccess(farmContext::update)

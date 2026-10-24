@@ -138,6 +138,11 @@ class HomeServiceImplTest {
                                                 "3 号育肥舍", "育肥期"))),
                                 new PenMetric(2004L, "4 号育肥舍", "育肥舍", 220, List.of()));
                     }
+
+                    @Override
+                    public java.util.Map<Long, Integer> withdrawalDaysByPen(FarmContext.FarmMember member) {
+                        return java.util.Map.of(2003L, 6);
+                    }
                 };
         HomeServiceImpl withProvider = new HomeServiceImpl(farmQueryService, accountQueryService, todoMapper,
                 messageMapper, todoScope, todoLinks, List.of(provider));
@@ -150,6 +155,8 @@ class HomeServiceImplTest {
         assertThat(pen.getPenTypeText()).isEqualTo("育肥舍");
         assertThat(pen.getBatches()).hasSize(1);
         assertThat(pen.getBatches().get(0).getStageText()).isEqualTo("育肥期");
+        assertThat(pen.getInWithdrawal()).isTrue();
+        assertThat(pen.getWithdrawalDaysLeft()).isEqualTo(6);
         // L06 批次档案必须带 batch_id，L02 我的栏舍带 pen_id
         assertThat(pen.getLink()).isNotNull();
         assertThat(pen.getLink().getRoute()).isEqualTo("L06");
@@ -157,6 +164,8 @@ class HomeServiceImplTest {
         var emptyPen = home.getMyPens().stream().filter(item -> item.getPenId() == 2004L).findFirst().orElseThrow();
         assertThat(emptyPen.getLink().getRoute()).isEqualTo("L02");
         assertThat(emptyPen.getLink().getParams()).containsEntry("pen_id", "2004");
+        assertThat(emptyPen.getInWithdrawal()).isFalse();
+        assertThat(emptyPen.getWithdrawalDaysLeft()).isNull();
     }
 
     @Test

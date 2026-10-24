@@ -8,6 +8,7 @@ import com.zhimu.server.admin.system.query.AdminUserQuery;
 import com.zhimu.server.admin.system.request.UserStatusRequest;
 import com.zhimu.server.admin.system.vo.AdminUserItemVO;
 import com.zhimu.server.biz.account.api.AccountAdminService;
+import com.zhimu.server.biz.account.service.AvatarService;
 import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.common.context.AdminContext;
 import com.zhimu.server.common.error.BizException;
@@ -36,8 +37,9 @@ class UserAdminServiceImplTest {
 
     private final AdminUserQueryMapper mapper = mock(AdminUserQueryMapper.class);
     private final AccountAdminService accountAdminService = mock(AccountAdminService.class);
+    private final AvatarService avatarService = mock(AvatarService.class);
     private final UserAdminServiceImpl service = new UserAdminServiceImpl(mapper, accountAdminService,
-            mock(ExportService.class), mock(OperationLogService.class));
+            mock(ExportService.class), mock(OperationLogService.class), avatarService);
 
     @BeforeEach
     void setUp() {
@@ -57,6 +59,8 @@ class UserAdminServiceImplTest {
         AdminUserListRow row = new AdminUserListRow();
         row.setUserId(10001L);
         row.setName("王建国");
+        row.setAvatarFileId(4L);
+        when(avatarService.avatarUrl(4L)).thenReturn("/zmt-private/avatar/owner.jpg?signature=example");
         row.setPhone("13800006620");
         row.setFarmNamesText("东山猪场、西岭鸡场");
         row.setFarmCount(2);
@@ -81,6 +85,7 @@ class UserAdminServiceImplTest {
                 .containsEntry("disabled", 1);
         assertThat(page.getList()).singleElement().satisfies(item -> {
             assertThat(item.getPhone()).isEqualTo("138****6620");
+            assertThat(item.getAvatarUrl()).isEqualTo("/zmt-private/avatar/owner.jpg?signature=example");
             assertThat(item.getRoleCounts().getOwner()).isEqualTo(1);
             assertThat(item.getRoleCounts().getManager()).isEqualTo(1);
             assertThat(item.getFlags()).extracting(AdminUserItemVO.Flag::getCode)

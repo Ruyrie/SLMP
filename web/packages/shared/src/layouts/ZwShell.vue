@@ -242,14 +242,14 @@ function farmBadge(farm: { status: string }): string {
         <v-menu v-model="userMenu" location="bottom end">
           <template #activator="{ props: activatorProps }">
             <button v-bind="activatorProps" class="zw-user" type="button">
-              <zw-avatar :name="shellState.userName" :size="28" />
+              <zw-avatar :name="shellState.userName" :src="shellState.avatarUrl" :size="28" />
               <span>{{ shellState.userName }}</span>
               <zw-icon name="keyboard_arrow_down" :size="16" />
             </button>
           </template>
           <div class="zw-pop zw-user-pop">
             <div class="zw-user-head">
-              <zw-avatar :name="shellState.userName" :size="36" />
+              <zw-avatar :name="shellState.userName" :src="shellState.avatarUrl" :size="36" />
               <div>
                 <div class="title-s">{{ shellState.userName }}</div>
                 <div class="zw-farm-sub">{{ side === 'admin' ? shellState.adminRoleName || '管理员' : roleLabel }}</div>
