@@ -170,6 +170,8 @@ public class MineFragment extends BaseFragment {
             initial.setVisibility(View.VISIBLE);
             return;
         }
+        image.setVisibility(View.VISIBLE);
+        initial.setVisibility(View.GONE);
         Glide.with(this)
                 .load(url)
                 .centerCrop()
