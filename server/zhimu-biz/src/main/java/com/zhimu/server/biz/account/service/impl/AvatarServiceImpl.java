@@ -76,7 +76,11 @@ public class AvatarServiceImpl implements AvatarService {
 
     @Override
     public String avatarUrl(Long avatarFileId) {
-        return avatarFileId == null ? null : fileVoAssembler.url(fileMapper.selectById(avatarFileId));
+        if (avatarFileId == null) {
+            return null;
+        }
+        FileEntity file = fileMapper.selectById(avatarFileId);
+        return file == null ? null : fileVoAssembler.url(file);
     }
 
     private User requireUser(Long userId) {
