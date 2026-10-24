@@ -582,7 +582,7 @@ public class FinanceRecordEditViewModel extends FinanceViewModel {
         }
         submitting.setValue(false);
         if (e.isNetwork()) {
-            showMessage(FinanceErrors.MSG_NETWORK_KEPT);
+            showMessage(e.keptMessage(FinanceErrors.MSG_NETWORK_KEPT));
             return;
         }
         idem.clear();

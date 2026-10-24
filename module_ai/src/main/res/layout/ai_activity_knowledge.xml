@@ -81,10 +81,10 @@
                     android:orientation="vertical"
                     android:visibility="gone">
 
-                    <FrameLayout
+                    <com.zhimu.slmp.ai.ui.play.VideoFrameLayout
                         android:id="@+id/ai_knowledge_video"
                         android:layout_width="match_parent"
-                        android:layout_height="0dp"
+                        android:layout_height="wrap_content"
                         android:background="@color/zm_media_backdrop">
 
                         <androidx.media3.ui.PlayerView
@@ -143,7 +143,7 @@
                                 app:drawableStartCompat="@drawable/ic_smart_display"
                                 app:drawableTint="@color/zm_on_media" />
                         </FrameLayout>
-                    </FrameLayout>
+                    </com.zhimu.slmp.ai.ui.play.VideoFrameLayout>
 
                     <TextView
                         android:id="@+id/ai_knowledge_video_caption"

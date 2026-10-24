@@ -997,7 +997,7 @@ public class WeighRegisterViewModel extends BaseViewModel {
         submitting.setValue(false);
         int code = e.getCode();
         if (e.isNetwork()) {
-            showMessage(FeedErrors.MSG_NETWORK_KEEP);
+            showMessage(e.keptMessage(FeedErrors.MSG_NETWORK_KEEP));
             return;
         }
         switch (code) {
@@ -1109,7 +1109,7 @@ public class WeighRegisterViewModel extends BaseViewModel {
                     ? "已修改称重周期，下次称重日期已重新推算" : msg);
         }, e -> {
             cycleSaving.setValue(false);
-            showMessage(e.isNetwork() ? ApiException.MSG_NETWORK : e.getMessage());
+            showMessage(e.getMessage());
         });
     }
 

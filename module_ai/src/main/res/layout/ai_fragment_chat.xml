@@ -15,7 +15,7 @@
         android:layout_width="wrap_content"
         android:layout_height="32dp"
         android:layout_marginStart="@dimen/base_page_margin"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="@dimen/base_page_margin"
         android:background="@drawable/ai_bg_outline_8"
         android:drawablePadding="8dp"

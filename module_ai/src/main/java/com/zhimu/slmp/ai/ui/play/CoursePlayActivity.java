@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Rational;
 import android.view.LayoutInflater;
 import android.view.OrientationEventListener;
@@ -50,6 +51,8 @@ import com.zhimu.slmp.common.router.RouterPath;
  * K05 视频播放 · 竖屏 / K06 全屏播放 · 横屏（同一个 Activity 两套控制层布局，旋转不重建、播放不中断）：
  * 续播 Snackbar“回到开头”、移动网络 Snackbar“仅 Wi-Fi”、倍速与清晰度（竖屏底部面板 / 横屏右侧面板）、选集、锁屏、
  * 画中画（播放中自动进入）、本专题课程列表、问 AI / 图文原文 / 本专题。onStop 时不在画中画则报 LEAVE 并释放播放器。
+ * 进入全屏：点 fullscreen（请求横屏传感器方向）或打开自动旋转时把手机横过来；退出全屏：exit 按钮、返回键、
+ * 手机竖回去。从 K03 内嵌视频点全屏进入（EXTRA_FULLSCREEN）时，退出全屏即返回 K03 并带回当前位置。
  */
 public class CoursePlayActivity extends BaseActivity {
 
@@ -68,6 +71,10 @@ public class CoursePlayActivity extends BaseActivity {
     private OrientationEventListener orientation;
     private int statusBarHeight;
     private int panel = PANEL_NONE;
+    /** 从 K03 内嵌视频点全屏进入：退出全屏即返回 K03，并带回当前位置 */
+    private boolean returnOnExit;
+    /** 请求横屏后手机是否真的横过来过：横过来再竖回去才自动退出全屏（刚点全屏时手机还竖着，不能马上退回） */
+    private boolean landscapeSeen;
     @Nullable
     private ConnectivityManager.NetworkCallback networkCallback;
 
@@ -121,31 +128,47 @@ public class CoursePlayActivity extends BaseActivity {
                     exitFullscreen();
                     return;
                 }
-                finish();
+                finishToCaller();
             }
         });
         orientation = new OrientationEventListener(this) {
             @Override
             public void onOrientationChanged(int deg) {
-                if (deg == ORIENTATION_UNKNOWN) {
+                if (deg == ORIENTATION_UNKNOWN || isFinishing() || isInPictureInPictureMode()) {
                     return;
                 }
                 boolean portrait = deg < 30 || deg > 330;
+                boolean landscape = (deg > 60 && deg < 120) || (deg > 240 && deg < 300);
                 int req = getRequestedOrientation();
-                if (portrait && req == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-                    // 点了退出全屏且手机已竖过来：恢复跟随系统
+                if (req == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
+                    if (landscape) {
+                        landscapeSeen = true;
+                    } else if (portrait && landscapeSeen && autoRotateOn()
+                            && Boolean.TRUE.equals(vm.getFullscreen().getValue())
+                            && !Boolean.TRUE.equals(vm.getLocked().getValue())) {
+                        // 点全屏后手机横过来又竖回去（系统已打开自动旋转）：退出全屏
+                        exitFullscreen();
+                    }
+                } else if (req == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT && portrait) {
+                    // 退出全屏且手机已竖过来：恢复跟随系统（打开自动旋转时再横过来即进入全屏）
                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-                } else if (portrait && req == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-                        && Boolean.TRUE.equals(vm.getFullscreen().getValue())
-                        && !Boolean.TRUE.equals(vm.getLocked().getValue())) {
-                    exitFullscreen();
                 }
             }
         };
+        returnOnExit = getIntent().getBooleanExtra(RouterPath.EXTRA_FULLSCREEN, false);
         if (Boolean.TRUE.equals(vm.getFullscreen().getValue())) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+        } else if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE
+                && !isInMultiWindowMode()) {
+            // 横着拿手机打开（自动旋转）：直接全屏，竖回去时跟随系统退出
+            vm.setFullscreen(true);
         }
         applyMode();
+    }
+
+    /** 系统设置是否打开了自动旋转（关闭时旋转手机不自动进出全屏） */
+    private boolean autoRotateOn() {
+        return Settings.System.getInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, 0) == 1;
     }
 
     @Override
@@ -159,7 +182,7 @@ public class CoursePlayActivity extends BaseActivity {
             statusBarHeight = bars.top;
             boolean full = Boolean.TRUE.equals(vm.getFullscreen().getValue());
             ViewGroup.LayoutParams lp = binding.aiPlayStatusBg.getLayoutParams();
-            lp.height = full ? 0 : bars.top;
+            lp.height = full || isInPictureInPictureMode() ? 0 : bars.top;
             binding.aiPlayStatusBg.setLayoutParams(lp);
             binding.aiPlayList.setPadding(0, 0, 0, bars.bottom + Math.round(24 * getResources().getDisplayMetrics().density));
             return WindowInsetsCompat.CONSUMED;
@@ -308,8 +331,10 @@ public class CoursePlayActivity extends BaseActivity {
             PlaySettingSheet.show(getSupportFragmentManager());
         } else if (id == R.id.ai_ctrl_lock) {
             vm.toggleLock();
+            // 锁定：固定当前横屏方向；解锁：恢复横屏传感器方向，手机横过来再竖回去时退出全屏
+            landscapeSeen = false;
             setRequestedOrientation(Boolean.TRUE.equals(vm.getLocked().getValue())
-                    ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : getRequestedOrientation());
+                    ? ActivityInfo.SCREEN_ORIENTATION_LOCKED : ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
         } else if (id == R.id.ai_ctrl_next) {
             vm.playNext();
         } else if (id == R.id.ai_ctrl_speed_pill || id == R.id.ai_ctrl_quality_pill) {
@@ -333,26 +358,56 @@ public class CoursePlayActivity extends BaseActivity {
 
     // ===== 横屏全屏 =====
 
+    /**
+     * 点 fullscreen：请求横屏传感器方向并立即切到全屏布局（不等旋转完成）。之后手机要先横过来，
+     * 再竖回去才自动退出（landscapeSeen），否则竖着拿手机点全屏会被方向监听马上退回竖屏。
+     */
     private void enterFullscreen() {
+        landscapeSeen = false;
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
         vm.setFullscreen(true);
     }
 
+    /** 退出全屏：请求竖屏，手机竖过来后由方向监听恢复跟随系统；从 K03 进入时直接返回 K03 */
     private void exitFullscreen() {
+        if (returnOnExit) {
+            finishToCaller();
+            return;
+        }
         hidePanel();
+        landscapeSeen = false;
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         vm.setFullscreen(false);
+    }
+
+    /** 返回上一页；从 K03 全屏进入时带回当前位置（仍是同一课程时），K03 原位接着播 */
+    private void finishToCaller() {
+        CoursePlayVO p = vm.getPlay().getValue();
+        long pos = player.position();
+        if (returnOnExit && pos > 0 && p != null && p.getId() == getIntent().getLongExtra(RouterPath.EXTRA_COURSE_ID, 0)) {
+            setResult(RESULT_OK, new Intent().putExtra(RouterPath.EXTRA_START_MS, pos));
+        }
+        finish();
     }
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        boolean land = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE;
-        if (land && !Boolean.TRUE.equals(vm.getFullscreen().getValue())) {
-            vm.setFullscreen(true);
-        } else if (!land && Boolean.TRUE.equals(vm.getFullscreen().getValue())
-                && getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
-            vm.setFullscreen(false);
+        if (!isInPictureInPictureMode() && !isInMultiWindowMode()) {
+            boolean land = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE;
+            boolean full = Boolean.TRUE.equals(vm.getFullscreen().getValue());
+            int req = getRequestedOrientation();
+            if (land && !full && req != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                // 打开自动旋转时把手机横过来：进入全屏（刚点了退出全屏、还在转回竖屏途中的横屏不算）
+                vm.setFullscreen(true);
+            } else if (!land && full && req == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+                // 跟随系统转回竖屏：退出全屏（请求横屏后、还没转过去的竖屏不算）
+                if (returnOnExit) {
+                    finishToCaller();
+                    return;
+                }
+                vm.setFullscreen(false);
+            }
         }
         applyMode();
     }
@@ -368,9 +423,10 @@ public class CoursePlayActivity extends BaseActivity {
         } else {
             wic.show(WindowInsetsCompat.Type.systemBars());
         }
-        int width = getResources().getDisplayMetrics().widthPixels;
+        // 竖屏 16:9 由 VideoFrameLayout 测量时按实际宽度计算（旋转途中屏幕尺寸还是旧值，不能在这里按屏宽算）；全屏铺满
+        binding.aiPlayVideo.setKeepRatio(!full && !pip);
         ViewGroup.LayoutParams lp = binding.aiPlayVideo.getLayoutParams();
-        lp.height = full || pip ? ViewGroup.LayoutParams.MATCH_PARENT : Math.round(width * 9f / 16f);
+        lp.height = full || pip ? ViewGroup.LayoutParams.MATCH_PARENT : ViewGroup.LayoutParams.WRAP_CONTENT;
         binding.aiPlayVideo.setLayoutParams(lp);
         binding.aiPlayState.setVisibility(full || pip ? View.GONE : View.VISIBLE);
         ViewGroup.LayoutParams sl = binding.aiPlayStatusBg.getLayoutParams();
@@ -542,9 +598,15 @@ public class CoursePlayActivity extends BaseActivity {
     @Override
     protected void onNewIntent(@NonNull Intent intent) {
         super.onNewIntent(intent);
+        // singleTask 复用本页时上面的页面（含 K03）已出栈，退出全屏不再返回
+        returnOnExit = false;
         long id = intent.getLongExtra(RouterPath.EXTRA_COURSE_ID, 0);
         if (id > 0) {
             vm.switchCourse(id);
+        }
+        if (intent.getBooleanExtra(RouterPath.EXTRA_FULLSCREEN, false)
+                && !Boolean.TRUE.equals(vm.getFullscreen().getValue())) {
+            enterFullscreen();
         }
     }
 

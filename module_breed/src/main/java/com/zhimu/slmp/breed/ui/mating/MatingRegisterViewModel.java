@@ -550,7 +550,7 @@ public class MatingRegisterViewModel extends BreedFormViewModel implements PregC
                 }
             }, err -> {
                 checkSubmitting.setValue(false);
-                showMessage(SubmitSupport.MSG_NETWORK_KEEP);
+                showMessage(err.keptMessage(SubmitSupport.MSG_NETWORK_KEEP));
             });
             return;
         }
@@ -560,7 +560,7 @@ public class MatingRegisterViewModel extends BreedFormViewModel implements PregC
             return;
         }
         if (e.isNetwork()) {
-            showMessage(SubmitSupport.MSG_NETWORK_KEEP);
+            showMessage(e.keptMessage(SubmitSupport.MSG_NETWORK_KEEP));
             return;
         }
         if (ErrorCodes.isNoPermission(e.getCode())) {

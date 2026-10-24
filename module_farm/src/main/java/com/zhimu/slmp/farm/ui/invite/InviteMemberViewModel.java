@@ -253,7 +253,7 @@ public class InviteMemberViewModel extends BaseViewModel {
             if (e.getCode() == ErrorCodes.STATE_CHANGED) {
                 stale.setValue(e.getMessage() != null ? e.getMessage() : MSG_STALE);
             } else if (e.isNetwork()) {
-                showMessage(FarmRules.MSG_NETWORK_KEPT);
+                showMessage(e.keptMessage(FarmRules.MSG_NETWORK_KEPT));
             } else {
                 handleError(e);
             }

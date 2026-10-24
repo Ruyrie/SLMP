@@ -464,7 +464,7 @@ public class AnimalArchiveViewModel extends BreedFormViewModel implements PregCh
             return;
         }
         if (e.isNetwork()) {
-            showMessage(SubmitSupport.MSG_NETWORK_KEEP);
+            showMessage(e.keptMessage(SubmitSupport.MSG_NETWORK_KEEP));
             return;
         }
         showMessage(e.getMessage());

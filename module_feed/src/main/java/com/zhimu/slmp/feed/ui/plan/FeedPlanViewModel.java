@@ -621,7 +621,7 @@ public class FeedPlanViewModel extends BaseViewModel {
             return;
         }
         if (e.isNetwork()) {
-            showMessage(FeedErrors.MSG_NETWORK_KEEP);
+            showMessage(e.keptMessage(FeedErrors.MSG_NETWORK_KEEP));
             return;
         }
         if (ErrorCodes.isNoPermission(e.getCode())) {

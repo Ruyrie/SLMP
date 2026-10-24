@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.SeekBar;
 
 import androidx.annotation.NonNull;
@@ -293,6 +294,13 @@ public final class PlayerController {
         }
     }
 
+    /** 继续播放（K03 从全屏返回后原位接着播） */
+    public void resume() {
+        if (player != null && !locked) {
+            player.play();
+        }
+    }
+
     public boolean isPlaying() {
         return player != null && player.isPlaying();
     }
@@ -392,7 +400,11 @@ public final class PlayerController {
         float d = context.getResources().getDisplayMetrics().density;
         int side = Math.round((fullscreen ? 40 : 16) * d);
         c.aiCtrlBottom.setPadding(side, 0, side, Math.round((fullscreen ? 12 : 4) * d));
-        c.aiCtrlTop.setPadding(Math.round((fullscreen ? 28 : 4) * d), 0, Math.round((fullscreen ? 28 : 4) * d), 0);
+        // K06：arrow_back 图标 x 44、y 24，标题 x 84
+        c.aiCtrlTop.setPadding(Math.round((fullscreen ? 32 : 4) * d), 0, Math.round((fullscreen ? 32 : 4) * d), 0);
+        ViewGroup.MarginLayoutParams top = (ViewGroup.MarginLayoutParams) c.aiCtrlTop.getLayoutParams();
+        top.topMargin = Math.round((fullscreen ? 12 : 4) * d);
+        c.aiCtrlTop.setLayoutParams(top);
         // 锁定：只留锁按钮
         int others = locked ? View.INVISIBLE : View.VISIBLE;
         c.aiCtrlTop.setVisibility(others);

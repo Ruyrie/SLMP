@@ -826,7 +826,7 @@ public class FeedRegisterViewModel extends BaseViewModel {
     private void handleSubmitError(@NonNull ApiException e) {
         int code = e.getCode();
         if (e.isNetwork()) {
-            showMessage(FeedErrors.MSG_NETWORK_KEEP);
+            showMessage(e.keptMessage(FeedErrors.MSG_NETWORK_KEEP));
             return;
         }
         switch (code) {

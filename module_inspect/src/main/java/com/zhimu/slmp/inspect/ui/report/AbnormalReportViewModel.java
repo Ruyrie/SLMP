@@ -443,7 +443,7 @@ public class AbnormalReportViewModel extends BaseViewModel {
             return;
         }
         if (e.isNetwork()) {
-            showMessage(UiMessage.withAction("网络连接失败，已保留填写的内容", "重试", "inspect_report_retry"));
+            showMessage(UiMessage.withAction(e.keptMessage("网络连接失败，已保留填写的内容"), "重试", "inspect_report_retry"));
             return;
         }
         handleError(e);

@@ -581,7 +581,7 @@ public class BatchDeathViewModel extends BaseViewModel {
         }
         submitting.setValue(false);
         if (e.isNetwork()) {
-            showMessage(FormSupport.MSG_NETWORK_KEEP);
+            showMessage(e.keptMessage(FormSupport.MSG_NETWORK_KEEP));
             return;
         }
         handleError(e);

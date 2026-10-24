@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- A05 找回账号：说明、规则横幅（锁定时换成 error 横幅）、原手机号、恢复码、新手机号、新手机号验证码、情况说明、客服电话卡片；底部“提交找回申请” -->
+<!-- 本页输入框排得比其他页紧：描边间距 16 dp（文档 A05 各 y 值），扣掉描边上方半个浮动标签高（约 6 dp）后上边距取 10 dp；
+     手机号框 drawablePadding 的原因见 account_activity_login.xml 顶部注释 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -63,12 +65,13 @@
                 <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_recovery_old_phone"
                     style="@style/account_style_field"
-                    android:layout_marginTop="@dimen/base_space_5"
+                    android:layout_marginTop="@dimen/base_space_4"
                     android:hint="@string/account_recovery_old_phone"
                     app:prefixText="@string/account_phone_prefix">
 
                     <com.google.android.material.textfield.TextInputEditText
                         style="@style/account_style_edit"
+                        android:drawablePadding="@dimen/base_space_2"
                         android:imeOptions="actionNext"
                         android:inputType="phone"
                         android:text="@={vm.oldPhone}" />
@@ -77,7 +80,7 @@
                 <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_recovery_code"
                     style="@style/account_style_field"
-                    android:layout_marginTop="@dimen/base_space_4"
+                    android:layout_marginTop="10dp"
                     android:hint="@string/account_recovery_code">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -90,12 +93,13 @@
                 <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_recovery_new_phone"
                     style="@style/account_style_field"
-                    android:layout_marginTop="@dimen/base_space_4"
+                    android:layout_marginTop="10dp"
                     android:hint="@string/account_recovery_new_phone"
                     app:prefixText="@string/account_phone_prefix">
 
                     <com.google.android.material.textfield.TextInputEditText
                         style="@style/account_style_edit"
+                        android:drawablePadding="@dimen/base_space_2"
                         android:imeOptions="actionNext"
                         android:inputType="phone"
                         android:text="@={vm.newPhone}" />
@@ -104,7 +108,7 @@
                 <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_recovery_sms"
                     style="@style/account_style_field"
-                    android:layout_marginTop="@dimen/base_space_4"
+                    android:layout_marginTop="10dp"
                     android:hint="@string/account_recovery_new_phone_code">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -118,7 +122,7 @@
                 <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_recovery_description"
                     style="@style/account_style_field"
-                    android:layout_marginTop="@dimen/base_space_4"
+                    android:layout_marginTop="10dp"
                     android:hint="@string/account_recovery_description"
                     app:counterEnabled="true"
                     app:counterMaxLength="200">

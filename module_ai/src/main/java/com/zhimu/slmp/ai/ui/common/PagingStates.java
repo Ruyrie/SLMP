@@ -50,7 +50,7 @@ public final class PagingStates {
         LoadState refresh = states.getRefresh();
         if (refresh instanceof LoadState.Error && itemCount > 0) {
             ApiException e = ApiException.from(((LoadState.Error) refresh).getError());
-            return e.isNetwork() ? ApiException.MSG_NETWORK : e.getMessage();
+            return e.getMessage();
         }
         return null;
     }

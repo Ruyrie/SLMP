@@ -209,7 +209,7 @@ public abstract class BreedFormViewModel extends BaseViewModel {
         endSubmit();
         int code = e.getCode();
         if (e.isNetwork()) {
-            showMessage(UiMessage.withAction(SubmitSupport.MSG_NETWORK_KEEP, SubmitSupport.MSG_RETRY, ACTION_RETRY));
+            showMessage(UiMessage.withAction(e.keptMessage(SubmitSupport.MSG_NETWORK_KEEP), SubmitSupport.MSG_RETRY, ACTION_RETRY));
             return;
         }
         if (code == ErrorCodes.VERSION_CONFLICT) {
@@ -241,7 +241,7 @@ public abstract class BreedFormViewModel extends BaseViewModel {
             }
         }, err -> {
             endSubmit();
-            showMessage(UiMessage.withAction(SubmitSupport.MSG_NETWORK_KEEP, SubmitSupport.MSG_RETRY, ACTION_RETRY));
+            showMessage(UiMessage.withAction(err.keptMessage(SubmitSupport.MSG_NETWORK_KEEP), SubmitSupport.MSG_RETRY, ACTION_RETRY));
         });
     }
 }

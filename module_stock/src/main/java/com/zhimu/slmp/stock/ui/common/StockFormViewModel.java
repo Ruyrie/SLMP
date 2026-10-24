@@ -173,7 +173,7 @@ public abstract class StockFormViewModel extends BaseViewModel {
             }
             submitting.setValue(false);
             if (e.isNetwork()) {
-                showMessage(UiMessage.withAction(MSG_NETWORK_KEEP, "重试", ACTION_RETRY));
+                showMessage(UiMessage.withAction(e.keptMessage(MSG_NETWORK_KEEP), "重试", ACTION_RETRY));
                 return;
             }
             guard.clear();

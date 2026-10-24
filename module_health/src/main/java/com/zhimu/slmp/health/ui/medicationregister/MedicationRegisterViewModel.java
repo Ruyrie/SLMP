@@ -599,7 +599,7 @@ public class MedicationRegisterViewModel extends BaseViewModel {
             } else {
                 clearError(F_LOT);
             }
-        }, e -> showMessage(e.isNetwork() ? ApiException.MSG_NETWORK : e.getMessage()));
+        }, e -> showMessage(e.getMessage()));
     }
 
     public void selectLot(long lotId) {
@@ -1045,7 +1045,7 @@ public class MedicationRegisterViewModel extends BaseViewModel {
             return;
         }
         if (e.isNetwork()) {
-            showMessage(SubmitSupport.MSG_NETWORK_KEEP);
+            showMessage(e.keptMessage(SubmitSupport.MSG_NETWORK_KEEP));
             return;
         }
         handleError(e);

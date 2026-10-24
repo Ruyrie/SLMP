@@ -186,7 +186,7 @@ public class ReceivableListViewModel extends FinanceListViewModel<String, SaleOr
         }
         receipt.setSubmitting(false);
         if (e.isNetwork()) {
-            showMessage(FinanceErrors.MSG_NETWORK_KEPT);
+            showMessage(e.keptMessage(FinanceErrors.MSG_NETWORK_KEPT));
             return;
         }
         receipt.idem().clear();

@@ -417,7 +417,7 @@ public class FarmCreateViewModel extends BaseViewModel {
         }
         submitting.setValue(false);
         if (e.isNetwork()) {
-            showMessage(FarmRules.MSG_NETWORK_KEPT);
+            showMessage(e.keptMessage(FarmRules.MSG_NETWORK_KEPT));
         } else if (code == ErrorCodes.NAME_DUPLICATE) {
             putError(F_NAME, e.getMessage());
             scrollToField.setValue(F_NAME);

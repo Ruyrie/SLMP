@@ -585,7 +585,7 @@ public class ImmunePlanViewModel extends BaseListViewModel<ImmunePlanViewModel.P
                 refresh();
                 return;
             }
-            showMessage(e.isNetwork() ? ApiException.MSG_NETWORK : e.getMessage());
+            showMessage(e.getMessage());
         });
     }
 

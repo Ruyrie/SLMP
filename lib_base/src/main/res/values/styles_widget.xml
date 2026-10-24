@@ -249,9 +249,10 @@
         <item name="counterTextColor">?attr/colorOnSurfaceVariant</item>
         <item name="counterOverflowTextAppearance">@style/TextAppearance.Zmt.BodySmall</item>
         <item name="counterOverflowTextColor">?attr/colorError</item>
+        <!-- 前缀（如“+86”）、后缀（如“头”）均为 14 sp on-surface-variant，比输入值 16 sp 小一号 -->
         <item name="suffixTextAppearance">@style/TextAppearance.Zmt.BodyMedium</item>
         <item name="suffixTextColor">?attr/colorOnSurfaceVariant</item>
-        <item name="prefixTextAppearance">@style/TextAppearance.Zmt.BodyLarge</item>
+        <item name="prefixTextAppearance">@style/TextAppearance.Zmt.BodyMedium</item>
         <item name="prefixTextColor">?attr/colorOnSurfaceVariant</item>
         <item name="endIconTint">?attr/colorOnSurfaceVariant</item>
         <item name="startIconTint">?attr/colorOnSurfaceVariant</item>

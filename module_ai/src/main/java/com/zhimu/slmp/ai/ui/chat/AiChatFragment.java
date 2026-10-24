@@ -22,7 +22,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.LiveData;
@@ -251,6 +250,12 @@ public class AiChatFragment extends BaseFragment {
                 if (dy < 0 && !rv.canScrollVertically(-1)) {
                     requestEarlier();
                 }
+            }
+        });
+        // 对话区变矮（软键盘弹出、输入栏变高）时，停在底部的保持贴底，最新一条露在输入栏上方
+        list.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (bottom - top < oldBottom - oldTop && following) {
+                v.post(this::followBottom);
             }
         });
         ClickThrottle.setOnClickListener(binding.aiChatBackBottom, v -> {
@@ -717,23 +722,17 @@ public class AiChatFragment extends BaseFragment {
     }
 
     /**
-     * 软键盘弹出时整条输入栏贴在键盘上方：按根视图底边到窗口底边的距离扣除后，把软键盘高度加到底部内边距
-     * （主页中 Fragment 在底部导航之上，单独运行时宿主 BaseActivity 已处理 insets）。
+     * 软键盘弹出时整条输入栏贴在键盘上方。宿主已避让的部分不会再下发到这里：主页一级页容器按键盘高度加底部内边距
+     * 并从下发的 insets 中扣除，单独运行时 BaseActivity 在根视图上处理并消费；这里只补宿主没处理、仍下发到本页的
+     * 软键盘高度，不再按位置推算，避免重复计算。对话区因此变矮时的贴底见 setupList。
      */
     private void applyImeInsets() {
         View root = binding.getRoot();
         final int base = root.getPaddingBottom();
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
-            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
-            int[] loc = new int[2];
-            v.getLocationInWindow(loc);
-            int gap = v.getRootView().getHeight() - (loc[1] + v.getHeight());
-            int pad = Math.max(0, ime.bottom - Math.max(0, gap));
+            int pad = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
             if (v.getPaddingBottom() != base + pad) {
                 v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), base + pad);
-            }
-            if (pad > 0 && following) {
-                v.post(this::followBottom);
             }
             return insets;
         });

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- A02 注册账号：二级页顶部栏；说明、手机号、短信验证码、设置密码、协议勾选；底部固定“注册” -->
+<!-- 相邻输入框上边距 18 dp、手机号框 drawablePadding 的原因见 account_activity_login.xml 顶部注释 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -45,6 +46,7 @@
                 <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_register_phone"
                     style="@style/account_style_field"
+                    android:layout_marginTop="18dp"
                     android:hint="@string/account_field_phone"
                     app:helperText="@string/account_register_phone_helper"
                     app:prefixText="@string/account_phone_prefix">
@@ -52,6 +54,7 @@
                     <com.google.android.material.textfield.TextInputEditText
                         style="@style/account_style_edit"
                         android:autofillHints="phone"
+                        android:drawablePadding="@dimen/base_space_2"
                         android:imeOptions="actionNext"
                         android:inputType="phone"
                         android:text="@={vm.phone}" />
@@ -60,6 +63,7 @@
                 <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_register_sms"
                     style="@style/account_style_field"
+                    android:layout_marginTop="18dp"
                     android:hint="@string/account_field_sms_code">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -73,6 +77,7 @@
                 <com.zhimu.slmp.base.widget.ZmtTextInputLayout
                     android:id="@+id/account_register_password"
                     style="@style/account_style_field"
+                    android:layout_marginTop="18dp"
                     android:hint="@string/account_register_set_password"
                     app:endIconMode="password_toggle"
                     app:helperText="@string/account_password_rule">
@@ -89,7 +94,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="-6dp"
-                    android:layout_marginTop="@dimen/base_space_5"
+                    android:layout_marginTop="@dimen/base_space_3"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
