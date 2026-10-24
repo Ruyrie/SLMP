@@ -18,10 +18,20 @@ public class AccountUserVO {
         this.phoneMasked = phoneMasked;
     }
 
-    /** 修改姓名后得到新对象 */
+    /** 修改姓名后得到新对象（保留头像） */
     @NonNull
     public AccountUserVO withName(@Nullable String newName, @Nullable String newInitial) {
-        return new AccountUserVO(userId, newName, newInitial, phoneMasked);
+        AccountUserVO user = new AccountUserVO(userId, newName, newInitial, phoneMasked);
+        user.avatarUrl = avatarUrl;
+        return user;
+    }
+
+    /** 修改头像后得到新对象（保留姓名、手机号） */
+    @NonNull
+    public AccountUserVO withAvatarUrl(@Nullable String newAvatarUrl) {
+        AccountUserVO user = new AccountUserVO(userId, name, nameInitial, phoneMasked);
+        user.avatarUrl = newAvatarUrl;
+        return user;
     }
 
     private long userId;
@@ -32,6 +42,9 @@ public class AccountUserVO {
     private String nameInitial;
     @Nullable
     private String phoneMasked;
+    /** 真实头像地址（账号接口字段 avatar_url）；为空时客户端回退显示姓名首字 */
+    @Nullable
+    private String avatarUrl;
 
     public long getUserId() {
         return userId;
@@ -50,5 +63,10 @@ public class AccountUserVO {
     @Nullable
     public String getPhoneMasked() {
         return phoneMasked;
+    }
+
+    @Nullable
+    public String getAvatarUrl() {
+        return avatarUrl;
     }
 }

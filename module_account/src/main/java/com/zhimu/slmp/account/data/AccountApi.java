@@ -5,6 +5,7 @@ import com.zhimu.slmp.account.model.request.AccountCancelRequest;
 import com.zhimu.slmp.account.model.request.AccountRecoveryRequest;
 import com.zhimu.slmp.account.model.request.AccountSmsCodeRequest;
 import com.zhimu.slmp.account.model.request.AfterRecoveryPasswordRequest;
+import com.zhimu.slmp.account.model.request.AvatarBindRequest;
 import com.zhimu.slmp.account.model.request.PasswordChangeRequest;
 import com.zhimu.slmp.account.model.request.PasswordLoginRequest;
 import com.zhimu.slmp.account.model.request.PasswordResetRequest;
@@ -21,20 +22,27 @@ import com.zhimu.slmp.account.model.vo.ProfileVO;
 import com.zhimu.slmp.account.model.vo.RecoveryCodeConfirmVO;
 import com.zhimu.slmp.account.model.vo.SmsCodeSendVO;
 import com.zhimu.slmp.common.model.vo.AuthTokenVO;
+import com.zhimu.slmp.common.model.vo.AccountUserVO;
 import com.zhimu.slmp.common.model.vo.FarmContextVO;
+import com.zhimu.slmp.common.model.vo.FileVO;
 import com.zhimu.slmp.common.model.vo.RecoveryCodeVO;
 import com.zhimu.slmp.common.model.vo.SessionVO;
 import com.zhimu.slmp.network.Headers;
 import com.zhimu.slmp.network.model.ApiResponse;
 
 import io.reactivex.rxjava3.core.Single;
+import okhttp3.MultipartBody;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
+import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * 模块01 账号接口：API-A01–A05、A07–A17、A19–A21（A06 在 common.session.SessionApi，A18 已取消）；
@@ -114,6 +122,20 @@ public interface AccountApi {
     @PUT("api/v1/account/password")
     Single<ApiResponse<AuthTokenVO>> changePassword(@Body PasswordChangeRequest body,
                                                     @Header(Headers.IDEMPOTENCY_KEY) String idemKey);
+
+    /** 上传头像文件（scene=AVATAR，multipart 字段 file），返回 FileVO；文件 ID 取 resolvedFileId() */
+    @Multipart
+    @POST("api/v1/files")
+    Single<ApiResponse<FileVO>> uploadAvatar(@Part MultipartBody.Part file,
+                                             @Query("scene") String scene);
+
+    /** 绑定头像：body {"file_id":123}，返回更新后的当前用户 */
+    @PUT("api/v1/account/avatar")
+    Single<ApiResponse<AccountUserVO>> bindAvatar(@Body AvatarBindRequest body);
+
+    /** 恢复默认头像（清除 avatar_url），返回更新后的当前用户 */
+    @DELETE("api/v1/account/avatar")
+    Single<ApiResponse<AccountUserVO>> clearAvatar();
 
     /** API-A19 注销预览 */
     @GET("api/v1/account/cancellation-preview")

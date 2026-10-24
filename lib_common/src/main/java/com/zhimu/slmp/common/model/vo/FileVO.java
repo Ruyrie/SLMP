@@ -8,6 +8,12 @@ import androidx.annotation.Nullable;
 public class FileVO {
 
     private long fileId;
+    /**
+     * 部分上传接口的响应把文件 ID 放在 id 而不是 file_id（账号头像接口契约即 data.id）；
+     * 读取时用 {@link #resolvedFileId()} 兼容两种字段。
+     */
+    @Nullable
+    private Long id;
     @Nullable
     private String url;
     @Nullable
@@ -32,6 +38,19 @@ public class FileVO {
 
     public long getFileId() {
         return fileId;
+    }
+
+    /** 文件 ID：优先 file_id，兼容只返回 id 的上传接口 */
+    public long resolvedFileId() {
+        if (fileId > 0) {
+            return fileId;
+        }
+        return id == null ? 0 : id;
+    }
+
+    @Nullable
+    public Long getId() {
+        return id;
     }
 
     @Nullable
