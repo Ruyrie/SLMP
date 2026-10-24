@@ -1556,6 +1556,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/feed-tasks/generate-today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["generateToday"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/feed-records": {
         parameters: {
             query?: never;
@@ -1732,6 +1748,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/farms/{farmId}/invites/{inviteId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/farms/{farmId}/enable": {
         parameters: {
             query?: never;
@@ -1805,7 +1837,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["cancel"];
+        post: operations["cancel_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2324,6 +2356,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ai/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["sessions"];
+        put?: never;
+        post: operations["createSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ai/messages": {
         parameters: {
             query?: never;
@@ -2429,7 +2477,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["cancel_1"];
+        post: operations["cancel_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2459,7 +2507,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["list_7"];
         put?: never;
         post: operations["create_16"];
         delete?: never;
@@ -2478,6 +2526,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["rediagnose"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/users/{id}/reveal-phone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["revealPhone"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2539,7 +2603,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_7"];
+        get: operations["list_8"];
         put?: never;
         post: operations["create_17"];
         delete?: never;
@@ -2573,7 +2637,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["cancel_2"];
+        post: operations["cancel_3"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2676,6 +2740,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/v1/market-prices/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["importPrices"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/v1/market-prices/batch-publish": {
         parameters: {
             query?: never;
@@ -2699,7 +2779,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_8"];
+        get: operations["list_9"];
         put?: never;
         post: operations["create_18"];
         delete?: never;
@@ -2779,7 +2859,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_9"];
+        get: operations["list_10"];
         put?: never;
         post: operations["create_19"];
         delete?: never;
@@ -2811,7 +2891,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_10"];
+        get: operations["list_11"];
         put?: never;
         post: operations["create_20"];
         delete?: never;
@@ -2891,7 +2971,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_11"];
+        get: operations["list_12"];
         put?: never;
         post: operations["create_21"];
         delete?: never;
@@ -3124,6 +3204,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/v1/farm-audits/{id}/resend-sms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resendSms"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/v1/farm-audits/{id}/reject": {
         parameters: {
             query?: never;
@@ -3179,7 +3275,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_12"];
+        get: operations["list_13"];
         put?: never;
         post: operations["create_22"];
         delete?: never;
@@ -3198,6 +3294,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["changeStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/drug-catalog/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["importCatalog"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3243,7 +3355,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_13"];
+        get: operations["list_14"];
         put?: never;
         post: operations["create_24"];
         delete?: never;
@@ -3323,7 +3435,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_14"];
+        get: operations["list_15"];
         put?: never;
         post: operations["create_25"];
         delete?: never;
@@ -3355,7 +3467,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_15"];
+        get: operations["list_16"];
         put?: never;
         post: operations["create_26"];
         delete?: never;
@@ -3636,6 +3748,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/v1/account-recoveries/{id}/resend-sms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resendSms_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/v1/account-recoveries/{id}/reject": {
         parameters: {
             query?: never;
@@ -3662,6 +3790,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["approve_3"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/account-recoveries/proxy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["proxy"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3710,10 +3854,10 @@ export interface paths {
         get: operations["session"];
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["deleteSession"];
         options?: never;
         head?: never;
-        patch: operations["changeBatch"];
+        patch: operations["changeSession"];
         trace?: never;
     };
     "/api/v1/account/profile": {
@@ -4091,7 +4235,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_16"];
+        get: operations["list_17"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4219,7 +4363,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_17"];
+        get: operations["list_18"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5451,7 +5595,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_18"];
+        get: operations["list_19"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5780,22 +5924,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/ai/sessions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["sessions"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/ai/sessions/{id}/messages": {
         parameters: {
             query?: never;
@@ -5979,7 +6107,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_19"];
+        get: operations["list_20"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6075,7 +6203,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_20"];
+        get: operations["list_21"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6139,7 +6267,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_21"];
+        get: operations["list_22"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6171,7 +6299,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_22"];
+        get: operations["list_23"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6204,6 +6332,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["progress"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/market-prices/import-template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["importTemplate"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6411,7 +6555,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_23"];
+        get: operations["list_24"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6443,7 +6587,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_24"];
+        get: operations["list_25"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6475,7 +6619,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_25"];
+        get: operations["list_26"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6524,6 +6668,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["preview_3"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/drug-catalog/import-template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["importTemplate_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6603,7 +6763,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_26"];
+        get: operations["list_27"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6779,7 +6939,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_27"];
+        get: operations["list_28"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6875,7 +7035,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_28"];
+        get: operations["list_29"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6892,6 +7052,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["detail_36"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/v1/account-recoveries/{id}/verification-records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["verificationRecords"];
         put?: never;
         post?: never;
         delete?: never;
@@ -10416,6 +10592,20 @@ export interface components {
             duration_sec?: number;
             status?: string;
         };
+        ApiResponseGenerateToday: {
+            /** Format: int32 */
+            code?: number;
+            message?: string;
+            data?: components["schemas"]["GenerateToday"];
+            trace_id?: string;
+            success?: boolean;
+        };
+        GenerateToday: {
+            /** Format: int32 */
+            generated?: number;
+            /** Format: int32 */
+            skipped?: number;
+        };
         FeedRecordCreateRequest: {
             /** Format: int64 */
             task_id?: number;
@@ -11296,6 +11486,50 @@ export interface components {
             /** Format: int32 */
             duration_ms?: number;
         };
+        AiSessionCreateRequest: {
+            title?: string;
+            /** Format: int64 */
+            batch_id?: number;
+        };
+        AiSessionDetailVO: {
+            /** Format: int64 */
+            id?: number;
+            title?: string;
+            /** Format: int32 */
+            round_count?: number;
+            has_correction?: boolean;
+            context_truncated?: boolean;
+            has_epidemic_alert?: boolean;
+            batch_link_state?: string;
+            /** Format: int32 */
+            last_round_no?: number;
+            batch?: components["schemas"]["LinkedBatchVO"];
+            invalid_batch_no?: string;
+        };
+        ApiResponseAiSessionDetailVO: {
+            /** Format: int32 */
+            code?: number;
+            message?: string;
+            data?: components["schemas"]["AiSessionDetailVO"];
+            trace_id?: string;
+            success?: boolean;
+        };
+        LinkedBatchVO: {
+            /** Format: int64 */
+            batch_id?: number;
+            batch_no?: string;
+            category_name?: string;
+            stage_name?: string;
+            breed_name?: string;
+            /** Format: int64 */
+            pen_id?: number;
+            pen_name?: string;
+            /** Format: int32 */
+            day_age?: number;
+            /** Format: int32 */
+            current_count?: number;
+            count_unit_text?: string;
+        };
         AiAskRequest: {
             /** Format: int64 */
             session_id?: number;
@@ -11416,6 +11650,20 @@ export interface components {
             urgency?: string;
             last_failure_text?: string;
             auto_retry_pending?: boolean;
+        };
+        ApiResponsePhoneRevealVO: {
+            /** Format: int32 */
+            code?: number;
+            message?: string;
+            data?: components["schemas"]["PhoneRevealVO"];
+            trace_id?: string;
+            success?: boolean;
+        };
+        PhoneRevealVO: {
+            /** Format: int64 */
+            user_id?: number;
+            name?: string;
+            phone?: string;
         };
         UserStatusRequest: {
             reason?: string;
@@ -11554,6 +11802,29 @@ export interface components {
             old_rate?: number;
             new_rate?: number;
         };
+        ApiResponseImportResultVO: {
+            /** Format: int32 */
+            code?: number;
+            message?: string;
+            data?: components["schemas"]["ImportResultVO"];
+            trace_id?: string;
+            success?: boolean;
+        };
+        ImportError: {
+            /** Format: int32 */
+            row?: number;
+            message?: string;
+        };
+        ImportResultVO: {
+            /** Format: int32 */
+            total?: number;
+            /** Format: int32 */
+            success?: number;
+            /** Format: int32 */
+            failed?: number;
+            errors?: components["schemas"]["ImportError"][];
+            file_name?: string;
+        };
         BatchPublishRequest: {
             /** Format: date */
             price_date?: string;
@@ -11631,6 +11902,8 @@ export interface components {
         KnowledgeTaskVO: {
             /** Format: int64 */
             id?: number;
+            /** Format: int32 */
+            version?: number;
             title?: string;
             source_type?: string;
             source_type_text?: string;
@@ -11982,6 +12255,29 @@ export interface components {
             /** Format: int32 */
             version: number;
         };
+        SmsResendRequest: {
+            reason?: string;
+        };
+        ApiResponseSmsResendVO: {
+            /** Format: int32 */
+            code?: number;
+            message?: string;
+            data?: components["schemas"]["SmsResendVO"];
+            trace_id?: string;
+            success?: boolean;
+        };
+        SmsResendVO: {
+            /** Format: int64 */
+            id?: number;
+            phone?: string;
+            sms_status?: string;
+            sms_status_text?: string;
+            /** Format: int32 */
+            retry_count?: number;
+            /** Format: date-time */
+            queued_at?: string;
+            note?: string;
+        };
         FarmAuditRejectRequest: {
             reject_reason?: string;
             reshoot_file_ids?: number[];
@@ -12032,6 +12328,24 @@ export interface components {
             reason?: string;
             /** Format: int32 */
             version: number;
+        };
+        ApiResponseDrugImportResultVO: {
+            /** Format: int32 */
+            code?: number;
+            message?: string;
+            data?: components["schemas"]["DrugImportResultVO"];
+            trace_id?: string;
+            success?: boolean;
+        };
+        DrugImportResultVO: {
+            /** Format: int32 */
+            total?: number;
+            /** Format: int32 */
+            success?: number;
+            /** Format: int32 */
+            failed?: number;
+            errors?: components["schemas"]["ImportError"][];
+            file_name?: string;
         };
         DictStatusRequest: {
             status: string;
@@ -12341,6 +12655,33 @@ export interface components {
             /** Format: int32 */
             version: number;
         };
+        RecoveryProxyRequest: {
+            phone: string;
+            new_phone?: string;
+            recovery_code: string;
+            description: string;
+        };
+        ApiResponseProxyRecoveryVO: {
+            /** Format: int32 */
+            code?: number;
+            message?: string;
+            data?: components["schemas"]["ProxyRecoveryVO"];
+            trace_id?: string;
+            success?: boolean;
+        };
+        ProxyRecoveryVO: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int64 */
+            user_id?: number;
+            user_name?: string;
+            old_phone?: string;
+            new_phone?: string;
+            status?: string;
+            status_text?: string;
+            /** Format: date-time */
+            submitted_at?: string;
+        };
         ReminderSettingPatchRequest: {
             todo_remind_enabled?: boolean;
             digest_enabled?: boolean;
@@ -12386,47 +12727,11 @@ export interface components {
             success?: boolean;
         };
         AiSessionBatchRequest: {
-            /** Format: int64 */
-            batch_id?: number;
-        };
-        AiSessionDetailVO: {
-            /** Format: int64 */
-            id?: number;
             title?: string;
-            /** Format: int32 */
-            round_count?: number;
-            has_correction?: boolean;
-            context_truncated?: boolean;
-            has_epidemic_alert?: boolean;
-            batch_link_state?: string;
-            /** Format: int32 */
-            last_round_no?: number;
-            batch?: components["schemas"]["LinkedBatchVO"];
-            invalid_batch_no?: string;
-        };
-        ApiResponseAiSessionDetailVO: {
-            /** Format: int32 */
-            code?: number;
-            message?: string;
-            data?: components["schemas"]["AiSessionDetailVO"];
-            trace_id?: string;
-            success?: boolean;
-        };
-        LinkedBatchVO: {
             /** Format: int64 */
             batch_id?: number;
-            batch_no?: string;
-            category_name?: string;
-            stage_name?: string;
-            breed_name?: string;
-            /** Format: int64 */
-            pen_id?: number;
-            pen_name?: string;
-            /** Format: int32 */
-            day_age?: number;
-            /** Format: int32 */
-            current_count?: number;
-            count_unit_text?: string;
+            title_present?: boolean;
+            batch_id_present?: boolean;
         };
         ProfileUpdateRequest: {
             name?: string;
@@ -17416,6 +17721,80 @@ export interface components {
             transferable_farm_count?: number;
             exit_farms?: components["schemas"]["CancelExitFarmVO"][];
         };
+        AbnormalReportListQuery: {
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+            status?: string;
+            /** Format: int64 */
+            pen_id?: number;
+            /** Format: int64 */
+            batch_id?: number;
+            urgency?: string;
+            keyword?: string;
+            start_date?: string;
+            end_date?: string;
+            mine?: boolean;
+        };
+        AbnormalReportListItemVO: {
+            /** Format: int64 */
+            report_id?: number;
+            /** Format: int32 */
+            version?: number;
+            reported_at?: string;
+            report_date?: string;
+            /** Format: int64 */
+            pen_id?: number;
+            pen_name?: string;
+            /** Format: int64 */
+            batch_id?: number;
+            batch_no?: string;
+            /** Format: int32 */
+            sick_count?: number;
+            /** Format: int32 */
+            stock_snapshot?: number;
+            sick_rate?: number;
+            symptom_names?: string[];
+            description?: string;
+            status?: string;
+            status_text?: string;
+            ai_state?: string;
+            ai_state_text?: string;
+            urgency?: string;
+            urgency_text?: string;
+            major_epidemic?: boolean;
+            top_cause_name?: string;
+            /** Format: int64 */
+            reporter_id?: number;
+            reporter_name?: string;
+            /** Format: int64 */
+            inspection_id?: number;
+            source?: string;
+            can_handle?: boolean;
+            can_rediagnose?: boolean;
+        };
+        ApiResponsePageVOAbnormalReportListItemVO: {
+            /** Format: int32 */
+            code?: number;
+            message?: string;
+            data?: components["schemas"]["PageVOAbnormalReportListItemVO"];
+            trace_id?: string;
+            success?: boolean;
+        };
+        PageVOAbnormalReportListItemVO: {
+            list?: components["schemas"]["AbnormalReportListItemVO"][];
+            /** Format: int64 */
+            total?: number;
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+            has_more?: boolean;
+            tab_counts?: {
+                [key: string]: number;
+            };
+        };
         ApiResponseDiagnosisDetailVO: {
             /** Format: int32 */
             code?: number;
@@ -17679,6 +18058,7 @@ export interface components {
             user_id?: number;
             name?: string;
             phone?: string;
+            can_reveal_phone?: boolean;
             status?: string;
             status_text?: string;
             /** Format: int32 */
@@ -20111,6 +20491,21 @@ export interface components {
             remaining_attempts?: number;
             /** Format: date-time */
             lock_until?: string;
+        };
+        ApiResponseRecoveryVerificationRecordsVO: {
+            /** Format: int32 */
+            code?: number;
+            message?: string;
+            data?: components["schemas"]["RecoveryVerificationRecordsVO"];
+            trace_id?: string;
+            success?: boolean;
+        };
+        RecoveryVerificationRecordsVO: {
+            /** Format: int64 */
+            recovery_id?: number;
+            /** Format: int32 */
+            total?: number;
+            records?: components["schemas"]["Record"][];
         };
         ApiResponseMessageDeleteResult: {
             /** Format: int32 */
@@ -23629,6 +24024,26 @@ export interface operations {
             };
         };
     };
+    generateToday: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponseGenerateToday"];
+                };
+            };
+        };
+    };
     create_7: {
         parameters: {
             query?: never;
@@ -23953,6 +24368,35 @@ export interface operations {
             };
         };
     };
+    cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                farmId: number;
+                inviteId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    [key: string]: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponseObject"];
+                };
+            };
+        };
+    };
     enable_1: {
         parameters: {
             query?: never;
@@ -24053,7 +24497,7 @@ export interface operations {
             };
         };
     };
-    cancel: {
+    cancel_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -25044,6 +25488,52 @@ export interface operations {
             };
         };
     };
+    sessions: {
+        parameters: {
+            query: {
+                query: components["schemas"]["AiSessionQuery"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponsePageVOAiSessionItemVO"];
+                };
+            };
+        };
+    };
+    createSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AiSessionCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponseAiSessionDetailVO"];
+                };
+            };
+        };
+    };
     ask: {
         parameters: {
             query?: never;
@@ -25190,7 +25680,7 @@ export interface operations {
             };
         };
     };
-    cancel_1: {
+    cancel_2: {
         parameters: {
             query?: never;
             header?: {
@@ -25242,6 +25732,28 @@ export interface operations {
             };
         };
     };
+    list_7: {
+        parameters: {
+            query: {
+                query: components["schemas"]["AbnormalReportListQuery"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponsePageVOAbnormalReportListItemVO"];
+                };
+            };
+        };
+    };
     create_16: {
         parameters: {
             query?: never;
@@ -25284,6 +25796,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponseDiagnosisStateVO"];
+                };
+            };
+        };
+    };
+    revealPhone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponsePhoneRevealVO"];
                 };
             };
         };
@@ -25362,7 +25896,7 @@ export interface operations {
             };
         };
     };
-    list_7: {
+    list_8: {
         parameters: {
             query: {
                 query: components["schemas"]["NoticeQuery"];
@@ -25434,7 +25968,7 @@ export interface operations {
             };
         };
     };
-    cancel_2: {
+    cancel_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -25610,6 +26144,33 @@ export interface operations {
             };
         };
     };
+    importPrices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponseImportResultVO"];
+                };
+            };
+        };
+    };
     batchPublish: {
         parameters: {
             query?: never;
@@ -25634,7 +26195,7 @@ export interface operations {
             };
         };
     };
-    list_8: {
+    list_9: {
         parameters: {
             query: {
                 query: components["schemas"]["AdminKnowledgeQuery"];
@@ -25784,7 +26345,7 @@ export interface operations {
             };
         };
     };
-    list_9: {
+    list_10: {
         parameters: {
             query: {
                 query: components["schemas"]["KnowledgeTaskQuery"];
@@ -25856,7 +26417,7 @@ export interface operations {
             };
         };
     };
-    list_10: {
+    list_11: {
         parameters: {
             query?: never;
             header?: never;
@@ -26004,7 +26565,7 @@ export interface operations {
             };
         };
     };
-    list_11: {
+    list_12: {
         parameters: {
             query: {
                 query: components["schemas"]["ImmuneTemplateQuery"];
@@ -26412,6 +26973,32 @@ export interface operations {
             };
         };
     };
+    resendSms: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SmsResendRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponseSmsResendVO"];
+                };
+            };
+        };
+    };
     reject_3: {
         parameters: {
             query?: never;
@@ -26510,7 +27097,7 @@ export interface operations {
             };
         };
     };
-    list_12: {
+    list_13: {
         parameters: {
             query: {
                 query: components["schemas"]["DrugCatalogQuery"];
@@ -26578,6 +27165,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponseDrugCatalogDetailVO"];
+                };
+            };
+        };
+    };
+    importCatalog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponseDrugImportResultVO"];
                 };
             };
         };
@@ -26659,7 +27273,7 @@ export interface operations {
             };
         };
     };
-    list_13: {
+    list_14: {
         parameters: {
             query: {
                 query: components["schemas"]["AdminCourseQuery"];
@@ -26801,7 +27415,7 @@ export interface operations {
             };
         };
     };
-    list_14: {
+    list_15: {
         parameters: {
             query: {
                 query: components["schemas"]["ContentStatusQuery"];
@@ -26873,7 +27487,7 @@ export interface operations {
             };
         };
     };
-    list_15: {
+    list_16: {
         parameters: {
             query: {
                 query: components["schemas"]["ContentStatusQuery"];
@@ -27389,6 +28003,32 @@ export interface operations {
             };
         };
     };
+    resendSms_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SmsResendRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponseSmsResendVO"];
+                };
+            };
+        };
+    };
     reject_5: {
         parameters: {
             query?: never;
@@ -27437,6 +28077,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponseAuditResultVO"];
+                };
+            };
+        };
+    };
+    proxy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecoveryProxyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponseProxyRecoveryVO"];
                 };
             };
         };
@@ -27533,7 +28197,29 @@ export interface operations {
             };
         };
     };
-    changeBatch: {
+    deleteSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponseObject"];
+                };
+            };
+        };
+    };
+    changeSession: {
         parameters: {
             query?: never;
             header?: never;
@@ -28065,7 +28751,7 @@ export interface operations {
             };
         };
     };
-    list_16: {
+    list_17: {
         parameters: {
             query: {
                 biz_type: string;
@@ -28240,7 +28926,7 @@ export interface operations {
             };
         };
     };
-    list_17: {
+    list_18: {
         parameters: {
             query: {
                 query: components["schemas"]["MessageQuery"];
@@ -30050,7 +30736,7 @@ export interface operations {
             };
         };
     };
-    list_18: {
+    list_19: {
         parameters: {
             query: {
                 biz_type: string;
@@ -30556,28 +31242,6 @@ export interface operations {
             };
         };
     };
-    sessions: {
-        parameters: {
-            query: {
-                query: components["schemas"]["AiSessionQuery"];
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponsePageVOAiSessionItemVO"];
-                };
-            };
-        };
-    };
     messages: {
         parameters: {
             query: {
@@ -30819,7 +31483,7 @@ export interface operations {
             };
         };
     };
-    list_19: {
+    list_20: {
         parameters: {
             query: {
                 query: components["schemas"]["AdminUserQuery"];
@@ -30949,7 +31613,7 @@ export interface operations {
             };
         };
     };
-    list_20: {
+    list_21: {
         parameters: {
             query: {
                 query: components["schemas"]["OperationLogQuery"];
@@ -31035,7 +31699,7 @@ export interface operations {
             };
         };
     };
-    list_21: {
+    list_22: {
         parameters: {
             query: {
                 query: components["schemas"]["AdminMessageQuery"];
@@ -31077,7 +31741,7 @@ export interface operations {
             };
         };
     };
-    list_22: {
+    list_23: {
         parameters: {
             query: {
                 query: components["schemas"]["MarketPriceQuery"];
@@ -31139,6 +31803,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponseProgressVO"];
+                };
+            };
+        };
+    };
+    importTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
                 };
             };
         };
@@ -31430,7 +32114,7 @@ export interface operations {
             };
         };
     };
-    list_23: {
+    list_24: {
         parameters: {
             query: {
                 query: components["schemas"]["AdminFarmQuery"];
@@ -31474,7 +32158,7 @@ export interface operations {
             };
         };
     };
-    list_24: {
+    list_25: {
         parameters: {
             query: {
                 query: components["schemas"]["FarmChangeAdminQuery"];
@@ -31518,7 +32202,7 @@ export interface operations {
             };
         };
     };
-    list_25: {
+    list_26: {
         parameters: {
             query: {
                 query: components["schemas"]["FarmAuditAdminQuery"];
@@ -31609,6 +32293,26 @@ export interface operations {
             };
         };
     };
+    importTemplate_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+        };
+    };
     types: {
         parameters: {
             query?: never;
@@ -31693,7 +32397,7 @@ export interface operations {
             };
         };
     };
-    list_26: {
+    list_27: {
         parameters: {
             query: {
                 query: components["schemas"]["ChangeRequestAdminQuery"];
@@ -31934,7 +32638,7 @@ export interface operations {
             };
         };
     };
-    list_27: {
+    list_28: {
         parameters: {
             query: {
                 query: components["schemas"]["QaQuery"];
@@ -32064,7 +32768,7 @@ export interface operations {
             };
         };
     };
-    list_28: {
+    list_29: {
         parameters: {
             query: {
                 query: components["schemas"]["RecoveryAdminQuery"];
@@ -32104,6 +32808,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponseRecoveryDetailVO"];
+                };
+            };
+        };
+    };
+    verificationRecords: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponseRecoveryVerificationRecordsVO"];
                 };
             };
         };
