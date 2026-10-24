@@ -16,6 +16,7 @@ public class MarketPriceConfig extends BaseEntity {
     private Long categoryId;
     private Long breedId;
     private String priceType;
+    private String defaultUnit;
     private String status;
     private Integer sortNo;
 }

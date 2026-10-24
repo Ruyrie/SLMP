@@ -22,6 +22,18 @@ public class MarketPrice extends BaseEntity {
     private String priceType;
     private LocalDate priceDate;
     private BigDecimal price;
+    private BigDecimal prevPrice;
+    private LocalDate prevPriceDate;
+    private BigDecimal changeRate;
+    private Boolean isNeedReview;
+    private Long reviewerId;
+    private LocalDateTime reviewedAt;
+    private String reviewResult;
+    private String reviewNote;
+    private Long enteredBy;
+    private LocalDateTime enteredAt;
+    private String remark;
+    private Integer version;
     private String priceUnit;
     private String priceUnitText;
     private Boolean corrected;

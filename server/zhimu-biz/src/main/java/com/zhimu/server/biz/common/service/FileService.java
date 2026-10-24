@@ -34,4 +34,7 @@ public interface FileService {
 
     /** 文件存在且未删除时返回实体，否则 null */
     FileEntity find(Long id);
+
+    /** 管理端读取文件信息（通知配图、AI 提问附图等）：临时地址由服务端每次签发；不存在返回 null */
+    FileVO fileVo(Long id);
 }
