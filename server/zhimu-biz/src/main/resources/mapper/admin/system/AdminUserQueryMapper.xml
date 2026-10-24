@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.admin.system.mapper.readonly.AdminUserQueryMapper">
+
+    <sql id="userFilters">
+        AND u.status &lt;&gt; 'CANCELLED'
+        <if test="keyword != null and keyword != ''">
+            AND (u.name LIKE CONCAT('%', #{keyword}, '%')
+                 OR (#{keyword} REGEXP '^[0-9]{11}$' AND u.phone = #{keyword}))
+        </if>
+        <if test="role == 'OWNER'">
+            AND EXISTS (SELECT 1 FROM t_farm_member m JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                        WHERE m.user_id = u.id AND m.active_flag = 1 AND m.status = 'ACTIVE' AND m.role = 'OWNER')
+        </if>
+        <if test="role == 'MANAGER'">
+            AND EXISTS (SELECT 1 FROM t_farm_member m JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                        WHERE m.user_id = u.id AND m.active_flag = 1 AND m.status = 'ACTIVE' AND m.role = 'MANAGER')
+        </if>
+        <if test="role == 'STAFF'">
+            AND EXISTS (SELECT 1 FROM t_farm_member m JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                        WHERE m.user_id = u.id AND m.active_flag = 1 AND m.status = 'ACTIVE' AND m.role = 'STAFF')
+        </if>
+        <if test="role == 'NONE'">
+            AND NOT EXISTS (SELECT 1 FROM t_farm_member m JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                            WHERE m.user_id = u.id AND m.active_flag = 1 AND m.status = 'ACTIVE')
+        </if>
+        <if test="registeredFrom != null">AND u.created_at &gt;= #{registeredFrom}</if>
+        <if test="registeredTo != null">AND u.created_at &lt; DATE_ADD(#{registeredTo}, INTERVAL 1 DAY)</if>
+    </sql>
+
+    <sql id="userStatusFilter">
+        <if test="status != null and status != '' and status != 'ALL'">AND u.status = #{status}</if>
+    </sql>
+
+    <select id="selectUsers" resultType="com.zhimu.server.admin.system.query.AdminUserListRow">
+        SELECT u.id AS user_id,
+               u.name AS name,
+               u.phone AS phone,
+               u.status AS status,
+               u.version AS version,
+               u.created_at AS registered_at,
+               u.last_login_at AS last_login_at,
+               u.last_login_client AS last_login_client,
+               u.recovery_lock_until AS recovery_lock_until,
+               u.recovered_at AS recovered_at,
+               (SELECT GROUP_CONCAT(f.name ORDER BY f.id SEPARATOR '、')
+                FROM t_farm_member m JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                WHERE m.user_id = u.id AND m.active_flag = 1 AND m.status = 'ACTIVE') AS farm_names_text,
+               (SELECT COUNT(*) FROM t_farm_member m JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                WHERE m.user_id = u.id AND m.active_flag = 1 AND m.status = 'ACTIVE') AS farm_count,
+               (SELECT COUNT(*) FROM t_farm_member m JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                WHERE m.user_id = u.id AND m.active_flag = 1 AND m.status = 'ACTIVE'
+                  AND m.role = 'OWNER') AS owner_count,
+               (SELECT COUNT(*) FROM t_farm_member m JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                WHERE m.user_id = u.id AND m.active_flag = 1 AND m.status = 'ACTIVE'
+                  AND m.role = 'MANAGER') AS manager_count,
+               (SELECT COUNT(*) FROM t_farm_member m JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                WHERE m.user_id = u.id AND m.active_flag = 1 AND m.status = 'ACTIVE'
+                  AND m.role = 'STAFF') AS staff_count,
+               (SELECT COUNT(*) FROM t_farm f
+                WHERE f.owner_user_id = u.id AND f.deleted = 0
+                  AND f.audit_status = 'PENDING') AS farm_pending,
+               (SELECT COUNT(*) FROM t_account_recovery r
+                WHERE r.user_id = u.id AND r.status = 'PENDING') AS recovery_pending
+        FROM t_user u
+        WHERE 1 = 1
+        <include refid="userStatusFilter"/>
+        <include refid="userFilters"/>
+        ORDER BY u.created_at DESC, u.id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countUsers" resultType="long">
+        SELECT COUNT(*) FROM t_user u
+        WHERE 1 = 1
+        <include refid="userStatusFilter"/>
+        <include refid="userFilters"/>
+    </select>
+
+    <select id="countByStatus" resultType="long">
+        SELECT COUNT(*) FROM t_user u
+        WHERE 1 = 1
+        AND u.status = #{status}
+        AND u.status &lt;&gt; 'CANCELLED'
+        <if test="keyword != null and keyword != ''">
+            AND (u.name LIKE CONCAT('%', #{keyword}, '%')
+                 OR (#{keyword} REGEXP '^[0-9]{11}$' AND u.phone = #{keyword}))
+        </if>
+        <if test="role == 'OWNER'">
+            AND EXISTS (SELECT 1 FROM t_farm_member m JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                        WHERE m.user_id = u.id AND m.active_flag = 1 AND m.status = 'ACTIVE' AND m.role = 'OWNER')
+        </if>
+        <if test="role == 'MANAGER'">
+            AND EXISTS (SELECT 1 FROM t_farm_member m JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                        WHERE m.user_id = u.id AND m.active_flag = 1 AND m.status = 'ACTIVE' AND m.role = 'MANAGER')
+        </if>
+        <if test="role == 'STAFF'">
+            AND EXISTS (SELECT 1 FROM t_farm_member m JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                        WHERE m.user_id = u.id AND m.active_flag = 1 AND m.status = 'ACTIVE' AND m.role = 'STAFF')
+        </if>
+        <if test="role == 'NONE'">
+            AND NOT EXISTS (SELECT 1 FROM t_farm_member m JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                            WHERE m.user_id = u.id AND m.active_flag = 1 AND m.status = 'ACTIVE')
+        </if>
+        <if test="registeredFrom != null">AND u.created_at &gt;= #{registeredFrom}</if>
+        <if test="registeredTo != null">AND u.created_at &lt; DATE_ADD(#{registeredTo}, INTERVAL 1 DAY)</if>
+    </select>
+
+    <select id="selectUser" resultType="com.zhimu.server.biz.account.entity.User">
+        SELECT * FROM t_user WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="selectUserFarms" resultType="com.zhimu.server.admin.system.query.AdminUserFarmRow">
+        SELECT f.id AS farm_id,
+               f.name AS farm_name,
+               m.role AS role,
+               f.audit_status AS audit_status,
+               f.disabled AS disabled,
+               f.frozen AS frozen,
+               c.count_unit AS count_unit,
+               c.name AS category_name,
+               f.scale AS scale,
+               m.joined_at AS joined_at,
+               (SELECT COALESCE(SUM(b.current_count), 0) FROM t_batch b
+                WHERE b.farm_id = f.id AND b.status = 'ACTIVE' AND b.deleted = 0) AS stock_count,
+               (SELECT COUNT(*) FROM t_member_pen mp
+                WHERE mp.member_id = m.id AND mp.farm_id = f.id) AS pen_count
+        FROM t_farm_member m
+                 JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                 LEFT JOIN t_category c ON c.id = f.main_category_id
+        WHERE m.user_id = #{userId}
+          AND m.active_flag = 1
+          AND m.status = 'ACTIVE'
+        ORDER BY m.joined_at ASC, f.id ASC
+    </select>
+
+    <select id="selectLoginLogs" resultType="com.zhimu.server.admin.system.query.AdminLoginLogRow">
+        SELECT created_at AS time,
+               client_type AS client_type,
+               ip_region AS ip_region,
+               result AS result,
+               fail_reason AS fail_reason
+        FROM t_login_log
+        WHERE user_id = #{userId}
+          AND created_at &gt;= #{since}
+        ORDER BY created_at DESC, id DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectLatestRecoveryCodeCreatedAt" resultType="java.time.LocalDateTime">
+        SELECT created_at FROM t_recovery_code
+        WHERE user_id = #{userId}
+        ORDER BY id DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectLatestRecoveryStatus" resultType="java.lang.String">
+        SELECT status FROM t_account_recovery
+        WHERE user_id = #{userId}
+        ORDER BY id DESC
+        LIMIT 1
+    </select>
+</mapper>

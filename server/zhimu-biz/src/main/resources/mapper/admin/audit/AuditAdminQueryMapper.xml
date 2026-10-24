@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.admin.audit.mapper.AuditAdminQueryMapper">
+
+    <!-- ===================== ADM-R01 四类待审核数 ===================== -->
+    <select id="selectQueueStats" resultType="com.zhimu.server.admin.audit.query.QueueStatRow">
+        SELECT 'FARM_AUDIT' AS queue,
+               COUNT(*) AS count,
+               MIN(submitted_at) AS earliest_at,
+               COALESCE(SUM(CASE WHEN submitted_at &lt; #{overdueBefore} THEN 1 ELSE 0 END), 0) AS overdue_count
+        FROM t_farm_audit WHERE status = 'PENDING'
+        UNION ALL
+        SELECT 'FARM_CHANGE', COUNT(*), MIN(created_at),
+               COALESCE(SUM(CASE WHEN created_at &lt; #{overdueBefore} THEN 1 ELSE 0 END), 0)
+        FROM t_farm_change WHERE status = 'PENDING'
+        UNION ALL
+        SELECT 'CHANGE_REQUEST', COUNT(*), MIN(submitted_at),
+               COALESCE(SUM(CASE WHEN submitted_at &lt; #{overdueBefore} THEN 1 ELSE 0 END), 0)
+        FROM t_change_request WHERE status = 'PENDING'
+        UNION ALL
+        SELECT 'ACCOUNT_RECOVERY', COUNT(*), MIN(created_at),
+               COALESCE(SUM(CASE WHEN created_at &lt; #{overdueBefore} THEN 1 ELSE 0 END), 0)
+        FROM t_account_recovery WHERE status = 'PENDING' AND new_phone_verified_at IS NOT NULL
+    </select>
+
+    <select id="countSellableDatePending" resultType="long">
+        SELECT COUNT(*) FROM t_change_request
+        WHERE status = 'PENDING' AND impact_sellable_date = 1
+    </select>
+
+    <!-- ===================== ADM-R02 注册审核列表 ===================== -->
+    <sql id="farmAuditWhere">
+        <where>
+            <if test="status != null and status != ''">AND fa.status = #{status}</if>
+            <if test="keyword != null and keyword != ''">
+                AND (f.name LIKE CONCAT('%', #{keyword}, '%')
+                     OR u.name LIKE CONCAT('%', #{keyword}, '%')
+                     OR (#{keyword} REGEXP '^[0-9]{11}$' AND u.phone = #{keyword}))
+            </if>
+            <if test="categoryId != null">AND f.main_category_id = #{categoryId}</if>
+            <if test="provincePrefix != null and provincePrefix != ''">
+                AND LEFT(f.adcode, 2) = #{provincePrefix}
+            </if>
+            <if test="submitType == 'FIRST'">AND fa.submit_no = 1</if>
+            <if test="submitType == 'RESUBMIT'">AND fa.submit_no &gt; 1</if>
+        </where>
+    </sql>
+
+    <select id="selectFarmAudits" resultType="com.zhimu.server.admin.audit.vo.FarmAuditItemVO">
+        SELECT fa.id AS audit_id,
+               f.id AS farm_id,
+               f.name AS farm_name,
+               u.name AS owner_name,
+               u.phone AS owner_phone,
+               c.name AS category_name,
+               f.scale AS scale,
+               CASE c.count_unit WHEN 'HEAD' THEN '头' WHEN 'BIRD' THEN '只' ELSE c.count_unit END AS count_unit_text,
+               CONCAT(f.province, ' · ', f.district) AS region_text,
+               COALESCE(JSON_LENGTH(fa.snapshot_json, '$.qualificationFileIds'), 0) AS image_count,
+               fa.submit_no AS submit_no,
+               fa.submitted_at AS submitted_at,
+               fa.status AS status,
+               a.name AS auditor_name,
+               fa.audited_at AS audited_at,
+               fa.audit_opinion AS audit_opinion,
+               fa.reject_reason AS reject_reason
+        FROM t_farm_audit fa
+                 JOIN t_farm f ON f.id = fa.farm_id AND f.deleted = 0
+                 JOIN t_user u ON u.id = f.owner_user_id
+                 LEFT JOIN t_category c ON c.id = f.main_category_id
+                 LEFT JOIN t_admin a ON a.id = fa.audited_by
+        <include refid="farmAuditWhere"/>
+        <choose>
+            <when test="status == 'PENDING'">ORDER BY fa.submitted_at ASC, fa.id ASC</when>
+            <otherwise>ORDER BY fa.audited_at DESC, fa.id DESC</otherwise>
+        </choose>
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countFarmAudits" resultType="long">
+        SELECT COUNT(*)
+        FROM t_farm_audit fa
+                 JOIN t_farm f ON f.id = fa.farm_id AND f.deleted = 0
+                 JOIN t_user u ON u.id = f.owner_user_id
+        <include refid="farmAuditWhere"/>
+    </select>
+
+    <sql id="farmAuditOverdueWhere">
+        WHERE fa.status = 'PENDING'
+          AND fa.submitted_at &lt; #{overdueBefore}
+          AND f.deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND (f.name LIKE CONCAT('%', #{keyword}, '%')
+                 OR u.name LIKE CONCAT('%', #{keyword}, '%')
+                 OR (#{keyword} REGEXP '^[0-9]{11}$' AND u.phone = #{keyword}))
+        </if>
+        <if test="categoryId != null">AND f.main_category_id = #{categoryId}</if>
+        <if test="provincePrefix != null and provincePrefix != ''">AND LEFT(f.adcode, 2) = #{provincePrefix}</if>
+        <if test="submitType == 'FIRST'">AND fa.submit_no = 1</if>
+        <if test="submitType == 'RESUBMIT'">AND fa.submit_no &gt; 1</if>
+    </sql>
+
+    <select id="countOverdueFarmAudits" resultType="long">
+        SELECT COUNT(*)
+        FROM t_farm_audit fa
+                 JOIN t_farm f ON f.id = fa.farm_id
+                 JOIN t_user u ON u.id = f.owner_user_id
+        <include refid="farmAuditOverdueWhere"/>
+    </select>
+
+    <select id="selectOverdueFarmNames" resultType="java.lang.String">
+        SELECT f.name
+        FROM t_farm_audit fa
+                 JOIN t_farm f ON f.id = fa.farm_id
+                 JOIN t_user u ON u.id = f.owner_user_id
+        <include refid="farmAuditOverdueWhere"/>
+        GROUP BY f.name
+        ORDER BY MIN(fa.submitted_at) ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectFarmAudit" resultType="com.zhimu.server.biz.farm.entity.FarmAudit">
+        SELECT * FROM t_farm_audit WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="selectFarmIncludingDeleted" resultType="com.zhimu.server.biz.farm.entity.Farm">
+        SELECT * FROM t_farm WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="selectUser" resultType="com.zhimu.server.biz.account.entity.User">
+        SELECT * FROM t_user WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="selectFarmAuditsOfFarm" resultType="com.zhimu.server.biz.farm.entity.FarmAudit">
+        SELECT * FROM t_farm_audit WHERE farm_id = #{farmId} ORDER BY submit_no DESC, id DESC
+    </select>
+
+    <select id="selectAdminName" resultType="java.lang.String">
+        SELECT name FROM t_admin WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="selectOwnerFarms" resultType="com.zhimu.server.admin.audit.query.FarmBriefRow">
+        SELECT f.id AS farm_id,
+               f.name AS name,
+               f.audit_status AS audit_status,
+               c.name AS category_name,
+               f.latitude AS latitude,
+               f.longitude AS longitude
+        FROM t_farm f
+                 LEFT JOIN t_category c ON c.id = f.main_category_id
+        WHERE f.owner_user_id = #{ownerUserId}
+          AND f.deleted = 0
+          AND f.id &lt;&gt; #{excludeFarmId}
+        ORDER BY f.id ASC
+    </select>
+
+    <select id="selectFiles" resultType="com.zhimu.server.biz.common.entity.FileEntity">
+        SELECT * FROM t_file
+        WHERE deleted = 0 AND id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+
+    <!-- ===================== ADM-R06 资料变更列表 ===================== -->
+    <sql id="farmChangeWhere">
+        <where>
+            <if test="status != null and status != ''">AND fc.status = #{status}</if>
+            <if test="keyword != null and keyword != ''">
+                AND (f.name LIKE CONCAT('%', #{keyword}, '%')
+                     OR u.name LIKE CONCAT('%', #{keyword}, '%')
+                     OR (#{keyword} REGEXP '^[0-9]{11}$' AND u.phone = #{keyword}))
+            </if>
+            <if test="changeItem == 'NAME'">AND fc.name_changed = 1</if>
+            <if test="changeItem == 'ADDRESS'">AND fc.address_changed = 1</if>
+            <if test="changeItem == 'QUALIFICATION'">AND fc.qual_changed = 1</if>
+        </where>
+    </sql>
+
+    <select id="selectFarmChanges" resultType="com.zhimu.server.admin.audit.vo.FarmChangeItemVO">
+        SELECT fc.id AS change_id,
+               f.id AS farm_id,
+               f.name AS farm_name,
+               u.name AS owner_name,
+               u.phone AS owner_phone,
+               fc.name_changed AS name_changed,
+               fc.address_changed AS address_changed,
+               fc.qual_changed AS qual_changed,
+               fc.remark AS remark,
+               fc.created_at AS submitted_at,
+               fc.status AS status,
+               a.name AS auditor_name,
+               fc.audited_at AS audited_at,
+               fc.audit_opinion AS audit_opinion,
+               fc.reject_reason AS reject_reason
+        FROM t_farm_change fc
+                 JOIN t_farm f ON f.id = fc.farm_id AND f.deleted = 0
+                 JOIN t_user u ON u.id = f.owner_user_id
+                 LEFT JOIN t_admin a ON a.id = fc.audited_by
+        <include refid="farmChangeWhere"/>
+        <choose>
+            <when test="status == 'PENDING'">ORDER BY fc.created_at ASC, fc.id ASC</when>
+            <otherwise>ORDER BY fc.audited_at DESC, fc.id DESC</otherwise>
+        </choose>
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countFarmChanges" resultType="long">
+        SELECT COUNT(*)
+        FROM t_farm_change fc
+                 JOIN t_farm f ON f.id = fc.farm_id AND f.deleted = 0
+                 JOIN t_user u ON u.id = f.owner_user_id
+        <include refid="farmChangeWhere"/>
+    </select>
+
+    <select id="selectFarmChangeStats" resultType="com.zhimu.server.admin.audit.query.FarmChangeStatsRow">
+        SELECT COALESCE(SUM(CASE WHEN fc.status = 'PENDING' THEN 1 ELSE 0 END), 0) AS pending_count,
+               MIN(CASE WHEN fc.status = 'PENDING' THEN fc.created_at END) AS earliest_at,
+               COALESCE(SUM(CASE WHEN fc.status = 'APPROVED' AND fc.audited_at &gt;= #{since}
+                                      AND fc.audited_at &lt;= #{now} THEN 1 ELSE 0 END), 0) AS approved_30d,
+               COALESCE(SUM(CASE WHEN fc.status = 'APPROVED' AND fc.audited_at &gt;= #{since}
+                                      AND fc.audited_at &lt;= #{now} AND fc.name_changed = 1 THEN 1 ELSE 0 END), 0) AS approved_by_name,
+               COALESCE(SUM(CASE WHEN fc.status = 'APPROVED' AND fc.audited_at &gt;= #{since}
+                                      AND fc.audited_at &lt;= #{now} AND fc.address_changed = 1 THEN 1 ELSE 0 END), 0) AS approved_by_address,
+               COALESCE(SUM(CASE WHEN fc.status = 'APPROVED' AND fc.audited_at &gt;= #{since}
+                                      AND fc.audited_at &lt;= #{now} AND fc.qual_changed = 1 THEN 1 ELSE 0 END), 0) AS approved_by_qualification,
+               COALESCE(SUM(CASE WHEN fc.status = 'REJECTED' AND fc.audited_at &gt;= #{since}
+                                      AND fc.audited_at &lt;= #{now} THEN 1 ELSE 0 END), 0) AS rejected_30d
+        FROM t_farm_change fc
+                 JOIN t_farm f ON f.id = fc.farm_id AND f.deleted = 0
+                 JOIN t_user u ON u.id = f.owner_user_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (f.name LIKE CONCAT('%', #{keyword}, '%')
+                     OR u.name LIKE CONCAT('%', #{keyword}, '%')
+                     OR (#{keyword} REGEXP '^[0-9]{11}$' AND u.phone = #{keyword}))
+            </if>
+            <if test="changeItem == 'NAME'">AND fc.name_changed = 1</if>
+            <if test="changeItem == 'ADDRESS'">AND fc.address_changed = 1</if>
+            <if test="changeItem == 'QUALIFICATION'">AND fc.qual_changed = 1</if>
+        </where>
+    </select>
+
+    <select id="selectFarmChange" resultType="com.zhimu.server.biz.farm.entity.FarmChange">
+        SELECT * FROM t_farm_change WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="countFarmStock" resultType="long">
+        SELECT COALESCE(SUM(current_count), 0) FROM t_batch
+        WHERE farm_id = #{farmId} AND status = 'ACTIVE' AND deleted = 0
+    </select>
+
+    <select id="countFarmActiveMembers" resultType="long">
+        SELECT COUNT(*) FROM t_farm_member
+        WHERE farm_id = #{farmId} AND active_flag = 1 AND status = 'ACTIVE'
+    </select>
+
+    <select id="countOwnerFarmName" resultType="long">
+        SELECT COUNT(*) FROM t_farm
+        WHERE owner_user_id = #{ownerUserId}
+          AND deleted = 0
+          AND id &lt;&gt; #{excludeFarmId}
+          AND name = #{name}
+    </select>
+
+    <!-- ===================== ADM-R10 修改申请列表 ===================== -->
+    <sql id="changeRequestWhere">
+        <where>
+            <if test="status != null and status != ''">AND cr.status = #{status}</if>
+            <if test="keyword != null and keyword != ''">
+                AND (f.name LIKE CONCAT('%', #{keyword}, '%')
+                     OR su.name LIKE CONCAT('%', #{keyword}, '%')
+                     OR b.batch_no = #{keyword}
+                     OR cr.record_locator LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="sourceModule != null and sourceModule != ''">AND cr.source_module = #{sourceModule}</if>
+            <if test="impact == 'STOCK'">AND cr.impact_stock = 1</if>
+            <if test="impact == 'COST'">AND cr.impact_cost = 1</if>
+            <if test="impact == 'INVENTORY'">AND cr.impact_inventory = 1</if>
+            <if test="impact == 'SELLABLE_DATE'">AND cr.impact_sellable_date = 1</if>
+            <if test="impact == 'INCOME'">AND cr.impact_income = 1</if>
+            <if test="impact == 'STATS'">AND cr.impact_stats = 1</if>
+        </where>
+    </sql>
+
+    <select id="selectChangeRequests" resultType="com.zhimu.server.admin.audit.vo.ChangeRequestAdminItemVO">
+        SELECT cr.id AS id,
+               cr.request_no AS request_no,
+               cr.biz_type AS biz_type,
+               cr.record_locator AS record_locator,
+               cr.farm_id AS farm_id,
+               f.name AS farm_name,
+               cr.source_module AS source_module,
+               cr.change_type AS change_type,
+               cr.field_name AS field_name,
+               cr.before_display AS before_display,
+               cr.after_display AS after_display,
+               cr.impact_stock AS impact_stock,
+               cr.impact_cost AS impact_cost,
+               cr.impact_inventory AS impact_inventory,
+               cr.impact_sellable_date AS impact_sellable_date,
+               cr.impact_income AS impact_income,
+               cr.impact_stats AS impact_stats,
+               su.name AS submitter_name,
+               cr.submitter_role AS submitter_role,
+               cr.submitted_at AS submitted_at,
+               cr.status AS status,
+               a.name AS reviewer_name,
+               cr.reviewed_at AS reviewed_at
+        FROM t_change_request cr
+                 JOIN t_farm f ON f.id = cr.farm_id AND f.deleted = 0
+                 JOIN t_user su ON su.id = cr.submitted_by
+                 LEFT JOIN t_batch b ON b.id = cr.batch_id
+                 LEFT JOIN t_admin a ON a.id = cr.reviewed_by
+        <include refid="changeRequestWhere"/>
+        <choose>
+            <when test="status == 'PENDING'">ORDER BY cr.submitted_at ASC, cr.id ASC</when>
+            <otherwise>ORDER BY cr.reviewed_at DESC, cr.id DESC</otherwise>
+        </choose>
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countChangeRequests" resultType="long">
+        SELECT COUNT(*)
+        FROM t_change_request cr
+                 JOIN t_farm f ON f.id = cr.farm_id AND f.deleted = 0
+                 JOIN t_user su ON su.id = cr.submitted_by
+                 LEFT JOIN t_batch b ON b.id = cr.batch_id
+        <include refid="changeRequestWhere"/>
+    </select>
+
+    <select id="countChangeRequestsByStatus" resultType="long">
+        SELECT COUNT(*)
+        FROM t_change_request cr
+                 JOIN t_farm f ON f.id = cr.farm_id AND f.deleted = 0
+                 JOIN t_user su ON su.id = cr.submitted_by
+                 LEFT JOIN t_batch b ON b.id = cr.batch_id
+        WHERE cr.status = #{status}
+        <if test="keyword != null and keyword != ''">
+            AND (f.name LIKE CONCAT('%', #{keyword}, '%')
+                 OR su.name LIKE CONCAT('%', #{keyword}, '%')
+                 OR b.batch_no = #{keyword}
+                 OR cr.record_locator LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="sourceModule != null and sourceModule != ''">AND cr.source_module = #{sourceModule}</if>
+        <if test="impact == 'STOCK'">AND cr.impact_stock = 1</if>
+        <if test="impact == 'COST'">AND cr.impact_cost = 1</if>
+        <if test="impact == 'INVENTORY'">AND cr.impact_inventory = 1</if>
+        <if test="impact == 'SELLABLE_DATE'">AND cr.impact_sellable_date = 1</if>
+        <if test="impact == 'INCOME'">AND cr.impact_income = 1</if>
+        <if test="impact == 'STATS'">AND cr.impact_stats = 1</if>
+    </select>
+
+    <select id="selectChangeRequest" resultType="com.zhimu.server.biz.common.entity.ChangeRequest">
+        SELECT * FROM t_change_request WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="selectFarmName" resultType="java.lang.String">
+        SELECT name FROM t_farm WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="selectUserName" resultType="java.lang.String">
+        SELECT name FROM t_user WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="selectBatchNo" resultType="java.lang.String">
+        SELECT batch_no FROM t_batch WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="selectChangeRequestHistory"
+            resultType="com.zhimu.server.admin.audit.query.ChangeRequestHistoryRow">
+        SELECT cr.id AS id,
+               cr.field_name AS field_name,
+               cr.before_display AS before_display,
+               cr.after_display AS after_display,
+               a.name AS reviewer_name,
+               cr.reviewed_at AS reviewed_at,
+               cr.status AS status,
+               cr.recalc_summary AS recalc_summary
+        FROM t_change_request cr
+                 LEFT JOIN t_admin a ON a.id = cr.reviewed_by
+        WHERE cr.biz_type = #{bizType}
+          AND cr.biz_id = #{bizId}
+          AND cr.id &lt;&gt; #{excludeId}
+          AND cr.status IN ('APPROVED', 'REJECTED')
+        ORDER BY cr.reviewed_at DESC, cr.id DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- ===================== ADM-R14 账号找回列表 ===================== -->
+    <sql id="recoveryWhere">
+        <where>
+            <if test="tab == 'PENDING'">AND ar.status = 'PENDING'</if>
+            <if test="tab == 'HANDLED'">AND ar.status IN ('APPROVED', 'REJECTED')</if>
+            AND ar.new_phone_verified_at IS NOT NULL
+            <if test="keyword != null and keyword != ''">
+                AND (u.name LIKE CONCAT('%', #{keyword}, '%')
+                     OR (#{keyword} REGEXP '^[0-9]{11}$'
+                         AND (ar.old_phone = #{keyword} OR ar.new_phone = #{keyword})))
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectRecoveries" resultType="com.zhimu.server.admin.audit.vo.RecoveryItemVO">
+        SELECT ar.id AS id,
+               ar.user_id AS user_id,
+               u.name AS user_name,
+               ar.old_phone AS old_phone,
+               ar.new_phone AS new_phone,
+               (ar.new_phone_verified_at IS NOT NULL) AS new_phone_verified,
+               ar.code_attempt_no AS code_attempt_no,
+               ar.code_fail_count AS code_fail_count,
+               ar.description AS description,
+               ar.submit_channel AS submit_channel,
+               pa.name AS proxy_admin_name,
+               ar.created_at AS submitted_at,
+               ar.status AS status,
+               a.name AS handled_by_name,
+               ar.handled_at AS handled_at,
+               ar.version AS version
+        FROM t_account_recovery ar
+                 JOIN t_user u ON u.id = ar.user_id
+                 LEFT JOIN t_admin a ON a.id = ar.handled_by
+                 LEFT JOIN t_admin pa ON pa.id = ar.proxy_admin_id
+        <include refid="recoveryWhere"/>
+        <choose>
+            <when test="tab == 'PENDING'">ORDER BY ar.created_at ASC, ar.id ASC</when>
+            <otherwise>ORDER BY ar.handled_at DESC, ar.id DESC</otherwise>
+        </choose>
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countRecoveries" resultType="long">
+        SELECT COUNT(*)
+        FROM t_account_recovery ar
+                 JOIN t_user u ON u.id = ar.user_id
+        <include refid="recoveryWhere"/>
+    </select>
+
+    <select id="countRecoveryByStatus" resultType="long">
+        SELECT COUNT(*) FROM t_account_recovery
+        WHERE status = #{status} AND new_phone_verified_at IS NOT NULL
+    </select>
+
+    <select id="selectAccountRecovery" resultType="com.zhimu.server.biz.account.entity.AccountRecovery">
+        SELECT * FROM t_account_recovery WHERE id = #{id} LIMIT 1
+    </select>
+
+    <select id="selectUserByPhone" resultType="com.zhimu.server.biz.account.entity.User">
+        SELECT * FROM t_user WHERE phone = #{phone} LIMIT 1
+    </select>
+
+    <select id="selectLatestRecoveryCodeCreatedAt" resultType="java.time.LocalDateTime">
+        SELECT created_at FROM t_recovery_code
+        WHERE user_id = #{userId}
+        ORDER BY id DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectRecoveryFarms" resultType="com.zhimu.server.admin.audit.query.RecoveryFarmRow">
+        SELECT f.id AS farm_id,
+               f.name AS farm_name,
+               m.role AS role,
+               GROUP_CONCAT(p.pen_name ORDER BY p.id SEPARATOR '、') AS pen_text
+        FROM t_farm_member m
+                 JOIN t_farm f ON f.id = m.farm_id AND f.deleted = 0
+                 LEFT JOIN t_member_pen mp ON mp.member_id = m.id AND mp.farm_id = m.farm_id
+                 LEFT JOIN t_pen p ON p.id = mp.pen_id AND p.farm_id = mp.farm_id
+        WHERE m.user_id = #{userId}
+          AND m.active_flag = 1
+          AND m.status = 'ACTIVE'
+        GROUP BY f.id, f.name, m.role
+        ORDER BY f.id
+    </select>
+
+    <select id="selectRecoveryVerifyLogs"
+            resultType="com.zhimu.server.admin.audit.query.RecoveryVerifyLogRow">
+        SELECT l.id AS id,
+               l.created_at AS checked_at,
+               l.old_phone AS old_phone,
+               l.result AS result,
+               l.remaining_attempts AS remaining_attempts,
+               l.lock_until AS lock_until,
+               l.submit_channel AS submit_channel,
+               l.proxy_admin_id AS proxy_admin_id,
+               a.name AS proxy_admin_name
+        FROM t_recovery_verify_log l
+                 LEFT JOIN t_admin a ON a.id = l.proxy_admin_id
+        WHERE (l.user_id = #{userId} OR l.old_phone = #{oldPhone})
+        ORDER BY l.created_at DESC, l.id DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="countUserRecoveriesSince" resultType="long">
+        SELECT COUNT(*) FROM t_account_recovery
+        WHERE user_id = #{userId}
+          AND created_at &gt;= #{since}
+          <if test="excludeId != null">AND id &lt;&gt; #{excludeId}</if>
+    </select>
+</mapper>
