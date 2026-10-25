@@ -39,6 +39,15 @@ public class TodoConvert {
 
     private static final DecimalFormat AMOUNT = new DecimalFormat("#,##0.##");
 
+    /** 非今天的待办在标题前显示日期，避免历史逾期和今日同标题任务看起来重复。 */
+    private static String displayTitle(Todo todo, LocalDate today) {
+        String title = todo.getTitle();
+        if (title == null || todo.getDueDate() == null || todo.getDueDate().equals(today)) {
+            return title;
+        }
+        return TodayText.monthDay(todo.getDueDate()) + " · " + title;
+    }
+
     private final TodoRemindMapper remindMapper;
     private final TodoLinks links;
     private final AccountQueryService accountQuery;
@@ -56,7 +65,7 @@ public class TodoConvert {
         TodoStatus status = TodayText.displayStatus(todo, now);
         vo.setDisplayStatus(status.name());
         vo.setDisplayStatusText(status.getText());
-        vo.setTitle(todo.getTitle());
+        vo.setTitle(displayTitle(todo, today));
         vo.setSubText(subText(todo, staff, today));
         vo.setTailText(TodayText.tailText(todo, today, now));
         vo.setDueDate(todo.getDueDate() == null ? null : todo.getDueDate().toString());

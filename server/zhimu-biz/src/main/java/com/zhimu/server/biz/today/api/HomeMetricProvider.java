@@ -72,6 +72,16 @@ public interface HomeMetricProvider {
         return null;
     }
 
+    /** 仍在休药期的批次数；没有返回 0 */
+    default int withdrawalBatchCount(Long farmId) {
+        return 0;
+    }
+
+    /** 最近一个休药结束日期；没有返回 null */
+    default java.time.LocalDate nearestWithdrawalReleaseDate(Long farmId) {
+        return null;
+    }
+
     /** 负责栏舍（员工首页 my_pens 的栏舍信息由模块04 补全） */
     default List<PenMetric> pens(FarmContext.FarmMember member) {
         return List.of();

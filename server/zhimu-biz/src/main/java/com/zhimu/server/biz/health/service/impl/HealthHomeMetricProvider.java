@@ -35,13 +35,7 @@ public class HealthHomeMetricProvider implements HomeMetricProvider {
             return Map.of();
         }
         LocalDate today = BeijingTime.today();
-        Map<Long, LocalDate> releaseByBatch = new HashMap<>();
-        for (MedicationRecord record : recordMapper.selectList(Wrappers.<MedicationRecord>lambdaQuery()
-                .eq(MedicationRecord::getFarmId, member.farmId())
-                .gt(MedicationRecord::getWithdrawalEndDate, today))) {
-            releaseByBatch.merge(record.getBatchId(), record.getWithdrawalEndDate(),
-                    (first, second) -> first.isAfter(second) ? first : second);
-        }
+        Map<Long, LocalDate> releaseByBatch = releaseByBatch(member.farmId(), today);
         Map<Long, Integer> result = new LinkedHashMap<>();
         for (var pen : referenceMapper.selectActiveBatchPens(member.farmId())) {
             if (member.isStaff() && !member.canAccessPen(pen.getPenId())) {
@@ -54,5 +48,32 @@ public class HealthHomeMetricProvider implements HomeMetricProvider {
             }
         }
         return result;
+    }
+
+    @Override
+    public int withdrawalBatchCount(Long farmId) {
+        if (farmId == null) {
+            return 0;
+        }
+        return releaseByBatch(farmId, BeijingTime.today()).size();
+    }
+
+    @Override
+    public LocalDate nearestWithdrawalReleaseDate(Long farmId) {
+        if (farmId == null) {
+            return null;
+        }
+        return releaseByBatch(farmId, BeijingTime.today()).values().stream().min(LocalDate::compareTo).orElse(null);
+    }
+
+    private Map<Long, LocalDate> releaseByBatch(Long farmId, LocalDate today) {
+        Map<Long, LocalDate> releaseByBatch = new HashMap<>();
+        for (MedicationRecord record : recordMapper.selectList(Wrappers.<MedicationRecord>lambdaQuery()
+                .eq(MedicationRecord::getFarmId, farmId)
+                .gt(MedicationRecord::getWithdrawalEndDate, today))) {
+            releaseByBatch.merge(record.getBatchId(), record.getWithdrawalEndDate(),
+                    (first, second) -> first.isAfter(second) ? first : second);
+        }
+        return releaseByBatch;
     }
 }

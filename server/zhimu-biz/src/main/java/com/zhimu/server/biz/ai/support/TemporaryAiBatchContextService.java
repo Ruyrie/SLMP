@@ -26,14 +26,20 @@ public class TemporaryAiBatchContextService implements AiBatchContextService {
             batch(3004L, "ZM2609-038", "生猪", "保育猪", "杜长大", 2002L, "2 号保育舍", 63, 200),
             batch(3002L, "ZM2610-019", "生猪", "育肥猪", "杜长大", 2004L, "4 号育肥舍", 82, 150));
 
+    /** 西岭鸡场在栏批次；家禽按“只”计数。 */
+    private static final List<LinkedBatchVO> POULTRY_BATCHES = List.of(
+            poultryBatch(3201L, "ZM2610-026", "肉鸡", "肉鸡", "白羽肉鸡", 2202L, "2 号鸡舍", 18, 9300),
+            poultryBatch(3202L, "ZM2610-027", "肉鸡", "肉鸡", "白羽肉鸡", 2201L, "1 号鸡舍", 18, 9300),
+            poultryBatch(3211L, "ZM2603-015", "肉鸡", "种鸡", "白羽肉鸡", 2301L, "1 号种鸡舍", 221, 3200),
+            poultryBatch(3212L, "ZM2603-016", "肉鸡", "种鸡", "白羽肉鸡", 2302L, "2 号种鸡舍", 213, 2800),
+            poultryBatch(3213L, "ZM2603-017", "肉鸡", "种鸡", "白羽肉鸡", 2303L, "种禽舍", 218, 3000));
+
     @Override
     public List<LinkedBatchVO> listLinkable(Long farmId, boolean staff, Iterable<Long> penIds) {
-        if (!Objects.equals(farmId, 1001L)) {
-            return new ArrayList<>();
-        }
+        List<LinkedBatchVO> source = source(farmId);
         Set<Long> allowed = staff ? toSet(penIds) : null;
         List<LinkedBatchVO> result = new ArrayList<>();
-        for (LinkedBatchVO batch : BATCHES) {
+        for (LinkedBatchVO batch : source) {
             if (allowed == null || allowed.contains(batch.getPenId())) {
                 result.add(copy(batch));
             }
@@ -43,11 +49,11 @@ public class TemporaryAiBatchContextService implements AiBatchContextService {
 
     @Override
     public LinkedBatchVO resolve(Long farmId, Long batchId, boolean staff, Iterable<Long> penIds) {
-        if (farmId == null || batchId == null || !Objects.equals(farmId, 1001L)) {
+        if (farmId == null || batchId == null) {
             return null;
         }
         Set<Long> allowed = staff ? toSet(penIds) : null;
-        for (LinkedBatchVO batch : BATCHES) {
+        for (LinkedBatchVO batch : source(farmId)) {
             if (batch.getBatchId().equals(batchId)) {
                 if (allowed != null && !allowed.contains(batch.getPenId())) {
                     return null;
@@ -56,6 +62,13 @@ public class TemporaryAiBatchContextService implements AiBatchContextService {
             }
         }
         return null;
+    }
+
+    private static List<LinkedBatchVO> source(Long farmId) {
+        if (Objects.equals(farmId, 1001L)) {
+            return BATCHES;
+        }
+        return Objects.equals(farmId, 1002L) ? POULTRY_BATCHES : List.of();
     }
 
     @Override
@@ -100,6 +113,20 @@ public class TemporaryAiBatchContextService implements AiBatchContextService {
 
     private static LinkedBatchVO batch(Long id, String no, String category, String stage, String breed, Long penId,
                                        String penName, int dayAge, int currentCount) {
+        LinkedBatchVO vo = baseBatch(id, no, category, stage, breed, penId, penName, dayAge, currentCount);
+        vo.setCountUnitText("头");
+        return vo;
+    }
+
+    private static LinkedBatchVO poultryBatch(Long id, String no, String category, String stage, String breed,
+                                              Long penId, String penName, int dayAge, int currentCount) {
+        LinkedBatchVO vo = baseBatch(id, no, category, stage, breed, penId, penName, dayAge, currentCount);
+        vo.setCountUnitText("只");
+        return vo;
+    }
+
+    private static LinkedBatchVO baseBatch(Long id, String no, String category, String stage, String breed,
+                                           Long penId, String penName, int dayAge, int currentCount) {
         LinkedBatchVO vo = new LinkedBatchVO();
         vo.setBatchId(id);
         vo.setBatchNo(no);
@@ -110,7 +137,6 @@ public class TemporaryAiBatchContextService implements AiBatchContextService {
         vo.setPenName(penName);
         vo.setDayAge(dayAge);
         vo.setCurrentCount(currentCount);
-        vo.setCountUnitText("头");
         return vo;
     }
 }

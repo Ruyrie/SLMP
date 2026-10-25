@@ -112,14 +112,14 @@ class TodoQueryServiceImplTest {
 
         TodoPageVO result = service.today(query, 10001L);
 
-        assertThat(result.getTotal()).isEqualTo(3);
+        assertThat(result.getTotal()).isEqualTo(2);
         assertThat(result.getTabCounts())
-                .containsEntry("ALL", 3)
+                .containsEntry("ALL", 2)
                 .containsEntry("OVERDUE", 1)
-                .containsEntry("WORK", 2)
+                .containsEntry("WORK", 1)
                 .containsEntry("BIZ_WARN", 1);
         assertThat(result.getList()).extracting(TodoItemVO::getTodoId)
-                .containsExactly(90101L, 90105L, 90108L);
+                .containsExactly(90105L, 90108L);
     }
 
     @Test

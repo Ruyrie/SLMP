@@ -98,7 +98,13 @@ public class HomeServiceImpl implements HomeService {
             vo.setStaffMetrics(staffMetrics(member, visiblePending, today, now));
             vo.setMyPens(myPens(member, visiblePending, today, now));
         } else {
-            vo.setOwnerMetrics(ownerMetrics(member, visiblePending, today, now));
+            List<Todo> all = new ArrayList<>();
+            for (Todo todo : todosOfFarm(member.farmId())) {
+                if (todoScope.canView(todo, member)) {
+                    all.add(todo);
+                }
+            }
+            vo.setOwnerMetrics(ownerMetrics(member, all, today, now));
             vo.setAiHint(aiHint(visiblePending, today, now));
         }
         return vo;
@@ -106,7 +112,7 @@ public class HomeServiceImpl implements HomeService {
 
     // ===================== 养殖户块 =====================
 
-    private OwnerMetricsVO ownerMetrics(FarmContext.FarmMember member, List<Todo> pending, LocalDate today,
+    private OwnerMetricsVO ownerMetrics(FarmContext.FarmMember member, List<Todo> todos, LocalDate today,
                                         LocalDateTime now) {
         OwnerMetricsVO vo = new OwnerMetricsVO();
         int todayCount = 0;
@@ -116,11 +122,15 @@ public class HomeServiceImpl implements HomeService {
         int maxOverdueDays = 0;
         BigDecimal receivableAmount = BigDecimal.ZERO;
         List<String> warningNames = new ArrayList<>();
-        for (Todo todo : pending) {
-            if (isTodayList(todo, today, now)) {
+        for (Todo todo : todos) {
+            if (isDueOn(todo, today)) {
                 todayCount++;
             }
-            boolean overdue = isOverdue(todo, now);
+            boolean open = TodoStatus.PENDING.name().equals(todo.getStatus());
+            if (!open) {
+                continue;
+            }
+            boolean overdue = isDateOverdue(todo, today);
             if (overdue) {
                 overdueCount++;
             }
@@ -150,6 +160,21 @@ public class HomeServiceImpl implements HomeService {
         vo.setReceivableOverdueCount(receivableCount);
         vo.setReceivableMaxOverdueDays(maxOverdueDays);
         vo.setReceivableAmount(receivableAmount.setScale(2, RoundingMode.HALF_UP));
+
+        // 休药批次与最近可出栏日：由 health 模块的 provider 提供
+        int withdrawalBatches = 0;
+        LocalDate nearestRelease = null;
+        for (HomeMetricProvider provider : metricProviders) {
+            withdrawalBatches = Math.max(withdrawalBatches, provider.withdrawalBatchCount(member.farmId()));
+            LocalDate release = provider.nearestWithdrawalReleaseDate(member.farmId());
+            if (release != null && (nearestRelease == null || release.isBefore(nearestRelease))) {
+                nearestRelease = release;
+            }
+        }
+        vo.setWithdrawalBatchCount(withdrawalBatches);
+        vo.setWithdrawalReleaseDate(nearestRelease);
+        vo.setWithdrawalDaysLeft(nearestRelease == null ? null
+                : Math.toIntExact(ChronoUnit.DAYS.between(today, nearestRelease)));
 
         // 待模块04：存栏数、批次数、栏舍占用率（provider 注册后自动补）；未接入时返回 0，字段保持齐全
         vo.setStockCount(stockCount(member.farmId()));
@@ -352,6 +377,21 @@ public class HomeServiceImpl implements HomeService {
         return todoMapper.selectList(Wrappers.<Todo>lambdaQuery()
                 .eq(Todo::getFarmId, farmId)
                 .eq(Todo::getStatus, TodoStatus.PENDING.name()));
+    }
+
+    /** 本场全部未删除待办（含已完成），业主首页“今日应办”与今日列表口径一致。 */
+    private List<Todo> todosOfFarm(Long farmId) {
+        return todoMapper.selectList(Wrappers.<Todo>lambdaQuery()
+                .eq(Todo::getFarmId, farmId));
+    }
+
+    private static boolean isDueOn(Todo todo, LocalDate today) {
+        return todo.getDueDate() != null && todo.getDueDate().equals(today)
+                && !TodoStatus.IGNORED.name().equals(todo.getStatus());
+    }
+
+    private static boolean isDateOverdue(Todo todo, LocalDate today) {
+        return todo.getDueDate() != null && todo.getDueDate().isBefore(today);
     }
 
     private List<Todo> doneToday(FarmContext.FarmMember member, LocalDate today) {

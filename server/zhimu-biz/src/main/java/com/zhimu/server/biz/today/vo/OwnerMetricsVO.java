@@ -27,4 +27,10 @@ public class OwnerMetricsVO {
     private List<String> warningNames;
     /** 管理视图 */
     private BigDecimal receivableAmount;
+    /** 仍在休药期的批次数 */
+    private Integer withdrawalBatchCount;
+    /** 最近一个休药结束日期 */
+    private java.time.LocalDate withdrawalReleaseDate;
+    /** 距最近休药结束还有几天 */
+    private Integer withdrawalDaysLeft;
 }

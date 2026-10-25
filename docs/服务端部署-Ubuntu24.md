@@ -84,6 +84,10 @@ sudo bash update-full.sh
 
 - V9_15–V9_17：健康记录及其库存/成本关联、近期示例行情。
 - V9_20–V9_24：演示日期锚点、西岭鸡场业务链与成员消息、栏舍负责人、跨场数据与失效待办修正。
+- V9_25：按全量库存流水重算兽药批号结存/金额/均价与每条流水的 after 值，补齐 6111 的期初结存。
+- V9_26：补齐近 7 天饲喂任务与投喂记录，回填已完成任务的 record_id。
+- V9_27：西岭鸡场员工李明、AI 会话、异常上报、盘点与免疫计划样例。
+- V9_28：修复 3004 出栏建议失败态，补齐消毒计划 160401 首日 2004 舍任务。
 - 后续演示日期锚点仅管理显式登记的样例行；服务重启时对齐真实今天，不移动用户自行新增的记录。
 - 饲喂、免疫、消毒、巡检与今日待办按业务来源持续生成；已登记、手工忽略和取消的记录保留操作结果。
 
@@ -110,3 +114,24 @@ curl -fsS -H 'X-Client: ADMIN_WEB' http://8.208.12.217/admin/v1/auth/captcha
 
 调整后 `free -m` 应保留至少 300MB available；若持续低于 100MB，优先检查 JVM 堆和 MySQL 连接数，再考虑升配。
 
+## 备份与健康巡检
+
+云端已安装两个 cron 任务（`/etc/cron.d/zhimu-ops`）：
+
+- `/usr/local/sbin/zhimu-backup.sh`：每天 03:30 备份数据库到 `/opt/zhimu/backups/db/`，保留 14 天。
+- `/usr/local/sbin/zhimu-monitor.sh`：每 5 分钟检查 `/api/v1/ping`；连续 3 次失败自动 `systemctl restart zhimu`，并在 available 低于 100MB 时写入 `/var/log/zhimu-monitor.log`。
+
+日志按 `/etc/logrotate.d/zhimu` 每周轮转。
+
+## HTTP 与 HTTPS
+
+当前演示使用 `http://8.208.12.217/`，Android 只在 `lib_common/src/main/res/xml/common_core_network_security_config.xml` 里为这个 IP 放行明文，其他域名默认禁止明文。换公网 IP 时需要同步改这个文件并重新打 APK。
+
+切换到 HTTPS 的步骤：
+
+1. 用 `8.208.12.217.nip.io`（自动解析到当前 IP）或自有域名申请证书：
+   `sudo apt install -y certbot python3-certbot-nginx`，`sudo certbot --nginx -d <域名>`。
+2. Nginx 增加 443 server，80 跳转 443；把 `web/deploy/nginx-zhimu-web.conf` 同步更新，避免下次部署覆盖证书配置。
+3. `/etc/zhimu/env` 同步改为 `MINIO_PUBLIC_ENDPOINT=https://<域名>`、`HLS_BASE_URL=https://<域名>/zmt-course/hls`、`ALLOWED_ORIGINS=https://<域名>`、`COOKIE_SECURE=true`。
+4. App 的 `local.properties` 改为 `zmt.baseUrl=https://<域名>/`，删除明文放行 domain-config 后重新打 APK。
+5. 验证头像签名地址、管理端 Cookie、App 登录与上传下载。

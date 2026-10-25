@@ -97,11 +97,18 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
             throw new BizException(ErrorCode.PARAM_INVALID, "员工只能按全部或已逾期筛选");
         }
 
-        List<Todo> all = pendingOfFarm(member.farmId());
+        // “今日”= 今天应办的全部任务（含已完成），与 /todos?date=今天 一致；历史未完成单独进逾期页签。
+        List<Todo> all = todosOfFarm(member.farmId());
         List<Todo> todayList = new ArrayList<>();
+        List<Todo> overdueList = new ArrayList<>();
         for (Todo todo : all) {
-            if (todoScope.canView(todo, member) && isTodayList(todo, today, now)) {
+            if (!todoScope.canView(todo, member) || isIgnored(todo)) {
+                continue;
+            }
+            if (isDueOn(todo, today)) {
                 todayList.add(todo);
+            } else if (isOpen(todo) && isDateOverdue(todo, today)) {
+                overdueList.add(todo);
             }
         }
         if (query.getPenId() != null) {
@@ -109,26 +116,25 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
                 throw new BizException(ErrorCode.PEN_FORBIDDEN);
             }
             todayList.removeIf(todo -> !query.getPenId().equals(todo.getPenId()));
+            overdueList.removeIf(todo -> !query.getPenId().equals(todo.getPenId()));
         }
 
         Map<String, Integer> tabCounts = new LinkedHashMap<>();
         tabCounts.put("ALL", todayList.size());
-        tabCounts.put("OVERDUE", (int) todayList.stream().filter(t -> isOverdue(t, now)).count());
+        tabCounts.put("OVERDUE", overdueList.size());
         if (!staff) {
             tabCounts.put("WORK", (int) todayList.stream().filter(t -> "WORK".equals(t.getCategory())).count());
             tabCounts.put("BIZ_WARN", (int) todayList.stream()
                     .filter(t -> !"WORK".equals(t.getCategory())).count());
         }
 
-        List<Todo> filtered = new ArrayList<>(todayList);
-        if (FILTER_OVERDUE.equals(filter)) {
-            filtered.removeIf(t -> !isOverdue(t, now));
-        } else if (FILTER_WORK.equals(filter)) {
+        List<Todo> filtered = new ArrayList<>(FILTER_OVERDUE.equals(filter) ? overdueList : todayList);
+        if (FILTER_WORK.equals(filter)) {
             filtered.removeIf(t -> !"WORK".equals(t.getCategory()));
         } else if (FILTER_BIZ_WARN.equals(filter)) {
             filtered.removeIf(t -> "WORK".equals(t.getCategory()));
         }
-        filtered.sort(todayComparator(now));
+        filtered.sort(FILTER_OVERDUE.equals(filter) ? dayComparator() : todayComparator(now));
 
         int page = query.pageOrDefault();
         int size = query.sizeOrDefault();
@@ -140,7 +146,9 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         TodoPageVO vo = new TodoPageVO(items, filtered.size(), page, size);
         vo.setTabCounts(tabCounts);
         if (staff) {
-            vo.setPenCounts(penCounts(todayList));
+            List<Todo> penSource = new ArrayList<>(todayList);
+            penSource.addAll(overdueList);
+            vo.setPenCounts(penCounts(penSource));
         } else {
             vo.setPenCounts(List.of());
         }
@@ -275,8 +283,8 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         Map<Long, String> farmNames = farmNames(userId);
         List<Todo> matches = new ArrayList<>();
         for (Todo todo : visibleTodos(scope)) {
-            if (isOpen(todo) && todo.getDueDate() != null && todo.getDueDate().isBefore(today)
-                    && todo.getOverdueAt() != null && now.isAfter(todo.getOverdueAt())) {
+            // 与工作台“已逾期”页签一致：只看业务日期早于今天的未完成待办。
+            if (isOpen(todo) && isDateOverdue(todo, today)) {
                 matches.add(todo);
             }
         }
@@ -789,6 +797,29 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
                 .eq(Todo::getFarmId, farmId)
                 .eq(Todo::getStatus, TodoStatus.PENDING.name())
                 .orderByAsc(Todo::getSortTime));
+    }
+
+    /** 本场全部未删除待办（含已完成/已忽略），今日视图需要把已完成也算进“今日应办”。 */
+    private List<Todo> todosOfFarm(Long farmId) {
+        return todoMapper.selectList(Wrappers.<Todo>lambdaQuery()
+                .eq(Todo::getFarmId, farmId)
+                .orderByAsc(Todo::getSortTime));
+    }
+
+    private static boolean isIgnored(Todo todo) {
+        return TodoStatus.IGNORED.name().equals(todo.getStatus());
+    }
+
+    /** 业务日是否就是指定日期；没有 due_date 的历史待办按 businessDay 兜底。 */
+    private boolean isDueOn(Todo todo, LocalDate day) {
+        if (todo.getDueDate() != null) {
+            return todo.getDueDate().equals(day);
+        }
+        return day.equals(businessDay(todo, day));
+    }
+
+    private static boolean isDateOverdue(Todo todo, LocalDate today) {
+        return todo.getDueDate() != null && todo.getDueDate().isBefore(today);
     }
 
     private List<Todo> visibleTodos(TodoScope.Scope scope) {

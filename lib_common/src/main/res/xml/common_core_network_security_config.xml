@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 网络安全配置（03 号文档 6.1 节）：debug 版额外信任用户安装的证书以便抓包 -->
-<!-- 临时：暂无域名/HTTPS，全局允许明文 HTTP，便于公网 IP 变更后直连；上线 HTTPS 后改回 false -->
+<!-- 网络安全配置（03 号文档 6.1 节）：默认禁止明文 HTTP，仅为当前演示公网 IP 放行。
+     切换 HTTPS 后删除 domain-config，并把 base-config 保持为 false。 -->
 <network-security-config>
-    <base-config cleartextTrafficPermitted="true">
+    <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>
     </base-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">8.208.12.217</domain>
+    </domain-config>
     <debug-overrides>
         <trust-anchors>
             <certificates src="user" />

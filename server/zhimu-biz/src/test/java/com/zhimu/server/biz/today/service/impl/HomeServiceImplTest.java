@@ -99,7 +99,7 @@ class HomeServiceImplTest {
         var metrics = home.getOwnerMetrics();
         assertThat(metrics).isNotNull();
         assertThat(metrics.getTodayTodoCount()).isEqualTo(3);
-        assertThat(metrics.getOverdueCount()).isEqualTo(2);
+        assertThat(metrics.getOverdueCount()).isEqualTo(1);
         assertThat(metrics.getWarningCount()).isEqualTo(1);
         assertThat(metrics.getWarningNames()).containsExactly("育肥全价料库存不足");
         assertThat(metrics.getReceivableOverdueCount()).isEqualTo(1);
