@@ -111,6 +111,10 @@ html .v-list-item-subtitle { font-size: 12px; line-height: 18px; opacity: 1; col
 html .v-list-item--active { color: var(--primary); }
 html .v-list-item--active > .v-list-item__overlay { opacity: 1; background: var(--primary-subtle); }
 html .v-list-item:hover > .v-list-item__overlay { opacity: 1; background: var(--fill-1); }
+/* 选中/悬停底色是不透明色，内容必须压在 overlay 上面，否则标题会被盖住。 */
+html .v-list-item__content,
+html .v-list-item__prepend,
+html .v-list-item__append { position: relative; z-index: 1; }
 html .v-list-item__prepend > .v-icon { opacity: 1; color: var(--text-2); font-size: 18px; }
 html .v-list-item__spacer { width: 10px !important; }
 .v-overlay__content > .v-list, .v-overlay__content > .v-sheet, .v-overlay__content > .v-card { border-radius: var(--radius-md) !important; box-shadow: var(--shadow-popover) !important; }

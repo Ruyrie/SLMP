@@ -68,6 +68,7 @@ public class NoticeAdminService {
     private final OperationLogService operationLogService;
     private final MessageService messageService;
     private final ContentExportService exportService;
+    private final com.zhimu.server.biz.common.api.BizMediaService mediaService;
 
     // ===================== 查询 =====================
 
@@ -309,6 +310,8 @@ public class NoticeAdminService {
         fillAudience(notice, request, action, true);
         applyAction(notice, action, request.getScheduledAt(), true);
         noticeMapper.insert(notice);
+        mediaService.replace(BizType.NOTICE, notice.getId(), null,
+                notice.getImageFileId() == null ? List.of() : List.of(notice.getImageFileId()));
         saveTargets(notice.getId(), notice.getScopeType(), request);
         log(notice, action.equals("SCHEDULE") ? "SCHEDULE" : action.equals("SEND_NOW") ? "SEND" : "CREATE",
                 null, null, action.equals("SEND_NOW") ? "预计送达 " + notice.getEstAccountCount() + " 个账号" : null,
@@ -366,6 +369,8 @@ public class NoticeAdminService {
             throw conflictOrState(id);
         }
         saveTargets(id, update.getScopeType(), request);
+        mediaService.replace(BizType.NOTICE, id, null,
+                request.getImageFileId() == null ? List.of() : List.of(request.getImageFileId()));
         log(update, action.equals("SCHEDULE") ? "SCHEDULE" : action.equals("SEND_NOW") ? "SEND" : "UPDATE",
                 null, null, null, afterOf(update));
         Notice saved = noticeMapper.selectById(id);
@@ -452,6 +457,7 @@ public class NoticeAdminService {
             throw ContentErrors.versionConflict();
         }
         noticeMapper.deleteById(id);
+        mediaService.removeAll(BizType.NOTICE, id);
         log(notice, "DELETE", null, null, null, null);
     }
 

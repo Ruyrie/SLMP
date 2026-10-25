@@ -13,6 +13,7 @@ const admin = useAdminStore()
 const store = useAdminFarmsStore()
 
 const regionName = ref('')
+const categoryName = ref('')
 const viewerOpen = ref(false)
 const viewerIndex = ref(0)
 
@@ -141,8 +142,15 @@ function clearProvince(): void {
   store.applyFilters()
 }
 
+function clearCategory(): void {
+  store.query.category_id = null
+  categoryName.value = ''
+  store.applyFilters()
+}
+
 function resetFilters(): void {
   regionName.value = ''
+  categoryName.value = ''
   store.resetFilters()
 }
 
@@ -150,9 +158,14 @@ onMounted(() => {
   const keyword = typeof route.query.keyword === 'string' ? route.query.keyword : ''
   const province = typeof route.query.province_code === 'string' ? route.query.province_code : ''
   const region = typeof route.query.region_name === 'string' ? route.query.region_name : ''
-  if (keyword) store.query.keyword = keyword
-  if (province) store.query.province_code = province
+  const category = Number(route.query.category_id || 0)
+  const categoryLabel = typeof route.query.category_name === 'string' ? route.query.category_name : ''
+  store.query.status = 'ALL'
+  store.query.keyword = keyword
+  store.query.province_code = province
+  store.query.category_id = category > 0 ? category : null
   regionName.value = region
+  categoryName.value = categoryLabel
   void store.fetchList()
   if (route.query.id) void store.openDetailById(Number(route.query.id))
 })
@@ -196,6 +209,10 @@ onMounted(() => {
         <zw-tag v-if="store.query.province_code" type="primary" icon="location_on">
           {{ regionName || `省份 ${store.query.province_code}` }}
           <button class="chip-close" type="button" aria-label="清除省份筛选" @click="clearProvince"><zw-icon name="close" :size="14" /></button>
+        </zw-tag>
+        <zw-tag v-if="store.query.category_id" type="primary" icon="category">
+          {{ categoryName || `品类 ${store.query.category_id}` }}
+          <button class="chip-close" type="button" aria-label="清除品类筛选" @click="clearCategory"><zw-icon name="close" :size="14" /></button>
         </zw-tag>
         <v-btn variant="text" color="primary" @click="store.applyFilters()">查询</v-btn>
         <v-btn variant="text" @click="resetFilters">重置</v-btn>

@@ -123,7 +123,7 @@ public class HomeServiceImpl implements HomeService {
         BigDecimal receivableAmount = BigDecimal.ZERO;
         List<String> warningNames = new ArrayList<>();
         for (Todo todo : todos) {
-            if (isDueOn(todo, today)) {
+            if (isDueOn(todo, today) && TodoStatus.PENDING.name().equals(todo.getStatus())) {
                 todayCount++;
             }
             boolean open = TodoStatus.PENDING.name().equals(todo.getStatus());

@@ -86,6 +86,7 @@ public class FileServiceImpl implements FileService {
     private final ImageProcessor imageProcessor;
     private final FileVoAssembler fileVoAssembler;
     private final FarmMemberCache farmMemberCache;
+    private final java.util.List<com.zhimu.server.biz.common.api.BusinessMediaAccess> businessMediaAccess;
 
     @Override
     @Transactional
@@ -347,6 +348,11 @@ public class FileServiceImpl implements FileService {
     private boolean canView(FileEntity file, Long userId) {
         if (userId == null) {
             return false;
+        }
+        for (var access : businessMediaAccess) {
+            if (access.scene().name().equals(file.getScene())) {
+                return access.canViewFile(file.getId(), userId);
+            }
         }
         if (userId.equals(file.getCreatedBy())) {
             return true;

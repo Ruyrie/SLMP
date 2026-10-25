@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** 平台概览（ADM-S06–S09）。 */
@@ -38,11 +39,12 @@ public class OverviewAdminController {
         return ApiResponse.ok(overviewService.farmMap(query));
     }
 
-    /** ADM-S08 地区明细浮层。 */
+    /** ADM-S08 地区明细浮层；传入 category_id 时只统计该主要品类。 */
     @AdminPermission("WA-S02:VIEW")
     @GetMapping("/regions/{regionCode}")
-    public ApiResponse<RegionDetailVO> regionDetail(@PathVariable("regionCode") String regionCode) {
-        return ApiResponse.ok(overviewService.regionDetail(regionCode));
+    public ApiResponse<RegionDetailVO> regionDetail(@PathVariable("regionCode") String regionCode,
+                                                     @RequestParam(name = "category_id", required = false) Long categoryId) {
+        return ApiResponse.ok(overviewService.regionDetail(regionCode, categoryId));
     }
 
     /** ADM-S09 近 30 天趋势。 */

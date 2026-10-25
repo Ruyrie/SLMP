@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useOverviewStore } from '@/stores/system/overview'
+import { regionPrefix, useOverviewStore } from '@/stores/system/overview'
 import type { FarmMapCluster, OverviewPendingItem } from '@/api/system'
-import { dateRange, fmtDate, fmtDateTime, fmtShortDate, fmtTime, fmtValue, hoursText, mapPoint, pct, shortRegion } from '@/views/system/shared'
+import { dateRange, fmtDate, fmtDateTime, fmtShortDate, fmtTime, fmtValue, hoursText, pct } from '@/views/system/shared'
+import AdminFarmMap from './components/AdminFarmMap.vue'
 
 const router = useRouter()
 const store = useOverviewStore()
@@ -20,11 +21,13 @@ const activeFarmsRatio = computed(() => activeStat.value?.farms_7d_ratio ?? acti
 const pendingItems = computed(() => data.value?.pending?.items || [])
 const mapClusters = computed(() => store.map?.clusters || [])
 const region = computed(() => store.region)
+const selectedCategory = computed(() => store.selectedCategory)
 
 const asOfText = computed(() => (data.value?.as_of ? `${fmtDate(data.value.as_of)} ${fmtTime(data.value.as_of)}` : '—'))
-const mapFootLeft = computed(
-  () => `点聚合标记查看该省的养殖场；已驳回待重新提交的 ${farmStat.value?.rejected ?? 0} 个不在地图上显示`
-)
+const mapFootLeft = computed(() => {
+  const prefix = selectedCategory.value ? `当前筛选：${selectedCategory.value.category_name}；` : ''
+  return `${prefix}点聚合标记查看该省的养殖场；已驳回待重新提交的 ${farmStat.value?.rejected ?? 0} 个不在地图上显示`
+})
 
 const mapLegend = computed(() => [
   { type: 'primary', label: `已通过 ${store.map?.legend?.approved || 0}` },
@@ -39,15 +42,46 @@ const todoIcon: Record<string, string> = {
   ACCOUNT_RECOVERY: 'manage_accounts'
 }
 
+const categoryRows = computed(() => (data.value?.category_dist || []).filter((item) => item.count > 0))
+const visibleCategoryRows = computed(() => {
+  if (!store.categoryId) return categoryRows.value
+  return categoryRows.value.filter((item) => item.category_id === store.categoryId)
+})
+const categoryTotal = computed(() => visibleCategoryRows.value.reduce((sum, item) => sum + item.count, 0))
+const CATEGORY_COLORS = ['chart-1', 'chart-2', 'chart-3', 'chart-ref', 'fill-3']
 const categoryItems = computed(() =>
-  (data.value?.category_dist || []).map((item) => ({
-    label: item.species_text,
-    value: item.count,
-    text: `${item.count} 个 · ${pct(item.ratio)}`
-  }))
+  visibleCategoryRows.value.map((item) => {
+    const index = categoryRows.value.findIndex((row) => row.category_id === item.category_id)
+    return {
+      label: item.category_name || item.species_text,
+      value: item.count,
+      color: CATEGORY_COLORS[(index < 0 ? 0 : index) % CATEGORY_COLORS.length],
+      text: `${item.count} 个 · ${categoryTotal.value ? pct(item.count / categoryTotal.value) : '0.0%'}`
+    }
+  })
 )
+const categorySub = computed(() => {
+  if (selectedCategory.value) return `${selectedCategory.value.category_name} · 已通过 ${categoryTotal.value} 个`
+  return `已通过 ${categoryTotal.value} 个`
+})
+const categoryFilterItems = computed(() => [
+  { title: '全部品类', value: 0 },
+  ...(data.value?.category_dist || []).map((item) => ({
+    title: item.count > 0 ? `${item.category_name}（${item.count}）` : `${item.category_name}（0）`,
+    value: item.category_id
+  }))
+])
 
-const categoryTotal = computed(() => farmStat.value?.approved || 0)
+const categoryEmptyText = computed(() => {
+  if (!selectedCategory.value) return '暂无数据'
+  const pending = store.map?.legend?.pending || 0
+  return pending ? `该品类还没有已通过的养殖场，另有 ${pending} 个待审核` : '该品类还没有已通过的养殖场'
+})
+
+function onCategoryChange(value: unknown): void {
+  const id = Number(value)
+  void store.setCategory(Number.isFinite(id) && id > 0 ? id : null)
+}
 const monthItems = computed(() => data.value?.month_audit?.items || [])
 const monthRange = computed(() => dateRange(data.value?.month_audit?.range_start, data.value?.month_audit?.range_end))
 
@@ -100,16 +134,6 @@ const recentItems = computed(() =>
   })
 )
 
-function clusterPoint(cluster: FarmMapCluster): { x: number; y: number } {
-  return mapPoint(cluster.lng, cluster.lat)
-}
-
-function clusterTone(cluster: FarmMapCluster): string {
-  if (cluster.frozen > 0) return 'error'
-  if (cluster.pending > 0) return 'warning'
-  return 'primary'
-}
-
 function goPending(item: OverviewPendingItem): void {
   if (!item.page_code) return
   void router.push({ name: item.page_code })
@@ -129,22 +153,45 @@ function openRegion(cluster: FarmMapCluster): void {
   void store.openRegion(cluster)
 }
 
-function goFarms(): void {
+function mapDrillQuery(): Record<string, string> {
+  const query: Record<string, string> = {}
   const code = region.value?.region_code
-  if (code) void router.push({ name: 'WA-S04', query: { province_code: code, region_name: region.value?.region_name || '' } })
-  else void router.push({ name: 'WA-S04' })
+  if (code) {
+    // 列表接口按 adcode 前 2 位筛省，150000 这类省级编码要先转成 15。
+    query.province_code = regionPrefix(code)
+    query.region_name = region.value?.region_name || ''
+  }
+  if (selectedCategory.value) {
+    query.category_id = String(selectedCategory.value.category_id)
+    query.category_name = selectedCategory.value.category_name || ''
+  }
+  return query
+}
+
+function goFarms(): void {
+  void router.push({ name: 'WA-S04', query: mapDrillQuery() })
 }
 
 function goAudit(): void {
-  void router.push({ name: 'WA-R01' })
+  void router.push({ name: 'WA-R01', query: mapDrillQuery() })
 }
 
 function refreshAll(): void {
   void store.refresh()
 }
 
+function refreshOnVisible(): void {
+  if (document.visibilityState !== 'visible' || store.status !== 'ready') return
+  void store.refresh()
+}
+
 onMounted(() => {
   void store.load()
+  document.addEventListener('visibilitychange', refreshOnVisible)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', refreshOnVisible)
 })
 </script>
 
@@ -248,47 +295,35 @@ onMounted(() => {
         <zw-card title="养殖场分布" sub="按省份聚合 · 按审核状态着色" flush class="ov-map-card">
           <template #extra>
             <v-select
-              :model-value="store.categoryGroup"
-              :items="[
-                { title: '全部品类', value: '' },
-                { title: '猪', value: 'PIG' },
-                { title: '禽', value: 'POULTRY' },
-                { title: '牛', value: 'CATTLE' },
-                { title: '羊', value: 'SHEEP' }
-              ]"
-              class="zw-w-120"
+              :model-value="store.categoryId ?? 0"
+              :items="categoryFilterItems"
+              class="zw-w-160"
               density="compact"
               hide-details
-              @update:model-value="store.setCategory(String($event))"
+              :menu-props="{ maxHeight: 320 }"
+              @update:model-value="onCategoryChange"
             />
           </template>
           <div v-if="store.mapLoading" class="map-loading"><v-skeleton-loader type="image@1" /></div>
           <zw-empty v-else-if="store.mapError" icon="cloud_off" title="地图没有加载出来" :desc="store.mapError" tone="error">
             <v-btn variant="text" color="primary" @click="store.fetchMap()">重新加载</v-btn>
           </zw-empty>
-          <div v-else-if="!mapClusters.length" class="ov-map-empty">
-            <zw-icon name="map" :size="36" />
-            <div class="ov-nodata-title">暂无数据</div>
-            <div class="zw-faint">当前筛选下还没有已通过或待审核的养殖场</div>
-          </div>
-          <zw-map v-else :height="330" regions :legend="mapLegend">
-            <button
-              v-for="cluster in mapClusters"
-              :key="cluster.region_code"
-              type="button"
-              class="ov-cluster"
-              :class="[`ov-cluster--${clusterTone(cluster)}`, { on: region?.region_code && cluster.region_code.startsWith(region.region_code) }]"
-              :style="{ left: `${clusterPoint(cluster).x}%`, top: `${clusterPoint(cluster).y}%` }"
-              :aria-label="`${cluster.region_name} ${cluster.total} 个养殖场`"
-              @click="openRegion(cluster)"
-            >
-              <span class="ov-cluster-label">{{ shortRegion(cluster.region_name) }}</span>
-              <span class="ov-cluster-count num">{{ cluster.total }}</span>
-            </button>
-
+          <AdminFarmMap
+            :clusters="mapClusters"
+            :legend="mapLegend"
+            :selected-code="region?.region_code || ''"
+            height="100%"
+            class="ov-real-map"
+            @select="openRegion"
+            @map-click="store.closeRegion()"
+          >
             <div v-if="store.regionOpen" class="ov-pop" @click.stop>
               <div class="ov-pop-head">
-                <span class="ov-pop-title">{{ region?.region_name || '地区明细' }}<template v-if="region"> · {{ region.total }} 个养殖场</template></span>
+                <span class="ov-pop-title">
+                  {{ region?.region_name || '地区明细' }}
+                  <template v-if="region"> · {{ region.total }} 个养殖场</template>
+                  <template v-if="selectedCategory"> · {{ selectedCategory.category_name }}</template>
+                </span>
                 <button class="zw-icon-btn" type="button" aria-label="关闭" @click="store.closeRegion()">
                   <zw-icon name="close" :size="16" />
                 </button>
@@ -313,7 +348,7 @@ onMounted(() => {
                 </div>
               </template>
             </div>
-          </zw-map>
+          </AdminFarmMap>
           <div class="ov-map-foot">
             <span>{{ mapFootLeft }}</span>
             <span>已停用的 {{ farmStat?.disabled ?? 0 }} 个计入“已通过”</span>
@@ -321,7 +356,7 @@ onMounted(() => {
         </zw-card>
 
         <div class="ov-side">
-          <zw-card title="品类分布" :sub="`已通过 ${categoryTotal} 个`">
+          <zw-card title="品类分布" :sub="categorySub">
             <zw-donut
               v-if="categoryItems.length"
               :items="categoryItems"
@@ -330,7 +365,7 @@ onMounted(() => {
               :size="148"
               :thickness="20"
             />
-            <div v-else class="ov-nodata">暂无数据</div>
+            <div v-else class="ov-nodata">{{ categoryEmptyText }}</div>
           </zw-card>
           <zw-card title="本月审核" :sub="monthRange">
             <table v-if="monthItems.length" class="ov-month">
@@ -477,7 +512,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
 }
-.ov-map-card :deep(.zw-map) {
+.ov-map-card :deep(.ov-real-map) {
   flex: 1;
   height: auto !important;
   min-height: 330px;
@@ -564,7 +599,7 @@ onMounted(() => {
   position: absolute;
   left: 24px;
   top: 48px;
-  z-index: 6;
+  z-index: 900;
   width: 320px;
   padding: 14px 16px 12px;
   border-radius: var(--radius-md);

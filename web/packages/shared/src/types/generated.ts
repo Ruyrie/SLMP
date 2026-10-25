@@ -8371,6 +8371,7 @@ export interface components {
             user_id?: number;
             name?: string;
             name_initial?: string;
+            avatar_url?: string;
             phone_masked?: string;
             role?: string;
             role_text?: string;
@@ -10896,6 +10897,7 @@ export interface components {
             /** Format: int32 */
             invite_pending_count?: number;
             avatars?: string[];
+            avatar_urls?: string[];
             unassigned_pens?: components["schemas"]["PenBriefVO"][];
             show_unassigned_banner?: boolean;
         };
@@ -14549,6 +14551,12 @@ export interface components {
             pen_occupancy_rate?: number;
             warning_names?: string[];
             receivable_amount?: number;
+            /** Format: int32 */
+            withdrawal_batch_count?: number;
+            /** Format: date */
+            withdrawal_release_date?: string;
+            /** Format: int32 */
+            withdrawal_days_left?: number;
         };
         StaffMetricsVO: {
             /** Format: int32 */
@@ -15260,6 +15268,7 @@ export interface components {
             user_id?: number;
             name?: string;
             name_initial?: string;
+            avatar_url?: string;
             phone_masked?: string;
         };
         TransferFarmVO: {
@@ -15306,6 +15315,7 @@ export interface components {
             user_id?: number;
             name?: string;
             name_initial?: string;
+            avatar_url?: string;
             phone_masked?: string;
             role?: string;
             role_text?: string;
@@ -15719,6 +15729,8 @@ export interface components {
             cycle_days?: number;
             executor_text?: string;
             no_staff?: boolean;
+            source?: string;
+            source_text?: string;
             status?: string;
             status_text?: string;
             /** Format: date-time */
@@ -18002,6 +18014,7 @@ export interface components {
             /** Format: int64 */
             user_id?: number;
             name?: string;
+            avatar_url?: string;
             phone?: string;
             farm_names_text?: string;
             /** Format: int32 */
@@ -18057,6 +18070,7 @@ export interface components {
             /** Format: int64 */
             user_id?: number;
             name?: string;
+            avatar_url?: string;
             phone?: string;
             can_reveal_phone?: boolean;
             status?: string;
@@ -18133,6 +18147,9 @@ export interface components {
             success?: boolean;
         };
         CategoryDist: {
+            /** Format: int64 */
+            category_id?: number;
+            category_name?: string;
             species?: string;
             species_text?: string;
             /** Format: int32 */
@@ -18265,6 +18282,8 @@ export interface components {
             level?: string;
             parent_code?: string;
             category_group?: string;
+            /** Format: int64 */
+            category_id?: number;
         };
         ApiResponseFarmMapVO: {
             /** Format: int32 */
@@ -19073,6 +19092,7 @@ export interface components {
             /** Format: int64 */
             user_id?: number;
             name?: string;
+            avatar_url?: string;
             phone?: string;
             role?: string;
             role_text?: string;
@@ -31571,7 +31591,9 @@ export interface operations {
     };
     regionDetail: {
         parameters: {
-            query?: never;
+            query?: {
+                category_id?: number;
+            };
             header?: never;
             path: {
                 regionCode: string;

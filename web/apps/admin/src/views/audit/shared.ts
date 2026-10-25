@@ -59,16 +59,6 @@ export function shortRegion(name?: string): string {
   return name.replace(/(壮族自治区|回族自治区|维吾尔自治区|自治区|特别行政区|省|市)$/g, '')
 }
 
-/** 示意地图坐标：把经纬度投影到 0–100 的百分比。 */
-export function mapPoint(lng?: number | null, lat?: number | null): { x: number; y: number } {
-  const x = lng === null || lng === undefined ? 50 : ((Number(lng) - 73) / (135 - 73)) * 100
-  const y = lat === null || lat === undefined ? 40 : ((54 - Number(lat)) / (54 - 18)) * 100
-  return {
-    x: Math.min(95, Math.max(5, x)),
-    y: Math.min(94, Math.max(6, y))
-  }
-}
-
 export function statusTone(status?: string): string {
   if (status === 'APPROVED') return 'success'
   if (status === 'REJECTED') return 'error'

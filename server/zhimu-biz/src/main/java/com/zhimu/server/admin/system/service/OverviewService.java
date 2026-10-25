@@ -14,7 +14,7 @@ public interface OverviewService {
 
     FarmMapVO farmMap(FarmMapQuery query);
 
-    RegionDetailVO regionDetail(String regionCode);
+    RegionDetailVO regionDetail(String regionCode, Long categoryId);
 
     TrendVO trend(TrendQuery query);
 }

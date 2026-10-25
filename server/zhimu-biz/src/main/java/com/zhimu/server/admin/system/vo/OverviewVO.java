@@ -86,6 +86,8 @@ public class OverviewVO {
     @Data
     @Builder
     public static class CategoryDist {
+        private Long categoryId;
+        private String categoryName;
         private String species;
         private String speciesText;
         private Integer count;

@@ -9,7 +9,8 @@ spring:
 zhimu:
   demo:
     shift:
-      enabled: ${ZMT_DEMO_SHIFT:true}
+      # 正常运行保留历史日期；固定样例循环演示必须显式选择开启。
+      enabled: ${ZMT_DEMO_SHIFT:false}
   security:
     cookie-secure: false
     allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174}

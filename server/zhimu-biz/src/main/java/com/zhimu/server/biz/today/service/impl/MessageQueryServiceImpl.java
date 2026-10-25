@@ -3,6 +3,7 @@ package com.zhimu.server.biz.today.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.zhimu.server.admin.content.service.NoticeMessageQueryService;
 import com.zhimu.server.biz.farm.api.FarmQueryService;
 import com.zhimu.server.biz.today.convert.MessageConvert;
 import com.zhimu.server.biz.today.entity.Message;
@@ -70,6 +71,7 @@ public class MessageQueryServiceImpl implements MessageQueryService {
     private final FarmMemberLoader memberLoader;
     private final TodoScope todoScope;
     private final TodoLinks todoLinks;
+    private final NoticeMessageQueryService noticeContent;
 
     // ===================== API-T12 列表 =====================
 
@@ -91,6 +93,7 @@ public class MessageQueryServiceImpl implements MessageQueryService {
             list.add(messageConvert.toBrief(message,
                     farmOf(message, farms), today, now));
         }
+        applyNoticeRevocations(list);
         MessagePageVO vo = new MessagePageVO(list, paged.getTotal(), page, size);
         vo.setFilteredUnread(filteredUnread(userId, category, farmId, now));
         return vo;
@@ -165,7 +168,15 @@ public class MessageQueryServiceImpl implements MessageQueryService {
                 BeijingTime.today(), BeijingTime.now());
         OpenResultVO open = resolve(message, userId);
         open.setTotalUnread(totalUnread(userId));
-        return messageConvert.toDetail(brief, message, open);
+        MessageDetailVO result = messageConvert.toDetail(brief, message, open);
+        if (MsgType.NOTICE.name().equals(message.getMsgType())) {
+            Map<String, Object> current = noticeContent.payload(message.getBizId());
+            if (current != null) {
+                result.setPayload(current);
+                result.setRevoked(Boolean.TRUE.equals(current.get("revoked")));
+            }
+        }
+        return result;
     }
 
     // ===================== API-T17 删除 =====================
@@ -214,6 +225,18 @@ public class MessageQueryServiceImpl implements MessageQueryService {
     }
 
     // ===================== 内部 =====================
+
+    private void applyNoticeRevocations(List<MessageBriefVO> messages) {
+        var ids = messages.stream().filter(message -> MsgType.NOTICE.name().equals(message.getMsgType()))
+                .map(MessageBriefVO::getBizId).filter(java.util.Objects::nonNull).distinct().toList();
+        var revoked = noticeContent.revokedIds(ids);
+        for (MessageBriefVO message : messages) {
+            if (MsgType.NOTICE.name().equals(message.getMsgType()) && revoked.contains(message.getBizId())) {
+                message.setRevoked(true);
+                message.setSummary("该通知已撤回");
+            }
+        }
+    }
 
     private Message requireMessage(Long messageId, Long userId) {
         Message message = messageMapper.selectIncludingDeleted(messageId, userId);

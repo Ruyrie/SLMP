@@ -5,8 +5,10 @@ import { useAdminStore } from '@/stores/admin'
 import { useFarmChangeStore } from '@/stores/audit/farmChange'
 import { useAuditPendingStore } from '@/stores/audit/pending'
 import type { FarmChangeItem } from '@/api/audit'
-import { fileSize, fmtDateTime, fmtFull, fmtShortDate, mapPoint, statusIcon, statusTone } from '@/views/audit/shared'
+import { fileSize, fmtDateTime, fmtFull, fmtShortDate, statusIcon, statusTone } from '@/views/audit/shared'
 import AuditImageViewer from '@/views/audit/components/AuditImageViewer.vue'
+import AuditLocationMap from '@/views/audit/components/AuditLocationMap.vue'
+import { locationMarker, type AuditLocationMarker } from '@/views/audit/components/location'
 
 const route = useRoute()
 const admin = useAdminStore()
@@ -60,23 +62,10 @@ const compareRows = computed(() =>
 )
 const mapMarkers = computed(() => {
   const locations = detail.value?.locations
-  const markers: Array<{ x: number; y: number; label: string; type: string }> = []
-  if (locations?.current && locations.current.longitude !== undefined && locations.current.longitude !== null) {
-    const point = mapPoint(locations.current.longitude, locations.current.latitude)
-    markers.push({ ...point, label: '当前位置', type: 'neutral' })
-  }
-  if (locations?.applied && locations.applied.longitude !== undefined && locations.applied.longitude !== null) {
-    const point = mapPoint(locations.applied.longitude, locations.applied.latitude)
-    markers.push({ ...point, label: '申请位置', type: 'primary' })
-  }
-  return markers
-})
-
-const mapLegend = computed(() => {
-  const legend: Array<{ type: string; label: string }> = []
-  if (detail.value?.locations?.current) legend.push({ type: 'neutral', label: '当前位置' })
-  if (detail.value?.locations?.applied) legend.push({ type: 'primary', label: '申请位置' })
-  return legend
+  return [
+    locationMarker(locations?.current, '当前位置', 'neutral'),
+    locationMarker(locations?.applied, '申请位置')
+  ].filter((marker): marker is AuditLocationMarker => marker !== null)
 })
 
 const imagesCurrent = computed(() => detail.value?.images_current || [])
@@ -309,7 +298,7 @@ onMounted(() => {
 
         <section class="change-sec">
           <div class="zw-section-title">地图位置</div>
-          <zw-map v-if="mapMarkers.length" :height="200" :markers="mapMarkers" :legend="mapLegend" />
+          <AuditLocationMap v-if="detail.locations?.current || detail.locations?.applied" :markers="mapMarkers" />
           <div v-else class="no-map">本次没有修改位置</div>
           <div class="map-foot">
             <span v-if="detail.locations?.applied">

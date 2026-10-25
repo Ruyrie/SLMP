@@ -25,9 +25,16 @@ public class RecordAccessGuard {
 
     private final BizMediaMapper bizMediaMapper;
     private final FarmMemberCache farmMemberCache;
+    private final List<com.zhimu.server.biz.common.api.BusinessMediaAccess> businessMediaAccess;
 
     public void checkMediaAccess(BizType bizType, Long bizId) {
         Long userId = UserContext.requireUserId();
+        for (var access : businessMediaAccess) {
+            if (access.bizType() == bizType) {
+                if (!access.canViewRecord(bizId, userId)) throw new BizException(ErrorCode.NOT_FOUND);
+                return;
+            }
+        }
         List<BizMedia> rows = TenantSkip.call(() -> bizMediaMapper.selectActiveByBiz(bizType.name(), bizId));
         checkFarms(rows == null ? List.of() : rows.stream().map(BizMedia::getFarmId).toList(), userId);
     }

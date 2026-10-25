@@ -240,7 +240,14 @@ export interface OverviewData {
     farms7d?: number
     farms7d_ratio?: number
   } | null
-  category_dist?: Array<{ species: string; species_text: string; count: number; ratio: number }>
+  category_dist?: Array<{
+    category_id: number
+    category_name: string
+    species: string
+    species_text: string
+    count: number
+    ratio: number
+  }>
   month_audit?: {
     range_start?: string
     range_end?: string
@@ -321,12 +328,12 @@ export function getOverview() {
   return http().get<OverviewData>('/overview')
 }
 
-export function getFarmMap(params: { level?: string; parent_code?: string; category_group?: string } = {}) {
+export function getFarmMap(params: { level?: string; parent_code?: string; category_group?: string; category_id?: number } = {}) {
   return http().get<FarmMapData>('/overview/farm-map', { ...params })
 }
 
-export function getRegionDetail(regionCode: string) {
-  return http().get<RegionDetail>(`/overview/regions/${regionCode}`)
+export function getRegionDetail(regionCode: string, categoryId?: number | null) {
+  return http().get<RegionDetail>(`/overview/regions/${regionCode}`, categoryId ? { category_id: categoryId } : {})
 }
 
 export function getOverviewTrend(metric: string) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, watch, watchEffect } from 'vue'
+import { onBeforeUnmount, onMounted, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { setShellActions, shellState } from '@zmt/shared/layouts/shell'
 import type { FarmBrief } from '@zmt/shared/layouts/shell'
@@ -70,7 +70,24 @@ setShellActions({
 
 onMounted(() => {
   if (auth.isLoggedIn) notice.start()
+  window.addEventListener('focus', refreshOnVisible)
+  document.addEventListener('visibilitychange', onVisibilityChange)
 })
+
+onBeforeUnmount(() => {
+  window.removeEventListener('focus', refreshOnVisible)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+})
+
+/** 从其它窗口/标签页切回来时刷新养殖场列表和状态，审核通过等后台变更无需重启页面即可生效。 */
+function refreshOnVisible(): void {
+  if (!auth.isLoggedIn) return
+  void farm.load(true).catch(() => undefined)
+}
+
+function onVisibilityChange(): void {
+  if (document.visibilityState === 'visible') refreshOnVisible()
+}
 
 watch(
   () => auth.isLoggedIn,

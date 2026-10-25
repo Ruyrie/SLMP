@@ -22,7 +22,7 @@ function isConflict(error: ApiError): boolean {
 export const useFarmAuditStore = defineStore('farmAudit', {
   state: () => ({
     tab: 'PENDING' as FarmAuditTab,
-    query: { keyword: '', submit_type: '' },
+    query: { keyword: '', submit_type: '', province_code: '', category_id: null as number | null },
     page: 1,
     size: 20,
     list: [] as FarmAuditItem[],
@@ -46,7 +46,8 @@ export const useFarmAuditStore = defineStore('farmAudit', {
     submitting: false
   }),
   getters: {
-    hasFilter: (state) => !!state.query.keyword.trim() || !!state.query.submit_type,
+    hasFilter: (state) =>
+      !!state.query.keyword.trim() || !!state.query.submit_type || !!state.query.province_code || state.query.category_id !== null,
     isPending: (state) => state.tab === 'PENDING',
     approveTemplate: (state) => state.detail?.approve_template || '资质图清晰完整，地图位置与地址一致。',
     rejectTemplates: (state) => state.detail?.reject_templates || [],
@@ -61,6 +62,8 @@ export const useFarmAuditStore = defineStore('farmAudit', {
           status: this.tab,
           keyword: this.query.keyword.trim() || undefined,
           submit_type: this.query.submit_type || undefined,
+          province_code: this.query.province_code || undefined,
+          category_id: this.query.category_id ?? undefined,
           page: this.page,
           size: this.size
         })
@@ -92,7 +95,7 @@ export const useFarmAuditStore = defineStore('farmAudit', {
       void this.fetchList()
     },
     resetFilters(): void {
-      this.query = { keyword: '', submit_type: '' }
+      this.query = { keyword: '', submit_type: '', province_code: '', category_id: null }
       this.page = 1
       void this.fetchList()
     },

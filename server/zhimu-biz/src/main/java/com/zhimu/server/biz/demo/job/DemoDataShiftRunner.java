@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 import javax.sql.DataSource;
 
 /**
- * 启动时把演示示例数据平移到“今天”（开关 zhimu.demo.shift.enabled，dev 默认开，环境变量 ZMT_DEMO_SHIFT 可关闭）。
+ * 可选的固定样例日期平移（默认关闭；仅显式设置 ZMT_DEMO_SHIFT=true 时启用）。
+ * 正常业务通过每日任务生成与定期补偿持续运行，保留历史日期。
  * <p>
  * 执行时机：全部单例创建完成（Flyway 迁移已结束）之后、Web 服务启动和定时任务注册之前，
  * 因此一定早于饲喂补生成、消毒任务生成、巡检与待办每日生成等 ApplicationReadyEvent 启动任务。

@@ -2,7 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { adminMenus, filterMenus, isGroup, quickItems, userMenus, type MenuItem, type MenuNode } from '../menus'
-import { shellActions, shellState, toggleSider, type ShellSide } from './shell'
+import { shellActions, shellState, toggleSider, missingRouteParams, menuRouteParams, type ShellSide } from './shell'
 
 const props = withDefaults(
   defineProps<{
@@ -55,7 +55,15 @@ function toggleGroup(group: string): void {
 
 function go(name: string): void {
   if (name === String(route.name || '')) return
-  router.push({ name })
+  const record = router.getRoutes().find((item) => String(item.name || '') === name)
+  const params = menuRouteParams(record?.path, shellState.farmId)
+  if (missingRouteParams(record?.path, params).length) {
+    void router.push({ name: side.value === 'admin' ? 'WA-S02' : 'WU-F01' })
+    return
+  }
+  void router.push({ name, params: Object.keys(params).length ? params : undefined }).catch(() => {
+    /* 导航被守卫取消时保持当前页面，不产生未处理的 Promise 异常 */
+  })
 }
 
 function goQuick(item: { key: string; action?: string }): void {

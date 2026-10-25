@@ -17,7 +17,7 @@ export type FarmStatusAction = 'freeze' | 'unfreeze'
 
 export const useAdminFarmsStore = defineStore('adminFarms', {
   state: () => ({
-    query: { status: 'ALL', keyword: '', province_code: '' },
+    query: { status: 'ALL', keyword: '', province_code: '', category_id: null as number | null },
     page: 1,
     size: 20,
     list: [] as AdminFarmItem[],
@@ -40,14 +40,15 @@ export const useAdminFarmsStore = defineStore('adminFarms', {
     exporting: false
   }),
   getters: {
-    hasFilter: (state) => !!state.query.keyword.trim() || !!state.query.province_code,
+    hasFilter: (state) => !!state.query.keyword.trim() || !!state.query.province_code || state.query.category_id !== null,
     buildQuery(state): AdminFarmQuery {
       return {
         status: state.query.status,
         keyword: state.query.keyword.trim() || undefined,
         province_code: state.query.province_code || undefined,
-        page: state.page,
-        size: state.size
+        category_id: state.query.category_id ?? undefined,
+        page: this.page,
+        size: this.size
       }
     }
   },
@@ -87,7 +88,7 @@ export const useAdminFarmsStore = defineStore('adminFarms', {
       void this.fetchList()
     },
     resetFilters(): void {
-      this.query = { status: 'ALL', keyword: '', province_code: '' }
+      this.query = { status: 'ALL', keyword: '', province_code: '', category_id: null }
       this.page = 1
       void this.fetchList()
     },

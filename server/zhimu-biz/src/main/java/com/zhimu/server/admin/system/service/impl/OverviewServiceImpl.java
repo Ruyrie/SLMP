@@ -149,6 +149,8 @@ public class OverviewServiceImpl implements OverviewService {
             List<OverviewVO.CategoryDist> distribution = new ArrayList<>();
             for (CategoryDistRow row : rows) {
                 distribution.add(OverviewVO.CategoryDist.builder()
+                        .categoryId(row.getCategoryId())
+                        .categoryName(row.getCategoryName())
                         .species(row.getSpecies())
                         .speciesText(speciesText(row.getSpecies()))
                         .count(intValue(row.getCount()))
@@ -219,7 +221,7 @@ public class OverviewServiceImpl implements OverviewService {
     public FarmMapVO farmMap(FarmMapQuery query) {
         String level = query.levelOrDefault();
         String parentCode = validateParent(level, query.getParentCode());
-        List<FarmMapRow> rows = queryMapper.selectFarmMap(level, parentCode, query.getCategoryGroup());
+        List<FarmMapRow> rows = queryMapper.selectFarmMap(level, parentCode, query.getCategoryGroup(), query.getCategoryId());
         List<FarmMapVO.Cluster> clusters = new ArrayList<>();
         List<FarmMapVO.Point> points = new ArrayList<>();
         int approved = 0;
@@ -267,13 +269,16 @@ public class OverviewServiceImpl implements OverviewService {
     }
 
     @Override
-    public RegionDetailVO regionDetail(String regionCode) {
+    public RegionDetailVO regionDetail(String regionCode, Long categoryId) {
         String prefix = validateRegion(regionCode);
-        RegionCountRow counts = queryMapper.selectRegionCounts(prefix);
+        if (categoryId != null && categoryId <= 0) {
+            throw new BizException(ErrorCode.PARAM_INVALID, "品类编号不正确");
+        }
+        RegionCountRow counts = queryMapper.selectRegionCounts(prefix, categoryId);
         String regionName = queryMapper.selectRegionName(prefix);
         List<RegionDetailVO.PendingFarm> pendingFarms = new ArrayList<>();
         LocalDateTime now = BeijingTime.now();
-        for (PendingFarmRow row : queryMapper.selectPendingFarms(prefix)) {
+        for (PendingFarmRow row : queryMapper.selectPendingFarms(prefix, categoryId)) {
             AuditWaitCalculator.Wait wait = AuditWaitCalculator.of(row.getSubmittedAt(), now);
             pendingFarms.add(RegionDetailVO.PendingFarm.builder()
                     .farmId(row.getFarmId())

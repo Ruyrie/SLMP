@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import AuditImage from './AuditImage.vue'
 
 export interface ViewerItem {
   url?: string
@@ -24,7 +25,6 @@ const emit = defineEmits<{ (event: 'update:modelValue', value: boolean): void }>
 const index = ref(0)
 const zoom = ref(1)
 const rotate = ref(0)
-const failed = ref(false)
 
 const current = computed<ViewerItem | null>(() => props.items[index.value] || null)
 const total = computed(() => props.items.length)
@@ -33,7 +33,6 @@ function reset(): void {
   index.value = Math.min(Math.max(props.initialIndex, 0), Math.max(props.items.length - 1, 0))
   zoom.value = 1
   rotate.value = 0
-  failed.value = false
 }
 
 watch(
@@ -59,7 +58,6 @@ watch(
 watch(index, () => {
   zoom.value = 1
   rotate.value = 0
-  failed.value = false
 })
 
 function close(): void {
@@ -110,25 +108,19 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             <zw-icon name="chevron_left" :size="26" />
           </button>
           <div class="av-figure" :style="{ width: '760px', height: '475px' }">
-            <img
-              v-if="current?.url && !failed"
-              class="av-img"
-              :src="current.url"
-              :alt="current.label || '资质图'"
-              :style="{ transform: `scale(${zoom}) rotate(${rotate}deg)` }"
-              @error="failed = true"
+            <AuditImage
+              :key="index"
+              :url="current?.url"
+              :thumb-url="current?.thumb_url"
+              :prefer-thumbnail="false"
+              :alt="current?.label || '资质图'"
+              :image-style="{ transform: `scale(${zoom}) rotate(${rotate}deg)` }"
             />
-            <div v-else class="av-fallback">
-              <zw-thumb kind="doc" :w="760" :h="475" :radius="4" />
-            <div class="av-fallback-text">
-              {{ current?.url && failed ? '图片加载失败，可关闭后重试' : '本次提交没有可预览的图片，仅展示示意证件' }}
-            </div>
           </div>
+          <button v-if="total > 1" class="av-btn" type="button" aria-label="下一张" @click="step(1)">
+            <zw-icon name="chevron_right" :size="26" />
+          </button>
         </div>
-        <button v-if="total > 1" class="av-btn" type="button" aria-label="下一张" @click="step(1)">
-          <zw-icon name="chevron_right" :size="26" />
-        </button>
-      </div>
 
       <div class="av-tools">
         <button class="av-btn" type="button" aria-label="缩小" @click="zoomBy(-0.2)">
@@ -153,8 +145,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
           :aria-label="`第 ${i + 1} 张`"
           @click="index = i"
         >
-          <img v-if="item.thumb_url || item.url" :src="item.thumb_url || item.url" alt="" />
-          <zw-thumb v-else kind="doc" :w="96" :h="64" :radius="4" />
+          <AuditImage :url="item.url" :thumb-url="item.thumb_url" :alt="item.label || '资质图'" />
         </button>
       </div>
     </div>
@@ -243,30 +234,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   border-radius: 4px;
   box-shadow: 0 8px 32px #00000080;
 }
-.av-img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  transition: transform 0.2s ease;
-}
-.av-fallback {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.av-fallback-text {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 14px;
-  text-align: center;
-  font-size: 12px;
-  line-height: 18px;
-  color: #d0d3d9;
-}
 .av-tools {
   display: flex;
   justify-content: center;
@@ -302,11 +269,5 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 .av-thumb.on {
   opacity: 1;
   outline-color: #ffffff;
-}
-.av-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
 }
 </style>

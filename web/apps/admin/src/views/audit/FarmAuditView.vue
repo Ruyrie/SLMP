@@ -7,8 +7,11 @@ import { useFarmAuditStore } from '@/stores/audit/farmAudit'
 import { useAuditPendingStore } from '@/stores/audit/pending'
 import { useUiStore } from '@/stores/ui'
 import { resendFarmAuditSms, type FarmAuditItem } from '@/api/audit'
-import { fileSize, fmtDate, fmtDateTime, fmtFull, fmtShortDate, mapPoint, statusIcon, statusTone } from '@/views/audit/shared'
+import { fileSize, fmtDate, fmtDateTime, fmtFull, fmtShortDate, statusIcon, statusTone } from '@/views/audit/shared'
 import AuditImageViewer from '@/views/audit/components/AuditImageViewer.vue'
+import AuditImage from '@/views/audit/components/AuditImage.vue'
+import AuditLocationMap from '@/views/audit/components/AuditLocationMap.vue'
+import { locationMarker } from '@/views/audit/components/location'
 
 const route = useRoute()
 const admin = useAdminStore()
@@ -16,9 +19,10 @@ const store = useFarmAuditStore()
 const pending = useAuditPendingStore()
 const ui = useUiStore()
 
-const failedImages = ref<Record<number, boolean>>({})
 const viewerOpen = ref(false)
 const viewerIndex = ref(0)
+const regionName = ref('')
+const categoryName = ref('')
 
 const canHandle = computed(() => admin.hasPerm('WA-R01:HANDLE'))
 const headers = computed(() => [
@@ -56,9 +60,8 @@ const drawerSub = computed(() =>
 )
 
 const mapMarkers = computed(() => {
-  if (!detail.value?.location) return []
-  const point = mapPoint(detail.value.location.longitude, detail.value.location.latitude)
-  return [{ x: point.x, y: point.y, label: detail.value.info.name }]
+  const marker = locationMarker(detail.value?.location, detail.value?.info.name || '')
+  return marker ? [marker] : []
 })
 
 const detailImages = computed(() => detail.value?.images || [])
@@ -178,8 +181,38 @@ const historyItems = computed(() =>
   }))
 )
 
+function clearProvince(): void {
+  store.query.province_code = ''
+  regionName.value = ''
+  store.fetchList()
+}
+
+function clearCategory(): void {
+  store.query.category_id = null
+  categoryName.value = ''
+  store.fetchList()
+}
+
+function resetFilters(): void {
+  regionName.value = ''
+  categoryName.value = ''
+  store.resetFilters()
+}
+
 onMounted(() => {
   const id = Number(route.query.audit_id || route.query.id || 0)
+  const keyword = typeof route.query.keyword === 'string' ? route.query.keyword : ''
+  const province = typeof route.query.province_code === 'string' ? route.query.province_code : ''
+  const region = typeof route.query.region_name === 'string' ? route.query.region_name : ''
+  const category = Number(route.query.category_id || 0)
+  const categoryLabel = typeof route.query.category_name === 'string' ? route.query.category_name : ''
+  store.tab = 'PENDING'
+  store.query.keyword = keyword
+  store.query.submit_type = ''
+  store.query.province_code = province
+  store.query.category_id = category > 0 ? category : null
+  regionName.value = region
+  categoryName.value = categoryLabel
   void store.fetchList()
   void pending.refresh()
   if (id) void store.openDetailById(id)
@@ -218,8 +251,16 @@ onMounted(() => {
           class="zw-w-140"
           @update:model-value="store.fetchList()"
         />
+        <zw-tag v-if="store.query.province_code" type="primary" icon="location_on">
+          {{ regionName || `省份 ${store.query.province_code}` }}
+          <button class="chip-close" type="button" aria-label="清除省份筛选" @click="clearProvince"><zw-icon name="close" :size="14" /></button>
+        </zw-tag>
+        <zw-tag v-if="store.query.category_id" type="primary" icon="category">
+          {{ categoryName || `品类 ${store.query.category_id}` }}
+          <button class="chip-close" type="button" aria-label="清除品类筛选" @click="clearCategory"><zw-icon name="close" :size="14" /></button>
+        </zw-tag>
         <v-btn variant="text" color="primary" @click="store.fetchList()">查询</v-btn>
-        <v-btn variant="text" @click="store.resetFilters()">重置</v-btn>
+        <v-btn variant="text" @click="resetFilters">重置</v-btn>
       </div>
       <div class="zw-toolbar-r">
         <span class="zw-faint body-s">按提交时间排序，先提交的在前</span>
@@ -351,13 +392,7 @@ onMounted(() => {
             <div v-if="detailImages.length" class="photo-list">
               <div v-for="(image, index) in detailImages" :key="image.file_id" class="photo-item" @click="openViewer(index)">
                 <div class="photo-frame">
-                  <img
-                    v-if="(image.thumb_url || image.url) && !failedImages[image.file_id]"
-                    :src="image.thumb_url || image.url"
-                    alt="资质图"
-                    @error="failedImages[image.file_id] = true"
-                  />
-                  <zw-thumb v-else kind="doc" :w="160" :h="120" />
+                  <AuditImage :url="image.url" :thumb-url="image.thumb_url" :alt="`资质图 ${index + 1}`" />
                   <span class="photo-index num">{{ index + 1 }} / {{ detailImages.length }}</span>
                 </div>
                 <div class="photo-cap">
@@ -376,7 +411,7 @@ onMounted(() => {
 
           <div>
             <div class="zw-section-title">地图位置</div>
-            <zw-map :height="148" :markers="mapMarkers" :legend="detail.location ? [{ type: 'primary', label: detail.info.name }] : []" />
+            <AuditLocationMap :markers="mapMarkers" />
             <div v-if="detail.location" class="map-foot">
               <span>
                 北纬 {{ detail.location.latitude ?? '—' }}°，东经 {{ detail.location.longitude ?? '—' }}°
@@ -481,8 +516,7 @@ onMounted(() => {
       >
         <div class="reshoot-row">
           <div v-for="image in reshootImages" :key="image.file_id" class="reshoot-item">
-            <img v-if="image.thumb_url || image.url" :src="image.thumb_url || image.url" alt="资质图" />
-            <zw-thumb v-else kind="doc" :w="104" :h="78" />
+            <AuditImage :url="image.url" :thumb-url="image.thumb_url" />
             <v-checkbox-btn
               class="reshoot-check"
               :model-value="store.reshootIds.includes(image.file_id)"
@@ -692,5 +726,23 @@ onMounted(() => {
   left: 2px;
   background: #ffffffcc;
   border-radius: 2px;
+}
+.chip-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: currentColor;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.chip-close:hover {
+  background: #00000014;
 }
 </style>

@@ -26,19 +26,22 @@ const emit = defineEmits<{
   (event: 'ready'): void
 }>()
 
-/** 预检 + 建图最多占用 1.5s，超时或失败就交给父组件降级为示意地图。 */
-const MAP_INIT_BUDGET_MS = 1500
-const TILE_LOAD_BUDGET_MS = 1500
-const TILE_ERROR_GRACE_MS = 700
+/** 预检 + 建图最多占用 3s，超时或失败就交给父组件降级为示意地图。 */
+const MAP_INIT_BUDGET_MS = 3000
+const TILE_LOAD_BUDGET_MS = 6000
+const TILE_ERROR_GRACE_MS = 1200
 
 /**
- * 两张都是 OpenStreetMap 瓦片，均无需 Key。
- * 先试 FOSSGIS 提供的 OSM 瓦片（国内网络通常更稳定），失败后再试 OSM 官方瓦片；
- * 两者都不可用时由父组件降级到 zw-map 示意图。
+ * 底图优先用高德栅格瓦片：中文地名、国内网络可达，且坐标系（GCJ-02）
+ * 与 App 高德 SDK 上报的经纬度一致；高德不可达时再退回 OSM，两者都不可用时
+ * 由父组件降级到 zw-map 示意图。
  */
 interface TileSource {
   url: string
   attribution: string
+  probe?: string
+  subdomains?: string
+  maxZoom?: number
 }
 
 const OSM_ATTRIBUTION =
@@ -46,12 +49,21 @@ const OSM_ATTRIBUTION =
 
 const TILE_SOURCES: TileSource[] = [
   {
+    url: 'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+    probe: 'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x=26&y=12&z=5',
+    attribution: '&copy; 高德地图',
+    subdomains: '1234',
+    maxZoom: 18
+  },
+  {
     url: 'https://tile.openstreetmap.de/{z}/{x}/{y}.png',
-    attribution: `${OSM_ATTRIBUTION} · Tiles: FOSSGIS`
+    attribution: `${OSM_ATTRIBUTION} · Tiles: FOSSGIS`,
+    maxZoom: 19
   },
   {
     url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: OSM_ATTRIBUTION
+    attribution: OSM_ATTRIBUTION,
+    maxZoom: 19
   }
 ]
 
@@ -69,6 +81,7 @@ let marker: LeafletMarker | null = null
 let tileLayer: TileLayer | null = null
 let resizeObserver: ResizeObserver | null = null
 let tilesLoaded = 0
+const placeholderTiles = new WeakSet<HTMLElement>()
 let startupTimer: number | null = null
 let tileErrorTimer: number | null = null
 let syncTimer: number | null = null
@@ -90,7 +103,7 @@ function readPoint(longitude?: string, latitude?: string): { lng: number; lat: n
   return { lng, lat }
 }
 
-function preflightTile(urlTemplate: string, timeoutMs: number): Promise<boolean> {
+function preflightTile(source: TileSource, timeoutMs: number): Promise<boolean> {
   return new Promise((resolve) => {
     let settled = false
     let timer = 0
@@ -106,7 +119,9 @@ function preflightTile(urlTemplate: string, timeoutMs: number): Promise<boolean>
     timer = window.setTimeout(() => finish(false), Math.max(80, timeoutMs))
     image.onload = () => finish(true)
     image.onerror = () => finish(false)
-    image.src = urlTemplate.replace('{z}', '0').replace('{x}', '0').replace('{y}', '0')
+    image.src =
+      source.probe ||
+      source.url.replace('{z}', '0').replace('{x}', '0').replace('{y}', '0').replace('{s}', source.subdomains?.charAt(0) || '1')
   })
 }
 
@@ -114,7 +129,7 @@ async function selectTileSource(deadline: number): Promise<number> {
   for (let index = 0; index < TILE_SOURCES.length; index += 1) {
     const remaining = deadline - Date.now()
     if (remaining < 120) return -1
-    const ok = await preflightTile(TILE_SOURCES[index].url, remaining)
+    const ok = await preflightTile(TILE_SOURCES[index], remaining)
     if (ok) return index
   }
   return -1
@@ -186,12 +201,17 @@ function clearStartupTimers(): void {
   }
 }
 
-function handleTileLoad(): void {
+function handleTileLoad(event: { tile?: HTMLElement }): void {
+  const tile = event?.tile
+  // errorTileUrl 的透明占位图也会触发 tileload，不能算作底图加载成功。
+  if (tile && placeholderTiles.has(tile)) return
   tilesLoaded += 1
   clearStartupTimers()
 }
 
-function handleTileError(): void {
+function handleTileError(event: { tile?: HTMLElement }): void {
+  const tile = event?.tile
+  if (tile) placeholderTiles.add(tile)
   if (tilesLoaded > 0 || failed) return
   if (tileErrorTimer !== null) return
   tileErrorTimer = window.setTimeout(() => {
@@ -274,9 +294,9 @@ function createMap(api: LeafletApi, sourceIndex: number): void {
   try {
     map = api.map(host, {
       center: [center.lat, center.lng],
-      zoom: anchor ? 15 : 4,
+      zoom: anchor ? 15 : 5,
       minZoom: 3,
-      maxZoom: 19,
+      maxZoom: TILE_SOURCES[sourceIndex].maxZoom || 19,
       zoomControl: true,
       attributionControl: true,
       preferCanvas: true,
@@ -286,7 +306,8 @@ function createMap(api: LeafletApi, sourceIndex: number): void {
     const source = TILE_SOURCES[sourceIndex]
     tileLayer = api.tileLayer(source.url, {
       minZoom: 3,
-      maxZoom: 19,
+      maxZoom: source.maxZoom || 19,
+      subdomains: source.subdomains || 'abc',
       attribution: source.attribution,
       errorTileUrl: TRANSPARENT_TILE
     })

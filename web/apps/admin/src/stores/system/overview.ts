@@ -23,6 +23,12 @@ export function regionPrefix(code: string): string {
   return code
 }
 
+// 并发请求序号：切换品类 / 刷新时只接受最后一次请求的结果，避免旧响应把新筛选覆盖掉。
+let loadSeq = 0
+let mapSeq = 0
+let regionSeq = 0
+let trendSeq = 0
+
 export const useOverviewStore = defineStore('overview', {
   state: () => ({
     status: 'loading' as OverviewStatus,
@@ -32,7 +38,7 @@ export const useOverviewStore = defineStore('overview', {
     map: null as FarmMapData | null,
     mapLoading: false,
     mapError: '',
-    categoryGroup: '',
+    categoryId: null as number | null,
     region: null as RegionDetail | null,
     regionOpen: false,
     regionLoading: false,
@@ -46,16 +52,23 @@ export const useOverviewStore = defineStore('overview', {
   getters: {
     pendingTotal: (state) => state.data?.pending?.total || 0,
     overdueTotal: (state) => state.data?.pending?.overdue_count || 0,
-    failedBlocks: (state) => state.data?.failed_blocks || []
+    failedBlocks: (state) => state.data?.failed_blocks || [],
+    /** 所有品类（含 0 个已通过养殖场的品类），供地图筛选下拉使用。 */
+    categoryOptions: (state) => state.data?.category_dist || [],
+    selectedCategory: (state) => (state.categoryId ? state.data?.category_dist?.find((item) => item.category_id === state.categoryId) || null : null)
   },
   actions: {
     async load(): Promise<void> {
+      const token = ++loadSeq
       if (!this.data) this.status = 'loading'
       this.error = ''
       try {
-        this.data = await getOverview()
+        const data = await getOverview()
+        if (token !== loadSeq) return
+        this.data = data
         this.status = 'ready'
       } catch (error) {
+        if (token !== loadSeq) return
         if (error instanceof ApiError && error.isForbidden) {
           this.status = 'forbidden'
           this.error = error.message
@@ -77,59 +90,74 @@ export const useOverviewStore = defineStore('overview', {
       }
     },
     async fetchMap(): Promise<void> {
+      const token = ++mapSeq
       this.mapLoading = true
       this.mapError = ''
       try {
-        this.map = await getFarmMap({
+        const data = await getFarmMap({
           level: 'PROVINCE',
-          category_group: this.categoryGroup || undefined
+          category_id: this.categoryId ?? undefined
         })
+        if (token !== mapSeq) return
+        this.map = data
       } catch (error) {
+        if (token !== mapSeq) return
         this.mapError = error instanceof Error ? error.message : '地图数据加载失败'
       } finally {
-        this.mapLoading = false
+        if (token === mapSeq) this.mapLoading = false
       }
     },
-    async setCategory(group: string): Promise<void> {
-      this.categoryGroup = group
+    async setCategory(categoryId: number | null): Promise<void> {
+      if (this.categoryId === categoryId) return
+      this.categoryId = categoryId
       this.regionOpen = false
       await this.fetchMap()
     },
     async openRegion(cluster: FarmMapCluster): Promise<void> {
+      const token = ++regionSeq
       this.regionLoading = true
       this.regionError = ''
       this.regionOpen = true
       this.region = null
       try {
-        this.region = await getRegionDetail(regionPrefix(cluster.region_code))
+        const data = await getRegionDetail(regionPrefix(cluster.region_code), this.categoryId)
+        if (token !== regionSeq) return
+        this.region = data
       } catch (error) {
+        if (token !== regionSeq) return
         this.regionError = error instanceof Error ? error.message : '地区明细加载失败'
       } finally {
-        this.regionLoading = false
+        if (token === regionSeq) this.regionLoading = false
       }
     },
     closeRegion(): void {
+      regionSeq += 1
       this.regionOpen = false
+      this.regionLoading = false
     },
     async fetchTrend(metric: string): Promise<void> {
+      const token = ++trendSeq
       this.trendMetric = metric
       const cached = this.trendCache[metric]
       if (cached) {
         this.trend = cached
         this.trendError = ''
+        this.trendLoading = false
         return
       }
       this.trendLoading = true
       this.trendError = ''
       try {
         const data = await getOverviewTrend(metric)
+        if (token !== trendSeq) return
         this.trend = data
         this.trendCache = { ...this.trendCache, [metric]: data }
       } catch (error) {
+        if (token !== trendSeq) return
         this.trend = null
         this.trendError = error instanceof Error ? error.message : '趋势数据加载失败'
       } finally {
-        this.trendLoading = false
+        if (token === trendSeq) this.trendLoading = false
       }
     }
   }

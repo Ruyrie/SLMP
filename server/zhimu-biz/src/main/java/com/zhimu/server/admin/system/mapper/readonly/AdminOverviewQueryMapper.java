@@ -33,13 +33,16 @@ public interface AdminOverviewQueryMapper {
 
     List<FarmMapRow> selectFarmMap(@Param("level") String level,
                                    @Param("parentCode") String parentCode,
-                                   @Param("species") String species);
+                                   @Param("species") String species,
+                                   @Param("categoryId") Long categoryId);
 
-    RegionCountRow selectRegionCounts(@Param("adcodePrefix") String adcodePrefix);
+    RegionCountRow selectRegionCounts(@Param("adcodePrefix") String adcodePrefix,
+                                      @Param("categoryId") Long categoryId);
 
     String selectRegionName(@Param("adcodePrefix") String adcodePrefix);
 
-    List<PendingFarmRow> selectPendingFarms(@Param("adcodePrefix") String adcodePrefix);
+    List<PendingFarmRow> selectPendingFarms(@Param("adcodePrefix") String adcodePrefix,
+                                            @Param("categoryId") Long categoryId);
 
     List<DailyStatRow> selectPlatformDailyStats(@Param("metric") String metric,
                                                 @Param("start") LocalDate start,
