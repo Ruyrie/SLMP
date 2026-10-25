@@ -14,8 +14,8 @@ import java.util.List;
 /**
  * 应用启动后补生成“今天”的饲喂任务：服务停机错过 00:05 时避免演示环境今日任务为空。
  * <p>
- * 幂等：只在“该养殖场今天一条任务都没有”时生成；已有任务（含已取消/已忽略）一律跳过，
- * 只插入当天任务，不修改任何历史数据。单个养殖场失败只记日志，不影响启动。
+ * 幂等按批次、栏舍、日期、餐次槽位处理；已有部分餐次时仍补齐其他槽位，保留已取消和已完成槽位。
+ * 只插入当天任务，不修改历史数据。单个养殖场失败只记日志，不影响启动。
  */
 @Slf4j
 @Component
@@ -44,9 +44,6 @@ public class FeedTaskStartupBackfill implements ApplicationListener<ApplicationR
         List<Long> farmIds = taskService.activeFarmIds();
         for (Long farmId : farmIds) {
             try {
-                if (taskService.hasTasksOn(farmId, date)) {
-                    continue;
-                }
                 generated += generateJob.generateForFarm(farmId, date).getGenerated();
             } catch (RuntimeException e) {
                 log.warn("启动补生成今日饲喂任务失败：farmId={} date={}", farmId, date, e);

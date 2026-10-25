@@ -4,16 +4,21 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.herd.api.BatchQueryService;
 import com.zhimu.server.biz.herd.entity.Batch;
+import com.zhimu.server.biz.herd.entity.BatchEvent;
 import com.zhimu.server.biz.herd.entity.BatchPen;
+import com.zhimu.server.biz.herd.mapper.BatchEventMapper;
 import com.zhimu.server.biz.herd.mapper.BatchMapper;
 import com.zhimu.server.biz.herd.mapper.BatchPenMapper;
 import com.zhimu.server.common.error.BizException;
 import com.zhimu.server.common.error.ErrorCode;
+import com.zhimu.server.common.util.BeijingTime;
 import com.zhimu.server.framework.mybatis.TenantSkip;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,6 +33,39 @@ public class BatchQueryServiceImpl implements BatchQueryService {
 
     private final BatchMapper batchMapper;
     private final BatchPenMapper batchPenMapper;
+    private final BatchEventMapper eventMapper;
+
+    @Override
+    public int deathCount(Collection<Long> farmIds, LocalDate start, LocalDate end) {
+        if (farmIds == null || farmIds.isEmpty() || start == null || end == null) {
+            return 0;
+        }
+        return TenantSkip.call(() -> eventMapper.selectList(Wrappers.<BatchEvent>lambdaQuery()
+                        .in(BatchEvent::getFarmId, farmIds)
+                        .eq(BatchEvent::getEventType, "DEATH")
+                        .eq(BatchEvent::getStatus, "EFFECTIVE")
+                        .between(BatchEvent::getEventDate, start, end)))
+                .stream().mapToInt(e -> e.getQuantity() == null ? 0 : e.getQuantity()).sum();
+    }
+
+    @Override
+    public int stockCountAt(Collection<Long> farmIds, LocalDate date) {
+        if (farmIds == null || farmIds.isEmpty() || date == null) {
+            return 0;
+        }
+        return TenantSkip.call(() -> {
+            int stock = batchMapper.selectList(Wrappers.<Batch>lambdaQuery().in(Batch::getFarmId, farmIds))
+                    .stream().mapToInt(batch -> batch.getCurrentCount() == null ? 0 : batch.getCurrentCount()).sum();
+            for (BatchEvent event : eventMapper.selectList(Wrappers.<BatchEvent>lambdaQuery()
+                    .in(BatchEvent::getFarmId, farmIds).eq(BatchEvent::getStatus, "EFFECTIVE")
+                    .gt(BatchEvent::getEventDate, date).le(BatchEvent::getEventDate, BeijingTime.today())
+                    .in(BatchEvent::getEventType, "ENTRY", "DEATH", "SALE"))) {
+                int quantity = event.getQuantity() == null ? 0 : event.getQuantity();
+                stock += "ENTRY".equals(event.getEventType()) ? -quantity : quantity;
+            }
+            return Math.max(0, stock);
+        });
+    }
 
     @Override
     public BatchInfo requireBatch(Long batchId) {

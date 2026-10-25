@@ -106,7 +106,8 @@ public class PenServiceImpl implements PenService {
         String unit = support.farmUnit(member.farmId());
 
         List<PenOptionVO> result = new ArrayList<>();
-        for (Pen pen : support.pensOfFarm(member.farmId())) {
+        // 员工只返回自己负责的栏舍（App 健康模块消毒登记等页面以员工身份调用 usage = OPTIONS）
+        for (Pen pen : support.pensVisibleTo(member)) {
             if (!"ENABLED".equals(pen.getStatus())) {
                 continue;
             }
@@ -270,7 +271,7 @@ public class PenServiceImpl implements PenService {
             item.setBreedTitle(support.breedTitle(batch));
             item.setDayAge(support.dayAge(batch));
             item.setQtyInPen(row.getStockCount());
-            item.setInWithdrawal(false);
+            item.setInWithdrawal(support.withdrawalReleaseDates(pen.getFarmId()).containsKey(batch.getId()));
             items.add(item);
         }
         return items;

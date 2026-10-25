@@ -74,6 +74,7 @@ class BatchServiceImplTest {
     @Mock private OperationLogRecorder operationLogRecorder;
     @Mock private org.springframework.beans.factory.ObjectProvider<BatchTimelineProvider> timelineProviders;
     @Mock private com.zhimu.server.biz.health.service.MedicationService medicationService;
+    @Mock private com.zhimu.server.biz.common.api.ChangeRequestService changeRequestService;
 
     private BatchServiceImpl service;
 
@@ -83,7 +84,7 @@ class BatchServiceImplTest {
         lenient().when(timelineProviders.orderedStream()).thenReturn(java.util.stream.Stream.empty());
         service = new BatchServiceImpl(support, access, batchMapper, eventMapper, timelineMapper, batchPenMapper,
                 penMapper, batchNoGenerator, farmLookup, memberCache, bizMediaService, operationLogRecorder,
-                timelineProviders, medicationService);
+                timelineProviders, medicationService, changeRequestService);
         var withdrawal = new com.zhimu.server.biz.health.vo.WithdrawalVO();
         withdrawal.setStatus("NONE");
         lenient().when(medicationService.withdrawal(anyLong())).thenReturn(withdrawal);

@@ -796,7 +796,8 @@ public class NoticeAdminService {
     private Map<Long, String> adminNames(List<Long> ids) {
         List<Long> safe = ids == null ? List.of() : ids.stream().filter(java.util.Objects::nonNull).distinct().toList();
         if (safe.isEmpty()) {
-            return Map.of();
+            // 调用方可能用 null 的 created_by 取名字，Map.of() 的 get(null) 会抛空指针
+            return new HashMap<>();
         }
         return names(lookupMapper.selectAdminNames(safe));
     }

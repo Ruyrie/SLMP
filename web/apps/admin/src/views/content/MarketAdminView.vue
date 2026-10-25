@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { formatDate, formatDateTime, formatNumber, formatPercent, today } from '@zmt/shared'
+import { ApiError, formatDate, formatDateTime, formatNumber, formatPercent, today } from '@zmt/shared'
 import {
   batchPublishMarketPrices,
   correctMarketPrice,
@@ -123,7 +123,7 @@ async function fetchList(): Promise<void> {
     total.value = data.total || 0
     Object.assign(tabCounts, data.tab_counts || {})
   } catch (e) {
-    if (e instanceof Error && 'isForbidden' in e) {
+    if (e instanceof ApiError && e.isForbidden) {
       forbidden.value = true
     }
     error.value = e instanceof Error ? e.message : '加载失败'

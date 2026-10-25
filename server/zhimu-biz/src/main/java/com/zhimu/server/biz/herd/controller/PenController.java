@@ -33,8 +33,9 @@ public class PenController {
 
     private final PenService penService;
 
-    /** L07 栏舍下拉（usage = OPTIONS，不分页） */
+    /** L07 栏舍下拉（usage = OPTIONS，不分页）；员工可调用，只返回自己负责的栏舍 */
     @GetMapping
+    @FarmRoles({FarmRole.OWNER, FarmRole.MANAGER, FarmRole.STAFF})
     public ApiResponse<List<PenOptionVO>> options(PenQuery query) {
         return ApiResponse.ok(penService.options(query));
     }

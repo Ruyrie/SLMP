@@ -55,6 +55,11 @@ public interface ChangeRequestMapper extends BaseMapper<ChangeRequest> {
     @Select("SELECT COUNT(*) FROM t_change_request WHERE status = 'PENDING'")
     long countPending();
 
+    /** 某批次的待审核修改申请数（API-L15 批次档案 pending_change_request_count） */
+    @Select("SELECT COUNT(*) FROM t_change_request WHERE farm_id = #{farmId} AND batch_id = #{batchId} "
+            + "AND status = 'PENDING'")
+    long countPendingByBatch(@Param("farmId") Long farmId, @Param("batchId") Long batchId);
+
     @Update("UPDATE t_change_request SET status = 'CANCELED', pending_flag = NULL, cancel_reason = #{reason}, "
             + "version = version + 1, updated_at = #{now} "
             + "WHERE submitted_by = #{userId} AND status = 'PENDING'")

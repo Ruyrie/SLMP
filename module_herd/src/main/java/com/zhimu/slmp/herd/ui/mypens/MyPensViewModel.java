@@ -172,6 +172,9 @@ public class MyPensViewModel extends BaseViewModel {
         if (batchId == null && !pen.getBatches().isEmpty()) {
             batchId = pen.getBatches().get(0).getBatchId();
         }
+        if ("D03".equals(task.getRoute())) {
+            t.put(RouterPath.EXTRA_PLAN_ITEM_ID, task.getTaskId());
+        }
         navEvent.setValue(t.put(RouterPath.EXTRA_PEN_ID, task.getPenId() != null ? task.getPenId() : pen.getPenId())
                 .put(RouterPath.EXTRA_BATCH_ID, batchId)
                 .put(RouterPath.EXTRA_TODO_ID, task.getTodoId())

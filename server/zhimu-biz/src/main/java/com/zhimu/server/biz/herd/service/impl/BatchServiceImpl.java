@@ -105,6 +105,7 @@ public class BatchServiceImpl implements BatchService {
     private final OperationLogRecorder operationLogRecorder;
     private final ObjectProvider<BatchTimelineProvider> timelineProviders;
     private final MedicationService medicationService;
+    private final com.zhimu.server.biz.common.api.ChangeRequestService changeRequestService;
     @Override
     public PageVO<BatchListItemVO> list(BatchListQuery query) {
         FarmContext.FarmMember member = support.context();
@@ -270,8 +271,8 @@ public class BatchServiceImpl implements BatchService {
         vo.setMortalityRate(HerdSupport.mortality(batch.getDeathCount(), batch.getEntryCount()));
         vo.setEntryAvgWeight(batch.getEntryAvgWeight());
         vo.setIntroUnitPrice(batch.getIntroUnitPrice());
-        // 待接入公共修改申请统计：当前没有本批次的待审核申请数
-        vo.setPendingChangeRequestCount(0);
+        // 公共修改申请：本批次待审核的申请数（任何提交人）
+        vo.setPendingChangeRequestCount((int) changeRequestService.countPendingByBatch(batch.getFarmId(), batchId));
         BatchDetailVO.WithdrawalInfo withdrawal = new BatchDetailVO.WithdrawalInfo();
         var health = medicationService.withdrawal(batchId);
         withdrawal.setInWithdrawal("IN_WITHDRAWAL".equals(health.getStatus()));

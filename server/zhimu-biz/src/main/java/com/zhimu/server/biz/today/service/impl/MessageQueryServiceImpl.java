@@ -80,9 +80,11 @@ public class MessageQueryServiceImpl implements MessageQueryService {
         String category = validateCategory(query.getCategory());
         LocalDateTime now = BeijingTime.now();
         LocalDate today = BeijingTime.today();
+        // 未显式传 farm_id 时按当前 X-Farm-Id 过滤；farm_id 为空的是全平台通知，各场都可见。
+        Long farmId = query.getFarmId() != null ? query.getFarmId() : FarmContext.farmId();
 
         IPage<Message> paged = messageMapper.selectPage(new Page<>(page, size),
-                listWrapper(userId, category, query.getFarmId(), Boolean.TRUE.equals(query.getUnreadOnly()), now));
+                listWrapper(userId, category, farmId, Boolean.TRUE.equals(query.getUnreadOnly()), now));
         Map<Long, FarmBriefVO> farms = farms(userId);
         List<MessageBriefVO> list = new ArrayList<>();
         for (Message message : paged.getRecords()) {
@@ -90,7 +92,7 @@ public class MessageQueryServiceImpl implements MessageQueryService {
                     farmOf(message, farms), today, now));
         }
         MessagePageVO vo = new MessagePageVO(list, paged.getTotal(), page, size);
-        vo.setFilteredUnread(filteredUnread(userId, category, query.getFarmId(), now));
+        vo.setFilteredUnread(filteredUnread(userId, category, farmId, now));
         return vo;
     }
 
@@ -100,9 +102,10 @@ public class MessageQueryServiceImpl implements MessageQueryService {
     public UnreadCountVO unreadCount(UnreadCountQuery query, Long userId) {
         String category = validateCategory(query.getCategory());
         LocalDateTime now = BeijingTime.now();
+        Long farmId = query.getFarmId() != null ? query.getFarmId() : FarmContext.farmId();
         UnreadCountVO vo = new UnreadCountVO();
         vo.setTotalUnread(totalUnread(userId));
-        vo.setFilteredUnread(filteredUnread(userId, category, query.getFarmId(), now));
+        vo.setFilteredUnread(filteredUnread(userId, category, farmId, now));
         Map<String, Integer> byCategory = new LinkedHashMap<>();
         List<Message> unread = messageMapper.selectList(Wrappers.<Message>lambdaQuery()
                 .select(Message::getCategory)
@@ -238,7 +241,7 @@ public class MessageQueryServiceImpl implements MessageQueryService {
                 .eq(Message::getUserId, userId)
                 .ge(Message::getSortTime, now.minusDays(RETENTION_DAYS))
                 .eq(category != null, Message::getCategory, category)
-                .eq(farmId != null, Message::getFarmId, farmId)
+                .and(farmId != null, w -> w.isNull(Message::getFarmId).or().eq(Message::getFarmId, farmId))
                 .isNull(unreadOnly, Message::getReadAt)
                 .and(MessageQueryServiceImpl::visible)
                 .orderByDesc(Message::getSortTime)
@@ -267,7 +270,7 @@ public class MessageQueryServiceImpl implements MessageQueryService {
                 .isNull(Message::getReadAt)
                 .ge(Message::getSortTime, now.minusDays(RETENTION_DAYS))
                 .eq(category != null, Message::getCategory, category)
-                .eq(farmId != null, Message::getFarmId, farmId)
+                .and(farmId != null, w -> w.isNull(Message::getFarmId).or().eq(Message::getFarmId, farmId))
                 .and(MessageQueryServiceImpl::visible));
         return count == null ? 0 : count.intValue();
     }

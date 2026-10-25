@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { installGuards } from '../apps/admin/src/router/guards'
+import { installChunkReload, installGuards, isChunkLoadError } from '../apps/admin/src/router/guards'
 import { useAdminStore } from '../apps/admin/src/stores/admin'
 
 const api = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), put: vi.fn() }))
@@ -26,6 +26,41 @@ function makeRouter() {
 beforeEach(() => {
   setActivePinia(createPinia())
   vi.resetAllMocks()
+})
+
+describe('admin stale chunk after redeploy', () => {
+  function chunkRouter(reload: (href: string) => void) {
+    const router = createRouter({
+      history: createMemoryHistory('/admin/'),
+      routes: [
+        { path: '/', name: 'home', component: {} },
+        {
+          path: '/system/logs', name: 'logs',
+          component: () => Promise.reject(new TypeError('Failed to fetch dynamically imported module: /admin/assets/OperationLogsView-old.js'))
+        }
+      ]
+    })
+    installChunkReload(router, reload)
+    return router
+  }
+
+  beforeEach(() => sessionStorage.clear())
+
+  it('recognises browser chunk-load errors only', () => {
+    expect(isChunkLoadError(new TypeError('Failed to fetch dynamically imported module: /admin/assets/a.js'))).toBe(true)
+    expect(isChunkLoadError(new TypeError('Importing a module script failed.'))).toBe(true)
+    expect(isChunkLoadError(new Error('Request failed with status code 500'))).toBe(false)
+  })
+
+  it('reloads the production target once and does not loop if the retry fails', async () => {
+    const reload = vi.fn()
+    const router = chunkRouter(reload)
+    await router.push('/')
+    await router.push('/system/logs').catch(() => undefined)
+    expect(reload).toHaveBeenCalledExactlyOnceWith('/admin/system/logs')
+    await router.push('/system/logs').catch(() => undefined)
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('admin Cookie session', () => {

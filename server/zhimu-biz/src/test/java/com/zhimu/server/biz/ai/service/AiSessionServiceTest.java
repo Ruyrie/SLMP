@@ -1,5 +1,7 @@
 package com.zhimu.server.biz.ai.service;
 
+import com.baomidou.mybatisplus.core.MybatisConfiguration;
+import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.zhimu.server.biz.ai.convert.AiMessageConvert;
 import com.zhimu.server.biz.ai.convert.AiSessionConvert;
 import com.zhimu.server.biz.ai.entity.AiMessage;
@@ -19,6 +21,7 @@ import com.zhimu.server.common.context.FarmContext;
 import com.zhimu.server.common.enums.FarmRole;
 import com.zhimu.server.common.enums.FarmStatus;
 import com.zhimu.server.common.error.BizException;
+import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,6 +50,8 @@ class AiSessionServiceTest {
 
     @BeforeEach
     void setUp() {
+        // 纯 Mockito 单测不经过 Spring/MyBatis-Plus 启动流程，lambda 条件列缓存需手动初始化。
+        TableInfoHelper.initTableInfo(new MapperBuilderAssistant(new MybatisConfiguration(), ""), AiSession.class);
         com.zhimu.server.common.util.BeijingTime.setClock(java.time.Clock.fixed(
                 AiFixtures.NOW.atZone(com.zhimu.server.common.util.BeijingTime.ZONE).toInstant(),
                 com.zhimu.server.common.util.BeijingTime.ZONE));

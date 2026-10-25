@@ -121,7 +121,7 @@ async function fetchList(): Promise<void> {
     Object.assign(tabCounts, data.tab_counts || {})
     taskPending.value = data.task_pending_count || 0
   } catch (e) {
-    if (e instanceof Error && 'isForbidden' in e) forbidden.value = true
+    if (e instanceof ApiError && e.isForbidden) forbidden.value = true
     error.value = e instanceof Error ? e.message : '加载失败'
     list.value = []
     total.value = 0

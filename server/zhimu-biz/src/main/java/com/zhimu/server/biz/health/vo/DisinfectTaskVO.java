@@ -24,6 +24,9 @@ public class DisinfectTaskVO {
     private Integer cycleDays;
     private String executorText;
     private Boolean noStaff;
+    /** PLAN / MANUAL 等任务来源 */
+    private String source;
+    private String sourceText;
     /** PENDING / OVERDUE / DONE / PAUSED / CANCELLED；已过截止时刻的 PENDING 返回 OVERDUE */
     private String status;
     private String statusText;

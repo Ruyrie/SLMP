@@ -1,5 +1,7 @@
 package com.zhimu.server.biz.herd.api;
 
+import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -15,4 +17,14 @@ public interface BatchQueryService {
 
     /** 批次存在、未删除且在养 */
     boolean isActive(Long batchId);
+
+    /** 养殖场在日期区间内（含两端）登记的死淘头数（生效的 DEATH 事件之和，经营报表死亡率用），默认 0 */
+    default int deathCount(Collection<Long> farmIds, LocalDate start, LocalDate end) {
+        return 0;
+    }
+
+    /** 指定日期末的存栏：以当前存栏反推日期之后的生效入栏、出栏和死淘，不使用另一统计期近似。 */
+    default int stockCountAt(Collection<Long> farmIds, LocalDate date) {
+        return 0;
+    }
 }

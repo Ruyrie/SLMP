@@ -4,6 +4,7 @@ import com.zhimu.server.biz.common.api.BizMediaService;
 import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.inspect.InspectFixtures;
 import com.zhimu.server.biz.inspect.entity.Inspection;
+import com.zhimu.server.biz.inspect.job.InspectionTodoSource;
 import com.zhimu.server.biz.inspect.mapper.InspectionItemResultMapper;
 import com.zhimu.server.biz.inspect.mapper.InspectionMapper;
 import com.zhimu.server.biz.inspect.query.BatchPenStockRow;
@@ -49,6 +50,7 @@ class InspectionServiceImplTest {
     @Mock private InspectionItemResultMapper itemResultMapper;
     @Mock private InspectSupport support;
     @Mock private BizMediaService bizMediaService;
+    @Mock private InspectionTodoSource inspectionTodos;
 
     private InspectionServiceImpl service;
     private BatchInfo batch;
@@ -57,7 +59,7 @@ class InspectionServiceImplTest {
     void setUp() {
         BeijingTime.setClock(InspectFixtures.CLOCK);
         InspectFixtures.loginOwner();
-        service = new InspectionServiceImpl(inspectionMapper, itemResultMapper, support, bizMediaService);
+        service = new InspectionServiceImpl(inspectionMapper, itemResultMapper, support, bizMediaService, inspectionTodos);
         batch = InspectFixtures.batch(3001L, "ZM2610-031", 101L, 1101L,
                 LocalDate.of(2026, 10, 1), 78, 200, 2003L);
         lenient().when(support.member()).thenAnswer(invocation -> FarmContext.require());

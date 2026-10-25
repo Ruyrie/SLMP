@@ -1122,7 +1122,8 @@ public class MarketPriceAdminService {
     private Map<Long, String> adminNames(List<Long> ids) {
         List<Long> safe = ids == null ? List.of() : ids.stream().filter(java.util.Objects::nonNull).distinct().toList();
         if (safe.isEmpty()) {
-            return Map.of();
+            // 示例行情没有录入人：调用方会用 null 键取名字，Map.of() 的 get(null) 会抛空指针
+            return new HashMap<>();
         }
         Map<Long, String> result = new HashMap<>();
         for (NameRow row : lookupMapper.selectAdminNames(safe)) {

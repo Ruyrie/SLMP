@@ -30,6 +30,14 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
     }
 
     @Override
+    public long countPendingByBatch(Long farmId, Long batchId) {
+        if (farmId == null || batchId == null) {
+            return 0;
+        }
+        return TenantSkip.call(() -> changeRequestMapper.countPendingByBatch(farmId, batchId));
+    }
+
+    @Override
     @Transactional
     public int cancelPendingBySubmitter(Long userId, String cancelReason) {
         if (userId == null) {

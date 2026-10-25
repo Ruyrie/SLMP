@@ -27,8 +27,9 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 /**
- * 模块09 批次时间线扩展（DRUG 记录）与 App mock timeline_3001_drug.json 对齐：
- * record_type = DRUG、biz_type 为来源记录类型、title“用药 · 药品名”、route D05（接种 D01 / 消毒 D08）。
+ * 模块09 批次时间线扩展（IMMUNE / DRUG 记录）与 App mock timeline_3001_immune.json / timeline_3001_drug.json 对齐：
+ * 用药 record_type = DRUG、title“用药 · 药品名”、route D05；接种 record_type = IMMUNE、title“免疫 · 药品名”、route D01；
+ * 消毒 route D08。
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -98,7 +99,9 @@ class StockTimelineProviderTest {
         List<TimelineItemVO> items = provider.extraRecords(1001L, 3001L);
 
         assertThat(items.get(0).getRoute()).isEqualTo("D01");
-        assertThat(items.get(0).getTitle()).isEqualTo("接种 · 氟苯尼考粉");
+        assertThat(items.get(0).getRecordType()).isEqualTo("IMMUNE");
+        assertThat(items.get(0).getTitle()).isEqualTo("免疫 · 氟苯尼考粉");
+        assertThat(items.get(1).getRecordType()).isEqualTo("DRUG");
         assertThat(items.get(1).getRoute()).isEqualTo("D08");
         assertThat(items.get(1).getTitle()).isEqualTo("消毒 · 氟苯尼考粉");
     }

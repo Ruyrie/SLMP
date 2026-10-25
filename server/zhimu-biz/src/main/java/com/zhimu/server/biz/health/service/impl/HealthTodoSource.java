@@ -6,6 +6,7 @@ import com.zhimu.server.biz.health.entity.ImmunePlan;
 import com.zhimu.server.biz.health.mapper.DisinfectTaskMapper;
 import com.zhimu.server.biz.health.mapper.HealthReferenceMapper;
 import com.zhimu.server.biz.health.mapper.ImmunePlanMapper;
+import com.zhimu.server.biz.health.query.PenResponsibleRow;
 import com.zhimu.server.biz.health.support.HealthCodes;
 import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.herd.api.BatchQueryService;
@@ -121,12 +122,17 @@ public class HealthTodoSource implements TodoSource {
 
     private TodoDraft disinfectDraft(DisinfectTask task) {
         String penName = referenceMapper.selectPenName(task.getPenId());
+        PenResponsibleRow assignee = referenceMapper.selectPenResponsibles(task.getFarmId()).stream()
+                .filter(row -> java.util.Objects.equals(row.getPenId(), task.getPenId()) && row.getUserId() != null)
+                .findFirst().orElse(null);
         LocalTime due = task.getDueTime() == null ? LocalTime.of(17, 0) : task.getDueTime();
         return TodoDraft.builder().todoType(DISINFECTION).category("WORK")
                 .penId(task.getPenId()).penName(penName).bizType("DISINFECT_TASK").bizId(task.getId())
                 .dedupKey(disinfectKey(task.getId())).title((penName == null ? "栏舍" : penName) + " · 消毒")
                 .contentText(task.getDisinfectantName()).detailLabel("消毒要求")
                 .detailValue(task.getDisinfectantName() + " " + task.getConcentration())
+                .assigneeId(assignee == null ? null : assignee.getUserId())
+                .assigneeName(assignee == null ? null : assignee.getName())
                 .receiverScope("PEN_ALL").dueDate(task.getTaskDate()).timeType("BEFORE_TIME").dueTime(due)
                 .overdueAt(task.getTaskDate().atTime(due)).build();
     }

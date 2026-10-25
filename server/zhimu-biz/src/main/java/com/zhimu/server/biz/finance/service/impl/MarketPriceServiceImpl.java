@@ -101,7 +101,8 @@ public class MarketPriceServiceImpl implements MarketPriceService {
     @Override
     public MarketVos.TrendVO trend(FinanceQueries.MarketPriceQuery query) {
         validate(query);
-        int range = query.getRangeDays();
+        // 未传 range_days 时按 App 默认的近 30 天（之前直接拆箱会 500）
+        int range = query.getRangeDays() == null ? 30 : query.getRangeDays();
         FinanceErrors.require(range == 7 || range == 30 || range == 90, "range_days", "请选择 7 / 30 / 90 天");
         LocalDate today = BeijingTime.today();
         LocalDate start = today.minusDays(range - 1L);

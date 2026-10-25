@@ -563,8 +563,7 @@ public class DisinfectServiceImpl implements DisinfectService {
             vo.setPenId(task.getPenId());
             vo.setPenName(support.penName(task.getPenId()));
             vo.setTaskDate(task.getTaskDate());
-            vo.setDateText(HealthFormat.dateText(task.getTaskDate())
-                    + ("今天".equals(HealthFormat.dateText(task.getTaskDate())) ? " 今天" : ""));
+            vo.setDateText(HealthFormat.dateText(task.getTaskDate()));
             vo.setOverdue(overdue);
             vo.setPlanConcentration(task.getConcentration());
             vo.setPlanText(planText(task));
@@ -1028,6 +1027,8 @@ public class DisinfectServiceImpl implements DisinfectService {
         vo.setCycleDays(cycleDays(task.getPlanId()));
         vo.setExecutorText(support.executorText(task.getPenId()));
         vo.setNoStaff(support.noPenStaff(task.getPenId()));
+        vo.setSource(task.getSource());
+        vo.setSourceText("PLAN".equals(task.getSource()) ? "计划生成" : "手动添加");
         String status = taskStatus(task);
         vo.setStatus(status);
         vo.setStatusText(HealthCodes.taskStatusText(status));

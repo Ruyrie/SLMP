@@ -20,6 +20,7 @@ import com.zhimu.server.biz.herd.vo.MyPensVO;
 import com.zhimu.server.biz.herd.vo.PenStockItemVO;
 import com.zhimu.server.biz.herd.vo.ProductionOverviewVO;
 import com.zhimu.server.biz.herd.vo.StockSummaryVO;
+import com.zhimu.server.biz.herd.vo.TodoBriefVO;
 import com.zhimu.server.biz.inspect.service.InspectionService;
 import com.zhimu.server.biz.inspect.vo.InspectionSummaryVO;
 import com.zhimu.server.biz.today.api.TodoQueryService;
@@ -40,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** API-L01–L05 查询实现。模块03（今日待办）、07（巡检异常）已接入；08 休药中批次待接入。 */
+/** API-L01–L05 查询实现。模块03（今日待办）、07（巡检异常）、08（休药中批次）已接入。 */
 @Service
 @RequiredArgsConstructor
 public class StockServiceImpl implements StockService {
@@ -84,7 +85,35 @@ public class StockServiceImpl implements StockService {
             abnormalPenName = inspection.getFirstAbnormalPenName();
         }
         List<ProductionOverviewVO.ProductionReminderItemVO> reminders = new ArrayList<>();
+        // 模块08：休药中批次排在最前（App L01：ZM2610-031 休药中 · 3 号育肥舍 · 10月29日可出栏 · 剩 10 天）
+        Map<Long, java.time.LocalDate> releaseDates = support.withdrawalReleaseDates(member.farmId());
+        int withdrawalCount = 0;
+        for (Batch batch : active) {
+            java.time.LocalDate release = releaseDates.get(batch.getId());
+            Integer daysLeft = HerdSupport.withdrawalDaysLeft(release);
+            if (daysLeft == null) {
+                continue;
+            }
+            withdrawalCount++;
+            ProductionOverviewVO.ProductionReminderItemVO item =
+                    new ProductionOverviewVO.ProductionReminderItemVO();
+            item.setReminderType("WITHDRAWAL");
+            item.setIsWarning(true);
+            item.setTitle(batch.getBatchNo() + " 休药中");
+            String penName = batchPenName(batch);
+            item.setSubtitle((penName == null ? "" : penName + " · ") + release.getMonthValue() + "月"
+                    + release.getDayOfMonth() + "日可出栏");
+            item.setTagText("剩 " + daysLeft + " 天");
+            item.setBatchId(batch.getId());
+            item.setRoute("D05");
+            reminders.add(item);
+        }
         for (TodoQueryService.WarningTodo warning : todoSummary.warnings()) {
+            if ("WITHDRAWAL_END".equals(warning.todoType()) && warning.batchId() != null
+                    && releaseDates.containsKey(warning.batchId())) {
+                // 休药期到期待办与上面的休药提醒是同一批次，不重复显示
+                continue;
+            }
             ProductionOverviewVO.ProductionReminderItemVO item =
                     new ProductionOverviewVO.ProductionReminderItemVO();
             item.setReminderType(warning.todoType());
@@ -111,11 +140,11 @@ public class StockServiceImpl implements StockService {
         }
         vo.setTodayTodoCount(todoSummary.todayTodoCount());
         vo.setWarningCount(todoSummary.warnings().size() + abnormalCount);
-        // 待模块08接入：休药中批次也计入生产提醒；当前只统计 03/07 的预警项
+        // 生产提醒总数 = 休药中批次 + 预警项（03/07）
         vo.setReminderTotal(reminders.size());
         vo.setReminders(reminders);
         ProductionOverviewVO.ProductionBadges badges = new ProductionOverviewVO.ProductionBadges();
-        badges.setWithdrawal(false);
+        badges.setWithdrawal(withdrawalCount > 0);
         badges.setFeedLowStock(reminders.stream()
                 .anyMatch(item -> "FEED_LOW_STOCK".equals(item.getReminderType())));
         vo.setBadges(badges);
@@ -136,6 +165,8 @@ public class StockServiceImpl implements StockService {
             batches.put(batch.getId(), batch);
         }
         String unit = support.farmUnit(member.farmId());
+        Map<Long, TodoQueryService.PenTasks> penTasks = todoQueryService.penTasksToday();
+        Map<Long, java.time.LocalDate> releaseDates = support.withdrawalReleaseDates(member.farmId());
         for (Pen pen : pens) {
             MyPenItemVO item = new MyPenItemVO();
             item.setPenId(pen.getId());
@@ -146,10 +177,11 @@ public class StockServiceImpl implements StockService {
             item.setCapacity(pen.getCapacity());
             item.setStockCount(pen.getStockCount());
             item.setIsEmpty(pen.getStockCount() != null && pen.getStockCount() == 0);
-            // 待模块03接入：今日作业完成数与作业列表
-            item.setTaskDone(0);
-            item.setTaskTotal(0);
-            item.setTasks(List.of());
+            // 模块03：今日作业完成数、总数与未完成的作业类待办
+            TodoQueryService.PenTasks tasks = penTasks == null ? null : penTasks.get(pen.getId());
+            item.setTaskDone(tasks == null ? 0 : tasks.done());
+            item.setTaskTotal(tasks == null ? 0 : tasks.total());
+            item.setTasks(tasks == null ? List.of() : tasks.pending().stream().map(StockServiceImpl::taskBrief).toList());
             item.setUnitText(support.unitText(unit));
             List<MyPenBatchVO> penBatches = new ArrayList<>();
             for (BatchPen row : support.positivePensOfBatchByPen(member.farmId(), pen.getId())) {
@@ -163,8 +195,10 @@ public class StockServiceImpl implements StockService {
                 batchVO.setBreedTitle(support.breedTitle(batch));
                 batchVO.setQtyInPen(row.getStockCount());
                 batchVO.setDayAge(support.dayAge(batch));
-                // 待模块08接入：休药中与剩余天数
-                batchVO.setInWithdrawal(false);
+                // 模块08：休药中与剩余天数
+                Integer daysLeft = HerdSupport.withdrawalDaysLeft(releaseDates.get(batch.getId()));
+                batchVO.setInWithdrawal(daysLeft != null);
+                batchVO.setWithdrawalRemainingDays(daysLeft);
                 batchVO.setStageName(support.stageName(batch));
                 penBatches.add(batchVO);
             }
@@ -209,8 +243,9 @@ public class StockServiceImpl implements StockService {
         StockSummaryVO vo = new StockSummaryVO();
         vo.setTotalStock(totalStock);
         vo.setActiveBatchCount(active.size());
-        // 待模块08接入：休药中批次
-        vo.setWithdrawalBatchCount(0);
+        // 模块08：休药中批次
+        Map<Long, java.time.LocalDate> releaseDates = support.withdrawalReleaseDates(farmId);
+        vo.setWithdrawalBatchCount((int) active.stream().filter(b -> releaseDates.containsKey(b.getId())).count());
         vo.setEndedBatchCount((int) support.countBatches(farmId, "ENDED"));
         vo.setEntryTotal(entryTotal);
         vo.setDeathTotal(deathTotal);
@@ -272,6 +307,7 @@ public class StockServiceImpl implements StockService {
             }
         }
         Map<Long, Batch> endedByPen = lastEndedBatches(farmId);
+        Map<Long, java.time.LocalDate> releaseDates = support.withdrawalReleaseDates(farmId);
 
         List<PenStockItemVO> all = new ArrayList<>();
         for (Pen pen : support.pensOfFarm(farmId)) {
@@ -279,7 +315,10 @@ public class StockServiceImpl implements StockService {
             if (keyword != null && !matchesPen(pen, keyword, inPen)) {
                 continue;
             }
-            all.add(penItem(pen, inPen, endedByPen.get(pen.getId())));
+            PenStockItemVO item = penItem(pen, inPen, endedByPen.get(pen.getId()));
+            // 模块08：栏内有休药中批次
+            item.setInWithdrawal(inPen.stream().anyMatch(b -> releaseDates.containsKey(b.getId())));
+            all.add(item);
         }
         boolean disabledLast = true;
         Comparator<PenStockItemVO> comparator;
@@ -377,6 +416,31 @@ public class StockServiceImpl implements StockService {
         return new ArrayList<>(result.values());
     }
 
+    private static TodoBriefVO taskBrief(TodoQueryService.PenTask task) {
+        TodoBriefVO vo = new TodoBriefVO();
+        vo.setTodoId(task.todoId());
+        vo.setTodoType(task.todoType());
+        vo.setTitle(task.title());
+        vo.setTimeText(task.timeText());
+        vo.setStatus(task.status());
+        vo.setStatusText(task.statusText());
+        vo.setRoute(task.route());
+        vo.setTaskId(task.taskId());
+        vo.setBatchId(task.batchId());
+        vo.setPenId(task.penId());
+        return vo;
+    }
+
+    /** 批次当前在栏的第一个栏舍名（没有在栏记录时用入栏栏舍） */
+    private String batchPenName(Batch batch) {
+        List<BatchPen> rows = support.positivePensOfBatch(batch.getId());
+        Long penId = rows == null || rows.isEmpty() ? batch.getEntryPenId() : rows.get(0).getPenId();
+        if (penId == null) {
+            return null;
+        }
+        return support.pensByIds(List.of(penId)).stream().findFirst().map(Pen::getPenName).orElse(null);
+    }
+
     private Map<Long, List<BatchPen>> positivePens(Long farmId, Set<Long> batchIds) {
         Map<Long, List<BatchPen>> result = new LinkedHashMap<>();
         if (batchIds.isEmpty()) {
@@ -420,7 +484,7 @@ public class StockServiceImpl implements StockService {
         item.setCapacity(pen.getCapacity());
         item.setStockCount(pen.getStockCount());
         item.setIsBreedingPen(breeding);
-        // 待模块08接入：休药中
+        // 休药中由调用方按模块08 结果覆盖
         item.setInWithdrawal(false);
         item.setBatchCount(batches.size());
         String displayStatus = "DISABLED".equals(pen.getStatus()) ? PenStockItemVO.STATUS_DISABLED

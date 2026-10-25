@@ -6,12 +6,14 @@ import com.zhimu.server.admin.content.mapper.ContentLookupMapper;
 import com.zhimu.server.admin.content.mapper.MarketPriceAdminMapper;
 import com.zhimu.server.admin.content.mapper.MarketPriceConfigAdminMapper;
 import com.zhimu.server.admin.content.mapper.MarketPriceCorrectionMapper;
+import com.zhimu.server.admin.content.query.ContentQueries;
 import com.zhimu.server.admin.content.request.ContentRequests;
 import com.zhimu.server.admin.content.vo.MarketPriceAdminVos;
 import com.zhimu.server.admin.system.api.AdminMessageService;
 import com.zhimu.server.admin.system.api.OperationLogService;
 import com.zhimu.server.biz.finance.entity.MarketPrice;
 import com.zhimu.server.biz.finance.entity.MarketPriceConfig;
+import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.common.context.AdminContext;
 import com.zhimu.server.common.error.BizException;
 import com.zhimu.server.common.error.ErrorCode;
@@ -155,6 +157,25 @@ class MarketPriceAdminServiceTest {
         assertThatThrownBy(() -> service.review(9L, request))
                 .isInstanceOfSatisfying(BizException.class,
                         e -> assertThat(e.getCode()).isEqualTo(ErrorCode.VERSION_CONFLICT.getCode()));
+    }
+
+    @Test
+    void listToleratesSamplePricesWithoutRecorder() {
+        when(configMapper.selectList(any())).thenReturn(List.of(config(1L, 101L, 0L, "SLAUGHTER")));
+        // 示例行情（V9_17）没有录入人和审核人：entered_by / reviewer_id 都为空
+        MarketPrice price = publishedPrice("100.00");
+        price.setId(9L);
+        price.setPriceDate(LocalDate.of(2026, 10, 19));
+        when(priceMapper.selectList(any())).thenReturn(List.of(price));
+        when(correctionMapper.selectList(any())).thenReturn(List.of());
+
+        ContentQueries.MarketPriceQuery query = new ContentQueries.MarketPriceQuery();
+        query.setDate(LocalDate.of(2026, 10, 19));
+        PageVO<MarketPriceAdminVos.RowVO> page = service.list(query);
+
+        assertThat(page.getList()).hasSize(1);
+        assertThat(page.getList().getFirst().getRowStatus()).isEqualTo("PUBLISHED");
+        assertThat(page.getList().getFirst().getEnteredByName()).isNull();
     }
 
     private static MarketPriceConfig config(Long id, Long categoryId, Long breedId, String priceType) {

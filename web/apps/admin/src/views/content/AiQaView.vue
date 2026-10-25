@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { dayjs, formatDate, formatDateTime, formatNumber, formatPercent, today } from '@zmt/shared'
+import { ApiError, dayjs, formatDate, formatDateTime, formatNumber, formatPercent, today } from '@zmt/shared'
 import {
   createAiQaTask,
   exportAiQa,
@@ -97,7 +97,7 @@ async function loadSummary(): Promise<void> {
   try {
     summary.value = await getAiQaSummary({ date_from: query.date_from, date_to: query.date_to })
   } catch (e) {
-    if (e instanceof Error && 'isForbidden' in e) forbidden.value = true
+    if (e instanceof ApiError && e.isForbidden) forbidden.value = true
   }
 }
 
@@ -134,7 +134,7 @@ async function fetchList(): Promise<void> {
     total.value = data.total || 0
     Object.assign(tabCounts, data.tab_counts || {})
   } catch (e) {
-    if (e instanceof Error && 'isForbidden' in e) forbidden.value = true
+    if (e instanceof ApiError && e.isForbidden) forbidden.value = true
     error.value = e instanceof Error ? e.message : '加载失败'
     list.value = []
     total.value = 0

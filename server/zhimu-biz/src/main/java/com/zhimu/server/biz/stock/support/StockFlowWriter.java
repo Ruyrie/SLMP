@@ -54,7 +54,9 @@ public class StockFlowWriter {
                 .eq(StockFlow::getBizType, bizType)
                 .eq(StockFlow::getBizId, bizId)
                 .eq(StockFlow::getStatus, StockCodes.STATUS_NORMAL)
-                .ne(StockFlow::getVoidReason, StockCodes.VOID_CORRECTED)
+                // void_reason 默认是 NULL，SQL 的 <> 不会匹配 NULL；必须显式包含 NULL，否则首次流水永远查不到。
+                .and(w -> w.isNull(StockFlow::getVoidReason)
+                        .or().ne(StockFlow::getVoidReason, StockCodes.VOID_CORRECTED))
                 .orderByAsc(StockFlow::getOriginFlowId));
     }
 

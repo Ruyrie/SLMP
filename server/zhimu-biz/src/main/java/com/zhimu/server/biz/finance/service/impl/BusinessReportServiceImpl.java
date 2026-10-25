@@ -24,6 +24,7 @@ import com.zhimu.server.biz.finance.service.BusinessReportService;
 import com.zhimu.server.biz.finance.support.FinanceConst;
 import com.zhimu.server.biz.finance.support.FinanceErrors;
 import com.zhimu.server.biz.finance.support.FinanceSupport;
+import com.zhimu.server.biz.finance.support.ReportFeedMetrics;
 import com.zhimu.server.biz.finance.vo.ReportVos;
 import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.herd.api.BatchQueryService;
@@ -91,6 +92,7 @@ public class BusinessReportServiceImpl implements BusinessReportService {
     private final ObjectStorage objectStorage;
     private final FileMapper fileMapper;
     private final FinanceSupport support;
+    private final ReportFeedMetrics reportFeedMetrics;
 
     // ===== E37 期次 =====
 
@@ -144,7 +146,8 @@ public class BusinessReportServiceImpl implements BusinessReportService {
                 : FinanceConst.REPORT_WEEKLY.equals(period.reportType())
                 ? FinanceSupport.periodLabel(period.start(), period.end())
                 : period.start().getMonthValue() + "月");
-        info.setToDate(period.toDate() ? FinanceSupport.format(period.end()) : null);
+        // App 契约：周报、月报、截至今日都给出统计截止日（= 期次结束日）
+        info.setToDate(FinanceSupport.format(period.end()));
         vo.setPeriod(info);
         vo.setScope(scope.all() ? FinanceConst.SCOPE_ALL : null);
         vo.setIncludedFarms(scope.farms());
@@ -153,8 +156,8 @@ public class BusinessReportServiceImpl implements BusinessReportService {
 
         ReportVos.ReportMetrics metrics = new ReportVos.ReportMetrics();
         metrics.setStock(stockMetrics(scope.ids(), batches, orders, period));
-        metrics.setMortality(mortality());
-        metrics.setFeed(feed(scope.ids()));
+        metrics.setMortality(mortality(scope.ids(), batches, orders, period));
+        metrics.setFeed(feed(scope.ids(), period));
         metrics.setBalance(balance(records, period));
         vo.setMetrics(metrics);
         vo.setBatchProfits(batchProfits(scope.ids(), period));
@@ -436,23 +439,42 @@ public class BusinessReportServiceImpl implements BusinessReportService {
         return result;
     }
 
-    private ReportVos.Mortality mortality() {
+    /**
+     * 死亡率 = 期间死淘 / (该期期末存栏 + 期间死淘 + 期间出栏)；上一期独立取期末存栏比较。
+     * 死淘头数来自模块04 的生效死淘事件。
+     */
+    private ReportVos.Mortality mortality(List<Long> farmIds, List<BatchInfo> batches, List<SaleOrder> orders,
+                                          Period period) {
+        int deaths = batchQueryService.deathCount(farmIds, period.start(), period.end());
+        int end = batchQueryService.stockCountAt(farmIds, period.end());
+        int sold = orders.stream().filter(o -> inPeriod(o.getSaleDate(), period))
+                .mapToInt(o -> o.getQuantity() == null ? 0 : o.getQuantity()).sum();
+        int base = end + deaths + sold;
         ReportVos.Mortality mortality = new ReportVos.Mortality();
-        mortality.setRate(null);
-        mortality.setChangePoint(null);
-        mortality.setDeathCount(0);
-        mortality.setComparable(false);
+        mortality.setDeathCount(deaths);
+        if (base <= 0) {
+            mortality.setRate(null);
+            mortality.setChangePoint(null);
+            mortality.setComparable(false);
+            return mortality;
+        }
+        BigDecimal rate = BigDecimal.valueOf(deaths).divide(BigDecimal.valueOf(base), 4, RoundingMode.HALF_UP);
+        mortality.setRate(rate);
+        Period previous = previousPeriod(period);
+        int prevDeaths = batchQueryService.deathCount(farmIds, previous.start(), previous.end());
+        int prevSold = orders.stream().filter(order -> inPeriod(order.getSaleDate(), previous))
+                .mapToInt(order -> order.getQuantity() == null ? 0 : order.getQuantity()).sum();
+        int prevBase = batchQueryService.stockCountAt(farmIds, previous.end()) + prevDeaths + prevSold;
+        boolean comparable = prevBase > 0;
+        mortality.setComparable(comparable);
+        mortality.setChangePoint(comparable ? rate.subtract(BigDecimal.valueOf(prevDeaths)
+                .divide(BigDecimal.valueOf(prevBase), 4, RoundingMode.HALF_UP)) : null);
         return mortality;
     }
 
-    private ReportVos.Feed feed(List<Long> farmIds) {
-        ReportVos.Feed feed = new ReportVos.Feed();
-        BigDecimal kg = settlements(farmIds).stream().map(BatchSettlement::getFeedKg)
-                .map(FinanceSupport::nz).reduce(BigDecimal.ZERO, BigDecimal::add);
-        feed.setKg(FinanceSupport.scale2(kg));
-        feed.setChangeRate(null);
-        feed.setComparable(false);
-        return feed;
+    private ReportVos.Feed feed(List<Long> farmIds, Period period) {
+        Period previous = previousPeriod(period);
+        return reportFeedMetrics.between(farmIds, period.start(), period.end(), previous.start(), previous.end());
     }
 
     private ReportVos.Balance balance(List<FinanceRecord> records, Period period) {
@@ -505,6 +527,7 @@ public class BusinessReportServiceImpl implements BusinessReportService {
             BatchInfo batch = batchOf(settlement.getBatchId());
             item.setBatchId(settlement.getBatchId());
             item.setBatchNo(batch == null ? null : batch.batchNo());
+            item.setFarmName(farmName(settlement.getFarmId()));
             item.setProfit(settlement.getProfit());
             profits.getItems().add(item);
             total = total.add(FinanceSupport.nz(settlement.getProfit()));
@@ -628,7 +651,10 @@ public class BusinessReportServiceImpl implements BusinessReportService {
     private Scope scope(String scope) {
         Long current = support.farmId();
         if (!FinanceConst.SCOPE_ALL.equals(scope)) {
-            return new Scope(false, List.of(current), List.of(), List.of());
+            // 单场报表也返回当前养殖场（App included_farms 显示“东山猪场”）
+            List<FarmBriefVO> currentFarm = farmQueryService.listFarmsOfUser(UserContext.requireUserId()).stream()
+                    .filter(f -> current.equals(f.getFarmId())).toList();
+            return new Scope(false, List.of(current), currentFarm, List.of());
         }
         List<FarmBriefVO> all = farmQueryService.listFarmsOfUser(UserContext.requireUserId());
         List<FarmBriefVO> included = all.stream()
@@ -718,6 +744,14 @@ public class BusinessReportServiceImpl implements BusinessReportService {
     private List<BatchSettlement> settlements(List<Long> farmIds) {
         return TenantSkip.call(() -> settlementMapper.selectList(Wrappers.<BatchSettlement>lambdaQuery()
                 .in(BatchSettlement::getFarmId, farmIds)));
+    }
+
+    private String farmName(Long farmId) {
+        if (farmId == null) {
+            return null;
+        }
+        var farm = support.farm(farmId);
+        return farm == null ? null : farm.getName();
     }
 
     private BatchInfo batchOf(Long batchId) {

@@ -6,6 +6,7 @@ import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.herd.api.PenInfo;
 import com.zhimu.server.biz.inspect.convert.InspectionConvert;
 import com.zhimu.server.biz.inspect.entity.Inspection;
+import com.zhimu.server.biz.inspect.job.InspectionTodoSource;
 import com.zhimu.server.biz.inspect.entity.InspectionItemResult;
 import com.zhimu.server.biz.inspect.mapper.InspectionItemResultMapper;
 import com.zhimu.server.biz.inspect.mapper.InspectionMapper;
@@ -69,6 +70,7 @@ public class InspectionServiceImpl implements InspectionService {
     private final InspectionItemResultMapper itemResultMapper;
     private final InspectSupport support;
     private final BizMediaService bizMediaService;
+    private final InspectionTodoSource inspectionTodos;
 
     // ===== API-I01 统计 =====
 
@@ -357,6 +359,7 @@ public class InspectionServiceImpl implements InspectionService {
         Inspection byRequest = inspectionMapper.selectByClientRequestId(support.farmId(),
                 request.getClientRequestId());
         if (byRequest != null) {
+            inspectionTodos.completeFor(byRequest);
             return InspectionConvert.submitResult(byRequest, support.penName(byRequest.getPenId()));
         }
         List<BatchInfo> batches = support.batchesOfPen(penId);
@@ -412,6 +415,7 @@ public class InspectionServiceImpl implements InspectionService {
         }
         saveItemResults(inspection.getId(), submission.snapshots());
         bindMedia(inspection.getId(), request.getMediaFileIds(), member.userId());
+        inspectionTodos.completeFor(inspection);
         return InspectionConvert.submitResult(inspection, pen.penName());
     }
 
@@ -484,6 +488,7 @@ public class InspectionServiceImpl implements InspectionService {
         if (request.getMediaFileIds() != null) {
             bindMedia(inspection.getId(), request.getMediaFileIds(), member.userId());
         }
+        inspectionTodos.completeFor(inspection);
         return InspectionConvert.submitResult(inspection, support.penName(inspection.getPenId()));
     }
 
@@ -508,6 +513,7 @@ public class InspectionServiceImpl implements InspectionService {
         Inspection byRequest = inspectionMapper.selectByClientRequestId(support.farmId(),
                 request.getClientRequestId());
         if (byRequest != null) {
+            inspectionTodos.completeFor(byRequest);
             return InspectionConvert.submitResult(byRequest, support.penName(byRequest.getPenId()));
         }
         if (request.getExecutorId() == null) {
@@ -567,6 +573,7 @@ public class InspectionServiceImpl implements InspectionService {
         }
         saveItemResults(inspection.getId(), submission.snapshots());
         bindMedia(inspection.getId(), request.getMediaFileIds(), member.userId());
+        inspectionTodos.completeFor(inspection);
         return InspectionConvert.submitResult(inspection, pen.penName());
     }
 

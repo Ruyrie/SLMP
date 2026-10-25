@@ -38,3 +38,34 @@ export function installGuards(router: Router): void {
     document.title = title ? `${title} - 智牧通管理端` : '智牧通管理端'
   })
 }
+
+const CHUNK_RELOAD_KEY = 'zmt.admin.chunk-reload'
+
+export function isChunkLoadError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? '')
+  return /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Unable to preload CSS/i.test(message)
+}
+
+/** Recover once when an open page still references chunks removed by a deployment. */
+export function installChunkReload(router: Router, reload: (href: string) => void = (href) => window.location.assign(href)): void {
+  router.onError((error, to) => {
+    if (!isChunkLoadError(error)) return
+    const href = router.resolve(to.fullPath).href
+    try {
+      if (sessionStorage.getItem(CHUNK_RELOAD_KEY) === href) return
+      sessionStorage.setItem(CHUNK_RELOAD_KEY, href)
+    } catch {
+      // Without storage a reload cannot be bounded, so leave the original error visible.
+      return
+    }
+    reload(href)
+  })
+  router.afterEach((_to, _from, failure) => {
+    if (failure) return
+    try {
+      sessionStorage.removeItem(CHUNK_RELOAD_KEY)
+    } catch {
+      /* Storage may be unavailable in private browsing. */
+    }
+  })
+}

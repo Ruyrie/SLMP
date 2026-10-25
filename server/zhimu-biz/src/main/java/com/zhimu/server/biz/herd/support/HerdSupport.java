@@ -8,6 +8,7 @@ import com.zhimu.server.biz.account.api.AccountBrief;
 import com.zhimu.server.biz.account.api.AccountQueryService;
 import com.zhimu.server.biz.farm.entity.Farm;
 import com.zhimu.server.biz.farm.support.FarmLookup;
+import com.zhimu.server.biz.health.api.WithdrawalQueryService;
 import com.zhimu.server.biz.herd.entity.Batch;
 import com.zhimu.server.biz.herd.entity.BatchPen;
 import com.zhimu.server.biz.herd.entity.Pen;
@@ -50,6 +51,7 @@ public class HerdSupport {
     private final AccountQueryService accountQueryService;
     private final CategoryQueryService categoryQueryService;
     private final BreedQueryService breedQueryService;
+    private final WithdrawalQueryService withdrawalQueryService;
 
     public FarmContext.FarmMember context() {
         return FarmContext.require();
@@ -65,6 +67,21 @@ public class HerdSupport {
 
     public Farm farm(Long farmId) {
         return farmLookup.requireFarm(farmId);
+    }
+
+    /** 模块08：本场休药中的批次 → 可出栏日期（休药结束日晚于今天） */
+    public Map<Long, LocalDate> withdrawalReleaseDates(Long farmId) {
+        Map<Long, LocalDate> dates = farmId == null ? null : withdrawalQueryService.releaseDatesOfFarm(farmId);
+        return dates == null ? Map.of() : dates;
+    }
+
+    /** 休药剩余天数（今天到可出栏日期），不在休药期返回 null */
+    public static Integer withdrawalDaysLeft(LocalDate releaseDate) {
+        if (releaseDate == null) {
+            return null;
+        }
+        long days = ChronoUnit.DAYS.between(BeijingTime.today(), releaseDate);
+        return days > 0 ? (int) days : null;
     }
 
     /** 本场全部栏舍，按编号升序 */
@@ -337,7 +354,8 @@ public class HerdSupport {
         item.setDayAge(dayAge(batch));
         item.setCurrentCount(batch.getCurrentCount());
         item.setMortalityRate(mortality(batch.getDeathCount(), batch.getEntryCount()));
-        item.setInWithdrawal(false);
+        item.setInWithdrawal("ACTIVE".equals(batch.getStatus())
+                && withdrawalReleaseDates(batch.getFarmId()).containsKey(batch.getId()));
         item.setStageName(stageName(batch));
         item.setEndDate(BeijingTime.format(batch.getEndDate()));
         String unit = farmUnit(batch.getFarmId());

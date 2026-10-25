@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 批次时间线的模块09 部分（API-L16 的 DRUG 记录）：该批次药品出库流水（接种 / 用药 / 消毒 / 领用）
- * 按发生时间倒序返回，与 App mock timeline_3001_drug.json 的 DRUG 项结构一致 ——
- * record_type = DRUG、biz_type = 来源记录类型、title“用药 · 氟苯尼考粉”、subtitle 带批号与数量、
- * route 按类型 D01 免疫 / D05 用药 / D08 消毒。
+ * 批次时间线的模块09 部分（API-L16 的 IMMUNE / DRUG 记录）：该批次药品出库流水（接种 / 用药 / 消毒 / 领用）
+ * 按发生时间倒序返回，与 App mock timeline_3001_immune.json / timeline_3001_drug.json 一致 ——
+ * 接种 record_type = IMMUNE、title“免疫 · 口蹄疫灭活疫苗”；其余 record_type = DRUG、title“用药 · 氟苯尼考粉”；
+ * biz_type = 来源记录类型、subtitle 带批号与数量、route 按类型 D01 免疫 / D05 用药 / D08 消毒。
  * <p>
  * 模块08 合并后可由其自带的记录接管更细的字段（休药期等）；本实现只读流水，不返回金额字段。
  */
@@ -89,7 +89,9 @@ public class StockTimelineProvider implements BatchTimelineProvider {
         TimelineItemVO item = new TimelineItemVO();
         item.setId(flow.getId());
         item.setBizId(flow.getBizId() == null ? flow.getId() : flow.getBizId());
-        item.setRecordType(TimelineItemVO.TYPE_DRUG);
+        // 接种归到“免疫”筛选（App L06 的 IMMUNE 页签），其余用药、消毒、领用归“用药”
+        item.setRecordType(StockCodes.FLOW_VACCINE_USE.equals(flow.getFlowType())
+                ? TimelineItemVO.TYPE_IMMUNE : TimelineItemVO.TYPE_DRUG);
         item.setBizType(flow.getBizType());
         item.setBizDate(BeijingTime.format(flow.getBizDate()));
         item.setOccurredAt(BeijingTime.format(flow.getOccurAt()));
@@ -105,7 +107,7 @@ public class StockTimelineProvider implements BatchTimelineProvider {
 
     private static String actionText(String flowType) {
         if (StockCodes.FLOW_VACCINE_USE.equals(flowType)) {
-            return "接种";
+            return "免疫";
         }
         if (StockCodes.FLOW_MEDICATION_USE.equals(flowType)) {
             return "用药";

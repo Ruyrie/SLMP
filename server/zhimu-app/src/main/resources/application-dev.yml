@@ -7,6 +7,9 @@ spring:
     out-of-order: true
 
 zhimu:
+  demo:
+    shift:
+      enabled: ${ZMT_DEMO_SHIFT:true}
   security:
     cookie-secure: false
     allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174}

@@ -7,8 +7,9 @@ const shared = fileURLToPath(new URL('../../packages/shared/src', import.meta.ur
 const backend = process.env.ZMT_BACKEND || 'http://127.0.0.1:8080'
 
 // 生产部署在公网 IP 的 /admin/ 路径下；开发仍在 5174 根路径。
-export default defineConfig(({ command }) => ({
-  base: command === 'build' ? '/admin/' : '/',
+// vite preview 预览的是生产构建，也必须用 /admin/，否则 index.html 引用的 /admin/assets/* 会 404。
+export default defineConfig(({ command, isPreview }) => ({
+  base: command === 'build' || isPreview ? '/admin/' : '/',
   plugins: [vue()],
   resolve: {
     alias: [

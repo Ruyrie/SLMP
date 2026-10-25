@@ -205,4 +205,24 @@ class TodoQueryServiceImplTest {
         todo.setDeleted(false);
         return todo;
     }
+
+    @Test
+    void penTasksUseRealSourceIdsAndIncludeOnlyVisibleWork() {
+        Todo feed = todo(1L, "FEEDING", "WORK", "PENDING", LocalDate.of(2026, 10, 19),
+                LocalTime.of(17, 0), LocalDateTime.of(2026, 10, 19, 19, 0), "3 号育肥舍 · 晚餐饲喂");
+        feed.setBizId(70109L);
+        feed.setBatchId(3001L);
+        Todo warning = todo(2L, "FEED_LOW_STOCK", "WARNING", "PENDING", LocalDate.of(2026, 10, 19), null, null, "库存不足");
+        Todo done = todo(3L, "FEEDING", "WORK", "DONE", LocalDate.of(2026, 10, 19), LocalTime.of(7, 0), null, "早餐");
+        when(todoMapper.selectList(any())).thenReturn(List.of(feed, warning), List.of(done));
+
+        var tasks = service.penTasksToday().get(2003L);
+
+        assertThat(tasks.done()).isEqualTo(1);
+        assertThat(tasks.total()).isEqualTo(2);
+        assertThat(tasks.pending()).hasSize(1);
+        assertThat(tasks.pending().get(0).taskId()).isEqualTo(70109L);
+        assertThat(tasks.pending().get(0).title()).isEqualTo("晚餐饲喂");
+        assertThat(tasks.pending().get(0).route()).isEqualTo("G02");
+    }
 }

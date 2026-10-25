@@ -667,6 +667,66 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         return new ProductionTodoSummary(todayTodoCount, warnings);
     }
 
+    @Override
+    public Map<Long, PenTasks> penTasksToday() {
+        FarmContext.FarmMember member = FarmContext.require();
+        LocalDate today = BeijingTime.today();
+        LocalDateTime now = BeijingTime.now();
+        Map<Long, List<PenTask>> pendingByPen = new LinkedHashMap<>();
+        Map<Long, int[]> counts = new LinkedHashMap<>();
+        List<Todo> open = new ArrayList<>();
+        for (Todo todo : pendingOfFarm(member.farmId())) {
+            if (todo.getPenId() != null && TodoCategory.WORK.name().equals(todo.getCategory())
+                    && todoScope.canView(todo, member) && isTodayList(todo, today, now)) {
+                open.add(todo);
+            }
+        }
+        open.sort(todayComparator(now));
+        for (Todo todo : open) {
+            counts.computeIfAbsent(todo.getPenId(), k -> new int[2])[1]++;
+            TodoStatus status = TodayText.displayStatus(todo, now);
+            pendingByPen.computeIfAbsent(todo.getPenId(), k -> new ArrayList<>()).add(new PenTask(
+                    todo.getId(), todo.getTodoType(), penTaskTitle(todo), penTaskTime(todo),
+                    status.name(), status.getText(), TodoLinks.listRoute(todo.getTodoType()),
+                    todo.getBizId(), todo.getBatchId(), todo.getPenId()));
+        }
+        List<Todo> done = todoMapper.selectList(Wrappers.<Todo>lambdaQuery()
+                .eq(Todo::getFarmId, member.farmId())
+                .eq(Todo::getStatus, TodoStatus.DONE.name())
+                .eq(Todo::getDueDate, today));
+        for (Todo todo : done) {
+            if (todo.getPenId() != null && TodoCategory.WORK.name().equals(todo.getCategory())
+                    && todoScope.canView(todo, member)) {
+                int[] c = counts.computeIfAbsent(todo.getPenId(), k -> new int[2]);
+                c[0]++;
+                c[1]++;
+            }
+        }
+        Map<Long, PenTasks> result = new LinkedHashMap<>();
+        counts.forEach((penId, c) -> result.put(penId,
+                new PenTasks(c[0], c[1], pendingByPen.getOrDefault(penId, List.of()))));
+        return result;
+    }
+
+    /** 栏舍卡里去掉“栏舍名 · ”前缀：3 号育肥舍 · 晚餐饲喂 → 晚餐饲喂 */
+    private static String penTaskTitle(Todo todo) {
+        String title = todo.getTitle();
+        String prefix = todo.getPenName() == null ? null : todo.getPenName() + " · ";
+        if (title != null && prefix != null && title.startsWith(prefix) && title.length() > prefix.length()) {
+            return title.substring(prefix.length());
+        }
+        return title;
+    }
+
+    /** 17:00 / 18:00 前；全天的不显示时间 */
+    private static String penTaskTime(Todo todo) {
+        if ("ALL_DAY".equals(todo.getTimeType()) || todo.getDueTime() == null) {
+            return null;
+        }
+        String hm = TodayText.hm(todo.getDueTime());
+        return "BEFORE_TIME".equals(todo.getTimeType()) ? hm + " 前" : hm;
+    }
+
     /** 生产提醒的标签文字（与 App L01 提醒项一致） */
     private static String warningTag(String todoType) {
         return switch (todoType == null ? "" : todoType) {

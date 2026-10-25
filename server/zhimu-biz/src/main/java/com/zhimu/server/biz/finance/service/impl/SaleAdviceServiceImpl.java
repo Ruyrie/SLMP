@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.zhimu.server.biz.finance.entity.MarketPrice;
 import com.zhimu.server.biz.finance.entity.SaleAdvice;
 import com.zhimu.server.biz.finance.entity.SaleAdviceRisk;
+import com.zhimu.server.biz.finance.entity.SaleOrder;
 import com.zhimu.server.biz.finance.mapper.SaleAdviceMapper;
 import com.zhimu.server.biz.finance.mapper.SaleAdviceRiskMapper;
+import com.zhimu.server.biz.finance.mapper.SaleOrderMapper;
 import com.zhimu.server.biz.finance.query.FinanceQueries;
 import com.zhimu.server.biz.finance.service.MarketPriceService;
 import com.zhimu.server.biz.finance.service.SaleAdviceService;
@@ -49,6 +51,7 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
 
     private final SaleAdviceMapper adviceMapper;
     private final SaleAdviceRiskMapper riskMapper;
+    private final SaleOrderMapper saleOrderMapper;
     private final BatchQueryService batchQueryService;
     private final MarketPriceService marketPriceService;
     private final AiGateway aiGateway;
@@ -368,7 +371,7 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
         reasons.setPrice(advice.getReasonPrice());
         vo.setReasons(reasons);
         vo.setBasisNote(advice.getBasisNote());
-        vo.setBatchEndDate(batch == null ? null : FinanceSupport.format(batch.entryDate()));
+        vo.setBatchEndDate(batchEndDate(batch));
         vo.setSourceLabel(advice.getGenMode());
         List<SaleAdviceRisk> risks = riskMapper.selectList(Wrappers.<SaleAdviceRisk>lambdaQuery()
                 .eq(SaleAdviceRisk::getAdviceId, advice.getId())
@@ -377,18 +380,22 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
         return vo;
     }
 
+    /** 历史建议与 App advice_history.json 一致：返回与详情相同的字段（栏舍、窗口期、理由、风险等） */
     private SaleAdviceVos.SaleAdviceVO historyVo(SaleAdvice advice) {
-        SaleAdviceVos.SaleAdviceVO vo = new SaleAdviceVos.SaleAdviceVO();
-        vo.setId(advice.getId());
-        vo.setBatchId(advice.getBatchId());
-        BatchInfo batch = batchOf(advice.getBatchId());
-        vo.setBatchNo(batch == null ? null : batch.batchNo());
-        vo.setConclusion(advice.getConclusion());
-        vo.setConclusionText(FinanceConst.conclusionText(advice.getConclusion()));
-        vo.setGeneratedAt(FinanceSupport.format(advice.getGeneratedAt()));
-        vo.setBatchEndDate(batch == null ? null : FinanceSupport.format(batch.entryDate()));
-        vo.setStatus(advice.getStatus());
-        return vo;
+        return toVo(advice, batchOf(advice.getBatchId()));
+    }
+
+    /** 批次已出栏结束时返回最后一张有效出栏单的出栏日期（App“已于 X 出栏”）；在养批次为 null */
+    private String batchEndDate(BatchInfo batch) {
+        if (batch == null || batch.active()) {
+            return null;
+        }
+        SaleOrder last = saleOrderMapper.selectOne(Wrappers.<SaleOrder>lambdaQuery()
+                .eq(SaleOrder::getBatchId, batch.batchId())
+                .ne(SaleOrder::getPaymentStatus, "VOIDED")
+                .orderByDesc(SaleOrder::getSaleDate)
+                .last("LIMIT 1"));
+        return last == null ? null : FinanceSupport.format(last.getSaleDate());
     }
 
     private BatchInfo batchOf(Long batchId) {
