@@ -5,6 +5,8 @@ import com.zhimu.server.biz.stock.request.FeedOtherOutRequest;
 import com.zhimu.server.biz.stock.request.OutboundUpdateRequest;
 import com.zhimu.server.biz.stock.request.VoidRequest;
 import com.zhimu.server.biz.stock.service.StockOutboundService;
+import com.zhimu.server.biz.stock.service.StockReturnRefundService;
+import com.zhimu.server.biz.stock.request.StockReturnRefundRequest;
 import com.zhimu.server.biz.stock.support.StockMessages;
 import com.zhimu.server.biz.stock.vo.CostAllocationVO;
 import com.zhimu.server.biz.stock.vo.StockOutboundVO;
@@ -34,6 +36,27 @@ import java.util.List;
 public class StockOutboundController {
 
     private final StockOutboundService outboundService;
+    private final StockReturnRefundService refundService;
+
+    @PostMapping("/stock-outbounds/{id:\\d+}/refund")
+    @FarmRoles({FarmRole.OWNER, FarmRole.MANAGER})
+    @Idempotent(required = true)
+    public ApiResponse<StockOutboundVO> registerRefund(@PathVariable("id") Long id,
+            @RequestBody StockReturnRefundRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String key) {
+        refundService.register(id, request, key);
+        return new ApiResponse<>(0, "已登记实际到账退款，并生成关联收入", outboundService.get(id));
+    }
+
+    @PutMapping("/stock-outbounds/{id:\\d+}/refund")
+    @FarmRoles({FarmRole.OWNER, FarmRole.MANAGER})
+    @Idempotent(required = true)
+    public ApiResponse<StockOutboundVO> correctRefund(@PathVariable("id") Long id,
+            @RequestBody StockReturnRefundRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String key) {
+        refundService.correct(id, request, key);
+        return new ApiResponse<>(0, "已更正退款，关联收入已同步更新", outboundService.get(id));
+    }
 
     /** M12 最近供应商 / 退回对象 */
     @GetMapping("/stock-partners/recent")

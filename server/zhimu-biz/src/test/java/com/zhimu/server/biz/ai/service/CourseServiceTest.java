@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.ai.service;
 
+import com.zhimu.server.biz.account.support.AccountPersonalDataGuard;
 import com.zhimu.server.biz.ai.convert.CourseConvert;
 import com.zhimu.server.biz.ai.entity.Course;
 import com.zhimu.server.biz.ai.entity.CourseCategory;
@@ -9,6 +10,9 @@ import com.zhimu.server.biz.ai.entity.CourseTopic;
 import com.zhimu.server.biz.ai.mapper.CourseCategoryMapper;
 import com.zhimu.server.biz.ai.mapper.CourseMapper;
 import com.zhimu.server.biz.ai.mapper.CourseMediaMapper;
+import com.zhimu.server.biz.ai.support.CourseMediaResolver;
+import com.zhimu.server.biz.common.mapper.FileVariantMapper;
+import com.zhimu.server.integration.storage.ObjectStorage;
 import com.zhimu.server.biz.ai.mapper.CoursePlayRecordMapper;
 import com.zhimu.server.biz.ai.mapper.CourseProgressMapper;
 import com.zhimu.server.biz.ai.mapper.CourseTopicMapper;
@@ -26,6 +30,7 @@ import com.zhimu.server.biz.ai.vo.TopicVO;
 import com.zhimu.server.biz.ai.vo.WatchHistoryVO;
 import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.common.error.BizException;
+import com.zhimu.server.common.error.ErrorCode;
 import com.zhimu.server.common.util.BeijingTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,8 +47,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -57,13 +65,16 @@ class CourseServiceTest {
     private final CourseMediaMapper mediaMapper = mock(CourseMediaMapper.class);
     private final CourseProgressMapper progressMapper = mock(CourseProgressMapper.class);
     private final CoursePlayRecordMapper playRecordMapper = mock(CoursePlayRecordMapper.class);
+    private final AccountPersonalDataGuard personalDataGuard = mock(AccountPersonalDataGuard.class);
     private CourseServiceImpl service;
 
     @BeforeEach
     void setUp() {
         BeijingTime.setClock(Clock.fixed(AiFixtures.NOW.atZone(BeijingTime.ZONE).toInstant(), BeijingTime.ZONE));
-        service = new CourseServiceImpl(categoryMapper, topicMapper, courseMapper, mediaMapper, progressMapper,
-                playRecordMapper, new CourseConvert());
+        service = new CourseServiceImpl(categoryMapper, topicMapper, courseMapper,
+                new CourseMediaResolver(mediaMapper, mock(FileVariantMapper.class), mock(ObjectStorage.class)), progressMapper,
+                playRecordMapper, new CourseConvert(new com.zhimu.server.biz.ai.support.CourseCoverResolver(
+                        mock(com.zhimu.server.biz.common.mapper.FileMapper.class), mock(ObjectStorage.class))), personalDataGuard);
     }
 
     @AfterEach
@@ -183,6 +194,49 @@ class CourseServiceTest {
         assertThat(captor.getValue().getMaxPositionSec()).isEqualTo(95);
         assertThat(captor.getValue().getWatchedSec()).isEqualTo(60);
         verify(playRecordMapper).insert(any(CoursePlayRecord.class));
+        var order = inOrder(personalDataGuard, playRecordMapper, progressMapper);
+        order.verify(personalDataGuard).requireActive(10001L);
+        order.verify(playRecordMapper).insert(any(CoursePlayRecord.class));
+        order.verify(progressMapper).insert(any(CourseProgress.class));
+    }
+
+    @Test
+    void zeroDurationNeverMarksAnUnwatchedCourseCompleted() {
+        Course course = AiFixtures.course(6102L, 0L, 2);
+        course.setDurationSec(0); course.setTopicId(null);
+        when(courseMapper.selectById(6102L)).thenReturn(course);
+        ProgressResultVO result = service.reportProgress(10001L, 6102L, request(AiCodes.EVENT_START, 0, 0));
+        assertThat(result.isCompleted()).isFalse();
+        assertThat(result.isJustCompleted()).isFalse();
+        assertThat(result.getProgressRatio()).isZero();
+    }
+
+    @Test
+    void progressResponseMatchesResumePositionWithoutDiscardingFurthestHistory() {
+        Course course = AiFixtures.course(6102L, 0L, 2);
+        course.setDurationSec(634); course.setTopicId(null);
+        when(courseMapper.selectById(6102L)).thenReturn(course);
+        CourseProgress existing = AiFixtures.progress(6102L, 1, 310, 1, 310, false);
+        existing.setLastClientTime(AiFixtures.NOW.minusSeconds(10));
+        when(progressMapper.selectByUserAndCourse(10001L, 6102L)).thenReturn(existing);
+        ProgressResultVO result = service.reportProgress(10001L, 6102L, request(AiCodes.EVENT_TICK, 1, 0));
+        assertThat(result.getPositionSec()).isEqualTo(1);
+        assertThat(result.getProgressRatio()).isEqualByComparingTo("0.0016");
+        assertThat(result.getMaxPositionSec()).isEqualTo(310);
+        assertThat(result.isCompleted()).isFalse();
+    }
+
+    @Test
+    void cancelledUsersLatePlaybackReportCannotRecreatePersonalHistory() {
+        doThrow(new BizException(ErrorCode.SESSION_INVALID).with("reason", "ACCOUNT_CANCELLED"))
+                .when(personalDataGuard).requireActive(10001L);
+
+        assertThatThrownBy(() -> service.reportProgress(10001L, 6102L,
+                request(AiCodes.EVENT_TICK, 50, 10)))
+                .isInstanceOf(BizException.class)
+                .satisfies(e -> assertThat(((BizException) e).getCode()).isEqualTo(40104));
+
+        verifyNoInteractions(courseMapper, playRecordMapper, progressMapper);
     }
 
     @Test

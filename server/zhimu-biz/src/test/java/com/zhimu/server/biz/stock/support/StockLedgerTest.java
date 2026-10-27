@@ -43,7 +43,7 @@ class StockLedgerTest {
     @BeforeEach
     void setUp() {
         StockFixtures.useClock();
-        ledger = new StockLedger(feedMapper, drugLotMapper);
+        ledger = new StockLedger(feedMapper, drugLotMapper, org.mockito.Mockito.mock(StockWarningReconciler.class));
         when(feedMapper.updateStock(any(), any(), any(), any(), any(), any())).thenReturn(1);
         when(drugLotMapper.updateStock(any(), any(), any(), any(), any(), any())).thenReturn(1);
     }

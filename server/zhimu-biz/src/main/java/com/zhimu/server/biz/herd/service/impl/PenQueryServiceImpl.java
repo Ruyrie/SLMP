@@ -28,6 +28,15 @@ public class PenQueryServiceImpl implements PenQueryService {
     private final BatchMapper batchMapper;
 
     @Override
+    public List<PenInfo> listPensForCategory(Long farmId, Long categoryId) {
+        if (farmId == null || categoryId == null) return List.of();
+        return TenantSkip.call(() -> penMapper.selectList(Wrappers.<Pen>lambdaQuery()
+                        .eq(Pen::getFarmId, farmId).eq(Pen::getCategoryId, categoryId)
+                        .eq(Pen::getStatus, "ENABLED").orderByAsc(Pen::getPenCode)))
+                .stream().map(PenQueryServiceImpl::toInfo).toList();
+    }
+
+    @Override
     public List<PenInfo> listPens(Long farmId, boolean includeDisabled) {
         if (farmId == null) {
             return List.of();

@@ -40,6 +40,7 @@ import javax.inject.Inject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 /**
  * K04 养殖课堂（技术文档 2.4.4）：并行请求 K14 分类、K15 继续观看、K16 专题（DEFAULT、每页 20，待定事项 4），
@@ -104,6 +105,7 @@ public class CourseHomeViewModel extends BaseViewModel {
     @Nullable
     private PagingSource<Integer, CourseCardVO> source;
     private boolean started;
+    @Nullable private Disposable headRequest;
 
     @Inject
     public CourseHomeViewModel(@NonNull CourseRepository repository) {
@@ -135,10 +137,21 @@ public class CourseHomeViewModel extends BaseViewModel {
         loadHead();
     }
 
+    /** Returning from playback/background must see newly published media and current watch progress. */
+    public void onVisible() {
+        if (!started) {
+            start();
+        } else if (!Boolean.TRUE.equals(getRefreshing().getValue())
+                && getUiState().getValue().getStatus() != com.zhimu.slmp.base.mvvm.UiState.Status.LOADING) {
+            refresh();
+        }
+    }
+
     private void loadHead() {
+        if (headRequest != null) headRequest.dispose();
         Single<Optional<ContinueWatchingVO>> cont = repository.getContinue().map(Optional::of)
                 .defaultIfEmpty(Optional.empty());
-        load(Single.zip(repository.getCategories(), repository.getTopics(CourseRepository.TOPIC_SORT_DEFAULT, 1,
+        headRequest = load(Single.zip(repository.getCategories(), repository.getTopics(CourseRepository.TOPIC_SORT_DEFAULT, 1,
                 BaseListViewModel.PAGE_SIZE), cont, Head::new), h -> {
             List<CourseCategoryVO> list = new ArrayList<>();
             CourseCategoryVO all = new CourseCategoryVO();

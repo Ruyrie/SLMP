@@ -164,6 +164,8 @@ public class ChangeRequestFormVO {
     private Long pendingRequestId;
     /** 是否允许“作废这条记录”（仅投喂记录） */
     private boolean voidAllowed;
+    /** 是否允许申请删除记录。 */
+    private boolean deleteAllowed;
     /** 作废说明（warning Notice 正文） */
     @Nullable
     private String voidNotice;
@@ -204,6 +206,10 @@ public class ChangeRequestFormVO {
 
     public boolean isVoidAllowed() {
         return voidAllowed;
+    }
+
+    public boolean isDeleteAllowed() {
+        return deleteAllowed;
     }
 
     @Nullable

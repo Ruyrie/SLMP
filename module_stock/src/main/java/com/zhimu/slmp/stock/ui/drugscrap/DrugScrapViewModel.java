@@ -125,7 +125,7 @@ public class DrugScrapViewModel extends StockFormViewModel {
             reason.setValue(StockEnums.SCRAP_EXPIRED);
         }
         reasons.setValue(list);
-        unitText.setValue(isDose(d) ? StockQtyFormatter.unitText(d.stock) : packUnit(d));
+        unitText.setValue(usesPackInput(d) ? packUnit(d) : StockQtyFormatter.unitText(d.stock));
         BigDecimal max = maxQty(d);
         inputQty.setValue(StockCalc.plain(max));
         maxText.setValue("最多 " + StockQtyFormatter.qty(max, unitText.getValue()) + "，全部报废后该批号结存清零");
@@ -153,13 +153,20 @@ public class DrugScrapViewModel extends StockFormViewModel {
         return StockQtyFormatter.hasPack(d.stock) ? d.stock.packUnit : StockQtyFormatter.unitText(d.stock);
     }
 
-    /** 报废上限：疫苗为头份，其他为包装数 */
+    /** 包装数不能精确表达结存时，改用基础单位，避免全部报废留下零头。 */
+    static boolean usesPackInput(@Nullable DrugLotDetailVO d) {
+        return d != null && !isDose(d) && StockQtyFormatter.hasPack(d.stock) && d.stock.value != null
+                && StockCalc.toPack(d.stock.value, d.stock.packSize).multiply(d.stock.packSize)
+                .compareTo(d.stock.value) == 0;
+    }
+
+    /** 报废上限必须精确覆盖全部结存。 */
     @NonNull
     static BigDecimal maxQty(@NonNull DrugLotDetailVO d) {
         if (d.stock == null || d.stock.value == null) {
             return BigDecimal.ZERO;
         }
-        if (isDose(d) || !StockQtyFormatter.hasPack(d.stock)) {
+        if (!usesPackInput(d)) {
             return d.stock.value;
         }
         return StockCalc.toPack(d.stock.value, d.stock.packSize);
@@ -173,7 +180,7 @@ public class DrugScrapViewModel extends StockFormViewModel {
             String s = head + StockQtyFormatter.qty(d.stock.value, StockQtyFormatter.unitText(d.stock));
             return StockQtyFormatter.hasPack(d.stock) ? s + "\n（" + StockQtyFormatter.packText(d.stock) + "）" : s;
         }
-        return head + StockQtyFormatter.packText(d.stock);
+        return head + StockQtyFormatter.format(d.stock);
     }
 
     /** 报废损失 = 记账数量 × 均价（没有均价时按包装价） */
@@ -184,7 +191,10 @@ public class DrugScrapViewModel extends StockFormViewModel {
         if (d == null || q == null) {
             return null;
         }
-        if (isDose(d) || !StockQtyFormatter.hasPack(d.stock)) {
+        if (q.compareTo(maxQty(d)) == 0 && d.stockAmount != null) {
+            return d.stockAmount;
+        }
+        if (!usesPackInput(d)) {
             return StockCalc.amount(q, d.avgPrice);
         }
         if (d.avgPrice != null) {
@@ -258,8 +268,8 @@ public class DrugScrapViewModel extends StockFormViewModel {
             e.put(F_QTY, "超过当前结存 " + StockQtyFormatter.qty(maxQty(d), unitText.getValue()));
         } else if (isDose(d) && !StockCalc.isInteger(q)) {
             e.put(F_QTY, "头份必须是整数");
-        } else if (StockCalc.scaleOf(q) > 2) {
-            e.put(F_QTY, StockValidators.MSG_SCALE);
+        } else if (StockCalc.scaleOf(q) > (usesPackInput(d) ? 2 : 3)) {
+            e.put(F_QTY, usesPackInput(d) ? StockValidators.MSG_SCALE : "数量最多保留 3 位小数");
         }
         if (reason.getValue() == null) {
             e.put(F_REASON, "请选择报废原因");
@@ -319,6 +329,11 @@ public class DrugScrapViewModel extends StockFormViewModel {
 
     /** 对话框“报废” */
     public void doScrap() {
+        Map<String, String> errors = validate();
+        setErrors(errors);
+        if (!errors.isEmpty()) {
+            return;
+        }
         DrugLotDetailVO d = lot.getValue();
         BigDecimal q = StockCalc.parse(inputQty.getValue());
         if (d == null || q == null) {
@@ -327,19 +342,19 @@ public class DrugScrapViewModel extends StockFormViewModel {
         DrugScrapRequest req = new DrugScrapRequest();
         req.drugLotId = d.lotId;
         req.inputQty = q;
-        req.inputUnit = isDose(d) || !StockQtyFormatter.hasPack(d.stock) ? StockEnums.INPUT_MEASURE
-                : StockEnums.INPUT_PACK;
+        req.inputUnit = usesPackInput(d) ? StockEnums.INPUT_PACK : StockEnums.INPUT_MEASURE;
         req.reason = reason.getValue();
         req.remark = emptyToNull(remark.getValue());
         req.scrapDate = scrapDate.getValue();
         req.stockVersion = d.stockVersion;
-        boolean all = isAll(d, q);
         String qty = StockQtyFormatter.qty(q, unitText.getValue());
         submitGuarded(req, key -> repository.createDrugScrap(req, key),
                 st -> repository.getLoss(st.bizId == null ? 0 : st.bizId),
                 vo -> {
                     onSubmitted(null, StockEnums.BIZ_LOSS, vo.lossId, farmContext.farmIdOrZero());
-                    scrapped.setValue(all ? "已登记报废，" + StockTexts.nz(d.drugName) + " " + StockTexts.nz(d.lotNo)
+                    boolean cleared = vo.remaining != null && vo.remaining.value != null
+                            && vo.remaining.value.signum() == 0;
+                    scrapped.setValue(cleared ? "已登记报废，" + StockTexts.nz(d.drugName) + " " + StockTexts.nz(d.lotNo)
                             + " 结存已清零" : "已登记报废 " + qty);
                 }, this::onScrapError);
     }
@@ -351,10 +366,15 @@ public class DrugScrapViewModel extends StockFormViewModel {
                 putFieldError(F_QTY, e.getMessage());
                 return;
             case ErrorCodes.VERSION_CONFLICT: {
-                String cur = e.dataString("current_qty");
-                putFieldError(F_QTY, cur == null ? e.getMessage() : "库存已变化，当前结存 "
-                        + StockQtyFormatter.qty(StockCalc.parse(cur), unitText.getValue()) + "，请刷新后重试");
-                launch(repository.getDrugLot(lotId), lot::setValue);
+                putFieldError(F_QTY, "库存已变化，请刷新后重新确认");
+                launch(repository.getDrugLot(lotId), fresh -> {
+                    String chosenReason = reason.getValue();
+                    String chosenRemark = remark.getValue();
+                    apply(new Init(fresh, reasons.getValue() == null ? Collections.emptyList() : reasons.getValue()));
+                    reason.setValue(chosenReason);
+                    remark.setValue(chosenRemark);
+                    putFieldError(F_QTY, "库存已变化，已刷新结存，请核对后重新确认");
+                });
                 return;
             }
             default:

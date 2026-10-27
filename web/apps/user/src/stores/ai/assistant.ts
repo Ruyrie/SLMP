@@ -30,12 +30,14 @@ import {
   type StreamDelta,
   type StreamDone,
   type StreamError,
-  type StreamMeta
+  type StreamMeta,
+  type StreamProgress
 } from '@/api/ai'
 import { useUiStore } from '@/stores/ui'
 import { answerForCopy, errorTextOf, sseErrorMessage, statusForError } from './shared'
 
 export interface LocalAiMessage extends AiMessage {
+  processing_steps?: StreamProgress[]
   local_stopped?: boolean
   /** 新会话提问时，SSE meta 先返回服务端消息 ID；本地球泡在 done 前仍用负 ID。 */
   local_server_id?: number
@@ -743,6 +745,16 @@ export const useAiAssistantStore = defineStore('aiAssistant', {
           void this.loadSessionDetail(meta.session_id, true)
         }
         if (meta.session_created) void this.loadSessions(true)
+      } else if (event === 'progress') {
+        const progress = data as StreamProgress
+        if (message && progress?.stage && progress.message) {
+          const steps = message.processing_steps || []
+          message.processing_steps = [...steps.filter((item) => item.stage !== progress.stage), progress]
+          this.scrollBottomSignal += 1
+        }
+      } else if (event === 'analysis_summary') {
+        const summary = data as StreamDelta
+        if (message && summary?.text) message.analysis_summary = summary.text
       } else if (event === 'delta') {
         const delta = data as StreamDelta
         const text = delta?.text || ''
@@ -770,7 +782,12 @@ export const useAiAssistantStore = defineStore('aiAssistant', {
       const final = done.message
       let answered: LocalAiMessage | null = null
       if (final) {
-        answered = { ...final, citations: final.citations || stream.citations }
+        answered = {
+          ...final,
+          citations: final.citations || stream.citations,
+          processing_steps: index >= 0 ? this.messages[index].processing_steps : [],
+          analysis_summary: final.analysis_summary || (index >= 0 ? this.messages[index].analysis_summary : null)
+        }
         if (index >= 0) this.messages.splice(index, 1, answered)
         else this.messages.push(answered)
       } else if (index >= 0) {
@@ -873,6 +890,9 @@ export const useAiAssistantStore = defineStore('aiAssistant', {
       message.status = 'ANSWERING'
       message.answer_type = null
       message.answer_text = ''
+      message.analysis_summary = null
+      message.source_note = null
+      message.processing_steps = []
       message.citations = []
       message.rating = null
       message.error_message = null

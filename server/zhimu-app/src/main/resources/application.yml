@@ -76,6 +76,14 @@ management:
         enabled: true
 
 zhimu:
+  account:
+    # 协议正文随 Web 用户端 public/agreements 一起部署。
+    agreement-version: ${AGREEMENT_VERSION:2026-10-26}
+    agreement-base-url: ${AGREEMENT_BASE_URL:http://8.208.12.217/agreements}
+  herd:
+    qr:
+      # 批次二维码的用户 Web 入口；必须是手机和浏览器均可访问的实际部署地址。
+      web-base-url: ${USER_WEB_BASE_URL:http://127.0.0.1:5173}
   security:
     # 用户端访问令牌（JWT HS256）
     jwt-user-secret: ${JWT_USER_SECRET:}

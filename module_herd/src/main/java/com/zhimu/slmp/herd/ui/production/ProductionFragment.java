@@ -51,6 +51,7 @@ public class ProductionFragment extends BaseFragment {
 
     private HerdFragmentProductionBinding binding;
     private ProductionViewModel vm;
+    private boolean resumedOnce;
     private final List<View> drugDots = new ArrayList<>();
     private final List<View> feedDots = new ArrayList<>();
 
@@ -96,19 +97,14 @@ public class ProductionFragment extends BaseFragment {
         binding.herdAuditNotice.setAction(getString(R.string.herd_production_audit_action),
                 v -> vm.onAuditResultClick());
         binding.herdNoPenNotice.setAction(getString(R.string.herd_production_add_pen), v -> vm.onAddPenClick());
-        ClickThrottle.setOnClickListener(binding.herdFab, v -> vm.onFabClick());
-        // 顶部栏滚动变色 + 扩展型 FAB 上滑收起、下滑展开
-        binding.herdScroll.setOnScrollChangeListener((View.OnScrollChangeListener) (v, x, y, oldX, oldY) -> {
-            binding.herdTopBar.setScrolled(v.canScrollVertically(-1));
-            if (y > oldY + 4) {
-                binding.herdFab.shrink();
-            } else if (y < oldY - 4) {
-                binding.herdFab.extend();
-            }
-        });
+        // 顶部栏随内容滚动变色。
+        binding.herdScroll.setOnScrollChangeListener((View.OnScrollChangeListener) (v, x, y, oldX, oldY) ->
+                binding.herdTopBar.setScrolled(v.canScrollVertically(-1)));
 
         buildEntries();
         vm.getOverview().observe(getViewLifecycleOwner(), this::renderOverview);
+        vm.getWarningCount().observe(getViewLifecycleOwner(), count ->
+                binding.herdCardWarning.setValue(HerdFormat.number(count), getString(R.string.herd_unit_item)));
         vm.getBadges().observe(getViewLifecycleOwner(), this::renderBadges);
         vm.getNavEvent().observe(getViewLifecycleOwner(), t -> HerdNav.open(requireActivity(), null, t));
     }
@@ -120,7 +116,6 @@ public class ProductionFragment extends BaseFragment {
         String unit = HerdFormat.unit(o.getUnitText());
         binding.herdCardStock.setValue(HerdFormat.number(o.getStockTotal()), unit);
         binding.herdCardTodo.setValue(HerdFormat.number(o.getTodayTodoCount()), getString(R.string.herd_unit_item));
-        binding.herdCardWarning.setValue(HerdFormat.number(o.getReminderTotal()), getString(R.string.herd_unit_item));
         int shown = o.getReminders().size();
         boolean more = o.getReminderTotal() > shown && shown > 0;
         binding.herdRemindersAll.setVisibility(more ? View.VISIBLE : View.GONE);
@@ -136,6 +131,15 @@ public class ProductionFragment extends BaseFragment {
         for (View d : feedDots) {
             d.setVisibility(feed ? View.VISIBLE : View.GONE);
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (resumedOnce && vm != null) {
+            vm.refresh();
+        }
+        resumedOnce = true;
     }
 
     /** 生产 / 防疫 / 物资三组功能入口（02 号规范：一行 5 个，不足 5 个左对齐） */
@@ -189,6 +193,7 @@ public class ProductionFragment extends BaseFragment {
 
     @Override
     public void onDestroyView() {
+        resumedOnce = false;
         drugDots.clear();
         feedDots.clear();
         binding = null;

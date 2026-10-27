@@ -37,6 +37,7 @@ export const useAdminStore = defineStore('admin', {
     menus: [] as unknown[],
     badges: {} as Record<string, number>,
     unread: 0,
+    unreadRevision: 0,
     mustChangePassword: false,
     loaded: false,
     sessionChecked: false,
@@ -51,6 +52,7 @@ export const useAdminStore = defineStore('admin', {
   },
   actions: {
     applyLogin(result: AdminLoginResult): void {
+      if (!this.loaded || (result.admin && result.admin.admin_id !== this.admin?.admin_id)) this.unreadRevision++
       this.admin = result.admin || this.admin
       this.perms = result.permissions || []
       this.menus = result.menus || []
@@ -72,16 +74,23 @@ export const useAdminStore = defineStore('admin', {
       return result
     },
     async me(): Promise<AdminMe> {
+      const unreadRevision = this.unreadRevision
       const data = await http().get<AdminMe>('/auth/me')
+      const updateUnread = unreadRevision === this.unreadRevision
       this.applyLogin(data)
       this.badges = data.badges || {}
-      this.unread = data.unread_message_count || 0
+      if (updateUnread) this.setUnread(data.unread_message_count || 0)
       return data
     },
+    setUnread(count: number): void {
+      this.unreadRevision++
+      this.unread = Math.max(0, count)
+    },
     async loadUnread(): Promise<void> {
+      const revision = ++this.unreadRevision
       try {
         const data = await http().get<{ unread_count?: number }>('/messages/unread-count')
-        this.unread = data.unread_count || 0
+        if (revision === this.unreadRevision && this.loaded) this.setUnread(data.unread_count || 0)
       } catch {
         /* 静默 */
       }
@@ -112,6 +121,7 @@ export const useAdminStore = defineStore('admin', {
       }
     },
     reset(): void {
+      this.unreadRevision++
       this.admin = null
       this.perms = []
       this.menus = []

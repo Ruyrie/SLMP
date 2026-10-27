@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.ai.service.impl;
 
+import com.zhimu.server.biz.account.support.AccountPersonalDataGuard;
 import com.zhimu.server.biz.ai.entity.AiCitation;
 import com.zhimu.server.biz.ai.entity.AiMessage;
 import com.zhimu.server.biz.ai.entity.AiSession;
@@ -26,6 +27,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AiRoundService {
 
+    private final AccountPersonalDataGuard personalDataGuard;
     private final AiSessionMapper sessionMapper;
     private final AiMessageMapper messageMapper;
     private final AiCitationMapper citationMapper;
@@ -39,6 +41,7 @@ public class AiRoundService {
                           List<Long> imageFileIds, Long batchId, String batchLinkState, String batchSnapshotJson,
                           Long contextCourseId, String contextCourseTitle, Long contextKnowledgeId,
                           String clientMsgId, String clientType) {
+        personalDataGuard.requireActive(userId);
         LocalDateTime now = BeijingTime.now();
         AiSession session;
         boolean created = false;
@@ -129,6 +132,7 @@ public class AiRoundService {
     public void finish(AiRound round, String answerType, String answerText, List<AiCitation> citations,
                        String modelName, Integer promptTokens, Integer completionTokens, Integer latencyMs,
                        String topic) {
+        if (!personalDataGuard.lockActive(round.userId())) return;
         LocalDateTime now = BeijingTime.now();
         AiMessage message = messageMapper.selectById(round.messageId());
         if (message == null || AiCodes.STATUS_DELETED.equals(message.getStatus())) {
@@ -175,6 +179,7 @@ public class AiRoundService {
     /** 失败/中断/超时：保留已生成部分 */
     @Transactional
     public void fail(AiRound round, String status, Integer errorCode, String errorMessage, String partialText) {
+        if (!personalDataGuard.lockActive(round.userId())) return;
         AiMessage message = messageMapper.selectById(round.messageId());
         if (message == null || AiCodes.STATUS_DELETED.equals(message.getStatus())) {
             return;
@@ -192,6 +197,7 @@ public class AiRoundService {
     /** 重新生成：条件更新状态并清空回答与引用 */
     @Transactional
     public AiRound reset(Long userId, Long messageId, String clientMsgId) {
+        personalDataGuard.requireActive(userId);
         AiMessage message = messageMapper.selectById(messageId);
         if (message == null || !userId.equals(message.getUserId())
                 || AiCodes.STATUS_DELETED.equals(message.getStatus())) {

@@ -10,6 +10,12 @@ import java.time.LocalDate;
  */
 public interface SelfBredBatchService {
 
+    /** 与繁育登记共用事务：创建自繁商品批次并关联来源记录。 */
+    CreatedBatch create(Long penId, Long breedId, int quantity, LocalDate date,
+                        boolean capacityConfirmed, String sourceType, Long sourceId);
+
+    record CreatedBatch(Long batchId, String batchNo) {}
+
     /**
      * 按差额调整自繁批次。
      *

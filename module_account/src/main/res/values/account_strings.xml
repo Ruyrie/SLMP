@@ -152,7 +152,9 @@
     <string name="account_about_version">版本 %1$s</string>
     <string name="account_about_user_agreement">用户协议</string>
     <string name="account_about_privacy_policy">隐私政策</string>
-    <string name="account_agreement_only_https">协议地址不是 HTTPS，无法打开</string>
+    <string name="account_agreement_invalid_url">协议暂时无法打开，请稍后重试。</string>
+    <string name="account_agreement_error_title">协议加载失败</string>
+    <string name="account_agreement_load_failed">请检查网络连接后重新加载。</string>
 
     <!-- A09 注销账号 -->
     <string name="account_cancel_title">注销账号</string>

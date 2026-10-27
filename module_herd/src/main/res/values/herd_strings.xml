@@ -30,7 +30,6 @@
     <string name="herd_production_audit_action">查看审核结果</string>
     <string name="herd_production_no_pen_notice">还没有栏舍。先新增栏舍，再登记批次入栏。</string>
     <string name="herd_production_add_pen">新增栏舍</string>
-    <string name="herd_production_fab">登记</string>
     <string name="herd_entry_group_production">生产</string>
     <string name="herd_entry_group_health">防疫</string>
     <string name="herd_entry_group_supply">物资</string>

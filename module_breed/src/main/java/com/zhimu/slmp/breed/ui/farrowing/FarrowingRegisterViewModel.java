@@ -112,8 +112,7 @@ public class FarrowingRegisterViewModel extends BreedFormViewModel {
         super(repository);
         this.farmContext = farmContext;
         this.baseData = baseData;
-        statusHint.addSource(context, c -> statusHint.setValue(c == null || c.getAnimal() == null ? null
-                : "登记后 " + c.getAnimal().getEarTag() + " 转为哺乳，预产期待办自动完成。"));
+        statusHint.addSource(context, c -> computeStatusHint());
         capacity.addSource(targetPen, p -> computeCapacity());
         capacityText.addSource(capacity, c -> capacityText.setValue(capacityTextOf(c)));
         canSubmit.addSource(submitting, s -> computeCanSubmit());
@@ -124,6 +123,7 @@ public class FarrowingRegisterViewModel extends BreedFormViewModel {
     }
 
     private void bindFields() {
+        statusHint.addSource(liveBorn, v -> computeStatusHint());
         entryText.addSource(liveBorn, v -> computeEntry());
         sumError.addSource(totalBorn, v -> computeSum());
         sumError.addSource(liveBorn, v -> computeSum());
@@ -133,6 +133,7 @@ public class FarrowingRegisterViewModel extends BreedFormViewModel {
     }
 
     private void unbindFields() {
+        statusHint.removeSource(liveBorn);
         entryText.removeSource(liveBorn);
         sumError.removeSource(totalBorn);
         sumError.removeSource(liveBorn);
@@ -203,6 +204,7 @@ public class FarrowingRegisterViewModel extends BreedFormViewModel {
     }
 
     private void applyContext(@NonNull RegisterContextVO ctx) {
+        if (animalId != null && ctx.getAnimal() != null && ctx.getAnimal().getAnimalId() != animalId) return;
         context.setValue(ctx);
         if (targetPen.getValue() == null) {
             targetPen.setValue(ctx.getDefaultPen());
@@ -232,8 +234,11 @@ public class FarrowingRegisterViewModel extends BreedFormViewModel {
         dirty = true;
         animalId = id;
         targetPen.setValue(null);
+        context.setValue(null);
+        penOptions.setValue(java.util.Collections.emptyList());
         clearFieldError(BreedFormRules.F_ANIMAL, BreedFormRules.F_FARROW_DATE);
         launch(repository.getRegisterContext(id, BreedCodes.TYPE_FARROWING), ctx -> {
+            if (animalId == null || animalId != id) return;
             context.setValue(ctx);
             targetPen.setValue(ctx.getDefaultPen());
         }, e -> {
@@ -282,14 +287,18 @@ public class FarrowingRegisterViewModel extends BreedFormViewModel {
     /** 点“入栏栏舍”：取 API-L07 栏舍下拉（按后代品种所属品类标出冲突） */
     public void onPickPen() {
         RegisterContextVO ctx = context.getValue();
+        if (ctx == null || ctx.getOffspringBreed() == null) return;
         Long breedId = ctx == null || ctx.getOffspringBreed() == null ? null : ctx.getOffspringBreed().getBreedId();
-        Single<Long> categoryId = baseData.getCategories()
+        Long configuredCategory = ctx == null || ctx.getOffspringBreed() == null ? null : ctx.getOffspringBreed().getCategoryId();
+        Single<Long> categoryId = configuredCategory != null && configuredCategory > 0 ? Single.just(configuredCategory) : baseData.getCategories()
                 .map(list -> {
                     CategoryVO c = BreedLookup.categoryOfBreed(list, breedId, null);
                     return c == null ? -1L : c.getId();
                 })
                 .onErrorReturnItem(-1L);
-        launch(categoryId.flatMap(id -> repository.getPenOptions(id < 0 ? null : id)), list -> {
+        launch(categoryId.flatMap(id -> id > 0 ? repository.getPenOptions(id)
+                : Single.error(new IllegalStateException("后代品类加载失败，请刷新后重试"))), list -> {
+            if (ctx != context.getValue()) return;
             penOptions.setValue(list);
             showPenPicker.setValue(list);
         });
@@ -301,7 +310,7 @@ public class FarrowingRegisterViewModel extends BreedFormViewModel {
             return;
         }
         for (PenOptionVO p : list) {
-            if (p.getPenId() == penId) {
+            if (p.getPenId() == penId && !p.isDisabled()) {
                 dirty = true;
                 String unit = targetPen.getValue() != null ? targetPen.getValue().getUnit()
                         : BreedTextFormatter.UNIT_HEAD;
@@ -312,6 +321,13 @@ public class FarrowingRegisterViewModel extends BreedFormViewModel {
                 return;
             }
         }
+    }
+
+    private void computeStatusHint() {
+        RegisterContextVO c = context.getValue();
+        String status = Integer.valueOf(0).equals(SubmitSupport.parseInt(liveBorn.getValue())) ? "空怀" : "哺乳";
+        statusHint.setValue(c == null || c.getAnimal() == null ? null
+                : "登记后 " + c.getAnimal().getEarTag() + " 转为" + status + "，预产期待办自动完成。");
     }
 
     private void computeEntry() {
@@ -373,6 +389,10 @@ public class FarrowingRegisterViewModel extends BreedFormViewModel {
                 farrowDate.getValue(), ctx == null ? null : ctx.getFirstMatingDate(), totalBorn.getValue(),
                 liveBorn.getValue(), stillborn.getValue(), transfer, capacity.getValue() != null,
                 Boolean.TRUE.equals(capacityConfirmed.getValue()));
+        if (transfer && (targetPen.getValue() == null || targetPen.getValue().getPenId() <= 0)) {
+            errors = new java.util.LinkedHashMap<>(errors);
+            errors.put("target_pen_id", "请选择与后代品类匹配的入栏栏舍");
+        }
         if (!errors.isEmpty()) {
             setErrors(errors);
             return;
@@ -403,6 +423,7 @@ public class FarrowingRegisterViewModel extends BreedFormViewModel {
                 .setTotalBorn(t).setLiveBorn(l).setStillborn(s)
                 .setTransferToBatch(transfer)
                 .setTargetPenId(transfer && pen != null ? pen.getPenId() : null)
+                .setOffspringBreedId(transfer && ctx.getOffspringBreed() != null ? ctx.getOffspringBreed().getBreedId() : null)
                 .setCapacityConfirmed(transfer && capacity.getValue() != null
                         && Boolean.TRUE.equals(capacityConfirmed.getValue()) ? Boolean.TRUE : null);
         String key = idem.keyFor(req);
@@ -421,7 +442,8 @@ public class FarrowingRegisterViewModel extends BreedFormViewModel {
         String ear = r.getEarTag() != null ? r.getEarTag()
                 : ctx != null && ctx.getAnimal() != null ? ctx.getAnimal().getEarTag() : null;
         BreedNav.notifyTodo(todoId, BreedCodes.BIZ_FARROWING, r.getRecordId(), farmContext.farmIdOrZero());
-        finishWithMessage.setValue(new FinishEvent(BreedTextFormatter.farrowDone(ear, r.getBatchId() != null),
+        finishWithMessage.setValue(new FinishEvent(BreedCodes.EMPTY.equals(r.getAnimalStatus())
+                ? "已登记产仔，" + ear + " 转为空怀" : BreedTextFormatter.farrowDone(ear, r.getBatchId() != null),
                 r.getBatchId()));
     }
 

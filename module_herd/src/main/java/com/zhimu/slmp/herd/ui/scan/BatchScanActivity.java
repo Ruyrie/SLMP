@@ -1,6 +1,7 @@
 package com.zhimu.slmp.herd.ui.scan;
 
 import android.os.Bundle;
+import android.content.Intent;
 import android.view.View;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -16,6 +17,7 @@ import com.zhimu.slmp.herd.R;
 import com.zhimu.slmp.herd.databinding.HerdActivityBatchScanBinding;
 import com.zhimu.slmp.herd.di.HerdInjector;
 import com.zhimu.slmp.herd.model.vo.BatchLookupVO;
+import com.zhimu.slmp.herd.ui.trace.BatchTraceActivity;
 import com.zhimu.slmp.media.camera.CameraArgs;
 import com.zhimu.slmp.media.camera.CameraContract;
 import com.zhimu.slmp.media.camera.CameraResult;
@@ -51,6 +53,10 @@ public class BatchScanActivity extends BaseActivity {
         vm.getScanEvent().observe(this, v -> launchCamera());
         vm.getInputEvent().observe(this, v -> new BatchNoInputBottomSheet().showSafely(getSupportFragmentManager()));
         vm.getOpenArchiveEvent().observe(this, this::openArchive);
+        vm.getOpenPublicTraceEvent().observe(this, token -> {
+            startActivity(new Intent(this, BatchTraceActivity.class).putExtra(HerdExtras.EXTRA_TRACE_TOKEN, token));
+            finish();
+        });
         vm.getNoPermissionEvent().observe(this, message -> ConfirmDialogFragment.builder(REQ_NO_PERMISSION)
                 .icon(com.zhimu.slmp.base.R.drawable.ic_lock)
                 .title(getString(R.string.herd_scan_no_permission_title))

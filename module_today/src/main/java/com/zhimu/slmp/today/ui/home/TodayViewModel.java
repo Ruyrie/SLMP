@@ -7,10 +7,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModelKt;
-import androidx.paging.PagingData;
-import androidx.paging.PagingDataTransforms;
-import androidx.paging.rxjava3.PagingRx;
 
 import com.zhimu.slmp.base.error.ApiException;
 import com.zhimu.slmp.base.error.ErrorCodes;
@@ -39,34 +35,27 @@ import com.zhimu.slmp.today.util.CalendarRange;
 import com.zhimu.slmp.today.util.LinkNavigator;
 import com.zhimu.slmp.today.util.NavTarget;
 import com.zhimu.slmp.today.util.Texts;
-import com.zhimu.slmp.today.util.TodoTypeStyle;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.processors.BehaviorProcessor;
-import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.disposables.SerialDisposable;
 import android.os.Bundle;
 
 /**
  * T01 今日首页（TodayFragment、QuickRegisterSheet），技术文档 2.4.1。
- * 首页与“今天和已逾期”并行请求；HomeVO 按 farm_id 写内存缓存，10 秒未返回时有缓存显示缓存并提示数据时刻。
- * 登记回流：对应项淡出后从列表移除（本地移除集合），指标减 1 并静默刷新。
+ * 首页分别展示今日待办预览和可折叠的历史逾期；HomeVO 按 farm_id 写内存缓存，10 秒未返回时有缓存显示缓存并提示数据时刻。
+ * 登记回流后重新读取服务端状态，避免补货未达阈值时错误隐藏预警。
  */
 public class TodayViewModel extends BaseViewModel {
 
@@ -108,7 +97,15 @@ public class TodayViewModel extends BaseViewModel {
     private final MutableLiveData<List<MyPenVO>> myPens = new MutableLiveData<>(Collections.emptyList());
     private final MutableLiveData<Boolean> farmBlocked = new MutableLiveData<>(false);
     private final MutableLiveData<Boolean> hasPen = new MutableLiveData<>(true);
-    private final MutableLiveData<PagingData<TodoItemVO>> todoPaging = new MutableLiveData<>();
+    private final MutableLiveData<List<TodoItemVO>> todoItems = new MutableLiveData<>(Collections.emptyList());
+    private final MutableLiveData<UiState> previewState = new MutableLiveData<>(UiState.loading());
+    private final MutableLiveData<Integer> overdueTotal = new MutableLiveData<>(0);
+    private final MutableLiveData<Boolean> overdueExpanded = new MutableLiveData<>(false);
+    private final MutableLiveData<List<TodoItemVO>> overdueItems = new MutableLiveData<>(Collections.emptyList());
+    private final MutableLiveData<UiState> overdueState = new MutableLiveData<>(UiState.content());
+    private final SerialDisposable homeRequest = new SerialDisposable();
+    private final SerialDisposable previewRequest = new SerialDisposable();
+    private final SerialDisposable overdueRequest = new SerialDisposable();
     private final MutableLiveData<Integer> todoTotal = new MutableLiveData<>(0);
     private final MutableLiveData<FarmBriefVO> currentFarm = new MutableLiveData<>();
     /** 当前是否有养殖场（退出或删除最后一个养殖场后为 false） */
@@ -117,7 +114,6 @@ public class TodayViewModel extends BaseViewModel {
             new MutableLiveData<>(QuickRegisterItem.forRole(false));
 
     private final SingleLiveEvent<NavTarget> navEvent = new SingleLiveEvent<>();
-    private final SingleLiveEvent<Long> leavingTodoId = new SingleLiveEvent<>();
     private final SingleLiveEvent<Void> openQuickRegister = new SingleLiveEvent<>();
     private final SingleLiveEvent<String> switchTab = new SingleLiveEvent<>();
     /** 随 switchTab 一起交给目标标签的参数（可为 null） */
@@ -125,12 +121,6 @@ public class TodayViewModel extends BaseViewModel {
     private Bundle switchTabArgs;
     private final SingleLiveEvent<Void> askNotifyPermission = new SingleLiveEvent<>();
 
-    /** 登记回流后在本地移除的待办 */
-    private final BehaviorProcessor<Set<Long>> removedIds = BehaviorProcessor.createDefault(Collections.emptySet());
-    /** 已加载的待办（登记回流时判断指标减哪一项） */
-    private final Map<Long, TodoItemVO> loadedItems = new ConcurrentHashMap<>();
-    @Nullable
-    private Disposable pagingDisposable;
     private long loadedFarmId = -1;
     private boolean notifyGuideChecked;
     /** 当前养殖场的首页已显示过（之后的加载失败只提示） */
@@ -146,6 +136,9 @@ public class TodayViewModel extends BaseViewModel {
         this.linkNavigator = linkNavigator;
         this.appSettings = appSettings;
         this.pushService = pushService;
+        disposables.add(homeRequest);
+        disposables.add(previewRequest);
+        disposables.add(overdueRequest);
         disposables.add(todoService.todoChanges()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::onTodoChanged, t -> Log.w(TAG, "待办回流订阅失败", t)));
@@ -197,11 +190,12 @@ public class TodayViewModel extends BaseViewModel {
         return hasPen;
     }
 
-    /** 分页数据（首次读取时开始分页） */
-    public LiveData<PagingData<TodoItemVO>> getTodoPaging() {
-        startPaging();
-        return todoPaging;
-    }
+    public LiveData<List<TodoItemVO>> getTodoItems() { return todoItems; }
+    public LiveData<UiState> getPreviewState() { return previewState; }
+    public LiveData<Integer> getOverdueTotal() { return overdueTotal; }
+    public LiveData<Boolean> getOverdueExpanded() { return overdueExpanded; }
+    public LiveData<List<TodoItemVO>> getOverdueItems() { return overdueItems; }
+    public LiveData<UiState> getOverdueState() { return overdueState; }
 
     public LiveData<Integer> getTodoTotal() {
         return todoTotal;
@@ -222,10 +216,6 @@ public class TodayViewModel extends BaseViewModel {
 
     public SingleLiveEvent<NavTarget> getNavEvent() {
         return navEvent;
-    }
-
-    public SingleLiveEvent<Long> getLeavingTodoId() {
-        return leavingTodoId;
     }
 
     public SingleLiveEvent<Void> getOpenQuickRegister() {
@@ -257,20 +247,17 @@ public class TodayViewModel extends BaseViewModel {
         Single<HomeVO> source = homeRepository.getHome()
                 .timeout(HOME_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .onErrorResumeNext(this::fallbackToCache);
-        load(source, this::applyHome);
+        homeRequest.set(load(source, this::applyHome));
     }
 
     /** 下拉刷新：首页与列表一起重新获取，失败保留旧内容 */
     public void refresh() {
-        removedIds.onNext(Collections.emptySet());
         load();
-        todoRepository.invalidateToday();
     }
 
     @Override
     public void retry() {
         load();
-        todoRepository.invalidateToday();
     }
 
     /** 当前养殖场变化（F01 切换、跨场跳转）：显示骨架屏并重新加载全部数据 */
@@ -282,22 +269,29 @@ public class TodayViewModel extends BaseViewModel {
         }
         boolean first = loadedFarmId < 0;
         loadedFarmId = id;
+        homeRequest.set(Disposable.disposed());
+        previewRequest.set(Disposable.disposed());
+        overdueRequest.set(Disposable.disposed());
+        collapseOverdue();
+        todoItems.setValue(Collections.emptyList());
+        overdueItems.setValue(Collections.emptyList());
+        todoTotal.setValue(0);
+        overdueTotal.setValue(0);
+        home.setValue(null);
+        previewState.setValue(UiState.loading());
         if (first) {
             load();
             return;
         }
         resetContentLoaded();
         contentShown = false;
-        removedIds.onNext(Collections.emptySet());
-        loadedItems.clear();
         load();
-        todoRepository.invalidateToday();
     }
 
-    /** 应用回到前台：刷新未读数与首页 */
+    /** 应用回到前台：同步其他端已完成的待办，列表与首页数字一起刷新。 */
     public void onAppForeground() {
         todoService.refreshUnread();
-        silentRefresh(false);
+        silentRefresh();
     }
 
     /**
@@ -336,13 +330,14 @@ public class TodayViewModel extends BaseViewModel {
         managerView.setValue(manager);
         ownerMetrics.setValue(vo.getOwnerMetrics());
         staffMetrics.setValue(vo.getStaffMetrics());
-        aiHint.setValue(vo.getAiHint());
+        aiHint.setValue(null);
         myPens.setValue(vo.getMyPens());
         farmBlocked.setValue(vo.isFarmBlocked());
         hasPen.setValue(vo.isHasPen());
         currentFarm.setValue(vo.getFarm());
         quickItems.setValue(QuickRegisterItem.forRole(manager));
         todoService.setUnread(vo.getUnreadCount());
+        loadPreview();
         if (vo.getFarm() != null && loadedFarmId <= 0) {
             loadedFarmId = vo.getFarm().getFarmId();
         }
@@ -358,32 +353,45 @@ public class TodayViewModel extends BaseViewModel {
         super.applyErrorState(e);
     }
 
-    /** 静默刷新首页（不显示骨架与刷新指示），listToo 为真时同时刷新列表 */
-    private void silentRefresh(boolean listToo) {
+    /** 静默刷新首页和预览列表（不显示整页骨架） */
+    private void silentRefresh() {
         if (home.getValue() == null) {
             return;
         }
-        launch(homeRepository.getHome(), this::applyHome, e -> Log.i(TAG, "静默刷新失败：" + e.getMessage()));
-        if (listToo) {
-            todoRepository.invalidateToday();
-        }
+        homeRequest.set(launch(homeRepository.getHome(), this::applyHome,
+                e -> Log.i(TAG, "静默刷新失败：" + e.getMessage())));
     }
 
-    private void startPaging() {
-        if (pagingDisposable != null) {
-            return;
-        }
-        Flowable<PagingData<TodoItemVO>> cached = PagingRx.cachedIn(
-                todoRepository.todayPager(TodoRepository.FILTER_ALL, vo -> todoTotal.postValue(vo.getTotal())),
-                ViewModelKt.getViewModelScope(this));
-        Executor executor = command -> Schedulers.computation().scheduleDirect(command);
-        pagingDisposable = Flowable.combineLatest(cached, removedIds,
-                        (data, removed) -> PagingDataTransforms.filter(data, executor, item -> {
-                            loadedItems.put(item.getTodoId(), item);
-                            return !removed.contains(item.getTodoId());
-                        }))
-                .subscribe(todoPaging::postValue, t -> Log.w(TAG, "待办分页失败", t));
-        disposables.add(pagingDisposable);
+    private void loadPreview() {
+        if (!hasFarm || Boolean.TRUE.equals(farmBlocked.getValue())) return;
+        previewRequest.set(launch(todoRepository.getToday(TodoRepository.FILTER_ALL, 1, 3), page -> {
+            todoItems.setValue(page.getList());
+            todoTotal.setValue(page.getTotal());
+            overdueTotal.setValue(page.getTabCounts().getOrDefault("OVERDUE", 0));
+            previewState.setValue(page.getList().isEmpty() ? UiState.empty(null, null) : UiState.content());
+            if (Boolean.TRUE.equals(overdueExpanded.getValue())) loadOverduePreview();
+        }, e -> previewState.setValue(UiState.error(e.getMessage(), e.getTraceId(), e.getCode()))));
+    }
+
+    public void collapseOverdue() { overdueExpanded.setValue(false); }
+
+    public void toggleOverdue() {
+        boolean expand = !Boolean.TRUE.equals(overdueExpanded.getValue());
+        overdueExpanded.setValue(expand);
+        if (expand) loadOverduePreview();
+    }
+
+    public void loadOverduePreview() {
+        overdueState.setValue(UiState.loading());
+        overdueRequest.set(launch(todoRepository.getOverdue("CURRENT", 1, 5), page -> {
+            overdueItems.setValue(page.getList());
+            overdueTotal.setValue(page.getTotal());
+            overdueState.setValue(UiState.content());
+        }, e -> overdueState.setValue(UiState.error(e.getMessage(), e.getTraceId(), e.getCode()))));
+    }
+
+    public void onAllOverdueClick() {
+        navEvent.setValue(NavTarget.of("T09", "filter", TodoRepository.FILTER_OVERDUE));
     }
 
     // ===================== 点击 =====================
@@ -396,9 +404,15 @@ public class TodayViewModel extends BaseViewModel {
         navEvent.setValue(NavTarget.todoDetail(item.getTodoId()));
     }
 
-    /** 指标卡：存栏进 L03；负责栏舍切到“我的栏舍”；今日待办、预警、已逾期进 T03 日视图并选中今天 */
+    /** 指标卡：存栏进 L03；负责栏舍切到“我的栏舍”；今日待办进日历；预警和逾期分别进入专用合集 */
     public void onMetricClick(@NonNull String card) {
         switch (card) {
+            case CARD_WARNING:
+                navEvent.setValue(NavTarget.of("T09", "filter", TodoRepository.FILTER_WARNING));
+                break;
+            case CARD_OVERDUE:
+                onAllOverdueClick();
+                break;
             case CARD_STOCK:
                 navEvent.setValue(NavTarget.of("L03"));
                 break;
@@ -453,6 +467,15 @@ public class TodayViewModel extends BaseViewModel {
         openQuickRegister.call();
     }
 
+    /** T02 can also be hosted outside TodayFragment, using the same current-farm context. */
+    public void bindQuickRegisterContext(@NonNull FarmContextVO context) {
+        currentFarm.setValue(new FarmBriefVO(context.getFarmId(), context.getName(), context.getSpeciesText(),
+                context.getStatus(), context.getStatusText(), context.getRole()));
+        quickItems.setValue(QuickRegisterItem.forRole(
+                FarmContextVO.ROLE_OWNER.equals(context.getRole())
+                        || FarmContextVO.ROLE_MANAGER.equals(context.getRole())));
+    }
+
     public void onQuickItemClick(@NonNull QuickRegisterItem item) {
         if (QuickRegisterItem.ROUTE_STOCK_IN.equals(item.getRoute())) {
             return;
@@ -470,40 +493,10 @@ public class TodayViewModel extends BaseViewModel {
 
     // ===================== 登记回流 =====================
 
-    /** 登记页成功后经 ITodoService 回流：对应项淡出、指标减 1、静默刷新 */
+    /** 提交成功不代表预警已解除；以服务端重新核算后的状态和数量为准。 */
     public void onTodoChanged(@NonNull TodoChange change) {
-        Long todoId = change.getTodoId();
-        if (todoId == null) {
-            silentRefresh(true);
-            return;
-        }
-        if (removedIds.getValue() != null && removedIds.getValue().contains(todoId)) {
-            return;
-        }
-        TodoItemVO item = loadedItems.get(todoId);
-        boolean overdue = item != null && TodoTypeStyle.STATUS_OVERDUE.equals(item.getDisplayStatus());
-        boolean warning = item != null && TodoTypeStyle.CATEGORY_WARNING.equals(item.getCategory());
-        OwnerMetricsVO om = ownerMetrics.getValue();
-        if (om != null) {
-            ownerMetrics.setValue(om.minusTodo(overdue, warning));
-        }
-        StaffMetricsVO sm = staffMetrics.getValue();
-        if (sm != null) {
-            staffMetrics.setValue(sm.minusTodo(overdue));
-        }
-        Integer total = todoTotal.getValue();
-        if (total != null && total > 0) {
-            todoTotal.setValue(total - 1);
-        }
-        leavingTodoId.setValue(todoId);
-    }
-
-    /** 淡出动画结束后由页面调用：从列表移除并静默刷新 */
-    public void removeTodoLocally(long todoId) {
-        Set<Long> set = new HashSet<>(removedIds.getValue() == null ? Collections.emptySet() : removedIds.getValue());
-        set.add(todoId);
-        removedIds.onNext(Collections.unmodifiableSet(set));
-        silentRefresh(false);
+        if (change.getFarmId() != loadedFarmId) return;
+        silentRefresh();
     }
 
     // ===================== 通知权限 =====================
@@ -534,12 +527,6 @@ public class TodayViewModel extends BaseViewModel {
     public LocalDate serverToday() {
         HomeVO vo = home.getValue();
         return vo == null ? null : DateFormatter.parseDate(vo.getServerTime());
-    }
-
-    @VisibleForTesting
-    Set<Long> removedIdsSnapshot() {
-        Set<Long> s = removedIds.getValue();
-        return s == null ? Collections.emptySet() : s;
     }
 
     /** 首页提示（页面在缓存提示之外的场景使用） */

@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.ai.service.impl;
 
+import com.zhimu.server.biz.account.support.AccountPersonalDataGuard;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.zhimu.server.biz.ai.convert.AiMessageConvert;
 import com.zhimu.server.biz.ai.convert.AiSessionConvert;
@@ -49,6 +50,7 @@ public class AiSessionServiceImpl implements AiSessionService {
     private static final int MAX_SLICE_SIZE = 50;
     private static final int MAX_TITLE = 40;
 
+    private final AccountPersonalDataGuard personalDataGuard;
     private final AiSessionMapper sessionMapper;
     private final AiMessageMapper messageMapper;
     private final AiSessionConvert sessionConvert;
@@ -123,6 +125,7 @@ public class AiSessionServiceImpl implements AiSessionService {
     @Override
     @Transactional
     public AiSessionDetailVO create(Long userId, AiSessionCreateRequest request) {
+        personalDataGuard.requireActive(userId);
         FarmContext.FarmMember member = FarmContext.require();
         AiSession session = new AiSession();
         session.setFarmId(member.farmId());
@@ -145,6 +148,7 @@ public class AiSessionServiceImpl implements AiSessionService {
     @Override
     @Transactional
     public AiSessionDetailVO update(Long userId, Long sessionId, AiSessionBatchRequest request) {
+        personalDataGuard.requireActive(userId);
         AiSession session = requireOwn(userId, sessionId);
         boolean titlePresent = request != null && request.isTitlePresent();
         boolean batchPresent = request != null && request.isBatchIdPresent();
@@ -163,6 +167,7 @@ public class AiSessionServiceImpl implements AiSessionService {
     @Override
     @Transactional
     public AiSessionDetailVO changeBatch(Long userId, Long sessionId, Long batchId) {
+        personalDataGuard.requireActive(userId);
         AiSession session = requireOwn(userId, sessionId);
         applyBatch(session, FarmContext.require(), batchId);
         persistSession(session);
@@ -172,6 +177,7 @@ public class AiSessionServiceImpl implements AiSessionService {
     @Override
     @Transactional
     public void delete(Long userId, Long sessionId) {
+        personalDataGuard.requireActive(userId);
         AiSession session = Asserts.found(sessionMapper.selectById(sessionId));
         if (!userId.equals(session.getUserId())) {
             throw AiErrors.notFound();
@@ -267,18 +273,24 @@ public class AiSessionServiceImpl implements AiSessionService {
         return title;
     }
 
-    /** 批次状态实时计算：快照存在但批次已不可解析时标为已不在栏 */
+    /** 会话重开时刷新批次数据和员工权限；历史快照只用于失效提示，不作为当前数据。 */
     private void refreshBatchState(AiSession session) {
-        if (session.getBatchId() == null || !AiCodes.LINK_VALID.equals(session.getBatchLinkState())) {
+        if (session.getBatchId() == null || AiCodes.LINK_DELETED.equals(session.getBatchLinkState())) {
             return;
         }
         FarmContext.FarmMember member = FarmContext.get();
         if (member == null) {
             return;
         }
-        LinkedBatchVO batch = batchContextService.resolve(member.farmId(), session.getBatchId(), false, member.penIds());
+        LinkedBatchVO batch = batchContextService.resolve(member.farmId(), session.getBatchId(),
+                member.isStaff(), member.penIds());
         if (batch == null) {
-            session.setBatchLinkState(AiCodes.LINK_NOT_IN_STOCK);
+            LinkedBatchVO existing = member.isStaff()
+                    ? batchContextService.resolve(member.farmId(), session.getBatchId(), false, member.penIds()) : null;
+            session.setBatchLinkState(existing == null ? AiCodes.LINK_NOT_IN_STOCK : AiCodes.LINK_NO_PERMISSION);
+        } else {
+            session.setBatchLinkState(AiCodes.LINK_VALID);
+            session.setBatchSnapshotJson(batchContextService.toSnapshot(batch));
         }
     }
 

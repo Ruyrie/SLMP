@@ -182,6 +182,7 @@ class BreedingAnimalServiceImplTest {
 
     @Test
     void farrowingContextReturnsDefaultPenAndOffspringBreed() {
+        when(support.farmId()).thenReturn(1001L);
         BreedingAnimal animal = animal(4131L, "0131", 2007L, "PREGNANT", 5131L, 3, 8);
         when(support.requireAnimal(4131L)).thenReturn(animal);
         when(support.currentCycle(animal)).thenReturn(cycle(5131L, 4131L, "PREGNANT",
@@ -191,8 +192,10 @@ class BreedingAnimalServiceImplTest {
         when(support.breedName(1101L)).thenReturn("杜长大");
         when(support.pen(2007L)).thenReturn(new PenInfo(2007L, 1001L, "ZC-02", "产房", "FARROWING",
                 "产房", 40, "ENABLED"));
-        when(support.penCurrentCount(2007L)).thenReturn(0);
-        when(support.unitOfBreed(1201L)).thenReturn("头");
+        when(support.breed(1101L)).thenReturn(new BreedQueryService.BreedInfo(1101L,101L,"杜长大",null,null,null,null,true));
+        when(penQueryService.listPensForCategory(1001L,101L)).thenReturn(List.of(new PenInfo(2002L,1001L,"BY-02","2号保育舍","NURSERY","保育舍",400,"ENABLED")));
+        when(support.penCurrentCount(2002L)).thenReturn(0);
+        when(support.unitOfBreed(1101L)).thenReturn("头");
         when(farrowingMapper.selectList(any())).thenReturn(List.of());
 
         RegisterContextVO context = service.registerContext(4131L, "FARROWING");
@@ -201,9 +204,9 @@ class BreedingAnimalServiceImplTest {
         assertThat(context.getCycleId()).isEqualTo(5131L);
         assertThat(context.getExpectedDueDate()).isEqualTo("2026-10-19");
         assertThat(context.getDaysToDue()).isZero();
-        assertThat(context.getDefaultPen().getPenId()).isEqualTo(2007L);
-        assertThat(context.getDefaultPen().getPenName()).isEqualTo("产房");
-        assertThat(context.getDefaultPen().getCapacity()).isEqualTo(40);
+        assertThat(context.getDefaultPen().getPenId()).isEqualTo(2002L);
+        assertThat(context.getDefaultPen().getPenName()).isEqualTo("2号保育舍");
+        assertThat(context.getDefaultPen().getCapacity()).isEqualTo(400);
         assertThat(context.getDefaultPen().getUnit()).isEqualTo("头");
         assertThat(context.getOffspringBreed().getBreedId()).isEqualTo(1101L);
         assertThat(context.getOffspringBreed().getBreedName()).isEqualTo("杜长大");

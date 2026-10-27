@@ -137,6 +137,8 @@ public class JPushClient implements PushClient {
         if (m.getChannel() != null) {
             android.put("channel_id", m.getChannel());
         }
+        // 极光默认可隐藏前台通知，显式要求 App 在前台时也展示。
+        android.put("display_foreground", "1");
         android.putObject("intent").put("url", "intent:#Intent;action=" + props.getIntentAction() + ";end");
         android.set("extras", Jsons.MAPPER.valueToTree(extras));
 

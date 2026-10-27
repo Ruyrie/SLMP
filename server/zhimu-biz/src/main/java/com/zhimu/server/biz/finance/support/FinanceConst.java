@@ -14,6 +14,7 @@ public final class FinanceConst {
     public static final String SOURCE_FEED = "FEED_INBOUND";
     public static final String SOURCE_DRUG = "DRUG_INBOUND";
     public static final String SOURCE_SALE = "SALE_RECEIPT";
+    public static final String SOURCE_DRUG_RETURN = "DRUG_RETURN_REFUND";
 
     public static final String RECORD_NORMAL = "NORMAL";
     public static final String RECORD_VOID = "VOID";
@@ -88,6 +89,7 @@ public final class FinanceConst {
             case SOURCE_FEED -> "来自饲料入库单";
             case SOURCE_DRUG -> "来自兽药疫苗入库单";
             case SOURCE_SALE -> "来自出栏收款";
+            case SOURCE_DRUG_RETURN -> "来自药苗退货退款";
             default -> null;
         };
     }
@@ -98,6 +100,7 @@ public final class FinanceConst {
             case SOURCE_FEED -> "INBOUND";
             case SOURCE_DRUG -> "DRUG_LOT";
             case SOURCE_SALE -> "SALE_ORDER";
+            case SOURCE_DRUG_RETURN -> "OUTBOUND";
             default -> null;
         };
     }

@@ -72,7 +72,7 @@ class FeedTaskGenerateJobTest {
 
     @BeforeEach
     void setUp() {
-        taskService = new FeedTaskService(taskMapper, planMapper, stageMapper, mealMapper, recordMapper, lookup);
+        taskService = new FeedTaskService(taskMapper, planMapper, stageMapper, mealMapper, recordMapper, lookup, org.mockito.Mockito.mock(com.zhimu.server.biz.feeding.api.FeedTaskReconciliationService.class));
         job = new FeedTaskGenerateJob(taskService, todoSource);
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-18T16:05:00Z"), ZONE));
 

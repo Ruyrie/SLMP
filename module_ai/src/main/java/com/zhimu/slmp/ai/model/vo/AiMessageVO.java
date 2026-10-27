@@ -23,6 +23,8 @@ public class AiMessageVO {
     private String status;
     private String answerType;
     private String answerText;
+    private String analysisSummary;
+    private String sourceNote;
     private List<CitationBriefVO> citations;
     private String rating;
     private String ratedAt;
@@ -90,6 +92,16 @@ public class AiMessageVO {
     public String getAnswerText() {
         return answerText;
     }
+
+    @Nullable
+    public String getAnalysisSummary() { return analysisSummary; }
+
+    @Nullable
+    public String getSourceNote() { return sourceNote; }
+
+    public void setAnalysisSummary(@Nullable String summary) { analysisSummary = summary; }
+
+    public void setSourceNote(@Nullable String note) { sourceNote = note; }
 
     @NonNull
     public List<CitationBriefVO> getCitations() {

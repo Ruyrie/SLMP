@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useDate } from 'vuetify'
 import { formatDate } from '@zmt/shared'
 
 const props = withDefaults(defineProps<{
@@ -17,12 +18,15 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
+const date = useDate()
 
 const menu = ref(false)
 const display = computed(() => (props.modelValue ? formatDate(props.modelValue) : ''))
 
 function pick(value: unknown): void {
-  emit('update:modelValue', value ? String(value) : '')
+  // API dates are calendar dates, so keep the selected day without UTC conversion.
+  const selected = value ? date.date(value) : null
+  emit('update:modelValue', selected && date.isValid(selected) ? date.toISO(selected) : '')
   menu.value = false
 }
 </script>

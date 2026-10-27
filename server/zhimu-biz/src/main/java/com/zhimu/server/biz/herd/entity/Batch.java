@@ -25,6 +25,7 @@ public class Batch extends AuditEntity {
     private String noMonth;
     private Integer noSeq;
     private String qrToken;
+    private Boolean traceEnabled;
     private Long categoryId;
     private Long breedId;
     /** BATCH_PURPOSE：COMMERCIAL / BREEDING */

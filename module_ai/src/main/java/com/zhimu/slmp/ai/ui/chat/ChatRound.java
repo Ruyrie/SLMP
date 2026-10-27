@@ -14,6 +14,8 @@ import com.zhimu.slmp.media.upload.UploadManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * K01 一轮问答在 ViewModel 中的可变状态（只在主线程读写）：提问内容、服务端轮次、本地阶段与已生成的文字。
@@ -62,6 +64,10 @@ final class ChatRound {
     String askedAt;
     /** 每次变化加 1（ChatItem 比较用） */
     int version;
+    /** Explicitly public server steps and summary; never provider chain-of-thought. */
+    final Map<String, String> progressMessages = new LinkedHashMap<>();
+    String analysisSummary = "";
+    boolean processExpanded = true;
     /** 40901 同键重发次数 */
     int duplicateRetries;
     /** 从服务端载入的历史轮次（相邻两轮 batch_no 不同时插换批次提示） */
@@ -96,6 +102,10 @@ final class ChatRound {
         messageId = m.getId();
         askedAt = m.getAskedAt();
         phase = phaseOf(m.getStatus());
+        if (m.getAnalysisSummary() != null && !m.getAnalysisSummary().trim().isEmpty()) {
+            analysisSummary = m.getAnalysisSummary();
+        }
+        if (phase == Phase.ANSWERED) processExpanded = false;
         buffer.clear();
         if (m.getAnswerText() != null && phase != Phase.ANSWERED) {
             buffer.append(m.getAnswerText());
@@ -133,5 +143,19 @@ final class ChatRound {
 
     void touch() {
         version++;
+    }
+
+    @NonNull
+    String processText() {
+        StringBuilder text = new StringBuilder();
+        for (String step : progressMessages.values()) {
+            if (text.length() > 0) text.append('\n');
+            text.append(step);
+        }
+        if (!analysisSummary.isEmpty()) {
+            if (text.length() > 0) text.append("\n\n");
+            text.append(analysisSummary);
+        }
+        return text.toString();
     }
 }

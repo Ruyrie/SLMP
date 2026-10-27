@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.zhimu.slmp.ai.data.AnswerTypeTag;
 import com.zhimu.slmp.ai.model.AiCodes;
+import com.zhimu.slmp.ai.model.vo.AiMessageVO;
 
 import org.junit.Test;
 
@@ -15,6 +16,22 @@ import org.junit.Test;
  * 知识正文白名单清洗、倍速文字。
  */
 public class AiUtilTest {
+
+    @Test
+    public void sourceNote_isSeparateAndLegacyBannerDoesNotEraseCaveatsOrCitations() {
+        AiMessageVO message = new AiMessageVO();
+        message.setAnswerType(AiCodes.ANSWER_NO_BASIS);
+        message.setAnswerText("未找到平台知识依据，仅供参考。\n具体用量尚不能确认，请核对说明书[^1]。");
+        assertEquals("具体用量尚不能确认，请核对说明书[^1]。", AiText.answerBody(message));
+        assertFalse(AiText.sourceNote(message).isEmpty());
+        message.setSourceNote("本次未检索到匹配的知识条目");
+        assertEquals("本次未检索到匹配的知识条目", AiText.sourceNote(message));
+        message.setAnswerText("信息还不足以判断，请补充体温和采食变化。");
+        assertEquals(message.getAnswerText(), AiText.answerBody(message));
+        message.setAnswerType(AiCodes.ANSWER_NORMAL);
+        message.setSourceNote(null);
+        assertEquals("", AiText.sourceNote(message));
+    }
 
     @Test
     public void streamTextBuffer_hidesCitationsAndPartialTail() {

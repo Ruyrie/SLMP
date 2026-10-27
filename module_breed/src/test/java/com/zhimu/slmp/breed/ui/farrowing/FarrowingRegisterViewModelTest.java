@@ -104,6 +104,7 @@ public class FarrowingRegisterViewModelTest {
         verify(repo).createFarrowing(req.capture(), anyString());
         assertEquals(Long.valueOf(2007), req.getValue().getTargetPenId());
         assertTrue(req.getValue().getTransferToBatch());
+        assertEquals(Long.valueOf(1101), req.getValue().getOffspringBreedId());
         FinishEvent done = vm.getFinishWithMessage().getValue();
         assertEquals("已登记产仔，新批次已入栏", done.getText());
         assertEquals(Long.valueOf(3071), done.getBatchId());
@@ -158,4 +159,52 @@ public class FarrowingRegisterViewModelTest {
         assertNotEquals(keys.getAllValues().get(0), keys.getAllValues().get(1));
         assertEquals("已登记产仔，新批次已入栏", vm.getFinishWithMessage().getValue().getText());
     }
+    @Test
+    public void changingSowIgnoresAnOlderContextAndClearsPreviousPen() throws Exception {
+        var first = io.reactivex.rxjava3.subjects.SingleSubject.<RegisterContextVO>create();
+        var second = io.reactivex.rxjava3.subjects.SingleSubject.<RegisterContextVO>create();
+        when(repo.getRegisterContext(4132L, BreedCodes.TYPE_FARROWING)).thenReturn(first);
+        when(repo.getRegisterContext(4133L, BreedCodes.TYPE_FARROWING)).thenReturn(second);
+        vm.selectAnimal(4132L);
+        assertNull(vm.getTargetPen().getValue());
+        vm.selectAnimal(4133L);
+        RegisterContextVO newContext = TestRules.data("ctx_farrowing_0131.json", RegisterContextVO.class);
+        second.onSuccess(newContext);
+        var currentPen = vm.getTargetPen().getValue();
+        first.onSuccess(TestRules.data("ctx_farrowing_0131.json", RegisterContextVO.class));
+        assertTrue(currentPen == vm.getTargetPen().getValue());
+    }
+
+    @Test
+    public void offspringCategoryFiltersPensAndDisabledPensCannotBeSelected() throws Exception {
+        var data = TestRules.mock("ctx_farrowing_0131.json").getAsJsonObject("data");
+        data.getAsJsonObject("animal").addProperty("animal_id", 4132L);
+        data.getAsJsonObject("offspring_breed").addProperty("category_id", 101L);
+        var ctx = com.zhimu.slmp.network.GsonFactory.get().fromJson(data, RegisterContextVO.class);
+        when(repo.getRegisterContext(4132L, BreedCodes.TYPE_FARROWING)).thenReturn(Single.just(ctx));
+        var disabled = mock(com.zhimu.slmp.breed.model.vo.PenOptionVO.class);
+        when(disabled.getPenId()).thenReturn(2006L);
+        when(disabled.isDisabled()).thenReturn(true);
+        when(repo.getPenOptions(101L)).thenReturn(Single.just(java.util.List.of(disabled)));
+        vm.selectAnimal(4132L);
+        vm.onPickPen();
+        verify(repo).getPenOptions(101L);
+        vm.pickPen(2006L);
+        assertEquals(2007L, vm.getTargetPen().getValue().getPenId());
+    }
+
+    @Test
+    public void zeroLivePigletsShowsEmptyStatusWithoutCreatingBatch() throws Exception {
+        var data = TestRules.mock("farrowing_no_batch.json").getAsJsonObject("data");
+        data.addProperty("animal_status", "EMPTY");
+        var result = com.zhimu.slmp.network.GsonFactory.get().fromJson(data, RegisterResultVO.class);
+        when(repo.createFarrowing(any(FarrowingRequest.class), anyString())).thenReturn(Single.just(result));
+        fill("2", "0", "2");
+        vm.onTransferChanged(false);
+        assertEquals("登记后 0131 转为空怀，预产期待办自动完成。", vm.getStatusHint().getValue());
+        vm.submit();
+        assertEquals("已登记产仔，0131 转为空怀", vm.getFinishWithMessage().getValue().getText());
+        assertNull(vm.getFinishWithMessage().getValue().getBatchId());
+    }
+
 }

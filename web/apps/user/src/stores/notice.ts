@@ -1,12 +1,6 @@
 import { defineStore } from 'pinia'
 import { appConfig } from '@zmt/shared'
-import { http } from '@/api/client'
-
-interface UnreadCount {
-  total_unread?: number
-  filtered_unread?: number
-  by_category?: Record<string, number>
-}
+import { fetchUnreadCount } from '@/api/today'
 
 export const useNoticeStore = defineStore('notice', {
   state: () => ({
@@ -18,7 +12,7 @@ export const useNoticeStore = defineStore('notice', {
   actions: {
     async load(): Promise<void> {
       try {
-        const data = await http().get<UnreadCount>('/messages/unread-count')
+        const data = await fetchUnreadCount()
         this.unread = data.total_unread || 0
         this.byCategory = data.by_category || {}
       } catch {

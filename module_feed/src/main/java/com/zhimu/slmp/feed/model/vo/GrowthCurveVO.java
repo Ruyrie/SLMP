@@ -96,6 +96,7 @@ public class GrowthCurveVO {
 
     /** 指标：最近一次称重 */
     public static class GrowthMetricsVO {
+        private String comparisonSource;
         private BigDecimal avgWeight;
         private Integer dayAge;
         private String weighDate;
@@ -110,6 +111,10 @@ public class GrowthCurveVO {
         @Nullable
         public BigDecimal getAvgWeight() {
             return avgWeight;
+        }
+
+        public boolean isCurrentStandardComparison() {
+            return "CURRENT_STANDARD".equals(comparisonSource);
         }
 
         @Nullable

@@ -68,8 +68,8 @@ const executorId = ref(0)
 const mediaIds = ref<number[]>([])
 const mediaKey = ref(0)
 const mediaBusy = ref(false)
-const mediaFailed = ref(false)
 const mediaItems = ref<UploadItem[]>([])
+const mediaFailed = computed(() => mediaItems.value.some((item) => item.error))
 const previewOpen = ref(false)
 const previewIndex = ref(0)
 const showConfirm = ref(false)
@@ -226,7 +226,6 @@ function reset(): void {
   mediaKey.value += 1
   mediaItems.value = []
   mediaBusy.value = false
-  mediaFailed.value = false
   Object.keys(errors).forEach((key) => delete errors[key])
   showConfirm.value = false
   locationStatus.value = 'NONE'
@@ -316,10 +315,6 @@ watch(
   },
   { deep: true }
 )
-
-watch(mediaBusy, (busy) => {
-  if (!busy) mediaFailed.value = mediaItems.value.some((item) => item.error)
-})
 
 async function loadContext(penId: number, date?: string): Promise<void> {
   if (!penId) return
@@ -453,7 +448,7 @@ function validate(): boolean {
     ui.toast('照片和视频还在上传，请稍候', 'info')
     return false
   }
-  if (mediaFailed.value || mediaItems.value.some((item) => item.error)) {
+  if (mediaFailed.value) {
     ui.toast('有文件上传失败，请重试或删除后再提交', 'error')
     return false
   }
@@ -548,7 +543,7 @@ async function submit(thenReport = false): Promise<void> {
 
 function tryClose(): void {
   if (submitting.value) return
-  if (dirty.value) {
+  if (dirty.value || mediaBusy.value || mediaFailed.value) {
     showConfirm.value = true
     return
   }

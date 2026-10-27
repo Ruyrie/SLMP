@@ -40,7 +40,8 @@ public final class QuickRegisterItem {
 
     /** “作业”组 8 项 */
     public static final List<QuickRegisterItem> WORK = Collections.unmodifiableList(Arrays.asList(
-            new QuickRegisterItem(com.zhimu.slmp.today.R.string.today_quick_inspection, R.drawable.ic_fact_check, "I02", GROUP_WORK),
+            // 快捷入口没有 pen_id，先从今日巡检清单选择栏舍，再进入 I02 登记表单。
+            new QuickRegisterItem(com.zhimu.slmp.today.R.string.today_quick_inspection, R.drawable.ic_fact_check, "I01", GROUP_WORK),
             new QuickRegisterItem(com.zhimu.slmp.today.R.string.today_quick_feeding, R.drawable.ic_rice_bowl, "G02", GROUP_WORK),
             new QuickRegisterItem(com.zhimu.slmp.today.R.string.today_quick_weighing, R.drawable.ic_scale, "G05", GROUP_WORK),
             new QuickRegisterItem(com.zhimu.slmp.today.R.string.today_quick_death, R.drawable.ic_heart_minus, "L11", GROUP_WORK),

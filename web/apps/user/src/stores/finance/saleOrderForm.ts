@@ -275,6 +275,8 @@ export const useSaleOrderFormStore = defineStore('financeSaleOrderForm', {
         this.errors.push({ field: 'quantity', message: '请输入数量' })
       } else if (!Number.isFinite(quantity) || quantity <= 0) {
         this.errors.push({ field: 'quantity', message: '数量必须大于 0' })
+      } else if (!Number.isInteger(quantity)) {
+        this.errors.push({ field: 'quantity', message: '数量必须为整数' })
       } else if (quantity > this.maxQuantity) {
         this.errors.push({ field: 'quantity', message: `不能超过批次当前存栏 ${this.maxQuantity} ${this.unitText}` })
       }
@@ -282,6 +284,8 @@ export const useSaleOrderFormStore = defineStore('financeSaleOrderForm', {
         this.errors.push({ field: 'total_weight', message: '请输入总重' })
       } else if (!Number.isFinite(total) || total <= 0) {
         this.errors.push({ field: 'total_weight', message: '总重必须大于 0' })
+      } else if (total > 99999999.99) {
+        this.errors.push({ field: 'total_weight', message: '总重不能超过 99,999,999.99 千克，请核对输入' })
       } else if (Math.abs(total * 100 - Math.round(total * 100)) > 1e-6) {
         this.errors.push({ field: 'total_weight', message: '总重最多保留 2 位小数' })
       }
@@ -289,8 +293,14 @@ export const useSaleOrderFormStore = defineStore('financeSaleOrderForm', {
         this.errors.push({ field: 'unit_price', message: '请输入单价' })
       } else if (!Number.isFinite(price) || price <= 0) {
         this.errors.push({ field: 'unit_price', message: '单价必须大于 0' })
+      } else if (price > 99999.99) {
+        this.errors.push({ field: 'unit_price', message: '单价不能超过 99,999.99' })
       } else if (Math.abs(price * 100 - Math.round(price * 100)) > 1e-6) {
         this.errors.push({ field: 'unit_price', message: '单价最多保留 2 位小数' })
+      }
+      if (!this.errors.some(error => ['quantity', 'total_weight', 'unit_price'].includes(error.field))
+        && this.saleAmount > 9999999999) {
+        this.errors.push({ field: 'unit_price', message: '销售金额不能超过 9,999,999,999 元，请核对数量、总重和单价' })
       }
       if (!this.form.buyerName.trim()) {
         this.errors.push({ field: 'buyer_name', message: '请填写收购商' })

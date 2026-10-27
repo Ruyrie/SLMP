@@ -207,4 +207,8 @@ public class ChangeRequestVO {
     public boolean isVoid() {
         return CHANGE_VOID.equals(getChangeType());
     }
+
+    public boolean isDelete() {
+        return "DELETE".equals(getChangeType());
+    }
 }

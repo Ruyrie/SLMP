@@ -38,6 +38,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
+                <include android:id="@+id/stock_refund" layout="@layout/stock_view_refund" />
+
                 <include
                     android:id="@+id/stock_record_items_title"
                     layout="@layout/stock_item_section"

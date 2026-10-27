@@ -75,7 +75,8 @@ class InboundChangeHandlerTest {
         BeijingTime.setClock(CLOCK);
         StockChangeSupport support = new StockChangeSupport(feedMapper, drugMapper, drugLotMapper,
                 accountQueryService, operationLogRecorder);
-        handler = new InboundChangeHandler(inboundMapper, flowMapper, ledger, support);
+        handler = new InboundChangeHandler(inboundMapper, flowMapper, ledger,
+                org.mockito.Mockito.mock(com.zhimu.server.biz.finance.api.FinanceSourceWriteService.class), support);
         inbound = new StockInbound();
         inbound.setId(6201L);
         inbound.setFarmId(1001L);

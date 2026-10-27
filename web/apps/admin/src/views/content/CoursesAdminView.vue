@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ApiError, dayjs, formatDateTime, formatDuration, formatNumber, formatPercent } from '@zmt/shared'
 import {
   completeMultipartUpload,
@@ -35,12 +36,26 @@ import {
   type CourseTopic
 } from '@/api/content'
 import { getCategoryTree, type CategoryNode } from '@/api/base'
+import { applicableCategoryOptions } from '@/utils/contentCategories'
+import { canPublishCourse, courseTranscodeStatus, hasReadyCourseMedia } from '@/utils/courseReadiness'
 import { useAdminStore } from '@/stores/admin'
 import { useUiStore } from '@/stores/ui'
 
 const ui = useUiStore()
 const admin = useAdminStore()
+const route = useRoute()
 const canHandle = computed(() => admin.hasPerm('WA-C03:HANDLE'))
+const messageCourseId = ref<number | null>(null)
+const messageCourseTitle = ref('')
+const messageCourseError = ref('')
+let messageCourseRequest = 0
+let messageEditingId: number | null = null
+let listRequest = 0
+let detailRequest = 0
+let mediaSession = 0
+let videoRequest = 0
+let coverRequest = 0
+let transcodeRequest = 0
 
 const summary = ref<CourseSummary | null>(null)
 const topics = ref<CourseTopic[]>([])
@@ -81,7 +96,7 @@ const headers = [
 const allTopics = computed(() => topics.value.filter((topic) => topic.status !== 'OFF_SHELF'))
 const categoryOptions = computed(() => categories.value.filter((c) => c.status === 'ENABLED').map((c) => ({ title: c.name, value: c.id })))
 const topicOptions = computed(() => [{ title: '不加入专题', value: null }, ...allTopics.value.map((t) => ({ title: t.name, value: t.id }))])
-const applicableOptions = computed(() => applicableCategories.value.flatMap((category) => (category.breeds || []).map((breed) => ({ title: `${category.name} · ${breed.name}`, value: breed.id }))))
+const applicableOptions = computed(() => applicableCategoryOptions(applicableCategories.value))
 
 function safeUrl(url?: string | null): string {
   if (!url) return ''
@@ -139,6 +154,7 @@ async function loadFormOptions(): Promise<void> {
 }
 
 async function fetchList(): Promise<void> {
+  const request = ++listRequest
   listLoading.value = true
   error.value = ''
   forbidden.value = false
@@ -151,17 +167,21 @@ async function fetchList(): Promise<void> {
       page: query.page,
       size: query.size
     })
+    if (request !== listRequest) return
     list.value = data.list || []
     total.value = data.total || 0
     Object.assign(tabCounts, data.tab_counts || {})
   } catch (e) {
+    if (request !== listRequest) return
     if (e instanceof ApiError && e.isForbidden) forbidden.value = true
     error.value = e instanceof Error ? e.message : '加载失败'
     list.value = []
     total.value = 0
   } finally {
-    loading.value = false
-    listLoading.value = false
+    if (request === listRequest) {
+      loading.value = false
+      listLoading.value = false
+    }
   }
 }
 
@@ -247,6 +267,10 @@ function clearErrors(): void {
 }
 
 function openCreate(): void {
+  invalidateMediaWork()
+  detailRequest++
+  messageEditingId = null
+  detailLoading.value = false
   editing.value = null
   clearErrors()
   Object.assign(form, {
@@ -262,7 +286,10 @@ function openCreate(): void {
   drawer.value = true
 }
 
-async function openEdit(row: CourseRow): Promise<void> {
+async function openEdit(row: Pick<CourseRow, 'id'>, fromMessage = false): Promise<void> {
+  invalidateMediaWork()
+  const request = ++detailRequest
+  messageEditingId = fromMessage ? row.id : null
   clearErrors()
   formError.value = ''
   coverError.value = ''
@@ -271,6 +298,7 @@ async function openEdit(row: CourseRow): Promise<void> {
   detailLoading.value = true
   try {
     const data = await getCourseDetail(row.id)
+    if (request !== detailRequest || !drawer.value || !canHandle.value) return
     editing.value = data
     form.title = data.title || ''
     form.category_id = data.category_id || null
@@ -284,20 +312,33 @@ async function openEdit(row: CourseRow): Promise<void> {
     form.video_size = data.video?.file_size || 0
     form.video_duration = data.video?.duration_sec || data.duration_sec || 0
     form.upload_status = data.video?.upload_status || data.upload_status || ''
-    form.transcode_status = data.transcode_status || data.video?.transcode_status || ''
+    form.transcode_status = courseTranscodeStatus(data)
     form.transcode_error = data.transcode_error || ''
     form.cover_file_id = data.cover_file_id || null
     form.cover_url = safeUrl(data.cover_url)
     form.cover_source = data.cover_source || 'AUTO'
     form.version = data.version || 0
     form.status = data.status
+    if (form.video_file_id && ['WAITING', 'PROCESSING'].includes(form.transcode_status)) {
+      void pollTranscode(form.video_file_id)
+    }
   } catch (e) {
+    if (request !== detailRequest) return
     drawer.value = false
     ui.toast(e instanceof Error ? e.message : '课程详情加载失败', 'error')
   } finally {
-    detailLoading.value = false
+    if (request === detailRequest) detailLoading.value = false
   }
 }
+
+watch(drawer, (open) => {
+  if (!open) {
+    invalidateMediaWork()
+    detailRequest++
+    messageEditingId = null
+    detailLoading.value = false
+  }
+}, { flush: 'sync' })
 
 function validate(): boolean {
   clearErrors()
@@ -326,6 +367,7 @@ function buildPayload(action: 'DRAFT' | 'ON_SHELF') {
 }
 
 async function submit(action: 'DRAFT' | 'ON_SHELF'): Promise<void> {
+  if (videoUploading.value || coverUploading.value || detailLoading.value || !canHandle.value) return
   if (!validate()) return
   if (action === 'ON_SHELF' && form.transcode_status !== 'SUCCESS') {
     formError.value = '720P 和 480P 都转码完成后才能上架'
@@ -336,14 +378,18 @@ async function submit(action: 'DRAFT' | 'ON_SHELF'): Promise<void> {
     return
   }
   saving.value = true
+  const session = mediaSession
   formError.value = ''
   try {
     if (editing.value) await updateCourse(editing.value.id, buildPayload(action))
     else await createCourse(buildPayload(action))
-    drawer.value = false
-    ui.toast(action === 'ON_SHELF' ? '已上架，用户端立即可见' : '已存为草稿')
+    if (session === mediaSession) {
+      drawer.value = false
+      ui.toast(action === 'ON_SHELF' ? '已上架，用户端立即可见' : '已存为草稿')
+    }
     await Promise.all([fetchList(), loadSummary()])
   } catch (e) {
+    if (session !== mediaSession) return
     if (e instanceof Error) {
       formError.value = e.message
       if ('fieldErrors' in e && Array.isArray((e as { fieldErrors?: unknown[] }).fieldErrors)) {
@@ -351,19 +397,22 @@ async function submit(action: 'DRAFT' | 'ON_SHELF'): Promise<void> {
       }
     }
   } finally {
-    saving.value = false
+    if (session === mediaSession) saving.value = false
   }
 }
 
 async function onCoverSelected(event: Event): Promise<void> {
   const file = (event.target as HTMLInputElement).files?.[0]
   ;(event.target as HTMLInputElement).value = ''
-  if (!file) return
+  if (!file || !drawer.value) return
   lastCoverFile.value = file
   await uploadCover(file)
 }
 
 async function uploadCover(file: File): Promise<void> {
+  const request = ++coverRequest
+  const session = mediaSession
+  const current = () => request === coverRequest && session === mediaSession && drawer.value
   coverError.value = ''
   if (!['image/jpeg', 'image/png'].includes(file.type) || file.size > 5 * 1024 * 1024) {
     coverError.value = '只支持 JPG 或 PNG 图片，单张不超过 5MB'
@@ -372,20 +421,38 @@ async function uploadCover(file: File): Promise<void> {
   coverUploading.value = true
   coverProgress.value = 0
   try {
-    const data = await uploadAdminFile(file, 'COURSE_COVER', (percent) => { coverProgress.value = percent })
+    const data = await uploadAdminFile(file, 'COURSE_COVER', (percent) => {
+      if (current()) coverProgress.value = percent
+    })
+    if (!current()) return
     form.cover_file_id = data.file_id
     form.cover_url = safeUrl(data.url)
     form.cover_source = 'UPLOAD'
   } catch (e) {
-    coverError.value = e instanceof Error ? e.message : '封面上传失败'
+    if (current()) coverError.value = e instanceof Error ? e.message : '封面上传失败'
   } finally {
-    coverUploading.value = false
+    if (current()) coverUploading.value = false
   }
 }
 
 const coverInput = ref<HTMLInputElement | null>(null)
 const lastCoverFile = ref<File | null>(null)
 const lastVideoFile = ref<File | null>(null)
+
+function invalidateMediaWork(): void {
+  mediaSession++
+  videoRequest++
+  coverRequest++
+  transcodeRequest++
+  videoUploading.value = false
+  coverUploading.value = false
+  saving.value = false
+  videoProgress.value = 0
+  coverProgress.value = 0
+  videoStatus.value = ''
+  lastCoverFile.value = null
+  lastVideoFile.value = null
+}
 
 function retryCover(): void {
   if (lastCoverFile.value) void uploadCover(lastCoverFile.value)
@@ -398,7 +465,9 @@ async function retryVideo(): Promise<void> {
 function formatBytes(size?: number | null): string {
   if (!size) return '—'
   if (size >= 1024 * 1024 * 1024) return `${(size / (1024 * 1024 * 1024)).toFixed(1)}GB`
-  return `${(size / (1024 * 1024)).toFixed(0)}MB`
+  if (size >= 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(1)}MB`
+  if (size >= 1024) return `${Math.round(size / 1024)}KB`
+  return `${size}B`
 }
 
 function courseStatusText(status?: string): string {
@@ -411,13 +480,26 @@ function courseStatusText(status?: string): string {
 async function onVideoSelected(event: Event): Promise<void> {
   const file = (event.target as HTMLInputElement).files?.[0]
   ;(event.target as HTMLInputElement).value = ''
-  if (!file) return
+  if (!file || !drawer.value) return
   lastVideoFile.value = file
   await uploadVideo(file)
 }
 
 async function uploadVideo(file: File): Promise<void> {
+  const request = ++videoRequest
+  const session = mediaSession
+  const current = () => request === videoRequest && session === mediaSession && drawer.value
+  transcodeRequest++
   videoError.value = ''
+  videoStatus.value = ''
+  form.video_file_id = null
+  form.video_duration = 0
+  form.transcode_status = ''
+  form.transcode_error = ''
+  if (form.cover_source !== 'UPLOAD') {
+    form.cover_file_id = null
+    form.cover_url = ''
+  }
   if (!/\.(mp4|mov)$/i.test(file.name)) {
     videoError.value = '只支持 MP4 和 MOV，不超过 2GB、30 分钟'
     return
@@ -438,40 +520,54 @@ async function uploadVideo(file: File): Promise<void> {
       file_size: file.size,
       mime_type: file.type || 'video/mp4'
     })
+    if (!current()) return
     const parts: Array<{ part_no: number; etag: string }> = []
     for (let index = 0; index < init.part_count; index += 1) {
       const start = index * init.part_size
       const chunk = file.slice(start, Math.min(start + init.part_size, file.size))
       const part = await uploadMultipartPartProxy(init.file_id, index + 1, chunk)
+      if (!current()) return
       parts.push({ part_no: index + 1, etag: part.etag })
       videoProgress.value = Math.round(((index + 1) / init.part_count) * 100)
     }
     const fileData = await completeMultipartUpload(init.file_id, parts)
+    if (!current()) return
     form.video_file_id = init.file_id
     form.video_duration = fileData.duration_sec || 0
     form.transcode_status = fileData.transcode_status || 'WAITING'
     videoStatus.value = '上传完成，已开始转码'
     void pollTranscode(init.file_id)
   } catch (e) {
-    videoError.value = e instanceof Error ? e.message : '视频上传失败，请重试'
+    if (current()) videoError.value = e instanceof Error ? e.message : '视频上传失败，请重试'
   } finally {
-    videoUploading.value = false
+    if (current()) videoUploading.value = false
   }
 }
 
 async function pollTranscode(fileId: number): Promise<void> {
+  const request = ++transcodeRequest
+  const session = mediaSession
+  const current = () => request === transcodeRequest && session === mediaSession && drawer.value && form.video_file_id === fileId
   for (let i = 0; i < 90; i += 1) {
+    if (!current()) return
     await new Promise((resolve) => window.setTimeout(resolve, 4000))
+    if (!current()) return
     try {
       const data = await getAdminFile(fileId)
+      if (!current()) return
       const progress720 = data.variants?.find((v) => v.variant_code === 'HLS_720P')?.progress || 0
       const progress480 = data.variants?.find((v) => v.variant_code === 'HLS_480P')?.progress || 0
       videoProgress.value = Math.round(Math.max(progress720, progress480) * 100)
+      form.transcode_error = data.transcode_error || ''
       if (data.transcode_status === 'SUCCESS') {
         form.transcode_status = 'SUCCESS'
-        form.cover_url = safeUrl(data.cover_candidates?.[0]?.url) || form.cover_url
-        form.cover_file_id = data.cover_candidates?.[0]?.file_id || form.cover_file_id
-        videoStatus.value = '转码完成，封面已自动截取'
+        form.video_duration = data.duration_sec || form.video_duration
+        if (form.cover_source !== 'UPLOAD' && data.cover_candidates?.[0]) {
+          form.cover_url = safeUrl(data.cover_candidates[0].url)
+          form.cover_file_id = data.cover_candidates[0].file_id
+          form.cover_source = 'AUTO'
+        }
+        videoStatus.value = form.cover_file_id ? '转码完成' : '转码完成，请上传封面'
         return
       }
       if (data.transcode_status === 'FAILED') {
@@ -481,33 +577,34 @@ async function pollTranscode(fileId: number): Promise<void> {
         return
       }
       form.transcode_status = data.transcode_status || 'PROCESSING'
-      videoStatus.value = progress720 > 0 ? `720P 转码中 ${Math.round(progress720 * 100)}%` : '等待转码'
+      videoStatus.value = data.transcode_error && data.transcode_status === 'WAITING'
+        ? '上次转码未完成，系统将自动重试'
+        : progress720 > 0 ? `720P 转码中 ${Math.round(progress720 * 100)}%` : '等待转码'
     } catch {
-      /* 网络暂停时下次轮询继续 */
+      if (current()) videoStatus.value = '转码状态暂时无法刷新，正在重试'
     }
   }
-  videoStatus.value = '转码仍在进行，可稍后刷新查看'
+  if (current()) videoStatus.value = '转码仍在进行，可稍后刷新查看'
 }
 
 async function retryTranscode(): Promise<void> {
-  if (editing.value) {
-    try {
+  const fileId = form.video_file_id
+  if (!fileId) return
+  const session = mediaSession
+  transcodeRequest++
+  try {
+    if (editing.value?.video?.file_id === fileId) {
       await retryCourseTranscode(editing.value.id)
-      form.transcode_status = 'WAITING'
-      ui.toast('已重新开始转码')
-      if (form.video_file_id) void pollTranscode(form.video_file_id)
-    } catch (e) {
-      ui.toast(e instanceof Error ? e.message : '重试失败', 'error')
+    } else {
+      await retryFileTranscode(fileId)
     }
-  } else if (form.video_file_id) {
-    try {
-      await retryFileTranscode(form.video_file_id)
-      form.transcode_status = 'WAITING'
-      ui.toast('已重新开始转码')
-      void pollTranscode(form.video_file_id)
-    } catch (e) {
-      ui.toast(e instanceof Error ? e.message : '重试失败', 'error')
-    }
+    if (session !== mediaSession || fileId !== form.video_file_id || !drawer.value) return
+    form.transcode_status = 'WAITING'
+    form.transcode_error = ''
+    ui.toast('已重新开始转码')
+    void pollTranscode(fileId)
+  } catch (e) {
+    if (session === mediaSession && drawer.value) ui.toast(e instanceof Error ? e.message : '重试失败', 'error')
   }
 }
 
@@ -553,14 +650,26 @@ async function submitOffShelf(): Promise<void> {
   }
 }
 
+const shelvingId = ref<number | null>(null)
 async function quickOnShelf(row: CourseRow): Promise<void> {
+  if (!canHandle.value || shelvingId.value !== null) return
+  shelvingId.value = row.id
   try {
     const detail = await getCourseDetail(row.id)
+    if (!canHandle.value) return
+    if (!canPublishCourse(detail)) {
+      ui.toast(hasReadyCourseMedia(detail) ? '请先检查课程分类、封面和专题节次，再上架'
+        : '视频尚未就绪，请在编辑页检查两档转码状态', 'error')
+      await fetchList()
+      return
+    }
     await onShelfCourse(row.id, detail.version)
     ui.toast('已上架，用户端立即可见')
     await Promise.all([fetchList(), loadSummary()])
   } catch (e) {
     ui.toast(e instanceof Error ? e.message : '上架失败', 'error')
+  } finally {
+    shelvingId.value = null
   }
 }
 
@@ -1016,11 +1125,65 @@ async function moveCategory(index: number, direction: -1 | 1): Promise<void> {
   }
 }
 
+async function openMessageCourse(): Promise<void> {
+  const request = ++messageCourseRequest
+  listRequest++
+  listLoading.value = false
+  const previousTitle = messageCourseTitle.value
+  if (previousTitle && query.keyword === previousTitle) {
+    query.keyword = ''
+    query.page = 1
+  }
+  if (messageEditingId !== null) drawer.value = false
+  messageCourseId.value = null
+  messageCourseTitle.value = ''
+  messageCourseError.value = ''
+  const value = route.query.course_id
+  if (value === undefined) {
+    await fetchList()
+    return
+  }
+  const id = typeof value === 'string' && /^[1-9]\d*$/.test(value) ? Number(value) : NaN
+  if (!Number.isSafeInteger(id)) {
+    messageCourseError.value = '消息中的课程编号无效，请从课程列表查看。'
+    await fetchList()
+    return
+  }
+  messageCourseId.value = id
+  if (canHandle.value) {
+    await Promise.all([fetchList(), openEdit({ id }, true)])
+    return
+  }
+  try {
+    const data = await getCourseDetail(id)
+    if (request !== messageCourseRequest) return
+    messageCourseTitle.value = data.title || ''
+    query.topic_id = null
+    query.category_id = null
+    query.status = 'ALL'
+    query.keyword = data.title || ''
+    query.page = 1
+    await fetchList()
+  } catch (e) {
+    if (request === messageCourseRequest) {
+      messageCourseError.value = e instanceof Error ? e.message : '关联课程加载失败，请从课程列表查看。'
+      await fetchList()
+    }
+  }
+}
+
+watch([() => route.query.course_id, canHandle], () => void openMessageCourse(), { immediate: true })
+
+onBeforeUnmount(() => {
+  invalidateMediaWork()
+  messageCourseRequest++
+  detailRequest++
+  listRequest++
+})
+
 onMounted(async () => {
-  loading.value = true
   void loadFormOptions()
-  await Promise.all([loadSummary(), loadNav(), fetchList()])
-  loading.value = false
+  await Promise.all([loadSummary(), loadNav()])
 })
 </script>
 
@@ -1035,6 +1198,10 @@ onMounted(async () => {
     </zw-page-head>
 
     <zw-notice v-if="forbidden" type="error" title="你没有养殖课堂的查看权限">请联系超级管理员在“管理员与权限”中开通 WA-C03 的查看权限。</zw-notice>
+    <zw-notice v-if="messageCourseError" type="warning" title="无法定位消息关联课程">{{ messageCourseError }}</zw-notice>
+    <zw-notice v-else-if="messageCourseId && !canHandle" type="info" :title="`消息关联课程 #${messageCourseId}`">
+      {{ messageCourseTitle ? `已按课程标题“${messageCourseTitle}”筛选列表。` : '正在加载关联课程…' }}
+    </zw-notice>
 
     <div v-if="!forbidden" class="zw-grid-4 course-stats">
       <zw-stat label="已上架课程" icon="smart_display" :value="formatNumber(summary?.on_shelf_count || 0)" unit="节" :foot="`专题 ${summary?.topic_count || 0} 个 · 分类 ${summary?.category_count || 0} 个`" />
@@ -1096,8 +1263,8 @@ onMounted(async () => {
               </div>
             </template>
             <template #item.transcode="{ item }">
-              <div v-if="item.transcode_status === 'SUCCESS'" class="course-transcode-ok"><zw-icon name="check_circle" :size="14" /><span>720P · 480P</span></div>
-              <div v-else-if="item.transcode_status === 'FAILED'" class="course-transcode-fail">
+              <div v-if="hasReadyCourseMedia(item as CourseRow)" class="course-transcode-ok"><zw-icon name="check_circle" :size="14" /><span>720P · 480P</span></div>
+              <div v-else-if="courseTranscodeStatus(item as CourseRow) === 'FAILED'" class="course-transcode-fail">
                 <span><zw-icon name="error" :size="14" />转码失败</span>
                 <a v-if="canHandle" class="zw-link" @click.stop="quickRetry(item as CourseRow)">重试转码</a>
               </div>
@@ -1119,7 +1286,8 @@ onMounted(async () => {
                 <a v-if="canHandle" class="zw-link" @click="openEdit(item as CourseRow)">编辑</a>
                 <a v-if="item.status !== 'DRAFT'" class="zw-link" @click="openStats(item as CourseRow)">数据</a>
                 <a v-if="item.status === 'ON_SHELF' && canHandle" class="zw-link danger" @click="openOffShelf(item as CourseRow)">下架</a>
-                <a v-if="item.status === 'OFF_SHELF' && canHandle" class="zw-link" @click="quickOnShelf(item as CourseRow)">上架</a>
+                <a v-if="item.status === 'OFF_SHELF' && canHandle && canPublishCourse(item as CourseRow)" class="zw-link" :aria-disabled="shelvingId !== null" @click="quickOnShelf(item as CourseRow)">{{ shelvingId === item.id ? '上架中…' : '上架' }}</a>
+                <a v-else-if="item.status === 'OFF_SHELF' && canHandle" class="zw-link" @click="openEdit(item as CourseRow)">检查上架条件</a>
                 <a v-if="item.status === 'DRAFT' && canHandle" class="zw-link danger" @click="openDelete(item as CourseRow)">删除</a>
               </div>
             </template>
@@ -1206,8 +1374,8 @@ onMounted(async () => {
       </div>
       <template #foot>
         <span class="zw-foot-note">上架后记入操作日志，用户端立即可见</span>
-        <v-btn variant="outlined" :disabled="saving" @click="submit('DRAFT')">存为草稿</v-btn>
-        <v-btn color="primary" prepend-icon="publish" :loading="saving" :disabled="form.transcode_status !== 'SUCCESS' || !form.cover_file_id" @click="submit('ON_SHELF')">上架</v-btn>
+        <v-btn variant="outlined" :disabled="saving || detailLoading || videoUploading || coverUploading || !canHandle" @click="submit('DRAFT')">存为草稿</v-btn>
+        <v-btn color="primary" prepend-icon="publish" :loading="saving" :disabled="detailLoading || videoUploading || coverUploading || !canHandle || form.transcode_status !== 'SUCCESS' || !form.cover_file_id" @click="submit('ON_SHELF')">上架</v-btn>
       </template>
     </zw-drawer>
 

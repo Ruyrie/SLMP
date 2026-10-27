@@ -25,10 +25,18 @@ public class GrowthCalcTest {
     public void interpolate_96DaysIs68point6_82DaysIs53point2() {
         assertEquals("68.6", GrowthCalc.interpolate(STD, 96).toPlainString());
         assertEquals("53.2", GrowthCalc.interpolate(STD, 82).toPlainString());
-        assertEquals("62.0", GrowthCalc.interpolate(STD, 90).toPlainString());
+        assertEquals(0, new BigDecimal("62.0").compareTo(GrowthCalc.interpolate(STD, 90)));
         // 超出首末点为无标准
         assertNull(GrowthCalc.interpolate(STD, 69));
         assertNull(GrowthCalc.interpolate(STD, 101));
+    }
+
+    @Test
+    public void poultryInterpolationPreservesSmallWeights() {
+        List<StdPointVO> points = Arrays.asList(new StdPointVO(1, new BigDecimal("0.04")),
+                new StdPointVO(7, new BigDecimal("0.16")));
+        assertEquals(0, new BigDecimal("0.04").compareTo(GrowthCalc.interpolate(points, 1)));
+        assertEquals(0, new BigDecimal("0.06").compareTo(GrowthCalc.interpolate(points, 2)));
     }
 
     @Test

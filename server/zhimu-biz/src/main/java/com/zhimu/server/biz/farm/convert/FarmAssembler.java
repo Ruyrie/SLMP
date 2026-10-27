@@ -77,7 +77,7 @@ public class FarmAssembler {
 
     private static final Map<String, String> INVITE_STATUS_TEXT = Map.of(
             "PENDING", "待接受",
-            "ACCEPTED", "已加入",
+            "ACCEPTED", "邀请成功",
             "REJECTED", "已拒绝",
             "EXPIRED", "已过期",
             "CANCELED", "已作废");
@@ -706,7 +706,7 @@ public class FarmAssembler {
         return TenantSkip.call(() -> inviteMapper.selectList(Wrappers.<FarmInvite>lambdaQuery()
                 .eq(FarmInvite::getFarmId, farmId)
                 .eq(onlyPending, FarmInvite::getStatus, "PENDING")
-                .in(!onlyPending, FarmInvite::getStatus, List.of("PENDING", "EXPIRED", "REJECTED"))
+                .in(!onlyPending, FarmInvite::getStatus, List.of("PENDING", "ACCEPTED", "EXPIRED", "REJECTED"))
                 .orderByDesc(FarmInvite::getCreatedAt)
                 .orderByDesc(FarmInvite::getId)));
     }

@@ -2,12 +2,14 @@ package com.zhimu.server.admin.content.service.impl;
 
 import com.zhimu.server.admin.content.ContentTableInfo;
 import com.zhimu.server.admin.content.entity.KnowledgeVersion;
+import com.zhimu.server.admin.content.entity.ContentApplicable;
 import com.zhimu.server.admin.content.mapper.ContentApplicableMapper;
 import com.zhimu.server.admin.content.mapper.ContentStatMapper;
 import com.zhimu.server.admin.content.mapper.KnowledgeTaskMapper;
 import com.zhimu.server.admin.content.mapper.KnowledgeVersionMapper;
 import com.zhimu.server.admin.content.request.KnowledgePublishRequest;
 import com.zhimu.server.admin.content.request.KnowledgeRollbackRequest;
+import com.zhimu.server.admin.content.request.KnowledgeSaveRequest;
 import com.zhimu.server.admin.content.service.ContentCategoryAdminService;
 import com.zhimu.server.admin.content.service.KnowledgeParagraphService;
 import com.zhimu.server.admin.content.service.KnowledgeTaskService;
@@ -15,7 +17,9 @@ import com.zhimu.server.admin.content.support.ContentLogs;
 import com.zhimu.server.admin.content.support.ContentNames;
 import com.zhimu.server.admin.content.support.KnowledgeHtml;
 import com.zhimu.server.admin.content.vo.KnowledgeVO;
+import com.zhimu.server.admin.content.vo.StatAggregates;
 import com.zhimu.server.biz.ai.entity.AiKnowledge;
+import com.zhimu.server.biz.ai.entity.CourseCategory;
 import com.zhimu.server.biz.ai.mapper.AiKnowledgeMapper;
 import com.zhimu.server.biz.ai.mapper.AiKnowledgeParagraphMapper;
 import com.zhimu.server.biz.ai.mapper.CourseMapper;
@@ -26,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -33,6 +38,7 @@ import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Set;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,6 +47,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -75,6 +82,52 @@ class KnowledgeAdminServiceImplTest {
     @AfterEach
     void tearDown() {
         AdminContext.clear();
+    }
+
+    private KnowledgeSaveRequest createRequest(Long applicableId) {
+        CourseCategory contentCategory = new CourseCategory();
+        contentCategory.setId(7L);
+        contentCategory.setName("饲养知识");
+        when(categoryService.requireEnabled(7L)).thenReturn(contentCategory);
+        KnowledgeSaveRequest request = new KnowledgeSaveRequest();
+        request.setSourceType("PLATFORM");
+        request.setCategoryId(7L);
+        request.setTitle("新建知识");
+        request.setContent("<p data-para-key=\"p1\">知识正文</p>");
+        request.setApplicableCategoryIds(List.of(applicableId));
+        request.setSubmitAction("PUBLISH");
+        return request;
+    }
+
+    @Test
+    void publishesNewKnowledgeWithProductCategoryId() {
+        KnowledgeSaveRequest request = createRequest(101L);
+        StatAggregates.CategoryRef category = new StatAggregates.CategoryRef();
+        category.setId(101L);
+        category.setName("育肥猪");
+        category.setStatus("ENABLED");
+        when(statMapper.selectProductCategories(List.of(101L))).thenReturn(List.of(category));
+        when(paragraphService.resolve(null, request.getContent())).thenReturn(KnowledgeHtml.parse(request.getContent(), null));
+        doAnswer(call -> { call.<AiKnowledge>getArgument(0).setId(31L); return 1; }).when(knowledgeMapper).insert(any(AiKnowledge.class));
+        doAnswer(call -> { call.<KnowledgeVersion>getArgument(0).setId(41L); return 1; }).when(versionMapper).insert(any(KnowledgeVersion.class));
+
+        KnowledgeVO result = service.create(request);
+
+        assertThat(result.getStatus()).isEqualTo("ON_SHELF");
+        assertThat(result.getId()).isEqualTo(31L);
+        ArgumentCaptor<ContentApplicable> saved = ArgumentCaptor.forClass(ContentApplicable.class);
+        verify(applicableMapper).insert(saved.capture());
+        assertThat(saved.getValue().getCategoryId()).isEqualTo(101L);
+        assertThat(saved.getValue().getBizId()).isEqualTo(31L);
+    }
+
+    @Test
+    void rejectsBreedIdsThatDoNotIdentifyProductCategoriesBeforeCreatingKnowledge() {
+        KnowledgeSaveRequest request = createRequest(1101L);
+        when(statMapper.selectProductCategories(List.of(1101L))).thenReturn(List.of());
+        assertThatThrownBy(() -> service.create(request)).isInstanceOf(BizException.class)
+                .hasMessageContaining("适用品类不存在或已停用");
+        verify(knowledgeMapper, never()).insert(any(AiKnowledge.class));
     }
 
     @Test

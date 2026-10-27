@@ -99,6 +99,8 @@ public class CameraViewModel extends BaseViewModel {
     private final MutableLiveData<Boolean> shutterEnabled = new MutableLiveData<>(false);
     private final MutableLiveData<Integer> shutterStyle = new MutableLiveData<>(SHUTTER_PHOTO);
     private final MutableLiveData<Boolean> capturing = new MutableLiveData<>(false);
+    private final MutableLiveData<Boolean> doneEnabled = new MutableLiveData<>(false);
+    private final MutableLiveData<String> doneText = new MutableLiveData<>("完成");
     private final MutableLiveData<Boolean> recording = new MutableLiveData<>(false);
     private final MutableLiveData<String> elapsedText = new MutableLiveData<>(formatElapsed(0));
     private final MutableLiveData<Integer> recordProgress = new MutableLiveData<>(0);
@@ -225,6 +227,14 @@ public class CameraViewModel extends BaseViewModel {
     /** 底部提示：“还可以拍 4 张”“照片和视频合计最多 6 个”“录像不超过 30 秒，自动压缩为 720p” */
     public LiveData<String> getRemainingText() {
         return remainingText;
+    }
+
+    public LiveData<Boolean> getDoneEnabled() {
+        return doneEnabled;
+    }
+
+    public LiveData<String> getDoneText() {
+        return doneText;
     }
 
     public LiveData<Boolean> getShutterEnabled() {
@@ -643,6 +653,11 @@ public class CameraViewModel extends BaseViewModel {
         finishEvent.setValue(CameraResult.manualInput());
     }
 
+    /** 明确确认本次拍摄，返回表单继续编辑；正在拍摄或录像时不能提前结束。 */
+    public void onDone() {
+        if (Boolean.TRUE.equals(doneEnabled.getValue())) onClose();
+    }
+
     /** 关闭或返回：录像中先确认；原有用法把已拍照片带回；上传队列模式已写入队列 */
     public void onClose() {
         if (Boolean.TRUE.equals(recording.getValue())) {
@@ -678,6 +693,10 @@ public class CameraViewModel extends BaseViewModel {
         if (args.isScan()) {
             return;
         }
+        int selected = args.isQueueMode() ? queuedCount : captured.size();
+        doneText.setValue(selected > 0 ? String.format(Locale.ROOT, "完成（%d）", selected) : "完成");
+        doneEnabled.setValue(selected > 0 && !Boolean.TRUE.equals(capturing.getValue())
+                && !Boolean.TRUE.equals(recording.getValue()));
         if (!args.isAllowVideo()) {
             updatePhotoOnlyTexts();
             return;

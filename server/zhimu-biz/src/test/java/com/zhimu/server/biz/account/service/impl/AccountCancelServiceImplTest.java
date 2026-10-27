@@ -4,6 +4,8 @@ import com.zhimu.server.biz.account.config.AccountProperties;
 import com.zhimu.server.biz.account.entity.AccountCancel;
 import com.zhimu.server.biz.account.entity.User;
 import com.zhimu.server.biz.account.enums.CancelBlockReason;
+import com.zhimu.server.biz.account.enums.SmsScene;
+import com.zhimu.server.biz.account.event.AccountCancelledEvent;
 import com.zhimu.server.biz.account.mapper.AccountCancelMapper;
 import com.zhimu.server.biz.account.mapper.AccountRecoveryMapper;
 import com.zhimu.server.biz.account.mapper.UserMapper;
@@ -21,6 +23,7 @@ import com.zhimu.server.biz.farm.api.FarmAccountService;
 import com.zhimu.server.common.context.UserContext;
 import com.zhimu.server.common.enums.ClientType;
 import com.zhimu.server.common.error.BizException;
+import com.zhimu.server.common.error.ErrorCode;
 import com.zhimu.server.framework.oplog.OperationLogRecorder;
 import com.zhimu.server.framework.security.cache.AuthStateCache;
 import com.zhimu.server.framework.security.token.UserTokenService;
@@ -30,6 +33,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,9 +43,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class AccountCancelServiceImplTest {
@@ -140,6 +147,7 @@ class AccountCancelServiceImplTest {
         assertThat(e.getCode()).isEqualTo(40310);
         assertThat(e.getMessage()).contains("东山猪场");
         verify(accountCancelMapper, never()).insert(any(AccountCancel.class));
+        verifyNoInteractions(smsCodeService, farmAccountService, userTokenService, authStateCache);
     }
 
     @Test
@@ -152,6 +160,8 @@ class AccountCancelServiceImplTest {
 
         assertThat(e.getCode()).isEqualTo(40902);
         assertThat(e.getMessage()).isEqualTo("内容已更新，请刷新后再修改");
+        verifyNoInteractions(smsCodeService, accountCancelMapper, farmAccountService,
+                userTokenService, authStateCache);
     }
 
     @Test
@@ -195,6 +205,50 @@ class AccountCancelServiceImplTest {
         verify(operationLogRecorder).record(any());
         verify(userTokenService).revokeAll(10001L);
         verify(authStateCache).evict(10001L);
+    }
+
+    @Test
+    void invalidSmsCannotCancelAccountOrRemoveMemberships() {
+        when(userMapper.selectByIdForUpdate(10001L)).thenReturn(user());
+        when(rules.evaluate(any(User.class))).thenReturn(check(true));
+        doThrow(new BizException(ErrorCode.SMS_CODE_WRONG, "验证码不正确"))
+                .when(smsCodeService).verifyAndConsume(SmsScene.CANCEL_ACCOUNT,
+                        "13800006620", "654321", "sms_code");
+
+        BizException error = (BizException) catchException(() -> service.cancel(
+                new AccountCancelRequest("654321", true, "a1b2c3d4e5f60718"),
+                ClientType.APP_ANDROID));
+
+        assertThat(error.getCode()).isEqualTo(ErrorCode.SMS_CODE_WRONG.getCode());
+        verify(userMapper, never()).update(any(), any());
+        verifyNoInteractions(accountCancelMapper, recoveryMapper, changeRequestService,
+                farmAccountService, operationLogRecorder, userTokenService, authStateCache,
+                eventPublisher);
+    }
+
+    @Test
+    void cancellationRevokesSessionsAndPublishesCleanupEventOnlyAfterCommit() {
+        when(userMapper.selectByIdForUpdate(10001L)).thenReturn(user());
+        when(rules.evaluate(any(User.class))).thenReturn(check(true));
+        TransactionSynchronizationManager.initSynchronization();
+        TransactionSynchronizationManager.setActualTransactionActive(true);
+        try {
+            service.cancel(new AccountCancelRequest("123456", true, "a1b2c3d4e5f60718"),
+                    ClientType.APP_ANDROID);
+
+            verify(farmAccountService).handleAccountCancelled(10001L, "13800006620");
+            verifyNoInteractions(userTokenService, authStateCache, eventPublisher);
+
+            TransactionSynchronizationManager.getSynchronizations()
+                    .forEach(TransactionSynchronization::afterCommit);
+
+            verify(userTokenService).revokeAll(10001L);
+            verify(authStateCache).evict(10001L);
+            verify(eventPublisher).publishEvent(new AccountCancelledEvent(10001L, "13800006620"));
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+            TransactionSynchronizationManager.setActualTransactionActive(false);
+        }
     }
 
     private static Throwable catchException(org.junit.jupiter.api.function.Executable executable) {

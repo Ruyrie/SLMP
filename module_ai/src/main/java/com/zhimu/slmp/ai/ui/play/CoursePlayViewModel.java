@@ -34,6 +34,7 @@ import java.util.Objects;
 import javax.inject.Inject;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.Disposable;
 import com.zhimu.slmp.common.router.RouterPath;
 
 /**
@@ -75,12 +76,16 @@ public class CoursePlayViewModel extends BaseViewModel {
     private final SingleLiveEvent<Long> openKnowledge = new SingleLiveEvent<>();
     private final SingleLiveEvent<Long> openTopic = new SingleLiveEvent<>();
     private final SingleLiveEvent<Boolean> pauseRequest = new SingleLiveEvent<>();
+    private final SingleLiveEvent<Void> stopPlayback = new SingleLiveEvent<>();
 
     private long courseId;
     @NonNull
     private String entryType = AiCodes.ENTRY_COURSE;
     private long initialStartMs = -1;
     private boolean loadedOnce;
+    @Nullable private Disposable playbackRequest;
+    private String preferredQuality = AiCodes.QUALITY_720;
+    private boolean playAfterLoad = true;
 
     @Inject
     public CoursePlayViewModel(@NonNull CourseRepository repository, @NonNull NetworkStatus network,
@@ -221,6 +226,8 @@ public class CoursePlayViewModel extends BaseViewModel {
         return pauseRequest;
     }
 
+    public SingleLiveEvent<Void> getStopPlayback() { return stopPlayback; }
+
     public long getCourseId() {
         return courseId;
     }
@@ -228,16 +235,39 @@ public class CoursePlayViewModel extends BaseViewModel {
     // ===== 加载 =====
 
     public void load(long id, @NonNull String entry) {
+        if (playbackRequest != null) playbackRequest.dispose();
+        if (courseId > 0 && courseId != id) {
+            initialStartMs = -1;
+            positionMs.setValue(0L);
+            playAfterLoad = true;
+        }
         courseId = id;
         entryType = entry;
         endOverlay.setValue(false);
+        playCommand.setValue(null);
+        stopPlayback.call();
+        play.setValue(null);
+        currentSource.setValue(null);
+        topicDetail.setValue(null);
+        hasNext.setValue(false);
+        playerState.setValue(PlayerState.IDLE);
         resetContentLoaded();
-        load(repository.getCoursePlay(id), this::onLoaded);
+        playbackRequest = load(repository.getCoursePlay(id), this::onLoaded);
+    }
+
+    /** Validate availability and refresh URLs before resuming a stopped screen. */
+    public void revalidate(long position, boolean resumePlayback) {
+        if (courseId <= 0) return;
+        initialStartMs = Math.max(0, position);
+        playAfterLoad = resumePlayback;
+        load(courseId, entryType);
     }
 
     @Override
     public void retry() {
         if (courseId > 0) {
+            playAfterLoad = true;
+            initialStartMs = currentPos();
             load(courseId, entryType);
         }
     }
@@ -254,9 +284,9 @@ public class CoursePlayViewModel extends BaseViewModel {
     private void onLoaded(@NonNull CoursePlayVO vo) {
         play.setValue(vo);
         hasNext.setValue(vo.getNextCourseId() != null);
-        String quality = currentSource.getValue() == null ? AiCodes.QUALITY_720 : currentSource.getValue().getQuality();
-        VideoSourceVO src = vo.sourceOf(quality);
+        VideoSourceVO src = vo.sourceOf(preferredQuality);
         currentSource.setValue(src);
+        if (src != null) preferredQuality = src.getQuality();
         CoursePlayVO.Progress p = vo.getProgress();
         learnStatus.setValue(p != null && p.isCompleted() ? AiCodes.LEARN_COMPLETED
                 : p != null && p.getPositionSec() > 0 ? AiCodes.LEARN_LEARNING : AiCodes.LEARN_NOT_STARTED);
@@ -274,6 +304,7 @@ public class CoursePlayViewModel extends BaseViewModel {
             playerState.setValue(PlayerState.ERROR);
             return;
         }
+        loadedOnce = true;
         String net = network.type();
         networkType.setValue(net);
         boolean mobile = AiCodes.NET_MOBILE.equals(net);
@@ -282,13 +313,13 @@ public class CoursePlayViewModel extends BaseViewModel {
             playCommand.setValue(new PlayCommand(src.getHlsUrl(), src.getQuality(), startMs, false));
             return;
         }
-        playCommand.setValue(new PlayCommand(src.getHlsUrl(), src.getQuality(), startMs, true));
+        playCommand.setValue(new PlayCommand(src.getHlsUrl(), src.getQuality(), startMs, playAfterLoad));
+        playAfterLoad = true;
         if (mobile) {
             mobileSnack.setValue(AiText.mobileTip(src.getSizeBytes()));
         } else if (resume > 0 && startMs > 0) {
             resumeSnack.setValue(resume);
         }
-        loadedOnce = true;
     }
 
     private void refreshTopic(long topicId) {
@@ -319,9 +350,7 @@ public class CoursePlayViewModel extends BaseViewModel {
             endOverlay.setValue(false);
             reporter.onPlaying(pos);
         } else if (state == PlayerState.ENDED) {
-            CoursePlayVO vo = play.getValue();
-            long end = vo == null ? pos : Math.max(pos, vo.getDurationSec() * 1000L);
-            reporter.onEnded(end);
+            reporter.onEnded(Math.max(0, pos));
             endOverlay.setValue(true);
         }
     }
@@ -354,6 +383,7 @@ public class CoursePlayViewModel extends BaseViewModel {
             return;
         }
         currentSource.setValue(src);
+        preferredQuality = src.getQuality();
         reporter.setQuality(src.getQuality());
         boolean playing = playerState.getValue() == PlayerState.PLAYING || playerState.getValue() == PlayerState.BUFFERING;
         playCommand.setValue(new PlayCommand(src.getHlsUrl(), src.getQuality(), currentPos(), playing));
@@ -461,6 +491,12 @@ public class CoursePlayViewModel extends BaseViewModel {
 
     /** 返回、非画中画 onStop、小窗关闭：LEAVE */
     public void onLeave() {
+        onLeave(currentPos());
+    }
+
+    /** Use the player's final position, which may be newer than the one-second UI ticker. */
+    public void onLeave(long position) {
+        positionMs.setValue(Math.max(0, position));
         reporter.onLeave(currentPos());
     }
 

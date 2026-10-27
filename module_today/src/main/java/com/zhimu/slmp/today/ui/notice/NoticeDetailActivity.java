@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
+import androidx.core.text.HtmlCompat;
 import androidx.databinding.DataBindingUtil;
 
 import com.zhimu.slmp.base.dialog.ConfirmDialogFragment;
@@ -14,17 +15,14 @@ import com.zhimu.slmp.base.ui.BaseActivity;
 import com.zhimu.slmp.base.widget.StatusTagView;
 import com.zhimu.slmp.base.widget.TopAppBarHelper;
 import com.zhimu.slmp.common.model.vo.FileVO;
-import com.zhimu.slmp.common.router.RouterPath;
+import com.zhimu.slmp.media.ui.viewer.MediaViewer;
 import com.zhimu.slmp.today.R;
 import com.zhimu.slmp.today.databinding.TodayActivityNoticeDetailBinding;
 import com.zhimu.slmp.today.di.TodayInjector;
 import com.zhimu.slmp.today.model.vo.MessageDetailVO;
 import com.zhimu.slmp.today.model.vo.NoticePayload;
-import com.zhimu.slmp.today.util.NavTarget;
-import com.zhimu.slmp.today.util.TodayNavigator;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 
 /**
  * T07 通知详情：重要通知（campaign 图标 + “重要”）、普通通知只显示“平台通知”，指定养殖场的通知另加养殖场标签；
@@ -87,6 +85,12 @@ public class NoticeDetailActivity extends BaseActivity {
         });
 
         vm.getDetail().observe(this, this::renderTags);
+        vm.getNotice().observe(this, notice -> {
+            String content = notice == null ? null : notice.getContent();
+            // 服务端正文为仅含段落、换行、加粗和列表的受限 HTML；兼容历史纯文本换行。
+            binding.content.setText(content == null ? "" : HtmlCompat.fromHtml(
+                    content.replace("\r\n", "\n").replace("\n", "<br>"), HtmlCompat.FROM_HTML_MODE_COMPACT));
+        });
         vm.getRevokedLine().observe(this, line -> {
             binding.revoked.getRoot().setVisibility(line == null ? View.GONE : View.VISIBLE);
             binding.revoked.meta.setText(line);
@@ -105,6 +109,18 @@ public class NoticeDetailActivity extends BaseActivity {
                 .danger(true)
                 .build()
                 .showSafely(getSupportFragmentManager()));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        vm.onVisible();
+    }
+
+    @Override
+    protected void onPause() {
+        vm.onInvisible();
+        super.onPause();
     }
 
     /** 标签行：“重要”（primary + campaign）或无、“平台通知”（中性）、指定养殖场的养殖场标签 */
@@ -141,16 +157,11 @@ public class NoticeDetailActivity extends BaseActivity {
         binding.tags.addView(tag);
     }
 
-    /** 全屏预览（I09，lib_media 提供；未实现时提示“该功能正在开发中”） */
+    /** 使用媒体组件的完整文件参数，支持全屏预览及临时地址过期重签名。 */
     private void openPreview(@Nullable FileVO file) {
         if (file == null) {
             return;
         }
-        Map<String, String> p = new HashMap<>();
-        if (file.getUrl() != null) {
-            p.put(RouterPath.EXTRA_URL, file.getUrl());
-        }
-        p.put(RouterPath.EXTRA_FILE_ID, String.valueOf(file.getFileId()));
-        TodayNavigator.open(this, new NavTarget("I09", p, null));
+        MediaViewer.openFiles(this, Collections.singletonList(file), 0, getString(R.string.today_notice_title));
     }
 }

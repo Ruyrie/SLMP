@@ -6,7 +6,8 @@ import type { CourseCard, TopicCard, WatchHistory } from '@/api/ai'
 import { useAiCoursesStore } from '@/stores/ai/courses'
 import { useFarmReload } from '@/composables/useFarmReload'
 import { useUiStore } from '@/stores/ui'
-import { courseWatchText, coverKind, progressPercent, topicDurationText } from './course'
+import { courseWatchText, coverKind, courseProgressPercent, topicDurationText } from './course'
+import CourseCover from './components/CourseCover.vue'
 
 const store = useAiCoursesStore()
 const route = useRoute()
@@ -34,7 +35,7 @@ const continueSub = computed(() => {
 const continueProgress = computed(() => {
   const item = continueItem.value
   if (!item) return 0
-  return progressPercent(item.progress_ratio)
+  return courseProgressPercent(item)
 })
 const continueTimeText = computed(() => {
   const item = continueItem.value
@@ -238,7 +239,7 @@ function clearFilters(): void {
       <zw-card v-else-if="continueItem" title="继续观看" class="k03-cont-card">
         <div class="k03-cont" role="button" tabindex="0" @click="goContinue" @keydown.enter="goContinue">
           <span class="k03-cont-cover">
-            <zw-thumb :kind="coverKind(continueItem.category_name)" class="k03-fill-thumb" />
+            <CourseCover :src="continueItem.cover_url" :alt="continueItem.title" :kind="coverKind(continueItem.category_name)" class="k03-fill-thumb" />
             <span class="k03-play"><zw-icon name="play_arrow" :size="24" fill /></span>
             <span class="k03-bar"><i :style="{ width: `${continueProgress}%` }" /></span>
           </span>
@@ -274,7 +275,7 @@ function clearFilters(): void {
             :class="{ on: store.topicDrawer && store.topicId === topic.id }"
             @click="onTopicClick(topic)"
           >
-            <zw-thumb :kind="coverKind(topic.category_name)" :w="64" :h="64" :radius="4" />
+            <CourseCover :src="topic.cover_url" :alt="topic.name" :kind="coverKind(topic.category_name)" :w="64" :h="64" :radius="4" />
             <span class="k03-topic-txt">
               <span class="k03-topic-t">{{ topic.name }}</span>
               <span class="k03-topic-s">{{ topicSub(topic) }}</span>
@@ -350,10 +351,10 @@ function clearFilters(): void {
             @click="goCourse(course.id, 'course')"
           >
             <span class="k03-cover">
-              <zw-thumb :kind="coverKind(course.category_name)" class="k03-fill-thumb" />
+              <CourseCover :src="course.cover_url" :alt="course.title" :kind="coverKind(course.category_name)" class="k03-fill-thumb" />
               <span class="k03-dur num"><zw-icon name="smart_display" :size="14" />{{ formatDuration(course.duration_sec) }}</span>
               <span v-if="course.learn_status !== 'NOT_STARTED'" class="k03-bar">
-                <i :style="{ width: `${progressPercent(course.progress_ratio, course.learn_status === 'COMPLETED')}%` }" />
+                <i :style="{ width: `${courseProgressPercent(course)}%` }" />
               </span>
             </span>
             <span class="k03-vt">{{ course.title }}</span>
@@ -437,9 +438,9 @@ function clearFilters(): void {
                 @click="goCourse(lesson.id, 'topic')"
               >
                 <span class="k03-les-cover">
-                  <zw-thumb :kind="coverKind(lesson.category_name)" class="k03-fill-thumb" />
+                  <CourseCover :src="lesson.cover_url" :alt="lesson.title" :kind="coverKind(lesson.category_name)" class="k03-fill-thumb" />
                   <span v-if="lesson.learn_status !== 'NOT_STARTED'" class="k03-bar">
-                    <i :style="{ width: `${progressPercent(lesson.progress_ratio, lesson.learn_status === 'COMPLETED')}%` }" />
+                    <i :style="{ width: `${courseProgressPercent(lesson)}%` }" />
                   </span>
                 </span>
                 <span class="k03-les-txt">
@@ -498,9 +499,9 @@ function clearFilters(): void {
             <template v-else>
               <button v-for="item in store.history" :key="item.id" type="button" class="k03-les" @click="goHistory(item)">
                 <span class="k03-les-cover">
-                  <zw-thumb :kind="coverKind(item.category_name)" class="k03-fill-thumb" />
+                  <CourseCover :src="item.cover_url" :alt="item.title" :kind="coverKind(item.category_name)" class="k03-fill-thumb" />
                   <span class="k03-bar">
-                    <i :style="{ width: `${progressPercent(item.progress_ratio, item.learn_status === 'COMPLETED')}%` }" />
+                    <i :style="{ width: `${courseProgressPercent(item)}%` }" />
                   </span>
                 </span>
                 <span class="k03-les-txt">

@@ -17,4 +17,6 @@ public class StockActionsVO {
     private Boolean canRequestChange;
     private Boolean canScrap;
     private Boolean canOut;
+    private Boolean canRefund;
+    private Boolean canEditRefund;
 }

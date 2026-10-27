@@ -58,6 +58,8 @@ import com.zhimu.slmp.media.databinding.MediaActivityCameraPhotoBinding;
 import com.zhimu.slmp.media.databinding.MediaActivityCameraScanBinding;
 import com.zhimu.slmp.media.di.MediaInjector;
 import com.zhimu.slmp.media.scan.QrCodeAnalyzer;
+import com.zhimu.slmp.media.scan.QrImageDecoder;
+import com.zhimu.slmp.media.picker.PickImagesContract;
 import com.zhimu.slmp.media.ui.viewer.MediaViewer;
 import com.zhimu.slmp.media.ui.viewer.ViewerItem;
 import com.zhimu.slmp.media.util.MediaFiles;
@@ -67,6 +69,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * I08 相机页（03 号规范 8.2、8.7、8.8 节，模块07 文档 2.7.1）：拍照、录像、扫码三种模式，由调用方经
@@ -86,6 +89,9 @@ public class CameraActivity extends BaseActivity {
     private static final String REQ_DISCARD = "media_camera_discard_recording";
     /** 录像目标码率 */
     private static final int VIDEO_BITRATE = 4_000_000;
+    private static final String STATE_ALBUM_PICKING = "qr_album_picking";
+    private static final String STATE_ALBUM_URI = "qr_album_uri";
+    private static final String STATE_ALBUM_MESSAGE = "qr_album_message";
 
     private CameraViewModel vm;
     @Nullable
@@ -112,11 +118,32 @@ public class CameraActivity extends BaseActivity {
     private OrientationEventListener orientationListener;
     @Nullable
     private ObjectAnimator dotBlink;
+    private boolean resumed;
+    private boolean albumPicking;
+    private boolean albumDecoding;
+    private boolean scanResultDelivered;
+    @Nullable private Uri albumUri;
+    @Nullable private String albumDecodedText;
+    @Nullable private String albumMessage;
+    @Nullable private ExecutorService albumExecutor;
+    @Nullable private Future<?> albumDecode;
+    private int albumGeneration;
 
     private final ActivityResultLauncher<String> permissionLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(), granted -> vm.onPermission(granted));
     private final ActivityResultLauncher<String> micLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(), granted -> vm.onMicPermission(granted));
+    private final ActivityResultLauncher<Integer> albumLauncher = registerForActivityResult(
+            new PickImagesContract(), uris -> {
+                if (scanBinding == null || scanResultDelivered || isFinishing()) return;
+                albumPicking = false;
+                if (uris.isEmpty()) {
+                    albumMessage = getString(R.string.media_scan_album_canceled);
+                    refreshScanAvailability();
+                } else {
+                    decodeAlbum(uris.get(0));
+                }
+            });
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -124,6 +151,13 @@ public class CameraActivity extends BaseActivity {
         vm = obtainViewModel(MediaInjector.factory(), CameraViewModel.class);
         observeBase(vm);
         if (vm.isScanMode()) {
+            if (savedInstanceState != null) {
+                albumPicking = savedInstanceState.getBoolean(STATE_ALBUM_PICKING);
+                albumMessage = savedInstanceState.getString(STATE_ALBUM_MESSAGE);
+                String savedUri = savedInstanceState.getString(STATE_ALBUM_URI);
+                albumUri = savedUri == null ? null : Uri.parse(savedUri);
+                albumDecoding = albumUri != null;
+            }
             setupScan();
         } else {
             setupPhoto();
@@ -160,6 +194,7 @@ public class CameraActivity extends BaseActivity {
         } else {
             vm.onPermission(false);
         }
+        if (vm.isScanMode() && albumUri != null) decodeAlbum(albumUri);
     }
 
     private void setupPhoto() {
@@ -279,27 +314,102 @@ public class CameraActivity extends BaseActivity {
         b.setLifecycleOwner(this);
         previewView = b.mediaPreview;
         b.mediaOpenSettings.setOnClickListener(v -> openAppSettings());
+        b.mediaScanAlbum.setOnClickListener(v -> pickAlbum());
 
         analysisExecutor = Executors.newSingleThreadExecutor(r -> new Thread(r, "zmt-qr-analyzer"));
-        analyzer = new QrCodeAnalyzer(text -> vm.onQrDecoded(text));
-        vm.getScanning().observe(this, on -> {
-            boolean scanning = Boolean.TRUE.equals(on);
-            b.mediaScanFrame.setScanning(scanning);
-            if (analyzer != null) {
-                analyzer.setEnabled(scanning);
+        analyzer = new QrCodeAnalyzer(text -> {
+            if (resumed && !albumPicking && !albumDecoding && !scanResultDelivered && !isFinishing()) {
+                vm.onQrDecoded(text);
             }
         });
+        vm.getScanning().observe(this, on -> refreshScanAvailability());
         vm.getTorchOn().observe(this, on -> {
             if (camera != null && camera.getCameraInfo().hasFlashUnit()) {
                 camera.getCameraControl().enableTorch(Boolean.TRUE.equals(on));
             }
         });
         vm.getVibrate().observe(this, v -> vibrate());
+        refreshScanAvailability();
+    }
+
+    private void pickAlbum() {
+        if (albumPicking || albumDecoding || scanResultDelivered || isFinishing()) return;
+        albumPicking = true;
+        albumMessage = null;
+        refreshScanAvailability();
+        try {
+            albumLauncher.launch(1);
+        } catch (RuntimeException error) {
+            albumPicking = false;
+            albumMessage = getString(R.string.media_scan_album_open_failed);
+            refreshScanAvailability();
+        }
+    }
+
+    private void decodeAlbum(@NonNull Uri uri) {
+        if (albumDecode != null) albumDecode.cancel(true);
+        int generation = ++albumGeneration;
+        albumPicking = false;
+        albumDecoding = true;
+        albumUri = uri;
+        albumDecodedText = null;
+        albumMessage = getString(R.string.media_scan_album_decoding);
+        refreshScanAvailability();
+        android.content.ContentResolver resolver = getApplicationContext().getContentResolver();
+        if (albumExecutor == null) albumExecutor = Executors.newSingleThreadExecutor(r -> new Thread(r, "zmt-qr-album"));
+        albumDecode = albumExecutor.submit(() -> {
+            try {
+                String text = QrImageDecoder.decode(resolver, uri);
+                ContextCompat.getMainExecutor(getApplicationContext()).execute(() -> {
+                    if (generation != albumGeneration || scanResultDelivered || isFinishing() || isDestroyed()) return;
+                    if (text == null || text.isEmpty()) {
+                        albumFailed(R.string.media_scan_album_no_qr);
+                    } else {
+                        albumDecodedText = text;
+                        deliverAlbumResult();
+                    }
+                });
+            } catch (java.io.IOException | RuntimeException | OutOfMemoryError error) {
+                ContextCompat.getMainExecutor(getApplicationContext()).execute(() -> {
+                    if (generation == albumGeneration && !scanResultDelivered && !isFinishing() && !isDestroyed()) {
+                        albumFailed(R.string.media_scan_album_read_failed);
+                    }
+                });
+            }
+        });
+    }
+
+    private void albumFailed(int message) {
+        albumDecoding = false;
+        albumUri = null;
+        albumDecodedText = null;
+        albumMessage = getString(message);
+        refreshScanAvailability();
+    }
+
+    private void deliverAlbumResult() {
+        if (!resumed || albumDecodedText == null || scanResultDelivered || isFinishing()) return;
+        String text = albumDecodedText;
+        albumDecodedText = null;
+        vm.onQrDecoded(text);
+    }
+
+    private void refreshScanAvailability() {
+        if (scanBinding == null) return;
+        boolean available = !albumPicking && !albumDecoding && !scanResultDelivered
+                && Boolean.TRUE.equals(vm.getScanning().getValue());
+        if (analyzer != null) analyzer.setEnabled(available && resumed);
+        scanBinding.mediaScanFrame.setScanning(available && resumed && hasCameraPermission());
+        scanBinding.mediaScanAlbum.setEnabled(available);
+        scanBinding.mediaManual.setEnabled(available);
+        scanBinding.mediaScanAlbumStatus.setText(albumMessage);
+        scanBinding.mediaScanAlbumStatus.setVisibility(albumMessage == null ? View.GONE : View.VISIBLE);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        resumed = true;
         // 从系统设置返回后重新检查权限
         if (!Boolean.TRUE.equals(vm.getCameraGranted().getValue()) && hasCameraPermission()) {
             vm.onPermission(true);
@@ -310,10 +420,14 @@ public class CameraActivity extends BaseActivity {
         if (orientationListener != null && orientationListener.canDetectOrientation()) {
             orientationListener.enable();
         }
+        deliverAlbumResult();
+        refreshScanAvailability();
     }
 
     @Override
     protected void onPause() {
+        resumed = false;
+        refreshScanAvailability();
         if (orientationListener != null) {
             orientationListener.disable();
         }
@@ -332,6 +446,9 @@ public class CameraActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
+        albumGeneration++;
+        if (albumDecode != null) albumDecode.cancel(true);
+        if (albumExecutor != null) albumExecutor.shutdownNow();
         if (analysisExecutor != null) {
             analysisExecutor.shutdown();
         }
@@ -339,6 +456,14 @@ public class CameraActivity extends BaseActivity {
             dotBlink.cancel();
         }
         super.onDestroy();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle state) {
+        state.putBoolean(STATE_ALBUM_PICKING, albumPicking);
+        state.putString(STATE_ALBUM_URI, albumUri == null ? null : albumUri.toString());
+        state.putString(STATE_ALBUM_MESSAGE, albumMessage);
+        super.onSaveInstanceState(state);
     }
 
     // ===== 权限 =====
@@ -655,6 +780,13 @@ public class CameraActivity extends BaseActivity {
     }
 
     private void finishWith(@Nullable CameraResult result) {
+        if (vm.isScanMode()) {
+            if (scanResultDelivered) return;
+            scanResultDelivered = true;
+            albumGeneration++;
+            if (albumDecode != null) albumDecode.cancel(true);
+            refreshScanAvailability();
+        }
         if (result == null || result.isCanceled()) {
             setResult(Activity.RESULT_CANCELED);
         } else {

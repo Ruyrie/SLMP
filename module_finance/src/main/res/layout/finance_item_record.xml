@@ -158,12 +158,16 @@
 
             <ImageButton
                 android:id="@+id/finance_record_more"
-                style="@style/Widget.Zmt.Button.Icon"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:background="@drawable/finance_bg_more_ripple"
+                android:backgroundTint="@null"
                 android:contentDescription="@string/base_cd_more"
+                android:padding="8dp"
                 android:src="@drawable/ic_more_vert"
-                android:visibility="gone" />
+                android:visibility="gone"
+                app:backgroundTint="@null"
+                app:tint="@color/base_color_icon_button" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 </LinearLayout>

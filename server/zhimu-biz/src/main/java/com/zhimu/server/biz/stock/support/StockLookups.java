@@ -110,6 +110,14 @@ public class StockLookups {
         return outbound;
     }
 
+    /** 与退款登记共用原单行锁，避免退款提交期间修改数量或作废库存单。 */
+    public StockOutbound requireOutboundForUpdate(Long id) {
+        Long farmId = farmId();
+        StockOutbound outbound = id == null ? null : outboundMapper.selectForUpdate(id, farmId);
+        if (outbound == null || !farmId.equals(outbound.getFarmId())) throw StockErrors.notFound();
+        return outbound;
+    }
+
     public StockLoss requireLoss(Long id) {
         StockLoss loss = id == null ? null : lossMapper.selectById(id);
         if (loss == null || !inFarm(loss.getFarmId())) {

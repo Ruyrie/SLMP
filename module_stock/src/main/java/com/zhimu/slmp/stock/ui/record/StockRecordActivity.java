@@ -38,6 +38,10 @@ public class StockRecordActivity extends BaseActivity implements RecordMenu.Call
         setContentView(binding.getRoot());
         vm = obtainViewModel(StockInjector.factory(), StockRecordViewModel.class);
         observeBase(vm);
+        com.zhimu.slmp.stock.ui.refund.ReturnRefundViewModel refund = obtainViewModel(StockInjector.factory(),
+                com.zhimu.slmp.stock.ui.refund.ReturnRefundViewModel.class);
+        observeBase(refund);
+        com.zhimu.slmp.stock.ui.refund.ReturnRefundUi.attach(this, binding.stockRefund, refund, vm.getOutbound(), vm::retry);
         TopAppBarHelper.setupBack(binding.stockTopBar.baseToolbar, "");
         binding.stockTopBar.baseToolbar.inflateMenu(R.menu.stock_menu_more);
         TopAppBarHelper.tintMenu(binding.stockTopBar.baseToolbar);
@@ -61,6 +65,9 @@ public class StockRecordActivity extends BaseActivity implements RecordMenu.Call
         vm.getOpenRequest().observe(this, id -> Router.open(this, RouterPath.U02, StockNav.requestArgs(id)));
         vm.getOpenChangeLog().observe(this, id -> RecordLogSheet.show(getSupportFragmentManager(), vm.bizType(), id, null));
         binding.stockRecordNotice.setText(getString(R.string.stock_record_rule));
+        if (StockEnums.BIZ_INBOUND.equals(vm.bizType()) || StockEnums.BIZ_OUTBOUND.equals(vm.bizType())) {
+            binding.stockRecordNotice.setVisibility(View.GONE);
+        }
     }
 
     @Override

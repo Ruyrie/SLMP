@@ -83,7 +83,7 @@ class BatchStockCommandServiceImplTest {
         });
         lenient().when(eventMapper.selectList(any())).thenReturn(List.of());
         lenient().when(batchPenMapper.selectList(any())).thenReturn(List.of());
-        lenient().when(timelineMapper.insert(any(com.zhimu.server.biz.herd.entity.BatchTimeline.class))).thenReturn(1);
+        lenient().when(timelineMapper.upsertSaleTimeline(any(com.zhimu.server.biz.herd.entity.BatchTimeline.class))).thenReturn(1);
         lenient().when(support.positivePensOfBatch(3001L)).thenReturn(List.of(batchPen(2003L, 200)));
         lenient().when(support.pensByIds(any())).thenReturn(List.of(pen(2003L, 200, "3 号育肥舍")));
         lenient().when(support.userName(10001L)).thenReturn("王建国");
@@ -109,7 +109,7 @@ class BatchStockCommandServiceImplTest {
         verify(batchPenMapper).deduct(eq(3001L), eq(2003L), eq(50), any(LocalDate.class), any(LocalDateTime.class));
         verify(penMapper).addStock(eq(2003L), eq(-50), any(LocalDateTime.class));
         verify(eventMapper).insert(any(BatchEvent.class));
-        verify(timelineMapper).insert(any(com.zhimu.server.biz.herd.entity.BatchTimeline.class));
+        verify(timelineMapper).upsertSaleTimeline(any(com.zhimu.server.biz.herd.entity.BatchTimeline.class));
     }
 
     @Test

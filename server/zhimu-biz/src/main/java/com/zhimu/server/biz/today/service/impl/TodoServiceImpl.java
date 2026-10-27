@@ -70,6 +70,8 @@ import java.util.Set;
 public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourceWriteService {
 
     private static final String FILTER_ALL = "ALL";
+    private static final String FILTER_HOME = "HOME";
+    private static final String FILTER_WARNING = "WARNING";
     private static final String FILTER_OVERDUE = "OVERDUE";
     private static final String FILTER_WORK = "WORK";
     private static final String FILTER_BIZ_WARN = "BIZ_WARN";
@@ -79,10 +81,12 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
     private static final int MAX_CALENDAR_DAYS = 42;
 
     private final TodoMapper todoMapper;
+    private final com.zhimu.server.biz.stock.support.StockWarningReconciler stockWarnings;
     private final TodoHandleLogMapper handleLogMapper;
     private final TodoScope todoScope;
     private final TodoConvert todoConvert;
     private final FarmQueryService farmQueryService;
+    private final com.zhimu.server.biz.feeding.api.FeedTaskReconciliationService feedTaskReconciliation;
 
     // ===================== API-T02 今天和已逾期 =====================
 
@@ -93,21 +97,23 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         LocalDateTime now = BeijingTime.now();
         String filter = normalizeFilter(query.getFilter());
         boolean staff = member.isStaff();
-        if (staff && !FILTER_ALL.equals(filter) && !FILTER_OVERDUE.equals(filter)) {
+        if (staff && !FILTER_ALL.equals(filter) && !FILTER_OVERDUE.equals(filter) && !FILTER_HOME.equals(filter)) {
             throw new BizException(ErrorCode.PARAM_INVALID, "员工只能按全部或已逾期筛选");
         }
 
-        // “今日”= 今天应办的全部任务（含已完成），与 /todos?date=今天 一致；历史未完成单独进逾期页签。
+        // 首页仅展示仍待处理的事项；完成、忽略记录仍由日历按业务日期查询。
+        stockWarnings.reconcileFarm(member.farmId());
+        feedTaskReconciliation.reconcileFarm(member.farmId());
         List<Todo> all = todosOfFarm(member.farmId());
         List<Todo> todayList = new ArrayList<>();
         List<Todo> overdueList = new ArrayList<>();
         for (Todo todo : all) {
-            if (!todoScope.canView(todo, member) || isIgnored(todo)) {
+            if (!todoScope.canView(todo, member) || !isOpen(todo)) {
                 continue;
             }
             if (isDueOn(todo, today)) {
                 todayList.add(todo);
-            } else if (isOpen(todo) && isDateOverdue(todo, today)) {
+            } else if (isDateOverdue(todo, today)) {
                 overdueList.add(todo);
             }
         }
@@ -129,6 +135,14 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         }
 
         List<Todo> filtered = new ArrayList<>(FILTER_OVERDUE.equals(filter) ? overdueList : todayList);
+        if (FILTER_WARNING.equals(filter)) {
+            filtered = all.stream().filter(t -> todoScope.canView(t, member) && isOpen(t)
+                    && "WARNING".equals(t.getCategory()))
+                    .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
+        }
+        if (FILTER_HOME.equals(filter)) {
+            filtered.addAll(overdueList);
+        }
         if (FILTER_WORK.equals(filter)) {
             filtered.removeIf(t -> !"WORK".equals(t.getCategory()));
         } else if (FILTER_BIZ_WARN.equals(filter)) {
@@ -654,6 +668,8 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
     @Override
     public ProductionTodoSummary productionSummary() {
         FarmContext.FarmMember member = FarmContext.require();
+        // 和预警列表一致，在读取计数前解除已补足库存、已清空批号等失效预警。
+        stockWarnings.reconcileFarm(member.farmId());
         LocalDate today = BeijingTime.today();
         LocalDateTime now = BeijingTime.now();
         int todayTodoCount = 0;
@@ -793,6 +809,7 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
     }
 
     private List<Todo> pendingOfFarm(Long farmId) {
+        feedTaskReconciliation.reconcileFarm(farmId);
         return todoMapper.selectList(Wrappers.<Todo>lambdaQuery()
                 .eq(Todo::getFarmId, farmId)
                 .eq(Todo::getStatus, TodoStatus.PENDING.name())
@@ -826,6 +843,13 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         if (scope.farmIds().isEmpty()) {
             return List.of();
         }
+        TenantSkip.call(() -> {
+            for (Long farmId : scope.farmIds()) {
+                stockWarnings.reconcileFarm(farmId);
+                feedTaskReconciliation.reconcileFarm(farmId);
+            }
+            return null;
+        });
         List<Todo> todos = TenantSkip.call(() -> todoMapper.selectList(Wrappers.<Todo>lambdaQuery()
                 .in(Todo::getFarmId, scope.farmIds())
                 .orderByAsc(Todo::getSortTime)));
@@ -1030,7 +1054,7 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
 
     private String normalizeFilter(String filter) {
         String value = filter == null || filter.isBlank() ? FILTER_ALL : filter.trim().toUpperCase();
-        Set<String> allowed = new LinkedHashSet<>(List.of(FILTER_ALL, FILTER_OVERDUE, FILTER_WORK, FILTER_BIZ_WARN));
+        Set<String> allowed = new LinkedHashSet<>(List.of(FILTER_ALL, FILTER_HOME, FILTER_WARNING, FILTER_OVERDUE, FILTER_WORK, FILTER_BIZ_WARN));
         if (!allowed.contains(value)) {
             throw new BizException(ErrorCode.PARAM_INVALID, "筛选条件不正确");
         }

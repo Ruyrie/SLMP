@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import type { BatchListItem, BatchLookup, BaseCategory, MyPens, PenOption } from '@/api/herd'
 import { herdApi } from '@/api/herd'
+import { useFarmStore } from '@/stores/farm'
+import { useAuthStore } from '@/stores/auth'
 import {
   errorText,
   statusForError,
@@ -9,6 +11,11 @@ import {
 
 export type BatchTab = 'ACTIVE' | 'ENDED' | 'ALL'
 export type LookupState = 'idle' | 'not_found' | 'invalid_format' | 'forbidden' | 'not_batch_qr'
+
+function currentFarmScope(): string {
+  const farm = useFarmStore()
+  return `${useAuthStore().user?.user_id || 0}:${farm.currentFarmId}:${farm.revision}:${farm.role}`
+}
 
 export const useBatchListStore = defineStore('herdBatchList', {
   state: () => ({
@@ -34,7 +41,10 @@ export const useBatchListStore = defineStore('herdBatchList', {
     lookupState: 'idle' as LookupState,
     lookupBatchNo: '',
     loaded: false,
-    requestId: 0
+    farmScope: '',
+    requestId: 0,
+    optionsRequestId: 0,
+    lookupRequestId: 0
   }),
   getters: {
     activeCount(state): number {
@@ -73,7 +83,17 @@ export const useBatchListStore = defineStore('herdBatchList', {
     }
   },
   actions: {
+    /** 页面未挂载时也可能切场，缓存必须在每次使用前核对归属。 */
+    prepareFarmScope(): string {
+      const scope = currentFarmScope()
+      if (this.farmScope !== scope) {
+        this.reset()
+        this.farmScope = scope
+      }
+      return scope
+    },
     async load(isStaff: boolean, force = false): Promise<void> {
+      const scope = this.prepareFarmScope()
       if (this.loaded && !force) return
       const requestId = ++this.requestId
       this.status = this.list.length || this.myPens ? this.status : 'loading'
@@ -81,14 +101,14 @@ export const useBatchListStore = defineStore('herdBatchList', {
       try {
         if (isStaff) {
           const data = await herdApi.myPens()
-          if (requestId !== this.requestId) return
+          if (requestId !== this.requestId || scope !== currentFarmScope()) return
           this.myPens = data
           this.loaded = true
           this.status = data.pens?.length ? 'ready' : 'empty'
           return
         }
         const page = await herdApi.batches({ ...this.query, penId: this.query.penId || undefined, categoryId: this.query.categoryId || undefined })
-        if (requestId !== this.requestId) return
+        if (requestId !== this.requestId || scope !== currentFarmScope()) return
         this.list = page.list || []
         this.total = page.total || 0
         this.tabCounts = page.tab_counts || {}
@@ -96,14 +116,17 @@ export const useBatchListStore = defineStore('herdBatchList', {
         this.status = this.list.length ? 'ready' : 'empty'
         if (!this.penOptions.length || !this.categories.length) void this.loadOptions()
       } catch (error) {
-        if (requestId !== this.requestId) return
+        if (requestId !== this.requestId || scope !== currentFarmScope()) return
         this.status = statusForError(error)
         this.error = errorText(error, '批次加载失败，请稍后重新加载')
       }
     },
     async loadOptions(): Promise<void> {
+      const scope = this.prepareFarmScope()
+      const requestId = ++this.optionsRequestId
       try {
         const [pens, categories] = await Promise.all([herdApi.penOptions(), herdApi.baseCategories()])
+        if (requestId !== this.optionsRequestId || scope !== currentFarmScope()) return
         this.penOptions = pens || []
         this.categories = categories || []
       } catch {
@@ -111,23 +134,7 @@ export const useBatchListStore = defineStore('herdBatchList', {
       }
     },
     async fetchList(): Promise<void> {
-      this.status = this.list.length ? this.status : 'loading'
-      this.error = ''
-      try {
-        const page = await herdApi.batches({
-          ...this.query,
-          penId: this.query.penId || undefined,
-          categoryId: this.query.categoryId || undefined
-        })
-        this.list = page.list || []
-        this.total = page.total || 0
-        this.tabCounts = page.tab_counts || {}
-        this.loaded = true
-        this.status = this.list.length ? 'ready' : 'empty'
-      } catch (error) {
-        this.status = statusForError(error)
-        this.error = errorText(error, '批次加载失败，请稍后重新加载')
-      }
+      await this.load(false, true)
     },
     setTab(tab: BatchTab): void {
       if (this.query.status === tab) return
@@ -155,6 +162,8 @@ export const useBatchListStore = defineStore('herdBatchList', {
       void this.fetchList()
     },
     resetLookup(): void {
+      ++this.lookupRequestId
+      this.lookupLoading = false
       this.lookupState = 'idle'
       this.lookupMessage = ''
       this.lookupBatchNo = ''
@@ -164,11 +173,14 @@ export const useBatchListStore = defineStore('herdBatchList', {
       this.resetLookup()
     },
     async lookup(batchNo: string): Promise<BatchLookup | null> {
+      const scope = this.prepareFarmScope()
+      const requestId = ++this.lookupRequestId
       const value = batchNo.trim().toUpperCase()
       this.lookupInput = value
       this.lookupMessage = ''
       this.lookupState = 'idle'
       this.lookupBatchNo = value
+      this.lookupLoading = false
       if (!value) {
         this.lookupState = 'invalid_format'
         this.lookupMessage = '请输入批次号'
@@ -177,6 +189,8 @@ export const useBatchListStore = defineStore('herdBatchList', {
       this.lookupLoading = true
       try {
         const result = await herdApi.lookupBatch({ batchNo: value })
+        if (requestId !== this.lookupRequestId || scope !== currentFarmScope()
+            || value !== this.lookupInput.trim().toUpperCase()) return null
         if (result.result === 'NOT_FOUND') {
           this.lookupState = 'not_found'
           this.lookupMessage = result.message || `没有找到批次 ${value}，请核对批次号`
@@ -199,15 +213,21 @@ export const useBatchListStore = defineStore('herdBatchList', {
         }
         return result
       } catch (error) {
+        if (requestId !== this.lookupRequestId || scope !== currentFarmScope()
+            || value !== this.lookupInput.trim().toUpperCase()) return null
         this.lookupState = 'not_found'
         this.lookupMessage = errorText(error, '批次查询失败，请稍后重试')
         return null
       } finally {
-        this.lookupLoading = false
+        if (requestId === this.lookupRequestId && scope === currentFarmScope()) this.lookupLoading = false
       }
     },
     reset(): void {
+      // 保持请求代次递增，避免旧场与新场的 requestId 都从 1 开始而误认旧响应。
+      const requests = { requestId: this.requestId + 1, optionsRequestId: this.optionsRequestId + 1,
+        lookupRequestId: this.lookupRequestId + 1 }
       this.$reset()
+      Object.assign(this, requests)
     }
   }
 })

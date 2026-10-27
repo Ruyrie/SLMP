@@ -43,6 +43,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -184,6 +185,52 @@ class FarmInviteServiceImplTest {
         verify(memberPenMapper).insert(any(com.zhimu.server.biz.farm.entity.MemberPen.class));
         verify(cache).evict(1001L, 10003L);
         verify(notify).inviteAccepted(any(), any(), any());
+    }
+
+    @Test
+    void samePhoneDoesNotAllowAnotherAccountToAcceptAnIdentityBoundInvite() {
+        FarmInvite invite = invite(6001L, "PENDING", LocalDateTime.now().plusDays(3));
+        when(inviteMapper.selectById(6001L)).thenReturn(invite);
+        when(accountQuery.getBrief(10991L)).thenReturn(
+                new AccountBrief(10991L, "隔离测试账号", invite.getInviteePhone(), "NORMAL", false));
+
+        assertThatThrownBy(() -> service.accept(6001L, 10991L))
+                .isInstanceOf(BizException.class)
+                .extracting("code").isEqualTo(40401);
+
+        verifyNoInteractions(memberMapper, memberPenMapper, cache, notify);
+        verify(inviteMapper, never()).update(any(FarmInvite.class), any());
+    }
+
+    @Test
+    void acceptingAgainReturnsTheOriginalMembershipWithoutDuplicatingIt() {
+        FarmInvite invite = invite(6001L, "ACCEPTED", LocalDateTime.now().plusDays(3));
+        invite.setMemberId(5006L);
+        when(inviteMapper.selectById(6001L)).thenReturn(invite);
+        when(lookup.findActiveMember(1001L, 10003L))
+                .thenReturn(member(5006L, 10003L, "STAFF"));
+
+        InviteAcceptVO result = service.accept(6001L, 10003L);
+
+        assertThat(result.getFarmId()).isEqualTo(1001L);
+        assertThat(result.getRole()).isEqualTo("STAFF");
+        verifyNoInteractions(memberMapper, memberPenMapper, cache, notify);
+        verify(inviteMapper, never()).update(any(FarmInvite.class), any());
+    }
+
+    @Test
+    void oldAcceptedInviteCannotRestoreMembershipAfterLeaving() {
+        FarmInvite invite = invite(6001L, "ACCEPTED", LocalDateTime.now().plusDays(3));
+        invite.setMemberId(5006L);
+        when(inviteMapper.selectById(6001L)).thenReturn(invite);
+        when(lookup.findActiveMember(1001L, 10003L)).thenReturn(null);
+
+        assertThatThrownBy(() -> service.accept(6001L, 10003L))
+                .isInstanceOf(BizException.class)
+                .extracting("code").isEqualTo(40903);
+
+        verifyNoInteractions(memberMapper, memberPenMapper, cache, notify);
+        verify(inviteMapper, never()).update(any(FarmInvite.class), any());
     }
 
     @Test

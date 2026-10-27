@@ -11,6 +11,8 @@ export const todayRoutes = [
     allFarms: true
   }),
   pageRoute('WU-T04', '/messages', '消息中心', () => import('@/views/today/MessagesView.vue'), {
-    allFarms: true
-  })
+    allFarms: true,
+    needsFarm: false
+  }),
+  pageRoute('WU-T09', '/todos', '每日待办', () => import('@/views/today/TodoCollectionView.vue'))
 ]

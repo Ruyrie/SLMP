@@ -1,6 +1,8 @@
 package com.zhimu.server.biz.herd.api;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
@@ -11,6 +13,11 @@ public interface BatchQueryService {
 
     /** 按 ID 取批次；不存在或已删除抛 40401 */
     BatchInfo requireBatch(Long batchId);
+
+    /** 核算所需的入栏原始数据；调用方必须先校验养殖场。 */
+    AccountingBasis accountingBasis(Long batchId);
+
+    record AccountingBasis(BigDecimal introUnitPrice, BigDecimal entryAvgWeight, LocalDateTime endedAt) { }
 
     /** 养殖场全部在养批次（status = ACTIVE），按入栏日期升序、批次 ID 升序 */
     List<BatchInfo> listActive(Long farmId);

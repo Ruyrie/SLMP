@@ -146,6 +146,11 @@ class AiAskServiceSseTest {
         assertThat(body).contains("event:meta", "event:delta", "event:citation", "event:done",
                 "data:{\"message_id\":5501", "\"round_no\":1", "\"session_created\":true",
                 "answer_type\":\"NORMAL", "[^1]");
+        assertThat(body).contains("event:progress", "\"stage\":\"CONTEXT\"", "\"stage\":\"RETRIEVAL\"",
+                "\"stage\":\"GENERATING\"", "event:analysis_summary", "检索到 1 段相关平台资料");
+        assertThat(body.indexOf("CONTEXT")).isLessThan(body.indexOf("RETRIEVAL"));
+        assertThat(body.indexOf("RETRIEVAL")).isLessThan(body.indexOf("GENERATING"));
+        assertThat(body.indexOf("GENERATING")).isLessThan(body.indexOf("event:delta"));
         ArgumentCaptor<String> type = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> answer = ArgumentCaptor.forClass(String.class);
         verify(roundService).finish(any(AiRound.class), type.capture(), answer.capture(), any(), eq("qwen3.8-max"),
@@ -210,6 +215,28 @@ class AiAskServiceSseTest {
                         .content("{\"question_text\":\"你好\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    void noMatchingKnowledgeDoesNotPrefixTheAnswerOrInventCitations() throws Exception {
+        when(retrievalService.search(anyString(), any())).thenReturn(List.of());
+        when(messageMapper.selectContextBefore(1021L, 1, 10)).thenReturn(List.of());
+        when(aiGateway.stream(any(AiChatRequest.class), any())).thenAnswer(invocation -> {
+            com.zhimu.server.integration.ai.AiStreamHandler handler = invocation.getArgument(1);
+            handler.onDelta("[[NO_BASIS]]\n" + AiCodes.NO_BASIS_LEAD + "先检查饮水[^P99]。");
+            handler.onComplete("STOP", "");
+            return handle();
+        });
+        MvcResult result = mvc.perform(post("/api/v1/ai/messages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Idempotency-Key", "ask-no-basis")
+                        .content("{\"question_text\":\"饮水管理建议\"}"))
+                .andExpect(request().asyncStarted()).andReturn();
+        String body = mvc.perform(asyncDispatch(result)).andExpect(status().isOk()).andReturn()
+                .getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertThat(body).contains("本次未检索到匹配的平台资料", "event:done").doesNotContain("event:citation");
+        verify(roundService).finish(any(AiRound.class), eq(AiCodes.ANSWER_NO_BASIS), eq("先检查饮水。"),
+                eq(List.of()), isNull(), isNull(), isNull(), isNull(), eq(AiCodes.TOPIC_OTHER));
     }
 
     private static AiRound round() {

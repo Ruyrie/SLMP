@@ -42,7 +42,7 @@ class KnowledgeViewServiceTest {
     @BeforeEach
     void setUp() {
         service = new KnowledgeViewServiceImpl(knowledgeMapper, paragraphMapper, relatedMapper, messageMapper,
-                citationMapper, courseMapper);
+                citationMapper, courseMapper, mock(com.zhimu.server.biz.ai.support.CourseCoverResolver.class));
     }
 
     @Test

@@ -60,7 +60,9 @@ export function nowInput(): string {
 
 export function toDateTimePayload(value: string): string {
   if (!value) return ''
-  return value.length === 16 ? `${value}:00` : value
+  // datetime-local 使用 T 分隔；接口统一接收北京时间 yyyy-MM-dd HH:mm:ss。
+  const dateTime = value.replace('T', ' ')
+  return dateTime.length === 16 ? `${dateTime}:00` : dateTime
 }
 
 export function shiftDate(days: number): string {

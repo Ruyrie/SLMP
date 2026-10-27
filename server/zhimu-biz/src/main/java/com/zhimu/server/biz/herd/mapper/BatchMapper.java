@@ -17,7 +17,7 @@ public interface BatchMapper extends BaseMapper<Batch> {
     Batch selectByBatchNoIncludingDeleted(@Param("batchNo") String batchNo);
 
     /** 按二维码令牌查（含已删除） */
-    @Select("SELECT * FROM t_batch WHERE qr_token = #{qrToken} LIMIT 1")
+    @Select("SELECT * FROM t_batch WHERE qr_token = #{qrToken} AND CAST(qr_token AS BINARY) = CAST(#{qrToken} AS BINARY) LIMIT 1")
     Batch selectByQrTokenIncludingDeleted(@Param("qrToken") String qrToken);
 
     /** 按 ID 查（含已删除，用于区分 40401 与 41001） */

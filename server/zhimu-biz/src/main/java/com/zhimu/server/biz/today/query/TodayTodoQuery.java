@@ -9,7 +9,8 @@ import lombok.Setter;
 @Setter
 public class TodayTodoQuery extends PageQuery {
 
-    /** ALL / OVERDUE / WORK / BIZ_WARN，默认 ALL */
+    /** ALL（今日未完成）/ OVERDUE / WORK / BIZ_WARN；HOME 合并今日未完成和历史逾期，供 App 首页使用。 */
+    // WARNING：当前场所有未解除预警，不按产生日期截断。
     private String filter;
 
     /** Web 员工按栏舍筛选；App 不传 */

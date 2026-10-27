@@ -87,6 +87,8 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
     },
     farrowContext: null as RegisterContext | null,
     farrowContextLoading: false,
+    farrowPenOptions: [] as PenOption[],
+    farrowContextRequestId: 0,
     farrowErrors: {} as Record<string, string>,
     farrowSubmitting: false,
     farrowCapacity: null as CapacityInfo | null,
@@ -167,10 +169,13 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
       if (total === live + dead) return ''
       return `活仔 ${live} 头 + 死胎 ${dead} 头 = ${live + dead} 头，与总产仔 ${total} 头不一致`
     },
+    farrowPens(state) {
+      return state.farrowPenOptions.filter(pen => !pen.disabled)
+    },
     farrowCapacityInfo(state): CapacityInfo | null {
       if (state.farrowCapacity) return state.farrowCapacity
       if (!state.farrowForm.transferToBatch) return null
-      const pen = state.pens.find((item) => Number(item.pen_id) === state.farrowForm.targetPenId)
+      const pen = state.farrowPenOptions.find((item) => Number(item.pen_id) === state.farrowForm.targetPenId)
       const live = Number(state.farrowForm.liveBorn ?? 0)
       if (!pen) return null
       const current = Number(pen.stock_count || 0)
@@ -418,6 +423,10 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
     },
     async openFarrowing(animalId?: number): Promise<void> {
       this.drawer = 'farrowing'
+      ++this.farrowContextRequestId
+      this.farrowContext = null
+      this.farrowPenOptions = []
+      this.farrowContextLoading = false
       this.farrowErrors = {}
       this.farrowCapacity = null
       this.farrowForm = {
@@ -438,24 +447,35 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
       }
     },
     async loadFarrowContext(): Promise<void> {
-      if (!this.farrowForm.animalId) {
-        this.farrowContext = null
-        return
-      }
-      this.farrowContextLoading = true
+      const requestId = ++this.farrowContextRequestId
+      const animalId = this.farrowForm.animalId
+      this.farrowContext = null
+      this.farrowPenOptions = []
+      this.farrowForm.targetPenId = 0
+      this.farrowForm.offspringBreedId = 0
+      this.farrowContextLoading = !!animalId
+      if (!animalId) return
       try {
-        const data = await breedingApi.registerContext(this.farrowForm.animalId, 'FARROWING')
+        const data = await breedingApi.registerContext(animalId, 'FARROWING')
+        if (requestId !== this.farrowContextRequestId || animalId !== this.farrowForm.animalId || this.drawer !== 'farrowing') return
+        const categoryId = data.offspringBreed?.categoryId
+        const pens = categoryId ? await herdApi.penOptions({ categoryId }) : []
+        if (requestId !== this.farrowContextRequestId || animalId !== this.farrowForm.animalId || this.drawer !== 'farrowing') return
+        this.farrowPenOptions = pens
         this.farrowContext = data
-        this.farrowForm.targetPenId = Number(data.defaultPen?.penId || 0)
         this.farrowForm.offspringBreedId = Number(data.offspringBreed?.breedId || 0)
-      } catch {
-        this.farrowContext = null
+        const allowed = this.farrowPens
+        const defaultId = Number(data.defaultPen?.penId || 0)
+        this.farrowForm.targetPenId = Number(allowed.find(p => Number(p.pen_id) === defaultId)?.pen_id || allowed[0]?.pen_id || 0)
+      } catch (error) {
+        if (requestId !== this.farrowContextRequestId) return
+        this.farrowErrors.animal_id = errorText(error, '母猪登记信息加载失败，请重新选择')
       } finally {
-        this.farrowContextLoading = false
+        if (requestId === this.farrowContextRequestId) this.farrowContextLoading = false
       }
     },
     async submitFarrowing(): Promise<boolean> {
-      if (this.farrowSubmitting) return false
+      if (this.farrowSubmitting || this.farrowContextLoading) return false
       this.farrowErrors = {}
       const animal = this.farrowingOptions.find((item) => Number(item.animalId) === this.farrowForm.animalId)
       if (!animal) this.farrowErrors.animal_id = '请选择母猪'
@@ -467,9 +487,9 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
       const total = Number(this.farrowForm.totalBorn ?? 0)
       const live = Number(this.farrowForm.liveBorn ?? 0)
       const dead = Number(this.farrowForm.stillborn ?? 0)
-      if (this.farrowForm.totalBorn === null || total < 1) this.farrowErrors.total_born = '总产仔数至少为 1 头'
-      if (this.farrowForm.liveBorn === null || live < 0) this.farrowErrors.live_born = '请填写活仔数'
-      if (this.farrowForm.stillborn === null || dead < 0) this.farrowErrors.stillborn = '请填写死胎数'
+      if (this.farrowForm.totalBorn === null || !Number.isInteger(total) || total < 1) this.farrowErrors.total_born = '总产仔数至少为 1 头'
+      if (this.farrowForm.liveBorn === null || !Number.isInteger(live) || live < 0) this.farrowErrors.live_born = '请填写活仔数'
+      if (this.farrowForm.stillborn === null || !Number.isInteger(dead) || dead < 0) this.farrowErrors.stillborn = '请填写死胎数'
       if (this.farrowForm.liveBorn !== null && this.farrowForm.totalBorn !== null && live > total) {
         this.farrowErrors.live_born = `活仔数不能多于总产仔 ${total} 头`
       }
@@ -482,8 +502,11 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
       if (this.farrowForm.transferToBatch && live === 0) {
         this.farrowErrors.transfer_to_batch = '活仔数为 0，不能转为新批次。请关闭“活仔一键转为新批次”。'
       }
-      if (this.farrowForm.transferToBatch && !this.farrowForm.targetPenId) {
-        this.farrowErrors.target_pen_id = '请选择入栏栏舍'
+      if (this.farrowForm.transferToBatch && !this.farrowPens.some(p => Number(p.pen_id) === this.farrowForm.targetPenId)) {
+        this.farrowErrors.target_pen_id = '请选择与后代品类匹配的入栏栏舍'
+      }
+      if (this.farrowForm.transferToBatch && !this.farrowForm.offspringBreedId) {
+        this.farrowErrors.offspring_breed_id = '后代品种未加载，请重新选择母猪'
       }
       const capacity = this.farrowCapacityInfo
       if (capacity && capacity.overCount > 0 && !this.farrowForm.capacityConfirmed) {
@@ -507,7 +530,7 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
         this.drawer = ''
         useUiStore().toast(result.batchNo
           ? `已登记产仔，新批次 ${result.batchNo} 已入栏`
-          : `已登记产仔，${animal.earTag} 转为哺乳`)
+          : `已登记产仔，${animal.earTag} 转为${result.animalStatus === 'EMPTY' ? '空怀' : '哺乳'}`)
         await this.refresh()
         return true
       } catch (error) {

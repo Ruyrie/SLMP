@@ -12,7 +12,7 @@ import com.zhimu.server.biz.ai.query.AiMessageQuery;
 import com.zhimu.server.biz.ai.query.AiSessionQuery;
 import com.zhimu.server.biz.ai.service.impl.AiSessionServiceImpl;
 import com.zhimu.server.biz.ai.support.AiFixtures;
-import com.zhimu.server.biz.ai.support.TemporaryAiBatchContextService;
+import com.zhimu.server.biz.ai.support.FixtureAiBatchContextService;
 import com.zhimu.server.biz.ai.vo.AiSessionDetailVO;
 import com.zhimu.server.biz.ai.vo.AiSessionItemVO;
 import com.zhimu.server.biz.ai.vo.LinkableBatchesVO;
@@ -36,6 +36,8 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.doReturn;
 
 /**
  * API-K01–K05 Service 单测：分页、本人校验、轮次参数、关联批次权限。
@@ -45,7 +47,7 @@ class AiSessionServiceTest {
     private final AiSessionMapper sessionMapper = mock(AiSessionMapper.class);
     private final AiMessageMapper messageMapper = mock(AiMessageMapper.class);
     private final AiMessageConvert messageConvert = mock(AiMessageConvert.class);
-    private final TemporaryAiBatchContextService batchContextService = new TemporaryAiBatchContextService();
+    private final FixtureAiBatchContextService batchContextService = spy(new FixtureAiBatchContextService());
     private AiSessionServiceImpl service;
 
     @BeforeEach
@@ -55,7 +57,8 @@ class AiSessionServiceTest {
         com.zhimu.server.common.util.BeijingTime.setClock(java.time.Clock.fixed(
                 AiFixtures.NOW.atZone(com.zhimu.server.common.util.BeijingTime.ZONE).toInstant(),
                 com.zhimu.server.common.util.BeijingTime.ZONE));
-        service = new AiSessionServiceImpl(sessionMapper, messageMapper,
+        service = new AiSessionServiceImpl(mock(
+                com.zhimu.server.biz.account.support.AccountPersonalDataGuard.class), sessionMapper, messageMapper,
                 new AiSessionConvert(batchContextService, messageMapper), messageConvert, batchContextService);
         FarmContext.set(new FarmContext.FarmMember(1001L, "东山猪场", 10001L, 5001L, FarmRole.OWNER,
                 Set.of(), FarmStatus.NORMAL));
@@ -107,6 +110,37 @@ class AiSessionServiceTest {
         assertThat(vo.getBatchLinkState()).isEqualTo("VALID");
         assertThat(vo.getBatch().getBatchNo()).isEqualTo("ZM2610-031");
         assertThat(vo.getLastRoundNo()).isEqualTo(1);
+    }
+
+    @Test
+    void reopeningSessionRefreshesOldSnapshotWithLiveStockAndWeight() {
+        when(sessionMapper.selectById(1021L)).thenReturn(AiFixtures.session(1021L, 10001L));
+        var live = batchContextService.resolve(1001L, 3001L, false, Set.of());
+        live.setCurrentCount(173);
+        live.setLatestAvgWeight(new java.math.BigDecimal("68.5"));
+        doReturn(live).when(batchContextService).resolve(1001L, 3001L, false, Set.of());
+        var result = service.detail(10001L, 1021L);
+        assertThat(result.getBatch().getCurrentCount()).isEqualTo(173);
+        assertThat(result.getBatch().getLatestAvgWeight()).isEqualByComparingTo("68.5");
+    }
+
+    @Test
+    void reopeningStaffSessionAfterReassignmentHidesBatchData() {
+        FarmContext.set(new FarmContext.FarmMember(1001L, "东山猪场", 10003L, 5003L, FarmRole.STAFF,
+                Set.of(2004L), FarmStatus.NORMAL));
+        when(sessionMapper.selectById(1021L)).thenReturn(AiFixtures.session(1021L, 10003L));
+        var result = service.detail(10003L, 1021L);
+        assertThat(result.getBatchLinkState()).isEqualTo("NO_PERMISSION");
+        assertThat(result.getBatch()).isNull();
+    }
+
+    @Test
+    void endedBatchIsNoLongerExposedAsValidContext() {
+        when(sessionMapper.selectById(1021L)).thenReturn(AiFixtures.session(1021L, 10001L));
+        doReturn(null).when(batchContextService).resolve(1001L, 3001L, false, Set.of());
+        var result = service.detail(10001L, 1021L);
+        assertThat(result.getBatchLinkState()).isEqualTo("NOT_IN_STOCK");
+        assertThat(result.getBatch()).isNull();
     }
 
     @Test

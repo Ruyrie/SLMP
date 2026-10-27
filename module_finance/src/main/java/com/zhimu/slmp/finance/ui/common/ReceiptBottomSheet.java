@@ -106,11 +106,6 @@ public class ReceiptBottomSheet extends BaseBottomSheetDialogFragment {
             com.zhimu.slmp.base.widget.ButtonLoading.setLoading(binding.financeReceiptConfirm, loading);
             binding.financeReceiptCancel.setEnabled(!loading);
         });
-        form.getShowSheet().observe(getViewLifecycleOwner(), show -> {
-            if (!Boolean.TRUE.equals(show)) {
-                dismissAllowingStateLoss();
-            }
-        });
         ClickThrottle.setOnClickListener(binding.financeReceiptConfirm, v -> host().confirmReceipt());
         binding.financeReceiptCancel.setOnClickListener(v -> dismiss());
         binding.financeReceiptAmount.requestFocus();
@@ -138,5 +133,19 @@ public class ReceiptBottomSheet extends BaseBottomSheetDialogFragment {
             binding.financeReceiptAmountLayout.setHelperText(host().getReceipt().helperText());
         }
         FinanceViews.setError(binding.financeReceiptDateLayout, errors, ReceiptFormDelegate.F_DATE);
+        // 金额和日期有各自的输入框；方式、通用提交错误及未知服务端字段都必须在弹层内可见。
+        StringBuilder other = new StringBuilder();
+        if (errors != null) {
+            for (Map.Entry<String, String> error : errors.entrySet()) {
+                if (!ReceiptFormDelegate.F_AMOUNT.equals(error.getKey())
+                        && !ReceiptFormDelegate.F_DATE.equals(error.getKey())
+                        && error.getValue() != null && !error.getValue().isEmpty()) {
+                    if (other.length() > 0) other.append('\n');
+                    other.append(error.getValue());
+                }
+            }
+        }
+        binding.financeReceiptError.setText(other);
+        binding.financeReceiptError.setVisibility(other.length() == 0 ? View.GONE : View.VISIBLE);
     }
 }

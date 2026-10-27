@@ -11,6 +11,8 @@
     "record_version": "2",
     "record_card": [],
     "fields": [],
+    "delete_allowed": true,
+    "void_allowed": false,
     "linked_rules": [],
     "review_tip": "审核通过前，记录和可出栏日期保持不变。",
     "pending_request_id": null

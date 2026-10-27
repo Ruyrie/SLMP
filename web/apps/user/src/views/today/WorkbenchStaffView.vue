@@ -20,9 +20,11 @@ const {
   homeError,
   todos,
   total,
-  tabCounts,
-  penCounts,
-  query,
+  overdueExpanded,
+  overdueTodos,
+  overdueCount,
+  overdueStatus,
+  overdueError,
   todoStatus,
   todoError
 } = storeToRefs(store)
@@ -30,8 +32,13 @@ const {
 const drawerOpen = ref(false)
 const activeTodoId = ref<number | null>(null)
 
-onMounted(() => store.fetchAll())
-useFarmReload(() => store.fetchAll())
+function enterHome(): Promise<void> {
+  drawerOpen.value = false
+  activeTodoId.value = null
+  return store.enterHome()
+}
+onMounted(enterHome)
+useFarmReload(enterHome)
 
 const metrics = computed(() => home.value?.staff_metrics || null)
 const noPen = computed(() => home.value?.has_pen === false || (metrics.value?.pen_count ?? 0) === 0)
@@ -64,23 +71,12 @@ const pensFoot = computed(() => {
   const names = metrics.value?.pen_names || []
   return names.length ? names.join('、') : '—'
 })
-const todosFoot = computed(() => (noPen.value ? '没有待办' : `其中已逾期 ${formatNumber(metrics.value?.overdue_count ?? 0)} 项`))
+const todosFoot = computed(() => (noPen.value ? '没有待办' : `另有历史逾期 ${formatNumber(metrics.value?.overdue_count ?? 0)} 项`))
 const overdueFoot = computed(() => (noPen.value ? '没有逾期事项' : metrics.value?.overdue_first_text || '没有逾期事项'))
 const doneFoot = computed(() => {
   if (noPen.value) return '今天还没有登记'
   const names = metrics.value?.today_done_names || []
   return names.length ? `${names.join('、')}已登记` : '今天还没有登记'
-})
-
-const filterItems = computed(() => {
-  const items = [
-    { label: '全部', value: 'ALL' },
-    { label: '已逾期', value: 'OVERDUE', count: tabCounts.value.OVERDUE ?? 0 }
-  ]
-  for (const pen of penCounts.value) {
-    if (pen.pen_id) items.push({ label: pen.pen_name || '栏舍', value: `PEN:${pen.pen_id}`, count: pen.count ?? 0 })
-  }
-  return items
 })
 
 const headers: any[] = [
@@ -90,25 +86,12 @@ const headers: any[] = [
   { title: '操作', key: 'op', sortable: false, width: 90, align: 'end' }
 ]
 
-function onFilterValue(value: string | number): void {
-  onFilter(String(value))
-}
-
-function onPage(page: number): void {
-  store.setPage(page)
-}
-
-function onSize(size: number): void {
-  store.setSize(size)
-}
-
-function onFilter(value: string): void {
-  if (value.startsWith('PEN:')) store.setFilterAndPen('ALL', Number(value.slice(4)))
-  else store.setFilterAndPen(value, null)
+function goTodos(): void {
+  void router.push({ name: 'WU-T09', query: { filter: 'ALL' } })
 }
 
 function emptyTitle(): string {
-  return todoStatus.value === 'filtered_empty' ? '没有符合筛选条件的待办' : '今天没有待办，也没有逾期事项。'
+  return todoStatus.value === 'filtered_empty' ? '没有符合筛选条件的待办' : '今天没有未完成待办。'
 }
 
 function emptyDesc(): string {
@@ -201,8 +184,8 @@ function onChanged(): void {
           tone="primary"
           @click="router.push({ name: 'WU-L03' })"
         />
-        <zw-stat label="今日待办" icon="checklist" :value="statTodos" unit="项" :foot="todosFoot" @click="goCalendarToday" />
-        <zw-stat label="已逾期" icon="schedule" :value="statOverdue" unit="项" :foot="overdueFoot" @click="goCalendarToday" />
+        <zw-stat label="今日待办" icon="checklist" :value="statTodos" unit="项" :foot="todosFoot" @click="goTodos" />
+        <zw-stat label="已逾期" icon="schedule" :value="statOverdue" unit="项" :foot="overdueFoot" @click="store.toggleOverdue()" />
         <zw-stat label="今日已完成" icon="task_alt" :value="statDone" unit="项" :foot="doneFoot" @click="goCalendarToday" />
       </div>
 
@@ -215,17 +198,13 @@ function onChanged(): void {
       </zw-card>
 
       <div v-else class="wb-main">
-        <zw-card title="今天和已逾期" :sub="`${total} 项`" flush class="wb-todo">
+        <zw-card title="今日待办" :sub="`${total} 项`" flush class="wb-todo">
           <template #extra>
-            <zw-seg
-              size="small"
-              :model-value="query.penId ? `PEN:${query.penId}` : query.filter"
-              :items="filterItems"
-              @update:model-value="onFilterValue"
-            />
+            <a class="zw-link" @click="goTodos">查看全部</a>
           </template>
 
-          <v-skeleton-loader v-if="todoStatus === 'loading'" type="table-row@5" />
+          <v-skeleton-loader v-if="todoStatus === 'loading'" type="table-row@3" />
+          <zw-empty v-else-if="todoStatus === 'forbidden'" icon="lock" title="无权查看待办" :desc="todoError" />
 
           <zw-empty
             v-else-if="todoStatus === 'error'"
@@ -250,6 +229,7 @@ function onChanged(): void {
             <v-data-table
               :headers="headers"
               :items="todos"
+              :items-per-page="-1"
               hide-default-footer
               density="comfortable"
               @click:row="onRow"
@@ -278,15 +258,29 @@ function onChanged(): void {
             </v-data-table>
             <div class="zw-table-foot zw-table-foot--in">
               <span class="zw-faint body-s">登记对应记录后，待办自动完成。需要调整计划时，请联系所有者或场长。</span>
-              <zw-pager
-                :total="total"
-                :page="query.page"
-                :size="query.size"
-                @update:page="onPage"
-                @update:size="onSize"
-              />
+              <a v-if="total > 3" class="zw-link" @click="goTodos">查看全部 {{ total }} 项</a>
             </div>
           </template>
+          <div v-if="overdueCount > 0 || overdueExpanded" class="wb-overdue">
+            <v-btn block variant="text" :aria-expanded="overdueExpanded" aria-controls="staff-home-overdue"
+              :append-icon="overdueExpanded ? 'expand_less' : 'expand_more'" @click="store.toggleOverdue()">
+              已逾期 · {{ overdueCount }} 项 · {{ overdueExpanded ? '收起' : '展开查看' }}
+            </v-btn>
+            <div v-if="overdueExpanded" id="staff-home-overdue">
+              <v-skeleton-loader v-if="overdueStatus === 'loading'" type="table-row@3" />
+              <zw-empty v-else-if="overdueStatus === 'error' || overdueStatus === 'forbidden'" icon="cloud_off" title="逾期待办加载失败" :desc="overdueError">
+                <v-btn variant="outlined" @click="store.fetchOverdue()">重新加载</v-btn>
+              </zw-empty>
+              <zw-empty v-else-if="!overdueTodos.length" icon="task_alt" title="没有未完成的逾期事项" />
+              <template v-else>
+                <div v-for="item in overdueTodos" :key="item.todo_id" class="wb-overdue-row">
+                  <v-btn variant="text" class="wb-overdue-title" :title="item.title" @click="openTodo(item)">{{ item.title }}</v-btn>
+                  <a class="zw-link" @click="onAction(item)">{{ actionLabel(item) }}</a>
+                </div>
+                <div class="zw-table-foot zw-table-foot--in"><a class="zw-link" @click="goTodos">到每日待办查看全部逾期</a></div>
+              </template>
+            </div>
+          </div>
         </zw-card>
 
         <div class="wb-side">
@@ -363,6 +357,10 @@ function onChanged(): void {
   gap: 12px;
   padding: 4px 0;
 }
+.wb-overdue { border-top: 1px solid var(--line-1); padding: 8px 12px; }
+.wb-overdue-row { display: flex; align-items: center; gap: 12px; padding: 4px 0; }
+.wb-overdue-title { flex: 1; min-width: 0; justify-content: flex-start; }
+.wb-overdue-title :deep(.v-btn__content) { overflow: hidden; text-overflow: ellipsis; display: block; }
 .t02-pen {
   padding: 16px 20px;
   cursor: pointer;

@@ -151,6 +151,16 @@ public interface StockApi {
     @GET("api/v1/stock-outbounds/{id}")
     Single<ApiResponse<StockOutboundVO>> getOutbound(@Path("id") long id);
 
+    @POST("api/v1/stock-outbounds/{id}/refund")
+    Single<ApiResponse<StockOutboundVO>> registerReturnRefund(@Path("id") long id,
+            @Body com.zhimu.slmp.stock.model.request.ReturnRefundRequest body,
+            @Header(Headers.IDEMPOTENCY_KEY) String idemKey);
+
+    @PUT("api/v1/stock-outbounds/{id}/refund")
+    Single<ApiResponse<StockOutboundVO>> updateReturnRefund(@Path("id") long id,
+            @Body com.zhimu.slmp.stock.model.request.ReturnRefundRequest body,
+            @Header(Headers.IDEMPOTENCY_KEY) String idemKey);
+
     /** API-M22 当天修改出库单 */
     @PUT("api/v1/stock-outbounds/{id}")
     Single<ApiResponse<StockOutboundVO>> updateOutbound(@Path("id") long id, @Body OutboundUpdateRequest body);

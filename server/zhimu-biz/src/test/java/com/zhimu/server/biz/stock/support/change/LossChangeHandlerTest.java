@@ -9,6 +9,8 @@ import com.zhimu.server.biz.common.change.ChangeRecord;
 import com.zhimu.server.biz.common.change.ChangeValidation;
 import com.zhimu.server.biz.common.entity.ChangeRequest;
 import com.zhimu.server.biz.stock.entity.Feed;
+import com.zhimu.server.biz.stock.entity.Drug;
+import com.zhimu.server.biz.stock.entity.DrugLot;
 import com.zhimu.server.biz.stock.entity.StockFlow;
 import com.zhimu.server.biz.stock.entity.StockLoss;
 import com.zhimu.server.biz.stock.mapper.DrugLotMapper;
@@ -44,6 +46,7 @@ import java.time.ZoneId;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -223,6 +226,92 @@ class LossChangeHandlerTest {
         ArgumentCaptor<StockLoss> saved = ArgumentCaptor.forClass(StockLoss.class);
         verify(lossMapper).updateById(saved.capture());
         assertThat(saved.getValue().getStatus()).isEqualTo("VOID");
+    }
+
+    @Test
+    void drugPackFormAndApprovalUseTheSameUnit() {
+        drugLoss("PACK", "2", "1000", "2000", "60.01");
+        ChangeRecord record = handler.loadRecord(BizType.LOSS, 6401L);
+        ChangeForm form = handler.describeForm(record);
+        assertThat(form.fields().get(0).valueUnit()).isEqualTo("袋");
+        assertThat(form.fields().get(0).max()).isEqualByComparingTo("6");
+        assertThatThrownBy(() -> handler.validateChange(record, form, ChangeType.UPDATE, "input_qty", "6.01"))
+                .isInstanceOf(BizException.class).hasMessageContaining("不能超过当前可用结存 6 袋");
+        assertThatThrownBy(() -> handler.validateForApprove(updateQty("6.01"), record))
+                .isInstanceOf(BizException.class).hasMessageContaining("超过当前可用结存 3,000 克");
+        handler.validateForApprove(updateQty("6"), record);
+    }
+
+    @Test
+    void applyingPackChangeConvertsStockAndConsumesExactRemainingAmount() {
+        drugLoss("PACK", "2", "1000", "2000", "60.01");
+        handler.apply(updateQty("6"), handler.loadRecord(BizType.LOSS, 6401L), 90001L);
+        ArgumentCaptor<BigDecimal> deltaQty = ArgumentCaptor.forClass(BigDecimal.class);
+        ArgumentCaptor<BigDecimal> deltaAmount = ArgumentCaptor.forClass(BigDecimal.class);
+        verify(ledger).adjustLot(any(DrugLot.class), deltaQty.capture(), deltaAmount.capture(), eq("克"));
+        assertThat(deltaQty.getValue()).isEqualByComparingTo("-2000");
+        assertThat(deltaAmount.getValue()).isEqualByComparingTo("-60.01");
+        assertThat(loss.getInputQty()).isEqualByComparingTo("6");
+        assertThat(loss.getQty()).isEqualByComparingTo("3000");
+        assertThat(loss.getAmount()).isEqualByComparingTo("90.01");
+        assertThat(flow.getQty()).isEqualByComparingTo("3000");
+    }
+
+    @Test
+    void drugMeasureAllowsExactMilligramRemainderButRejectsFinerPrecision() {
+        drugLoss("MEASURE", "1", "1", "2982.051", "89.46");
+        ChangeRecord record = handler.loadRecord(BizType.LOSS, 6401L);
+        ChangeForm form = handler.describeForm(record);
+        assertThat(handler.validateChange(record, form, ChangeType.UPDATE, "input_qty", "2983.051")
+                .afterValue()).isEqualTo("2983.051");
+        handler.validateForApprove(updateQty("2983.051"), record);
+        assertThatThrownBy(() -> handler.validateChange(record, form, ChangeType.UPDATE, "input_qty", "1.0001"))
+                .isInstanceOf(BizException.class).hasMessageContaining("最多保留 3 位小数");
+    }
+
+    @Test
+    void doseChangesRejectFractionalDosesAtSubmissionAndApproval() {
+        Drug drug = drugLoss("MEASURE", "1", "1", "29", "29");
+        drug.setUnit("DOSE");
+        ChangeRecord record = handler.loadRecord(BizType.LOSS, 6401L);
+        assertThatThrownBy(() -> handler.validateChange(record, handler.describeForm(record), ChangeType.UPDATE,
+                "input_qty", "1.5")).isInstanceOf(BizException.class).hasMessageContaining("头份必须是整数");
+        assertThatThrownBy(() -> handler.validateForApprove(updateQty("1.5"), record))
+                .isInstanceOf(BizException.class).hasMessageContaining("头份必须是整数");
+    }
+
+    @Test
+    void packChangesRejectQuantityLostByBaseUnitRounding() {
+        Drug drug = drugLoss("PACK", "2", "1", "29", "29");
+        drug.setPackSize(new BigDecimal("0.123"));
+        ChangeRecord record = handler.loadRecord(BizType.LOSS, 6401L);
+        assertThatThrownBy(() -> handler.validateForApprove(updateQty("0.01"), record))
+                .isInstanceOf(BizException.class).hasMessageContaining("换算后的数量最多保留 3 位小数");
+    }
+
+    private Drug drugLoss(String inputUnit, String inputQty, String qty, String remaining, String amount) {
+        loss.setLossType("DRUG_SCRAP");
+        loss.setDrugId(6101L);
+        loss.setDrugLotId(6201L);
+        loss.setInputUnit(inputUnit);
+        loss.setInputQty(new BigDecimal(inputQty));
+        loss.setQty(new BigDecimal(qty));
+        loss.setAmount(new BigDecimal("30"));
+        loss.setUnitPrice(new BigDecimal("0.03"));
+        loss.setReason("EXPIRED");
+        Drug drug = new Drug();
+        drug.setId(6101L); drug.setName("阿莫西林"); drug.setUnit("G");
+        drug.setPackUnit("袋"); drug.setPackSize(new BigDecimal("500"));
+        DrugLot lot = new DrugLot();
+        lot.setId(6201L); lot.setDrugId(6101L);
+        lot.setStockQty(new BigDecimal(remaining)); lot.setStockAmount(new BigDecimal(amount));
+        when(drugMapper.selectById(6101L)).thenReturn(drug);
+        when(drugLotMapper.selectById(6201L)).thenReturn(lot);
+        return drug;
+    }
+
+    private static ChangeRequest updateQty(String qty) {
+        return request("UPDATE", "{\"after\":{\"input_qty\":{\"value\":\"" + qty + "\"}}}");
     }
 
     private static ChangeRequest request(String changeType, String afterJson) {

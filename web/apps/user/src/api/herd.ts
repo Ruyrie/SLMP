@@ -14,7 +14,7 @@ export type PenFormOptions = Schema<'PenFormOptionsVO'>
 export type PenFormCategory = NonNullable<PenFormOptions['categories']>[number]
 export type ExecutorOption = Schema<'ExecutorOptionVO'>
 export type BatchListItem = Schema<'BatchListItemVO'>
-export type BatchDetail = Schema<'BatchDetailVO'>
+export type BatchDetail = Schema<'BatchDetailVO'> & { trace_enabled?: boolean }
 export type BatchAction = NonNullable<BatchDetail['actions']>
 export type BatchPen = NonNullable<BatchListItem['pens']>[number]
 export type BatchLookup = Schema<'BatchLookupVO'>
@@ -89,6 +89,27 @@ export interface BatchCreatePayload {
   entry_avg_weight?: number
   intro_unit_price?: number
   capacity_confirmed?: boolean
+}
+
+export interface EntryUpdatePayload extends BatchCreatePayload { version: number }
+export interface TransferUpdatePayload {
+  from_pen_id: number
+  to_pen_id: number
+  quantity: number
+  event_date: string
+  remark?: string
+  capacity_confirmed: boolean
+  version: number
+}
+export interface DeathUpdatePayload {
+  pen_id: number
+  quantity: number
+  event_date: string
+  reason_code: string
+  executor_user_id?: number
+  remark?: string
+  file_ids: number[]
+  version: number
 }
 
 export interface TransferCreatePayload {
@@ -215,6 +236,18 @@ export const herdApi = {
 
   async batchEvent(eventId: number): Promise<BatchEventDetail> {
     return camelize<BatchEventDetail>(await http().get<unknown>(`/batch-events/${eventId}`))
+  },
+
+  async updateEntry(batchId: number, payload: EntryUpdatePayload): Promise<BatchDetail> {
+    return camelize<BatchDetail>(await http().put<unknown>(`/batches/${batchId}/entry`, payload))
+  },
+
+  async updateTransfer(eventId: number, payload: TransferUpdatePayload): Promise<TransferResult> {
+    return camelize<TransferResult>(await http().put<unknown>(`/batch-transfers/${eventId}`, payload))
+  },
+
+  async updateDeath(eventId: number, payload: DeathUpdatePayload): Promise<DeathResult> {
+    return camelize<DeathResult>(await http().put<unknown>(`/batch-deaths/${eventId}`, payload))
   },
 
   async createBatch(payload: BatchCreatePayload, requestKey?: string): Promise<BatchEntryResult> {

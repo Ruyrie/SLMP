@@ -27,6 +27,7 @@ import com.zhimu.server.biz.health.support.HealthAudit;
 import com.zhimu.server.biz.health.support.HealthCodes;
 import com.zhimu.server.biz.health.support.HealthFormat;
 import com.zhimu.server.biz.health.support.HealthSupport;
+import com.zhimu.server.biz.health.support.MedicationLogSnapshot;
 import com.zhimu.server.biz.health.vo.DeleteImpactVO;
 import com.zhimu.server.biz.health.vo.MedicationCreateResultVO;
 import com.zhimu.server.biz.health.vo.MedicationDrugOptionVO;
@@ -576,7 +577,7 @@ public class MedicationServiceImpl implements MedicationService {
             record.setCostAmount(consume.amount());
             audit.record(record.getFarmId(), "MEDICATION_RECORD", record.getId(), "CREATE",
                     record.getDrugName(), support.batchNo(record.getBatchId()), null,
-                    Map.of("used_qty", share, "first_date", firstDate.toString()));
+                    MedicationLogSnapshot.of(record, support.userName(record.getExecutorId())));
         }
         LocalDate latest = result.getPerBatch().stream().map(MedicationCreateResultVO.PerBatch::getReleaseDate)
                 .filter(java.util.Objects::nonNull).max(LocalDate::compareTo).orElse(release);
@@ -642,7 +643,7 @@ public class MedicationServiceImpl implements MedicationService {
         if (usedQty.signum() <= 0) {
             throw new BizException(ErrorCode.PARAM_INVALID, "请填写实际用量");
         }
-        LocalDate oldLastDate = record.getLastDate();
+        Map<String, Object> beforeSnapshot = MedicationLogSnapshot.of(record, support.userName(record.getExecutorId()));
         LocalDate lastDate = firstDate.plusDays(courseDays - 1L);
         LocalDate newEnd = lastDate.plusDays(usage.withdrawalDays());
         LocalDate before = currentRelease(record.getBatchId());
@@ -701,9 +702,11 @@ public class MedicationServiceImpl implements MedicationService {
                 .set(MedicationRecord::getUnitPrice, consume.unitPrice())
                 .set(MedicationRecord::getCostAmount, consume.amount()));
         recalculate(record.getBatchId());
-        audit.record(record.getFarmId(), "MEDICATION_RECORD", record.getId(), "UPDATE", record.getDrugName(),
-                support.batchNo(record.getBatchId()), Map.of("last_date", oldLastDate.toString()),
-                Map.of("last_date", lastDate.toString(), "used_qty", usedQty));
+        Map<String, Object> afterSnapshot = MedicationLogSnapshot.of(record, support.userName(record.getExecutorId()));
+        if (!beforeSnapshot.equals(afterSnapshot)) {
+            audit.record(record.getFarmId(), "MEDICATION_RECORD", record.getId(), "UPDATE", record.getDrugName(),
+                    support.batchNo(record.getBatchId()), beforeSnapshot, afterSnapshot);
+        }
         return detail(recordId);
     }
 

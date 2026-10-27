@@ -9,6 +9,7 @@ import com.zhimu.server.biz.herd.entity.Pen;
 import com.zhimu.server.biz.herd.mapper.PenMapper;
 import com.zhimu.server.biz.herd.request.PenCreateRequest;
 import com.zhimu.server.biz.herd.request.PenStatusRequest;
+import com.zhimu.server.biz.herd.request.PenUpdateRequest;
 import com.zhimu.server.biz.herd.service.impl.PenServiceImpl;
 import com.zhimu.server.biz.herd.support.HerdSupport;
 import com.zhimu.server.biz.herd.vo.PenDetailVO;
@@ -17,16 +18,19 @@ import com.zhimu.server.common.enums.FarmRole;
 import com.zhimu.server.common.enums.FarmStatus;
 import com.zhimu.server.common.error.BizException;
 import com.zhimu.server.framework.oplog.OperationLogRecorder;
+import com.zhimu.server.framework.oplog.OperationLogEntry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,6 +40,8 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -204,6 +210,60 @@ class PenServiceImplTest {
         assertThat(vo.getPenId()).isEqualTo(2008L);
         assertThat(vo.getPenCode()).isEqualTo("YF-06");
         assertThat(vo.getStatus()).isEqualTo("ENABLED");
+    }
+
+    @Test
+    void updateRecordsBothSidesOfTypeCapacityAndCategoryWithChineseDisplay() {
+        Pen pen = pen(2001L, "BY-01", "1 号保育舍", 360, 320, 4);
+        pen.setPenType("NURSERY");
+        when(support.penTypeText("NURSERY")).thenReturn("保育舍");
+        when(support.category(102L)).thenReturn(new CategoryInfo(102L, "母猪", "PIG", "猪", "HEAD",
+                "头", true, true));
+        when(support.pensOfFarm(1001L)).thenReturn(List.of(pen));
+        when(penMapper.updateById(any(Pen.class))).thenReturn(1);
+        PenUpdateRequest request = updateRequest(pen);
+        request.setPenType("FATTENING");
+        request.setCapacity(400);
+        request.setCategoryId(102L);
+
+        service.update(2001L, request);
+
+        ArgumentCaptor<OperationLogEntry> captor = ArgumentCaptor.forClass(OperationLogEntry.class);
+        verify(operationLogRecorder).record(captor.capture());
+        assertThat(captor.getValue().getBefore()).isEqualTo(Map.of(
+                "pen_name", Map.of("name", "栏舍名称", "display", "1 号保育舍"),
+                "pen_type", Map.of("name", "栏舍类型", "display", "保育舍"),
+                "category_id", Map.of("name", "适用品类", "display", "育肥猪"),
+                "capacity", Map.of("name", "容量", "display", "360 头")));
+        assertThat(captor.getValue().getAfter()).isEqualTo(Map.of(
+                "pen_name", Map.of("name", "栏舍名称", "display", "1 号保育舍"),
+                "pen_type", Map.of("name", "栏舍类型", "display", "育肥舍"),
+                "category_id", Map.of("name", "适用品类", "display", "母猪"),
+                "capacity", Map.of("name", "容量", "display", "400 头")));
+    }
+
+    @Test
+    void savingUnchangedPenDoesNotCreateLogOrAdvanceVersion() {
+        Pen pen = pen(2001L, "BY-01", "1 号保育舍", 360, 320, 4);
+        when(support.pensOfFarm(1001L)).thenReturn(List.of(pen));
+        PenUpdateRequest request = updateRequest(pen);
+        request.setPenName(" 1 号保育舍 ");
+
+        PenDetailVO detail = service.update(2001L, request);
+
+        assertThat(detail.getVersion()).isEqualTo(4);
+        verify(penMapper, never()).updateById(any(Pen.class));
+        verify(operationLogRecorder, never()).record(any());
+    }
+
+    private static PenUpdateRequest updateRequest(Pen pen) {
+        PenUpdateRequest request = new PenUpdateRequest();
+        request.setPenName(pen.getPenName());
+        request.setPenType(pen.getPenType());
+        request.setCategoryId(pen.getCategoryId());
+        request.setCapacity(pen.getCapacity());
+        request.setVersion(pen.getVersion());
+        return request;
     }
 
     private static PenStatusRequest statusRequest(int version) {

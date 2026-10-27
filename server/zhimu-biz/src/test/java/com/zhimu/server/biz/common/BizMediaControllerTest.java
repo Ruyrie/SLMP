@@ -44,7 +44,7 @@ class BizMediaControllerTest {
     @BeforeEach
     void setUp() {
         mvc = TestMvc.builder(new BizMediaController(bizMediaService,
-                new RecordAccessGuard(bizMediaMapper, farmMemberCache))).build();
+                new RecordAccessGuard(bizMediaMapper, farmMemberCache, List.of()))).build();
         UserContext.set(new UserContext.LoginUser(10001L, ClientType.APP_ANDROID, 0, "jti"));
         when(bizMediaMapper.selectActiveByBiz(anyString(), any())).thenReturn(List.of(media(1001L)));
         when(farmMemberCache.get(1001L, 10001L)).thenReturn(new FarmContext.FarmMember(1001L, "东山猪场",

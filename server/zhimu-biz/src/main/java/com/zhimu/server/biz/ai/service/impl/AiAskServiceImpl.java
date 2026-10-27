@@ -269,11 +269,17 @@ public class AiAskServiceImpl implements AiAskService {
                 answerBanned(writer, round, banned);
                 return;
             }
-            List<RetrievalHit> hits = retrievalService.search(round.questionText(), courseTitle);
+            writer.send(AiCodes.SSE_PROGRESS, java.util.Map.of("stage", "CONTEXT", "message",
+                    batch == null ? "正在读取本轮问题和对话上下文" : "正在整理关联批次和对话上下文"));
             List<AiMessage> history = new ArrayList<>(messageMapper.selectContextBefore(round.sessionId(),
                     round.roundNo(), 10));
             java.util.Collections.reverse(history);
             List<String> imageUrls = imageUrls(round.imageFileIds());
+            writer.send(AiCodes.SSE_PROGRESS, java.util.Map.of("stage", "RETRIEVAL", "message", "正在检索平台资料"));
+            List<RetrievalHit> hits = retrievalService.search(round.questionText(), courseTitle);
+            String summary = hits.isEmpty() ? "已读取问题上下文；本次未检索到匹配的平台资料。"
+                    : "已读取问题上下文，检索到 " + hits.size() + " 段相关平台资料供本次回答参考。";
+            writer.send(AiCodes.SSE_ANALYSIS_SUMMARY, new StreamDeltaVO(summary));
             AiChatRequest prompt = promptBuilder.build(round.questionText(), member, batch, courseTitle, hits,
                     history, imageUrls);
             if (!aiGateway.isEnabled()) {
@@ -283,6 +289,7 @@ public class AiAskServiceImpl implements AiAskService {
                         AiCodes.STATUS_FAILED);
                 return;
             }
+            writer.send(AiCodes.SSE_PROGRESS, java.util.Map.of("stage", "GENERATING", "message", "正在生成回答"));
             stream(writer, round, hits, prompt);
         } catch (BizException e) {
             boolean timeout = e.getCode() == ErrorCode.AI_TIMEOUT.getCode();
@@ -383,7 +390,7 @@ public class AiAskServiceImpl implements AiAskService {
                                 List<RetrievalHit> hits, String rawAnswer, String finishReason,
                                 AiChatResult result) {
         String answerType = processor.getAnswerType();
-        String answerText = rawAnswer == null ? "" : rawAnswer.trim();
+        String answerText = rawAnswer == null ? "" : com.zhimu.server.biz.ai.support.AiText.answerBody(rawAnswer).trim();
         List<AiCitation> citations = new ArrayList<>(processor.getCitations());
         if (AiCodes.ANSWER_OFF_TOPIC.equals(answerType)) {
             answerText = AiCodes.OFF_TOPIC_ANSWER;
@@ -398,11 +405,11 @@ public class AiAskServiceImpl implements AiAskService {
             } else if (citations.isEmpty()) {
                 answerType = AiCodes.ANSWER_NO_BASIS;
             }
-            if (AiCodes.ANSWER_NO_BASIS.equals(answerType) && !answerText.startsWith(AiCodes.NO_BASIS_LEAD)) {
-                answerText = AiCodes.NO_BASIS_LEAD + answerText;
-            }
             if (answerText.isBlank()) {
-                answerText = AiCodes.NO_BASIS_LEAD;
+                roundService.fail(round, AiCodes.STATUS_FAILED, ErrorCode.AI_UNAVAILABLE.getCode(),
+                        "未生成有效回答，请重新提问", null);
+                writer.error(ErrorCode.AI_UNAVAILABLE.getCode(), "未生成有效回答，请重新提问", AiCodes.STATUS_FAILED);
+                return;
             }
         }
         String model = result == null ? null : result.getModel();
@@ -429,6 +436,7 @@ public class AiAskServiceImpl implements AiAskService {
     }
 
     private void answerBanned(SseWriter writer, AiRound round, String drug) {
+        writer.send(AiCodes.SSE_PROGRESS, java.util.Map.of("stage", "RETRIEVAL", "message", "正在核对平台禁用药资料"));
         RetrievalHit hit = retrievalService.bannedDrugHit(drug);
         List<AiCitation> citations = new ArrayList<>();
         String text = bannedAnswer(drug, citations, hit);

@@ -158,6 +158,16 @@ public class StockRepository {
         return api.getOutbound(id).compose(RxResult.unwrap());
     }
 
+    public Single<StockOutboundVO> registerReturnRefund(long id,
+            @NonNull com.zhimu.slmp.stock.model.request.ReturnRefundRequest request, @NonNull String key) {
+        return api.registerReturnRefund(id, request, key).compose(RxResult.unwrap());
+    }
+
+    public Single<StockOutboundVO> updateReturnRefund(long id,
+            @NonNull com.zhimu.slmp.stock.model.request.ReturnRefundRequest request, @NonNull String key) {
+        return api.updateReturnRefund(id, request, key).compose(RxResult.unwrap());
+    }
+
     public Single<StockOutboundVO> updateOutbound(long id, @NonNull OutboundUpdateRequest req) {
         return api.updateOutbound(id, req).compose(RxResult.unwrap());
     }

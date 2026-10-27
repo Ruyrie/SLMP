@@ -121,7 +121,7 @@ class StockServiceImplTest {
         ProductionOverviewVO vo = service.overview();
 
         assertThat(vo.getTodayTodoCount()).isEqualTo(6);
-        assertThat(vo.getWarningCount()).isEqualTo(2);
+        assertThat(vo.getWarningCount()).isEqualTo(1);
         assertThat(vo.getReminderTotal()).isEqualTo(2);
         assertThat(vo.getReminders()).hasSize(2);
         assertThat(vo.getReminders().get(0).getReminderType()).isEqualTo("FEED_LOW_STOCK");
@@ -131,6 +131,31 @@ class StockServiceImplTest {
         assertThat(vo.getBadges().getFeedLowStock()).isTrue();
         // 08 未接入：休药中批次为 0
         assertThat(vo.getBadges().getWithdrawal()).isFalse();
+    }
+
+    @Test
+    void withdrawalRemindersRemainVisibleWhenWarningListIsEmpty() {
+        when(todoQueryService.productionSummary())
+                .thenReturn(new TodoQueryService.ProductionTodoSummary(15, List.of()));
+        when(support.withdrawalReleaseDates(1001L)).thenReturn(java.util.Map.of(
+                3001L, com.zhimu.server.common.util.BeijingTime.today().plusDays(6),
+                3002L, com.zhimu.server.common.util.BeijingTime.today().plusDays(11)));
+
+        ProductionOverviewVO vo = service.overview();
+
+        assertThat(vo.getWarningCount()).isZero();
+        assertThat(vo.getReminderTotal()).isEqualTo(2);
+        assertThat(vo.getReminders()).extracting(ProductionOverviewVO.ProductionReminderItemVO::getReminderType)
+                .containsExactly("WITHDRAWAL", "WITHDRAWAL");
+        assertThat(vo.getBadges().getWithdrawal()).isTrue();
+    }
+
+    @Test
+    void inspectionSummaryDoesNotInventAdditionalWarningsAfterResolution() {
+        when(todoQueryService.productionSummary())
+                .thenReturn(new TodoQueryService.ProductionTodoSummary(0, List.of()));
+        when(inspectionService.summary(any())).thenReturn(inspection(2, "3 号育肥舍"));
+        assertThat(service.overview().getWarningCount()).isZero();
     }
 
     @Test

@@ -16,6 +16,7 @@ import com.zhimu.slmp.herd.model.vo.BatchEntryResultVO;
 import com.zhimu.slmp.herd.model.vo.BatchEventDetailVO;
 import com.zhimu.slmp.herd.model.vo.BatchListItemVO;
 import com.zhimu.slmp.herd.model.vo.BatchLookupVO;
+import com.zhimu.slmp.herd.model.vo.BatchTraceVO;
 import com.zhimu.slmp.herd.model.vo.CategoryStockVO;
 import com.zhimu.slmp.herd.model.vo.DeathResultVO;
 import com.zhimu.slmp.herd.model.vo.ExecutorOptionVO;
@@ -51,6 +52,10 @@ import retrofit2.http.Query;
  * API-L11、L18、L21、L23 另带 Idempotency-Key（即 API-L26 的 request_key）。
  */
 public interface HerdApi {
+
+    /** Anonymous, read-only traceability; this endpoint never returns the management archive. */
+    @GET("api/v1/public/batch-traces/{token}")
+    Single<ApiResponse<BatchTraceVO>> getPublicTrace(@Path("token") String token);
 
     // ===== 生产页与存栏 =====
 

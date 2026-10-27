@@ -77,12 +77,21 @@ public class AiMessageConvert {
             vo.setContextCourseTitle(message.getContextCourseTitle());
             vo.setStatus(message.getStatus());
             vo.setAnswerType(message.getAnswerType());
-            vo.setAnswerText(message.getAnswerText());
+            vo.setAnswerText(AiText.answerBody(message.getAnswerText()));
             vo.setCitations(citations.getOrDefault(message.getId(), new ArrayList<>()));
             vo.setRating(message.getRating());
             vo.setRatedAt(BeijingTime.format(message.getRatedAt()));
             boolean answered = AiCodes.STATUS_ANSWERED.equals(message.getStatus());
             boolean offTopic = AiCodes.ANSWER_OFF_TOPIC.equals(message.getAnswerType());
+            if (answered && !offTopic) {
+                int count = vo.getCitations().size();
+                vo.setAnalysisSummary(count > 0
+                        ? "回答已整理完成，附 " + count + " 条可查阅的平台资料引用。"
+                        : "回答已整理完成；本轮没有可展示的平台资料引用。");
+                if (count == 0) {
+                    vo.setSourceNote(AiCodes.NO_BASIS_SOURCE_NOTE);
+                }
+            }
             vo.setCanRate(answered && !offTopic);
             vo.setCanCopy(answered && !offTopic);
             vo.setInContext(inContext.contains(message.getId()));

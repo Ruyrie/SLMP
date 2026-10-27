@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.today.service.impl;
 
+import com.zhimu.server.biz.account.support.AccountPersonalDataGuard;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.zhimu.server.biz.today.api.ReminderSettingQueryService;
 import com.zhimu.server.biz.today.convert.ReminderSettingConvert;
@@ -26,6 +27,7 @@ import java.time.format.DateTimeParseException;
 @RequiredArgsConstructor
 public class ReminderSettingServiceImpl implements ReminderSettingService, ReminderSettingQueryService {
 
+    private final AccountPersonalDataGuard personalDataGuard;
     private final ReminderSettingMapper reminderSettingMapper;
     private final ReminderSettingConvert convert;
 
@@ -81,6 +83,7 @@ public class ReminderSettingServiceImpl implements ReminderSettingService, Remin
     }
 
     private ReminderSetting loadOrCreate(Long userId) {
+        personalDataGuard.requireActive(userId);
         ReminderSetting setting = reminderSettingMapper.selectOne(Wrappers.<ReminderSetting>lambdaQuery()
                 .eq(ReminderSetting::getUserId, userId)
                 .last("LIMIT 1"));

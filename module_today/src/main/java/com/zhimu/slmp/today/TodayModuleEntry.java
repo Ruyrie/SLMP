@@ -50,11 +50,18 @@ public class TodayModuleEntry implements IModuleEntry {
         if (!PrivacyManager.isAgreed(core.appSettings())) {
             push.beforePrivacyAgreed(app);
         }
+        // 登录可发生在同一个前台进程内，此时不会再次收到 ProcessLifecycleOwner.onStart。
+        core.sessionManager().getLoginState().observe(ProcessLifecycleOwner.get(), loggedIn -> {
+            if (Boolean.TRUE.equals(loggedIn)) {
+                push.syncDevice();
+            }
+        });
         ProcessLifecycleOwner.get().getLifecycle().addObserver(new DefaultLifecycleObserver() {
             @Override
             public void onStart(@NonNull LifecycleOwner owner) {
                 if (core.sessionManager().isLoggedIn()) {
                     component.todoService().refreshUnread();
+                    push.syncDevice();
                 }
             }
         });

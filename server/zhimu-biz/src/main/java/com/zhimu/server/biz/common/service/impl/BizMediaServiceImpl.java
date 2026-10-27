@@ -110,6 +110,12 @@ public class BizMediaServiceImpl implements BizMediaService {
         List<Long> target = distinct(fileIds);
         LocalDateTime now = BeijingTime.now();
         TenantSkip.run(() -> {
+            // Retiring a cancellation attachment takes the same file lock before marking it deleted.
+            for (Long fileId : target.stream().sorted().toList()) {
+                if (fileMapper.selectActiveForUpdate(fileId) == null) {
+                    throw CommonErrors.fieldError("file_ids", "文件不存在或已删除");
+                }
+            }
             for (int i = 0; i < target.size(); i++) {
                 Long fileId = target.get(i);
                 int sortNo = i + 1;

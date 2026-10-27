@@ -61,9 +61,8 @@ const sortedReceipts = computed(() =>
   [...(detail.value?.receipts || [])].sort((a, b) => String(b.receiptDate || '').localeCompare(String(a.receiptDate || '')))
 )
 
-const receiptsTotal = computed(() =>
-  (detail.value?.receipts || []).reduce((sum, item) => sum + Number(item.amount || 0), 0)
-)
+const activeReceipts = computed(() => (detail.value?.receipts || []).filter(item => item.status !== 'VOID'))
+const receiptsTotal = computed(() => activeReceipts.value.reduce((sum, item) => sum + Number(item.amount || 0), 0))
 
 const timelineItems = computed(() => {
   const value = detail.value
@@ -307,7 +306,7 @@ watch(
               <div class="e04-amount-item">
                 <div class="zw-faint body-s">已收</div>
                 <div class="e04-received num">已收 {{ formatMoney(detail.receivedAmount) }} 元</div>
-                <div class="zw-faint body-s">{{ detail.receipts?.length || 0 }} 笔收款</div>
+                <div class="zw-faint body-s">{{ activeReceipts.length }} 笔有效收款</div>
               </div>
               <div class="e04-amount-item">
                 <div class="zw-faint body-s">未收</div>
@@ -347,19 +346,20 @@ watch(
         </div>
 
         <div class="e04-bottom">
-          <zw-card id="e04-records" title="收款记录" :sub="`${detail.receipts?.length || 0} 笔 · 合计 ${formatMoney(receiptsTotal)} 元`" flush>
+          <zw-card id="e04-records" title="收款记录" :sub="`${activeReceipts.length} 笔有效收款 · 合计 ${formatMoney(receiptsTotal)} 元`" flush>
             <v-data-table :headers="receiptHeaders" :items="sortedReceipts" item-value="id" hide-default-footer>
               <template #item.receiptDate="{ item }">
                 <span>{{ dateText(item.receiptDate) }}</span>
               </template>
               <template #item.amount="{ item }">
-                <span class="num e04-strong">{{ formatMoney(item.amount) }} 元</span>
+                <span class="num e04-strong" :class="{ 'text-decoration-line-through': item.status === 'VOID' }">{{ formatMoney(item.amount) }} 元</span>
+                <zw-tag v-if="item.status === 'VOID'" size="small">已作废</zw-tag>
               </template>
               <template #item.paymentMethodText="{ item }">{{ item.paymentMethodText || paymentMethodText(item.paymentMethod) }}</template>
               <template #item.operatorName="{ item }">{{ item.operatorName || '—' }}</template>
               <template #item.financeRecordId="{ item }">
                 <span v-if="item.financeRecordId" class="e04-income">
-                  <zw-tag size="small" icon="receipt_long">已生成收入</zw-tag>
+                  <zw-tag size="small" icon="receipt_long">{{ item.status === 'VOID' ? '收入已作废' : '已生成收入' }}</zw-tag>
                   <a class="zw-link" @click="openIncomeRecord(item.financeRecordId, item.receiptDate)">查看</a>
                 </span>
                 <span v-else class="zw-faint">—</span>
@@ -394,7 +394,7 @@ watch(
               <div
                 class="e04-settle-v num"
                 :class="Number(settlement.profit) > 0 ? 'positive' : Number(settlement.profit) < 0 ? 'negative' : ''"
-              >{{ Number(settlement.profit) > 0 ? '+' : Number(settlement.profit) < 0 ? '−' : '' }}{{ formatMoney(Math.abs(Number(settlement.profit || 0))) }} 元</div>
+              >{{ settlement.profit == null ? '待核算' : `${Number(settlement.profit) > 0 ? '+' : Number(settlement.profit) < 0 ? '−' : ''}${formatMoney(Math.abs(Number(settlement.profit)))} 元` }}</div>
             </div>
             <div class="e04-settle-item">
               <div class="zw-faint body-s">销售收入</div>
@@ -410,12 +410,13 @@ watch(
             </div>
             <div class="e04-settle-item">
               <div class="zw-faint body-s">料肉比</div>
-              <div class="e04-settle-v num">{{ settlement.fcr !== undefined && settlement.fcr !== null ? Number(settlement.fcr).toFixed(2) : '无数据' }}</div>
+              <div class="e04-settle-v num">{{ settlement.fcr !== undefined && settlement.fcr !== null ? Number(settlement.fcr).toFixed(2) : '暂不可计算' }}</div>
             </div>
           </div>
           <div class="e04-settle-note zw-faint body-s">
             销售收入按出栏单金额计算，不论货款是否收齐<template v-if="Number(detail.receivedAmount)">（已收 {{ formatMoney(detail.receivedAmount) }} 元）</template>。
             <template v-if="settlement?.pendingSupplementCount">该批次有 {{ settlement.pendingSupplementCount }} 笔补录费用待确认，确认后重新计算。</template>
+            <template v-if="settlement && settlement.fcr == null">料肉比需要完整的入栏、称重和饲料记录，且净增重须大于 0。</template>
           </div>
         </zw-card>
       </template>

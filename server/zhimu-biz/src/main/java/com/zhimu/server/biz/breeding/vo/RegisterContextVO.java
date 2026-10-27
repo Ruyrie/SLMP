@@ -43,5 +43,6 @@ public class RegisterContextVO {
     public static class OffspringBreed {
         private long breedId;
         private String breedName;
+        private Long categoryId;
     }
 }

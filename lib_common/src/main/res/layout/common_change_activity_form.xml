@@ -207,6 +207,24 @@
                                 android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
                                 android:textColor="?attr/colorOnSurface" />
                         </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
+
+                        <com.zhimu.slmp.base.widget.ZmtTextInputLayout
+                            android:id="@+id/common_change_new_selection"
+                            style="@style/Widget.Zmt.TextInputLayout.Dropdown"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:visibility="gone"
+                            android:hint="@string/common_change_new_value">
+
+                            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                                android:id="@+id/common_change_new_selection_input"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
+                                android:textColor="?attr/colorOnSurface" />
+                        </com.zhimu.slmp.base.widget.ZmtTextInputLayout>
                     </LinearLayout>
 
                     <com.zhimu.slmp.base.widget.NoticeView

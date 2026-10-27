@@ -16,7 +16,13 @@
     <string name="media_camera_open_failed">相机打开失败，请稍后重试</string>
     <string name="media_camera_permission_title">未获得相机权限</string>
     <string name="media_camera_permission_photo">请在系统设置中允许智牧通使用相机；你也可以返回后从相册选择照片</string>
-    <string name="media_camera_permission_scan">扫码需要使用相机，请在系统设置中允许智牧通使用相机</string>
+    <string name="media_camera_permission_scan">扫描实物二维码需要相机权限，也可以从相册选择二维码图片识别</string>
+    <string name="media_scan_album">从相册识别</string>
+    <string name="media_scan_album_decoding">正在识别图片中的二维码…</string>
+    <string name="media_scan_album_canceled">已取消选图，可继续扫码或重新选择图片</string>
+    <string name="media_scan_album_no_qr">图片中未识别到二维码，请换一张清晰图片或继续扫码</string>
+    <string name="media_scan_album_read_failed">图片读取失败，请选择其他图片重试</string>
+    <string name="media_scan_album_open_failed">无法打开系统相册，请重试</string>
     <string name="media_camera_open_settings">去设置开启</string>
     <string name="media_camera_mode_video">录像</string>
     <string name="media_camera_record">开始录像</string>

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import type { ApiError, FieldError } from '@zmt/shared'
-import { formatMoney, today } from '@zmt/shared'
+import type { FieldError } from '@zmt/shared'
+import { formatMoney, today, toApiError } from '@zmt/shared'
 import { financeApi, newRequestKey, type SaleOrderDetail, type SaleOrderItem } from '@/api/finance'
 import { useUiStore } from '@/stores/ui'
 
@@ -18,6 +18,7 @@ export const useReceiveStore = defineStore('financeReceive', {
     open: false,
     target: null as ReceiveTarget | null,
     submitting: false,
+    pendingRequest: null as { fingerprint: string; key: string } | null,
     errors: [] as FieldError[],
     form: {
       amount: '' as string | number,
@@ -43,6 +44,7 @@ export const useReceiveStore = defineStore('financeReceive', {
   },
   actions: {
     show(order: ReceiveTarget | SaleOrderItem | SaleOrderDetail, lastMethod?: string): void {
+      if (this.submitting) return
       const target = order as ReceiveTarget & SaleOrderItem
       if (!target?.id) return
       this.target = {
@@ -61,8 +63,8 @@ export const useReceiveStore = defineStore('financeReceive', {
     },
 
     close(): void {
+      if (this.submitting) return
       this.open = false
-      this.submitting = false
     },
 
     validate(): boolean {
@@ -72,7 +74,7 @@ export const useReceiveStore = defineStore('financeReceive', {
         this.errors.push({ field: 'amount', message: '请输入收款金额' })
       } else if (!Number.isFinite(amount) || amount <= 0) {
         this.errors.push({ field: 'amount', message: '收款金额必须大于 0' })
-      } else if (Math.round(amount * 100) !== Number((amount * 100).toFixed(0))) {
+      } else if (amount !== Number(amount.toFixed(2))) {
         this.errors.push({ field: 'amount', message: '金额最多保留 2 位小数' })
       } else if (amount - this.maxAmount > 0.0001) {
         this.errors.push({ field: 'amount', message: `不能超过未收金额 ${formatMoney(this.maxAmount)} 元` })
@@ -94,16 +96,22 @@ export const useReceiveStore = defineStore('financeReceive', {
       if (!this.target || this.submitting) return null
       if (!this.validate()) return null
       this.submitting = true
+      const payload = {
+        amount: Number(this.form.amount),
+        receipt_date: this.form.date,
+        payment_method: this.form.method
+      }
+      const fingerprint = JSON.stringify([this.target.id, payload])
+      // A timeout may occur after the receipt was saved. Reuse the same key until the attempt succeeds or changes.
+      if (this.pendingRequest?.fingerprint !== fingerprint) {
+        this.pendingRequest = { fingerprint, key: newRequestKey() }
+      }
       const ui = useUiStore()
       try {
         const detail = await financeApi.addReceipt(
           this.target.id,
-          {
-            amount: Number(Number(this.form.amount).toFixed(2)),
-            receipt_date: this.form.date,
-            payment_method: this.form.method
-          },
-          newRequestKey()
+          payload,
+          this.pendingRequest.key
         )
         const result = detail.receiptResult
         if (result?.paidOff) {
@@ -112,13 +120,14 @@ export const useReceiveStore = defineStore('financeReceive', {
           ui.toast(`已登记收款 ${formatMoney(result?.amount)} 元，还有 ${formatMoney(result?.unpaidAmount)} 元未收`)
         }
         this.open = false
+        this.pendingRequest = null
         return detail
       } catch (e) {
-        const err = e as ApiError
+        const err = toApiError(e)
         const fieldErrors = err.fieldErrors
         if (fieldErrors.length) {
           this.errors = fieldErrors
-        } else if (err.code === 42209 || err.code >= 42200) {
+        } else if (err.code >= 42200 && err.code < 42300) {
           ui.toast(err.message, 'error')
           this.open = false
         } else {

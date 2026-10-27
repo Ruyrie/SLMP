@@ -7,13 +7,14 @@
 | 事项 | 结论 |
 |---|---|
 | 数据来源 | 服务端未完成前，debug 版由 lib_network 的 MockInterceptor 按“方法 + 路径 + 条件”返回示例 JSON；local.properties 中 `zmt.useMock=false` 后直接请求 `zmt.baseUrl` |
-| 高德、极光 | 按文档接入 SDK 与隐私合规初始化；Key 从 local.properties（amap.key、jpush.appKey）读取。高德 Android Key 已配置在负责人电脑上；没有 Key 时地图选点页只显示不可用提示，推送不初始化 |
+| 高德、极光 | 按文档接入 SDK 与隐私合规初始化；Debug 从 local.properties 的 amap.key、jpush.appKey 读取，Release 从 amap.releaseKey、jpush.releaseAppKey 读取。高德 Key 须匹配各自包名和签名 SHA1，Release 不复用 Debug Key；没有 Key 时地图选点页只显示不可用提示，推送不初始化 |
 | 养殖场地址 | 2026-10-22 确认：必须带经纬度与 adcode，不接受手动填写的地址；没有高德 Key 时 F02、F06 不能提交位置 |
 | 员工退出养殖场 | 2026-10-22 确认：入口放在 A07“我的养殖场”下方单独一行（场长、员工显示），确认对话框同 F09 |
 | L07 扫码 | 2026-10-22 确认：使用 lib_media 公共相机页识别后返回结果（技术文档原写 L07 自持相机） |
 | 测试直连（2026-10-22 用户确认） | 服务端完成前，debug 包允许放 Key 做测试：模块07 AI 诊断直连阿里云百炼 qwen3.8-max（OpenAI 兼容接口，图片 base64），失败时用 deepseek-flash 备用；短信验证码直连阿里云号码认证服务（Dypnsapi SendSmsVerifyCode / CheckSmsVerifyCode，签名“恒创联众”、系统模板 100001–100005）。Key 写在 local.properties（ai.dashscopeKey、ai.deepseekKey、aliyun.accessKeyId、aliyun.accessKeySecret、aliyun.smsSignName），只生成到 lib_common 的 debug BuildConfig；release 包为空，直连关闭、走服务端接口。正式上线前改回服务端调用 |
 | 接口契约冲突（2026-10-23 用户确认） | 同一接口在两份文档中写法不同时，以接口所属模块的服务端文档为准（例：API-M27 属模块09，purpose 取 VACCINATE / MEDICATE / DISINFECT，DrugLotOptionVO.stock 为 QtyVO，QtyVO 放 lib_common）；UI 文档未给的文案、原型未画的页面、文档之间的冲突保持现做法，汇总在 docs/App接口对接与待确认清单.md 由小组过目 |
 | 极光推送（2026-10-23 用户确认） | 只接极光自有通道，暂不接厂商通道（华为、小米、OPPO、vivo、魅族、FCM）；AppKey 绑定包名：local.properties 的 jpush.appKey 用于 debug 包 com.zhimu.slmp.debug，jpush.releaseAppKey 用于 release 包 com.zhimu.slmp；JPUSH_PKGNAME 按变体包名生成；module_today 中 ZhimuPushReceiver（action cn.jpush.android.intent.RECEIVE_MESSAGE）与 ZhimuPushService（继承 JCommonService，:pushcore 进程） |
+| Release 资源裁剪（2026-10-26） | 高德 11.3.100 SDK 含 final R 字段，构建时提示与 AGP 9 优化资源裁剪不兼容；设置 android.r8.optimizedResourceShrinking=false，保留 minifyEnabled、shrinkResources 和现有保留规则，使用兼容的资源裁剪路径 |
 | Mock 日期（2026-10-23） | debug 包走 Mock 时 DateFormatter.today() 对齐示例数据 2026-10-19（local.properties zmt.mockToday，留空用真实日期）；取“今天”一律用 DateFormatter.today()，不直接 LocalDate.now() |
 | 测试直连扩展（2026-10-22 用户确认） | 模块11 K01 AI 问答（流式、附图）与模块10 E12 AI 出栏建议也直连千问，DeepSeek 备用；K01 语音转文字直连百炼语音识别；课程视频 Mock 用公开测试 HLS 地址 |
 | 麦克风被拒（2026-10-22 用户确认） | 录像时没有麦克风权限：说明“录像需要麦克风”并提供“去设置开启”，不开启就不录像（仍可拍照）；03 号 8.2 节“只录无声视频”作废 |

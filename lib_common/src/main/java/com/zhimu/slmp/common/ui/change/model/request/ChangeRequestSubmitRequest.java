@@ -11,6 +11,7 @@ public class ChangeRequestSubmitRequest {
 
     public static final String CHANGE_UPDATE = "UPDATE";
     public static final String CHANGE_VOID = "VOID";
+    public static final String CHANGE_DELETE = "DELETE";
 
     private final String bizType;
     private final long bizId;

@@ -102,7 +102,9 @@ async function enter(): Promise<void> {
   } catch {
     /* 养殖场加载失败仍进入工作台 */
   }
-  if (!farm.farms.length) await router.replace('/farms/new')
+  const redirect = String(route.query.redirect || '')
+  if (redirect.startsWith('/') && !redirect.startsWith('//') && redirect !== '/') await router.replace(redirect)
+  else if (!farm.farms.length) await router.replace('/farms/new')
   else await router.replace('/')
 }
 </script>

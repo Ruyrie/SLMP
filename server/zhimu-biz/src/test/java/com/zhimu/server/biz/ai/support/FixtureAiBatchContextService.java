@@ -2,7 +2,6 @@ package com.zhimu.server.biz.ai.support;
 
 import com.zhimu.server.biz.ai.vo.LinkedBatchVO;
 import com.zhimu.server.framework.jackson.ZhimuJackson;
-import org.springframework.stereotype.Service;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
@@ -10,13 +9,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-/**
- * 临时批次目录：模块04（栏舍与批次）落地前，给模块11 的关联批次面板与提问背景提供与 App Mock 一致的数据。
- * 数据：东山猪场 1001 的 3001/3002/3003/3004；员工只看到负责栏舍（如李明负责 2003，只看到 3001）。
- * 模块04 落地后删除本类，改由 BatchQueryService 提供。
- */
-@Service
-public class TemporaryAiBatchContextService implements AiBatchContextService {
+/** Static test data for AI session service tests; never registered in the application. */
+public class FixtureAiBatchContextService implements AiBatchContextService {
 
     private static final JsonMapper JSON = ZhimuJackson.newPlainMapper();
 

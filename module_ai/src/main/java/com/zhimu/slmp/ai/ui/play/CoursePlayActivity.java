@@ -212,7 +212,9 @@ public class CoursePlayActivity extends BaseActivity {
         });
         vm.getSpeed().observe(this, s -> player.setSpeed(s == null ? 1f : s));
         vm.getCurrentSource().observe(this, s -> renderPills());
-        vm.getPlayCommand().observe(this, cmd -> player.play(cmd));
+        // A fast response can arrive before observers attach: clear the previous request first.
+        vm.getStopPlayback().observe(this, ignored -> player.clearPlayback());
+        vm.getPlayCommand().observe(this, cmd -> { if (cmd != null) player.play(cmd); });
         vm.getSeekTo().observe(this, ms -> player.seekTo(ms));
         vm.getPauseRequest().observe(this, v -> player.pause());
         vm.getPlayerState().observe(this, s -> {
@@ -576,10 +578,21 @@ public class CoursePlayActivity extends BaseActivity {
 
     // ===== 生命周期 =====
 
+    private boolean revalidateOnStart;
+    private long stoppedCourseId;
+    private long stoppedPosition;
+    private boolean stoppedPlayWhenReady;
+
     @Override
     protected void onStart() {
         super.onStart();
+        if (revalidateOnStart) player.clearPlayback();
         player.create();
+        if (revalidateOnStart) {
+            revalidateOnStart = false;
+            boolean sameCourse = stoppedCourseId == vm.getCourseId();
+            vm.revalidate(sameCourse ? stoppedPosition : 0, !sameCourse || stoppedPlayWhenReady);
+        }
         orientation.enable();
         registerNetwork();
     }
@@ -590,8 +603,12 @@ public class CoursePlayActivity extends BaseActivity {
         orientation.disable();
         unregisterNetwork();
         if (!isInPictureInPictureMode()) {
-            vm.onLeave();
+            stoppedCourseId = vm.getCourseId();
+            stoppedPosition = player.position();
+            stoppedPlayWhenReady = player.playWhenReady();
+            vm.onLeave(stoppedPosition);
             player.release();
+            revalidateOnStart = true;
         }
     }
 

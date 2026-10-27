@@ -42,6 +42,17 @@ public final class FeedFormat {
         return value == null ? "" : NumberFormatter.formatNumber(value, 1);
     }
 
+    /** 小体重保留两位，避免雏鸡等品类的 0.04 千克显示为 0.0。 */
+    @NonNull
+    public static String weightNumber(@Nullable BigDecimal value) {
+        return value == null ? "" : NumberFormatter.formatNumber(value, value.abs().compareTo(BigDecimal.ONE) < 0 ? 2 : 1);
+    }
+
+    @NonNull
+    public static String weightKg(@Nullable BigDecimal value) {
+        return value == null ? "" : NumberFormatter.formatQuantity(value, value.abs().compareTo(BigDecimal.ONE) < 0 ? 2 : 1, KG);
+    }
+
     /** 2 位小数：“0.81” */
     @NonNull
     public static String num2(@Nullable BigDecimal value) {

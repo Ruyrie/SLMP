@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 协议全文页：二级页顶部栏（返回 + 协议名）+ WebView -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:viewBindingIgnore="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
@@ -10,9 +12,15 @@
         android:id="@+id/account_agreement_top_bar"
         layout="@layout/base_include_top_app_bar" />
 
-    <WebView
-        android:id="@+id/account_agreement_web"
+    <com.zhimu.slmp.base.widget.StateLayout
+        android:id="@+id/account_agreement_state"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1">
+
+        <WebView
+            android:id="@+id/account_agreement_web"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.zhimu.slmp.base.widget.StateLayout>
 </LinearLayout>

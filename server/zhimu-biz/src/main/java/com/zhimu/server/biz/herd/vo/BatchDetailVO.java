@@ -26,6 +26,7 @@ public class BatchDetailVO {
     private String status;
     private String entryDate;
     private String qrContent;
+    private Boolean traceEnabled;
     private String labelText;
     private String sourceRecordType;
     private String endType;

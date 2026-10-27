@@ -16,6 +16,7 @@ import java.util.Objects;
 public class InviteItemVO {
 
     public static final String STATUS_PENDING = "PENDING";
+    public static final String STATUS_ACCEPTED = "ACCEPTED";
     public static final String STATUS_REJECTED = "REJECTED";
     public static final String STATUS_EXPIRED = "EXPIRED";
 

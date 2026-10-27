@@ -149,6 +149,7 @@ public class ChangeRequestApplicationService {
                 .linkedRules(new ArrayList<>(form.linkedRules()))
                 .reviewTip(form.reviewTip())
                 .pendingRequestId(pendingRequestId)
+                .deleteAllowed(form.deleteAllowed())
                 .voidAllowed(form.voidAllowed())
                 .voidNotice(form.voidNotice())
                 .voidRecalcTags(new ArrayList<>(form.voidRecalcTags()))

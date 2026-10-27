@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { formatDate, formatMoney, formatNumber, formatPercent, formatTime } from '@zmt/shared'
 import type { TimelineItem } from '@/api/herd'
+import { herdApi } from '@/api/herd'
+import { useHerdRecordEditStore } from '@/stores/herd/recordEdit'
+import HerdRecordEditDrawer from './components/HerdRecordEditDrawer.vue'
+import { stockRecordTarget } from './recordTarget'
+import { batchTraceApi } from '@/api/batchTrace'
 import { useBatchDetailStore, type TimelineFilter } from '@/stores/herd/batchDetail'
 import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
@@ -18,6 +23,24 @@ const router = useRouter()
 const route = useRoute()
 const { isStaff } = useRole()
 const qrBox = ref<HTMLElement | null>(null)
+const traceSaving = ref(false)
+const rotateDialog = ref(false)
+const editor = useHerdRecordEditStore()
+const openingRecord = ref(false)
+onUnmounted(() => editor.reset())
+
+async function saveTrace(rotate = false): Promise<void> {
+  if (!batch.value || traceSaving.value) return
+  traceSaving.value = true
+  try {
+    await batchTraceApi.settings(batchId.value, rotate ? true : batch.value.trace_enabled === false, rotate, batch.value.version || 0)
+    rotateDialog.value = false
+    await load()
+    ui.toast(rotate ? '溯源链接已更新，请重新下载并更换标签' : '公开溯源设置已更新')
+  } catch (e) {
+    ui.toast(e instanceof Error ? e.message : '设置失败，请重试', 'error')
+  } finally { traceSaving.value = false }
+}
 
 const batchId = computed(() => Number(route.params.batchId || 0))
 const batch = computed(() => store.batch)
@@ -103,23 +126,31 @@ function openDeath(): void {
   void router.push({ name: 'WU-L05', query: { action: 'create', tab: 'death', batchId: String(batchId.value) } })
 }
 
-function openChangeRequest(item?: TimelineItem): void {
-  if (!batch.value) return
-  void router.push({
-    name: 'WU-U01',
-    query: {
-      action: 'create',
-      biz_type: 'BATCH',
-      biz_id: String(batch.value.batch_id),
-      ...(item?.biz_id ? { record_id: String(item.biz_id), record_type: item.record_type || '' } : {})
+async function openChangeRequest(item?: TimelineItem): Promise<void> {
+  if (!batch.value || openingRecord.value) return
+  openingRecord.value = true
+  const id = batchId.value
+  const revision = farm.revision
+  try {
+    const record = item || (await herdApi.batchTimeline(id, { type: 'ENTRY', size: 1 })).list?.[0]
+    if (id !== batchId.value || revision !== farm.revision) return
+    const target = record && stockRecordTarget(record)
+    if (!record || !target || !canChange(record)) throw new Error('这条记录当前无法修改，请刷新后重试')
+    if (record.record_type === 'SALE') {
+      await router.push({ name: 'WU-E04', params: { id: target.biz_id } })
+    } else if (record.action === 'EDIT') {
+      await editor.open(Number(target.biz_id), id, record.record_type || '')
+    } else {
+      await router.push({ name: 'WU-U01', query: { action: 'create', ...target } })
     }
-  })
+  } catch (error) {
+    ui.toast(error instanceof Error ? error.message : '记录加载失败，请重试', 'error')
+  } finally { openingRecord.value = false }
 }
 
 function openMyChanges(): void {
   void router.push({
     name: 'WU-U01',
-    query: { biz_type: 'BATCH', biz_id: String(batchId.value) }
   })
 }
 
@@ -154,12 +185,9 @@ function timelineTime(item: TimelineItem): string {
   return formatDate(item.occurred_at || item.biz_date)
 }
 
-function isStockRecord(item: TimelineItem): boolean {
-  return ['ENTRY', 'TRANSFER', 'DEATH', 'SALE'].includes(item.record_type || '')
-}
-
 function canChange(item: TimelineItem): boolean {
-  return !isStaff.value && isStockRecord(item) && item.action !== 'NONE'
+  return !!stockRecordTarget(item) && ['EDIT', 'CHANGE_REQUEST'].includes(item.action || '')
+    && (!isStaff.value || (item.record_type === 'DEATH' && item.action === 'EDIT'))
 }
 
 function toggleRecord(item: TimelineItem): void {
@@ -199,6 +227,7 @@ function printQr(): void {
 }
 
 async function load(): Promise<void> {
+  editor.reset()
   await store.load(batchId.value, true)
   timelineFilter.value = store.timelineFilter
 }
@@ -218,6 +247,11 @@ watch(batchId, async () => {
 
 <template>
   <zw-shell side="user" :role="isStaff ? 'staff' : undefined" active="WU-L04" :crumbs="crumbs">
+    <v-dialog v-model="rotateDialog" max-width="440">
+      <v-card title="更新公开溯源链接" text="更新后旧二维码将无法打开，需要重新下载并更换已打印的标签。新链接将开放公开只读溯源。">
+        <v-card-actions><v-spacer /><v-btn @click="rotateDialog = false">取消</v-btn><v-btn color="primary" :loading="traceSaving" @click="saveTrace(true)">更新链接</v-btn></v-card-actions>
+      </v-card>
+    </v-dialog>
     <div @click="handleHeadClick">
       <zw-page-head :title="pageTitle" :desc="desc" back>
         <template #tags>
@@ -239,8 +273,7 @@ watch(batchId, async () => {
               <div class="zw-pop l04-menu">
                 <div v-if="store.canRequestChange" class="l04-menu-item" @click="openChangeRequest()">
                   <zw-icon name="edit_note" :size="18" />
-                  <span class="l04-menu-label">提交修改申请</span>
-                  <zw-tag size="small" type="warning">需审核</zw-tag>
+                  <span class="l04-menu-label">修改入栏记录</span>
                 </div>
                 <div class="l04-menu-item" @click="openMyChanges">
                   <zw-icon name="history" :size="18" />
@@ -321,6 +354,11 @@ watch(batchId, async () => {
               <v-btn size="small" variant="outlined" prepend-icon="download" @click="downloadQr">下载图片</v-btn>
               <v-btn size="small" variant="outlined" prepend-icon="print" @click="printQr">打印标签</v-btn>
             </div>
+            <div v-if="!isStaff" class="mt-3">
+              <p class="text-caption">公开溯源{{ batch.trace_enabled === false ? '已关闭' : '已开放' }}</p>
+              <v-btn size="small" variant="text" :loading="traceSaving" @click="saveTrace()">{{ batch.trace_enabled === false ? '开放溯源' : '关闭溯源' }}</v-btn>
+              <v-btn size="small" variant="text" :disabled="traceSaving" @click="rotateDialog = true">更新链接</v-btn>
+            </div>
           </div>
         </div>
       </zw-card>
@@ -371,8 +409,8 @@ watch(batchId, async () => {
                   <div v-if="isStaff && item.action_note" class="l04-record-note">{{ item.action_note }}</div>
                 </div>
                 <div v-if="canChange(item)" class="l04-record-actions">
-                  <a @click.stop="openChangeRequest(item)">提交修改申请</a>
-                  <zw-tag size="small" type="warning">需审核</zw-tag>
+                  <a @click.stop="openChangeRequest(item)">{{ item.record_type === 'SALE' ? '查看出栏单' : item.action === 'EDIT' ? '修改记录' : '提交修改申请' }}</a>
+                  <zw-tag v-if="item.record_type !== 'SALE' && item.action === 'CHANGE_REQUEST'" size="small" type="warning">需审核</zw-tag>
                 </div>
               </div>
             </li>
@@ -380,7 +418,7 @@ watch(batchId, async () => {
         </div>
         <template #foot>
           <div class="l04-record-foot">
-            <span class="zw-faint body-s">{{ isStaff ? '超过当天的死淘记录由所有者或场长修改' : '登记后 3 天内的转栏、死淘记录可以直接修改；其余修改需要提交修改申请' }}</span>
+            <span class="zw-faint body-s">{{ isStaff ? '超过当天的死淘记录由所有者或场长修改' : '可直接修改的记录显示“修改记录”；需要审核的记录显示“提交修改申请”' }}</span>
             <div>
               <v-btn v-if="store.hasMore" variant="text" color="primary" size="small" append-icon="expand_more" :loading="store.loadingMore" @click="store.loadMore()">
                 加载更早的记录
@@ -391,6 +429,7 @@ watch(batchId, async () => {
         </template>
       </zw-card>
     </template>
+    <HerdRecordEditDrawer @saved="load" />
   </zw-shell>
 </template>
 

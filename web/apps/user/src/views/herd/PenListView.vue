@@ -310,6 +310,10 @@ watch(() => [route.query.action, route.query.penId], () => {
         <section class="l02-sec">
           <div class="zw-section-title">修改记录</div>
           <v-skeleton-loader v-if="store.logsLoading" type="list-item-two-line@2" />
+          <div v-else-if="store.logsError" class="l02-row">
+            <span class="zw-faint">{{ store.logsError }}</span>
+            <v-btn variant="text" @click="store.loadPenLogs(Number(store.detail?.pen_id))">重试</v-btn>
+          </div>
           <zw-timeline v-else-if="store.logItems.length" :items="store.logItems" />
           <div v-else class="l02-row"><span class="zw-faint">还没有修改记录</span></div>
         </section>
@@ -335,7 +339,7 @@ watch(() => [route.query.action, route.query.penId], () => {
           :loading="store.statusBusy"
           @click="store.detail && store.askDisable({ pen_id: store.detail.pen_id, pen_name: store.detail.pen_name })"
         >停用栏舍</v-btn>
-        <v-btn v-if="canManage && store.detail" color="primary" prepend-icon="edit" @click="store.detail && Number(store.detail.pen_id) && store.openEdit(Number(store.detail.pen_id))">编辑栏舍</v-btn>
+        <v-btn v-if="canManage && store.detail" color="primary" prepend-icon="edit" :loading="store.loadingOptions" @click="store.detail && Number(store.detail.pen_id) && store.openEdit(Number(store.detail.pen_id))">编辑栏舍</v-btn>
       </template>
     </zw-drawer>
 

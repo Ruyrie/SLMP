@@ -5,7 +5,7 @@ import java.security.SecureRandom;
 /** 批次二维码：短链接前缀与令牌解析（文档 2.7“二维码”）。 */
 public final class QrCodes {
 
-    /** Web 用户端站点的批次短链接前缀（换域名后旧前缀仍识别，由配置扩展时在此追加） */
+    /** 旧版已印发标签的前缀；新标签由 BatchQrLinks 使用部署地址生成。 */
     public static final String DEFAULT_PREFIX = "https://web.zhimutong.example.com/s/b/";
 
     /** 去掉易混淆字符（0/O、1/I/L 等）后的字母数字表 */
@@ -32,23 +32,24 @@ public final class QrCodes {
 
     /** 从扫码原文解析 10 位令牌；不是批次二维码返回 null */
     public static String parseToken(String qrContent) {
+        return parseToken(qrContent, DEFAULT_PREFIX);
+    }
+
+    /** 只接受明确配置的站点前缀，不从任意网址中提取批次令牌。 */
+    static String parseToken(String qrContent, String prefix) {
         if (qrContent == null) {
             return null;
         }
         String text = qrContent.trim();
-        if (!text.startsWith(DEFAULT_PREFIX)) {
+        if (!text.startsWith(prefix)) {
             return null;
         }
-        String token = text.substring(DEFAULT_PREFIX.length());
+        String token = text.substring(prefix.length());
         return token.length() == 10 && token.chars().allMatch(QrCodes::allowed) ? token : null;
     }
 
     private static boolean allowed(int ch) {
-        for (char c : ALPHABET) {
-            if (c == ch) {
-                return true;
-            }
-        }
-        return false;
+        // 已印发的旧标签可能含 0、1、l 等字符；生成新码仍使用上面的防混淆字母表。
+        return ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || ch >= '0' && ch <= '9';
     }
 }

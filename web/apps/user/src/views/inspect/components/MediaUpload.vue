@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import type { FileVO } from '@zmt/shared'
 import { uploadFile, type MediaItem } from '@/api/inspect'
 import { mediaDuration, mediaIsVideo } from '@/views/inspect/inspect'
@@ -55,6 +55,8 @@ const inputRef = ref<HTMLInputElement | null>(null)
 const items = ref<UploadItem[]>([])
 const message = ref('')
 const dragOver = ref(false)
+const uploads = new Map<string, AbortController>()
+let disposed = false
 const busy = computed(() => items.value.some((item) => item.uploading))
 const videoCount = computed(() => items.value.filter((item) => item.video).length)
 const full = computed(() => items.value.length >= props.max)
@@ -104,7 +106,8 @@ watch(
 watch(
   () => props.modelValue,
   (value) => {
-    if (!value?.length && items.value.length && !busy.value && !props.prefill?.length) clearAll()
+    // An empty model also represents pending/failed files; retain those for retry.
+    if (!value?.length && items.value.some((item) => item.fileId > 0) && !busy.value && !props.prefill?.length) clearAll()
   }
 )
 
@@ -142,6 +145,7 @@ async function onFiles(event: Event): Promise<void> {
         continue
       }
       const duration = await readVideoDuration(file)
+      if (disposed) return
       if (duration === null) {
         message.value = '无法读取视频时长，请重新选择'
         continue
@@ -185,7 +189,8 @@ function readVideoDuration(file: File): Promise<number | null> {
 
 function addFile(file: File, video: boolean, duration: number): void {
   const url = URL.createObjectURL(file)
-  const item: UploadItem = {
+  // The upload callback must mutate the same reactive object rendered by Vue.
+  const item = reactive<UploadItem>({
     localId: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
     file,
     fileId: 0,
@@ -199,28 +204,36 @@ function addFile(file: File, video: boolean, duration: number): void {
     duration: duration ? `${Math.floor(duration / 60)}:${String(Math.round(duration % 60)).padStart(2, '0')}` : '',
     tag: '',
     tagType: ''
-  }
+  })
   items.value.push(item)
   void upload(item)
 }
 
 async function upload(item: UploadItem): Promise<void> {
-  if (!item.file) return
+  if (!item.file || uploads.has(item.localId) || disposed) return
+  const controller = new AbortController()
+  uploads.set(item.localId, controller)
   item.uploading = true
   item.error = false
   item.progress = 0
   try {
     const file = await uploadFile(item.file, props.scene, (percent) => {
-      item.progress = percent
-    })
+      if (!controller.signal.aborted) item.progress = percent
+    }, controller.signal)
+    if (controller.signal.aborted) return
     const result = file as FileVO
-    item.fileId = Number(result.file_id || 0)
+    const fileId = Number(result?.file_id || 0)
+    if (!Number.isFinite(fileId) || fileId <= 0) throw new Error('上传结果缺少文件编号')
+    item.fileId = fileId
     if (result.url) item.previewUrl = result.url
     item.progress = 100
     item.uploading = false
   } catch {
+    if (controller.signal.aborted) return
     item.uploading = false
     item.error = true
+  } finally {
+    uploads.delete(item.localId)
   }
 }
 
@@ -231,6 +244,8 @@ function retry(item: UploadItem): void {
 
 function remove(item: UploadItem): void {
   if (props.disabled) return
+  uploads.get(item.localId)?.abort()
+  uploads.delete(item.localId)
   if (item.file) URL.revokeObjectURL(item.url)
   const index = items.value.findIndex((row) => row.localId === item.localId)
   if (index >= 0) items.value.splice(index, 1)
@@ -238,6 +253,8 @@ function remove(item: UploadItem): void {
 }
 
 function clearAll(): void {
+  for (const controller of uploads.values()) controller.abort()
+  uploads.clear()
   for (const item of items.value) {
     if (item.file) URL.revokeObjectURL(item.url)
   }
@@ -265,7 +282,10 @@ function onDrop(event: DragEvent): void {
 }
 
 defineExpose({ hasUploading: () => busy.value, hasFailed: () => items.value.some((item) => item.error), clearAll })
-onBeforeUnmount(() => clearAll())
+onBeforeUnmount(() => {
+  disposed = true
+  clearAll()
+})
 </script>
 
 <template>
@@ -299,10 +319,11 @@ onBeforeUnmount(() => clearAll())
           <span>点击重试</span>
         </button>
         <button
-          v-if="!item.uploading && !disabled"
+          v-if="!disabled"
           class="insp-upload-del"
           type="button"
-          aria-label="删除"
+          :aria-label="item.uploading ? '取消上传' : '删除'"
+          :title="item.uploading ? '取消上传' : '删除'"
           @click.stop="remove(item)"
         >
           <zw-icon name="close" :size="13" />

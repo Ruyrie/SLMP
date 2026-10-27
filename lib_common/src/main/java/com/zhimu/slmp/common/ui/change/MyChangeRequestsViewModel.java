@@ -14,6 +14,7 @@ import com.zhimu.slmp.common.model.vo.FarmContextVO;
 import com.zhimu.slmp.common.service.IFarmContextService;
 import com.zhimu.slmp.common.service.ServiceHub;
 import com.zhimu.slmp.common.model.vo.ChangeRequestVO;
+import com.zhimu.slmp.common.model.vo.ChangeRequestFormVO;
 
 import java.util.Collections;
 import java.util.Map;
@@ -35,9 +36,11 @@ public class MyChangeRequestsViewModel extends BaseListViewModel<String, ChangeR
     private final MutableLiveData<Integer> total = new MutableLiveData<>(0);
     private final SingleLiveEvent<ChangeRequestVO> openRecord = new SingleLiveEvent<>();
     private final SingleLiveEvent<Long> openResubmit = new SingleLiveEvent<>();
+    private final SingleLiveEvent<ChangeRequestFormVO> originalRecord = new SingleLiveEvent<>();
 
     @Nullable
     private Long switchBackFarmId;
+    private boolean switching;
 
     @Inject
     public MyChangeRequestsViewModel(@NonNull ChangeRepository repository, @NonNull FarmContext farmContext) {
@@ -72,6 +75,16 @@ public class MyChangeRequestsViewModel extends BaseListViewModel<String, ChangeR
         return openResubmit;
     }
 
+    public SingleLiveEvent<ChangeRequestFormVO> getOriginalRecord() {
+        return originalRecord;
+    }
+
+    /** 没有独立详情路由时，只读展示原业务记录，不进入新增页或申请表单。 */
+    public void loadOriginalRecord(@NonNull ChangeRequestVO item) {
+        launch(repository.getForm(item.getBizType() == null ? "" : item.getBizType(), item.getBizId()),
+                originalRecord::setValue);
+    }
+
     /** 全部状态下的申请数（为 0 时不显示筛选行） */
     public int allCount() {
         Map<String, Integer> m = tabCounts.getValue();
@@ -95,19 +108,33 @@ public class MyChangeRequestsViewModel extends BaseListViewModel<String, ChangeR
 
     /** 点申请卡片：原记录属于其他养殖场时先切换（Snackbar“已切换到西岭鸡场”+“切回东山猪场”） */
     public void onItemClick(@NonNull ChangeRequestVO item) {
+        withRecordFarm(item, () -> openRecord.setValue(item));
+    }
+
+    private void withRecordFarm(@NonNull ChangeRequestVO item, @NonNull Runnable open) {
+        if (switching) return;
         Long current = farmContext.currentFarmId();
         IFarmContextService farm = ServiceHub.get(IFarmContextService.class);
-        if (item.getFarmId() == 0 || current == null || current == item.getFarmId() || farm == null) {
-            openRecord.setValue(item);
+        if (item.getFarmId() == 0) {
+            showMessage("记录所属养殖场不可用，请刷新后重试");
+            return;
+        }
+        if (current != null && current == item.getFarmId()) {
+            open.run();
+            return;
+        }
+        if (farm == null) {
+            showMessage("暂时无法切换养殖场，请稍后重试");
             return;
         }
         FarmContextVO before = farmContext.current();
-        launch(farm.switchTo(item.getFarmId()), ctx -> {
+        switching = true;
+        launch(farm.switchTo(item.getFarmId()).doFinally(() -> switching = false), ctx -> {
             switchBackFarmId = current;
             String name = item.getFarmName() == null ? ctx.getName() : item.getFarmName();
             String backName = before == null || before.getName() == null ? "" : before.getName();
             showMessage(UiMessage.withAction("已切换到" + name, "切回" + backName, ACTION_SWITCH_BACK));
-            openRecord.setValue(item);
+            open.run();
         });
     }
 
@@ -123,6 +150,7 @@ public class MyChangeRequestsViewModel extends BaseListViewModel<String, ChangeR
     }
 
     public void onResubmitClick(@NonNull ChangeRequestVO item) {
-        openResubmit.setValue(item.getId());
+        if (!ChangeRequestVO.STATUS_REJECTED.equals(item.getStatus())) return;
+        withRecordFarm(item, () -> openResubmit.setValue(item.getId()));
     }
 }

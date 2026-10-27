@@ -407,7 +407,8 @@ public class WeighService {
             point.setDate(BeijingTime.format(record.getWeighDate()));
             point.setDayAge(record.getDayAge());
             point.setAvgWeight(record.getAvgWeight());
-            point.setStdWeight(record.getStdWeight());
+            point.setStdWeight(record.getStdWeight() != null ? record.getStdWeight()
+                    : GrowthCalc.interpolate(standards.points(), record.getDayAge()));
             point.setIsEntry(false);
             vo.getActualPoints().add(point);
         }
@@ -420,6 +421,18 @@ public class WeighService {
             metrics.setDeviationRatio(latest.getDeviationRatio());
             metrics.setStdWeight(latest.getStdWeight());
             metrics.setAllowedDeviation(latest.getAllowedDeviation());
+            if (latest.getStdWeight() != null) {
+                metrics.setComparisonSource("RECORDED");
+            } else {
+                // 仅补充曲线读模型，不修改历史称重快照或批次生长状态。
+                BigDecimal currentStandard = GrowthCalc.interpolate(standards.points(), latest.getDayAge());
+                if (currentStandard != null) {
+                    metrics.setStdWeight(currentStandard);
+                    metrics.setDeviationRatio(GrowthCalc.deviation(latest.getAvgWeight(), currentStandard));
+                    metrics.setAllowedDeviation(standards.tolerance());
+                    metrics.setComparisonSource("CURRENT_STANDARD");
+                }
+            }
             metrics.setDailyGain(latest.getDailyGain());
             WeighRecord prev = records.size() > 1 ? records.get(records.size() - 2) : null;
             if (prev != null) {

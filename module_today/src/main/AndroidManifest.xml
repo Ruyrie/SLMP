@@ -24,12 +24,30 @@
 
     <application>
 
+        <!-- T02 通过透明宿主复用快捷登记面板，供生产等其他模块打开 -->
+        <activity
+            android:name=".ui.home.QuickRegisterActivity"
+            android:exported="false"
+            android:theme="@style/today_theme_transparent">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.T02" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <!-- T03 养殖日历 -->
         <activity
             android:name=".ui.calendar.CalendarActivity"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.zhimu.slmp.page.T03" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".ui.collection.TodoCollectionActivity" android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.T09" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

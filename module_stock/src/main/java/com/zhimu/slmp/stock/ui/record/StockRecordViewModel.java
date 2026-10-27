@@ -14,6 +14,8 @@ import com.zhimu.slmp.stock.data.StockRepository;
 import com.zhimu.slmp.stock.model.StockEnums;
 import com.zhimu.slmp.stock.model.vo.StockActionsVO;
 import com.zhimu.slmp.stock.model.vo.StockLossVO;
+import com.zhimu.slmp.stock.model.vo.StockInboundVO;
+import com.zhimu.slmp.stock.model.vo.StockOutboundVO;
 import com.zhimu.slmp.stock.model.vo.StocktakeVO;
 import com.zhimu.slmp.stock.util.StockCalc;
 import com.zhimu.slmp.stock.util.StockQtyFormatter;
@@ -35,6 +37,7 @@ public class StockRecordViewModel extends BaseViewModel {
     private final StockRepository repository;
 
     private final MutableLiveData<StockLossVO> loss = new MutableLiveData<>();
+    private final MutableLiveData<StockOutboundVO> outbound = new MutableLiveData<>();
     private final MutableLiveData<StocktakeVO> stocktake = new MutableLiveData<>();
     private final MutableLiveData<StockActionsVO> actions = new MutableLiveData<>();
     private final MutableLiveData<String> title = new MutableLiveData<>("");
@@ -64,7 +67,13 @@ public class StockRecordViewModel extends BaseViewModel {
     public void load(@Nullable String kind, long id) {
         recordKind = kind;
         recordId = id;
-        if (StockExtras.KIND_STOCKTAKE.equals(kind)) {
+        if (StockEnums.BIZ_INBOUND.equals(kind)) {
+            title.setValue("入库单详情");
+            load(repository.getInbound(id), this::applyInbound);
+        } else if (StockEnums.BIZ_OUTBOUND.equals(kind)) {
+            title.setValue("出库单详情");
+            load(repository.getOutbound(id), this::applyOutbound);
+        } else if (StockExtras.KIND_STOCKTAKE.equals(kind)) {
             title.setValue("盘点记录");
             load(repository.getStocktake(id), this::applyStocktake);
         } else {
@@ -76,6 +85,45 @@ public class StockRecordViewModel extends BaseViewModel {
     @Override
     public void retry() {
         load(recordKind, recordId);
+    }
+
+    private void applyInbound(@NonNull StockInboundVO record) {
+        actions.setValue(record.actions);
+        List<String[]> values = new ArrayList<>();
+        values.add(new String[]{"单号", record.inboundNo});
+        values.add(new String[]{"物资", record.materialName});
+        values.add(new String[]{"批号", record.lotNo});
+        values.add(new String[]{"入库数量", StockQtyFormatter.format(record.qty)});
+        values.add(new String[]{"入库金额", StockCalc.money(record.amount) + " 元"});
+        values.add(new String[]{"供应商", record.supplierName});
+        values.add(new String[]{"入库日期", record.inboundDate});
+        values.add(new String[]{"生产日期", record.productionDate});
+        values.add(new String[]{"有效期至", record.expireDate == null ? record.shelfLifeDate : record.expireDate});
+        values.add(new String[]{"状态", record.statusText});
+        values.add(new String[]{"登记人", creator(record.createdBy == null ? null : record.createdBy.getName(), record.createdAt)});
+        rows.setValue(values);
+    }
+
+    private void applyOutbound(@NonNull StockOutboundVO record) {
+        outbound.setValue(record);
+        if (com.zhimu.slmp.stock.ui.refund.ReturnRefundViewModel.isReturn(record)) title.setValue("退货单详情");
+        actions.setValue(record.actions);
+        List<String[]> values = new ArrayList<>();
+        values.add(new String[]{"单号", record.outboundNo});
+        values.add(new String[]{"物资", record.materialName});
+        values.add(new String[]{"批号", record.lotNo});
+        values.add(new String[]{"出库类型", record.outTypeText});
+        values.add(new String[]{"出库数量", StockQtyFormatter.format(record.qty)});
+        values.add(new String[]{"出库金额", StockCalc.money(record.amount) + " 元"});
+        values.add(new String[]{"去向", record.destinationText});
+        values.add(new String[]{"领取人", record.receiver == null ? null : record.receiver.getName()});
+        values.add(new String[]{"退回单位", record.returnTo});
+        values.add(new String[]{"退货原因", record.returnReasonText});
+        values.add(new String[]{"说明", record.remark});
+        values.add(new String[]{"出库日期", record.outDate});
+        values.add(new String[]{"状态", record.statusText});
+        values.add(new String[]{"登记人", creator(record.createdBy == null ? null : record.createdBy.getName(), record.createdAt)});
+        rows.setValue(values);
     }
 
     private void applyLoss(@NonNull StockLossVO l) {
@@ -153,12 +201,15 @@ public class StockRecordViewModel extends BaseViewModel {
     /** U01 / U14 的 biz_type */
     @NonNull
     public String bizType() {
+        if (StockEnums.BIZ_INBOUND.equals(recordKind) || StockEnums.BIZ_OUTBOUND.equals(recordKind)) return recordKind;
         return StockExtras.KIND_STOCKTAKE.equals(recordKind) ? StockEnums.BIZ_STOCKTAKE : StockEnums.BIZ_LOSS;
     }
 
     public LiveData<StockLossVO> getLoss() {
         return loss;
     }
+
+    public LiveData<StockOutboundVO> getOutbound() { return outbound; }
 
     public LiveData<StocktakeVO> getStocktake() {
         return stocktake;

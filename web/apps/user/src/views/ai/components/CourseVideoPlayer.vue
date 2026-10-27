@@ -4,6 +4,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Hls from 'hls.js'
 import { formatDuration } from '@zmt/shared'
 import type { VideoQuality, VideoSource } from '@/api/ai'
+import CourseCover from './CourseCover.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -13,6 +14,8 @@ const props = withDefaults(
     simple?: boolean
     hasNext?: boolean
     posterKind?: string
+    posterUrl?: string
+    posterAlt?: string
     durationHint?: number
   }>(),
   {
@@ -22,6 +25,8 @@ const props = withDefaults(
     simple: false,
     hasNext: false,
     posterKind: 'course',
+    posterUrl: '',
+    posterAlt: '课程封面',
     durationHint: 0
   }
 )
@@ -32,7 +37,7 @@ const emit = defineEmits<{
   (event: 'started'): void
   (event: 'paused', payload: { position: number; duration: number }): void
   (event: 'seeked', payload: { position: number; duration: number }): void
-  (event: 'ended'): void
+  (event: 'ended', payload: { position: number; duration: number }): void
   (event: 'next'): void
   (event: 'quality-change', quality: VideoQuality): void
   (event: 'error', message: string): void
@@ -58,7 +63,7 @@ const muted = ref(false)
 const isFullscreen = ref(false)
 const speed = ref(1)
 const showControls = computed(() => controlsVisible.value || !playing.value || speedMenu.value || qualityMenu.value || failed.value)
-const displayDuration = computed(() => (props.durationHint && props.durationHint > 0 ? props.durationHint : duration.value))
+const displayDuration = computed(() => duration.value > 0 ? duration.value : Math.max(0, props.durationHint || 0))
 const displayPosition = computed(() => Math.min(currentTime.value, displayDuration.value || currentTime.value))
 const progressPercent = computed(() =>
   displayDuration.value ? Math.min(100, (displayPosition.value / displayDuration.value) * 100) : 0
@@ -73,6 +78,7 @@ let resumeApplied = false
 let retried = false
 let readyEmitted = false
 let lastEmit = 0
+let pendingStartPosition = 0
 
 function sourceOf(target: VideoQuality): VideoSource | undefined {
   return (props.sources || []).find((item) => item.quality === target)
@@ -95,7 +101,7 @@ function resetVideo(): void {
   breakHls()
 }
 
-function setupSource(target?: VideoQuality, keepTime = 0, autoPlay = false): void {
+function setupSource(target?: VideoQuality, keepTime: number | null = null, autoPlay = false): void {
   const video = videoEl.value
   if (!video) return
   const list = props.sources || []
@@ -112,6 +118,10 @@ function setupSource(target?: VideoQuality, keepTime = 0, autoPlay = false): voi
   emit('quality-change', quality.value)
   const url = source.hls_url || ''
   resetVideo()
+  pendingStartPosition = Math.max(0, keepTime ?? props.resumePosition)
+  duration.value = 0
+  currentTime.value = 0
+  buffered.value = 0
   failed.value = false
   errorText.value = ''
   buffering.value = true
@@ -130,7 +140,7 @@ function setupSource(target?: VideoQuality, keepTime = 0, autoPlay = false): voi
     hls.loadSource(url)
     hls.attachMedia(video)
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      applyStartPosition(keepTime)
+      applyStartPosition()
       if (autoPlay) void startPlayback()
     })
     hls.on(Hls.Events.ERROR, (_event, data) => {
@@ -163,7 +173,7 @@ function setupSource(target?: VideoQuality, keepTime = 0, autoPlay = false): voi
     video.addEventListener(
       'loadedmetadata',
       () => {
-        applyStartPosition(keepTime)
+        applyStartPosition()
         if (autoPlay) void startPlayback()
       },
       { once: true }
@@ -176,27 +186,22 @@ function setupSource(target?: VideoQuality, keepTime = 0, autoPlay = false): voi
   }
 }
 
-function applyStartPosition(keepTime: number): void {
+function applyStartPosition(): void {
   const video = videoEl.value
-  if (!video) return
-  const resume = props.resumePosition > 0 ? props.resumePosition : 0
-  const target = keepTime > 0 ? keepTime : resume
-  if (target > 0) {
-    if (Number.isFinite(video.duration)) {
-      try {
-        video.currentTime = Math.min(target, Math.max(video.duration - 0.5, 0))
-        resumeApplied = true
-      } catch {
-        /* 元数据未就绪时忽略 */
-      }
-    }
-  } else {
-    resumeApplied = true
+  if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return
+  // 旧素材的位置超过新素材末尾时从头播放，不把未实际播放的旧位置上报给服务端。
+  const target = pendingStartPosition < Math.max(video.duration - 0.5, 0) ? pendingStartPosition : 0
+  try {
+    video.currentTime = target
+  } catch {
+    return
   }
-  duration.value = Number.isFinite(video.duration) ? video.duration : 0
+  resumeApplied = true
+  currentTime.value = video.currentTime
+  duration.value = video.duration
   if (!readyEmitted) {
     readyEmitted = true
-    emit('ready', { duration: duration.value, resume: resume > 0 ? resume : 0, quality: quality.value })
+    emit('ready', { duration: duration.value, resume: video.currentTime, quality: quality.value })
   }
   updateBuffered()
 }
@@ -240,7 +245,7 @@ function seekBy(delta: number): void {
 
 function onProgressInput(event: Event): void {
   const input = event.target as HTMLInputElement
-  const value = Number(input.value || 0)
+  const value = Math.max(0, Math.min(Number(input.value || 0), displayDuration.value))
   currentTime.value = value
 }
 
@@ -248,7 +253,8 @@ function onProgressChange(event: Event): void {
   const video = videoEl.value
   if (!video) return
   const input = event.target as HTMLInputElement
-  const value = Number(input.value || 0)
+  if (!Number.isFinite(video.duration) || video.duration <= 0) return
+  const value = Math.max(0, Math.min(Number(input.value || 0), video.duration))
   video.currentTime = value
   ended.value = false
   emit('seeked', {
@@ -261,7 +267,7 @@ function onLoadedMetadata(): void {
   const video = videoEl.value
   if (!video) return
   duration.value = Number.isFinite(video.duration) ? video.duration : 0
-  if (!resumeApplied) applyStartPosition(0)
+  if (!resumeApplied) applyStartPosition()
   buffering.value = false
 }
 
@@ -269,7 +275,7 @@ function syncMediaState(): void {
   const video = videoEl.value
   if (!video) return
   if (Number.isFinite(video.duration) && video.duration > 0) duration.value = video.duration
-  if (!resumeApplied) applyStartPosition(0)
+  if (!resumeApplied) applyStartPosition()
   if (video.readyState >= 2 || (!video.paused && video.readyState >= 1)) buffering.value = false
   currentTime.value = video.currentTime
 }
@@ -338,15 +344,16 @@ function onEnded(): void {
   controlsVisible.value = true
   const video = videoEl.value
   if (video) {
-    currentTime.value = video.duration || duration.value
+    if (Number.isFinite(video.duration) && video.duration > 0) duration.value = video.duration
+    currentTime.value = video.currentTime
     emit('tick', {
-      position: displayDuration.value,
-      duration: displayDuration.value,
+      position: displayPosition.value,
+      duration: duration.value,
       playing: false,
       quality: quality.value
     })
   }
-  emit('ended')
+  emit('ended', { position: displayPosition.value, duration: duration.value })
 }
 
 function onVolume(): void {
@@ -462,7 +469,7 @@ watch(
 
 onMounted(async () => {
   await nextTick()
-  setupSource(quality.value, 0, props.autoplay)
+  setupSource(quality.value, null, props.autoplay)
   window.addEventListener('keydown', onKeydown)
   document.addEventListener('fullscreenchange', onFullscreenChange)
 })
@@ -478,7 +485,7 @@ defineExpose({
   seekTo(seconds: number): void {
     const video = videoEl.value
     if (!video) return
-    video.currentTime = Math.max(0, seconds)
+    video.currentTime = Math.max(0, Math.min(seconds, Number.isFinite(video.duration) ? video.duration : 0))
     ended.value = false
   },
   play(): void {
@@ -515,6 +522,7 @@ defineExpose({
       class="k04-video"
       playsinline
       preload="metadata"
+      :poster="posterUrl || undefined"
       @loadedmetadata="onLoadedMetadata"
       @loadeddata="syncMediaState"
       @canplay="syncMediaState"
@@ -530,7 +538,7 @@ defineExpose({
     />
 
     <div v-if="!hasStarted && !failed && !ended" class="k04-poster">
-      <zw-thumb :kind="posterKind" class="k04-poster-thumb" />
+      <CourseCover :src="posterUrl" :alt="posterAlt" :kind="posterKind" class="k04-poster-thumb" />
     </div>
 
     <div v-if="buffering && !failed && !ended" class="k04-buffer">
@@ -585,7 +593,7 @@ defineExpose({
         <button v-if="!simple && hasNext" type="button" class="k04-ibtn" aria-label="下一节" @click="emit('next')">
           <zw-icon name="skip_next" :size="24" fill />
         </button>
-        <span class="k04-time num">{{ formatDuration(displayPosition) }} / {{ formatDuration(displayDuration) }}</span>
+        <span class="k04-time num">{{ formatDuration(Math.floor(displayPosition)) }} / {{ formatDuration(Math.floor(displayDuration)) }}</span>
         <button type="button" class="k04-ibtn" :aria-label="muted ? '取消静音' : '静音'" @click="onVolume">
           <zw-icon :name="muted ? 'volume_off' : 'volume_up'" :size="22" />
         </button>

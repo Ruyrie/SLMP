@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- L01 生产页（所有者、场长）：一级页顶部栏 + 今日生产概况 + 生产提醒 + 生产 / 防疫 / 物资入口 + 扩展型 FAB“登记” -->
+<!-- L01 生产页（所有者、场长）：一级页顶部栏 + 今日生产概况 + 生产提醒 + 生产 / 防疫 / 物资入口 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -48,7 +48,7 @@
                             android:orientation="vertical"
                             android:paddingStart="@dimen/base_page_margin"
                             android:paddingEnd="@dimen/base_page_margin"
-                            android:paddingBottom="@dimen/base_fab_list_bottom_space">
+                            android:paddingBottom="@dimen/base_space_4">
 
                             <com.zhimu.slmp.base.widget.NoticeView
                                 android:id="@+id/herd_audit_notice"
@@ -162,14 +162,5 @@
             </com.zhimu.slmp.base.widget.StateLayout>
         </LinearLayout>
 
-        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-            android:id="@+id/herd_fab"
-            style="@style/Widget.Zmt.ExtendedFloatingActionButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="@dimen/base_space_4"
-            android:text="@string/herd_production_fab"
-            app:icon="@drawable/ic_add" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

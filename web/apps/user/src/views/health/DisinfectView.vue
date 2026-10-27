@@ -707,7 +707,7 @@ useFarmReload(async () => {
         />
       </template>
       <template #foot>
-        <span class="zw-foot-note">照片上传完成后才能提交</span>
+        <span class="zw-foot-note">{{ registerPhotoBusy ? '照片上传中，请稍候…' : store.registerModel.fileIds.length ? '照片已上传，可提交登记' : '现场照片选填' }}</span>
         <v-btn variant="outlined" @click="store.registerOpen = false">取消</v-btn>
         <v-btn color="primary" prepend-icon="sanitizer" :loading="store.registerSubmitting" :disabled="store.registerLoading || registerPhotoBusy" @click="submitRegister">
           登记消毒

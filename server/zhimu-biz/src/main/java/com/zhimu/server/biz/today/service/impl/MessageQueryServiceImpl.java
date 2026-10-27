@@ -137,7 +137,7 @@ public class MessageQueryServiceImpl implements MessageQueryService {
                 .isNull("read_at")
                 .ge("sort_time", now.minusDays(RETENTION_DAYS))
                 .eq(category != null, "category", category)
-                .eq(farmId != null, "farm_id", farmId)
+                .and(farmId != null, w -> w.eq("farm_id", farmId).or().isNull("farm_id"))
                 .and(w -> w.eq("hidden", false).or().eq("hidden_reason", HIDDEN_REASON_NOTICE_REVOKED)));
         ReadAllResult result = new ReadAllResult();
         result.setUpdatedCount(updated);

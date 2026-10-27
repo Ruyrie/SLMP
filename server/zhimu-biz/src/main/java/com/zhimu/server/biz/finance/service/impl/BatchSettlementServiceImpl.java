@@ -2,6 +2,7 @@ package com.zhimu.server.biz.finance.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.zhimu.server.biz.finance.api.StockCostPort;
+import com.zhimu.server.biz.feeding.api.BatchGrowthQueryService;
 import com.zhimu.server.biz.finance.entity.BatchSettlement;
 import com.zhimu.server.biz.finance.entity.BatchSettlementSupplement;
 import com.zhimu.server.biz.finance.entity.FinanceCategory;
@@ -56,6 +57,7 @@ public class BatchSettlementServiceImpl implements BatchSettlementService {
     private final StockCostPort stockCostPort;
     private final BatchQueryService batchQueryService;
     private final FinanceSupport support;
+    private final BatchGrowthQueryService growthQueryService;
 
     @Override
     public SettlementVos.OptionPageVO options(FinanceQueries.SettlementQuery query) {
@@ -64,6 +66,9 @@ public class BatchSettlementServiceImpl implements BatchSettlementService {
         batchQueryService.listActive(farmId).forEach(b -> batchIds.add(b.batchId()));
         TenantSkip.call(() -> settlementMapper.selectList(Wrappers.<BatchSettlement>lambdaQuery()
                 .eq(BatchSettlement::getFarmId, farmId))).forEach(s -> batchIds.add(s.getBatchId()));
+        TenantSkip.call(() -> orderMapper.selectList(Wrappers.<SaleOrder>lambdaQuery()
+                .select(SaleOrder::getBatchId).eq(SaleOrder::getFarmId, farmId)))
+                .forEach(order -> batchIds.add(order.getBatchId()));
         List<BatchInfo> batches = new ArrayList<>();
         for (Long id : batchIds) {
             try {
@@ -121,33 +126,43 @@ public class BatchSettlementServiceImpl implements BatchSettlementService {
     public SettlementVos.BatchSettlementVO detail(Long batchId) {
         Long farmId = support.farmId();
         BatchInfo batch = support.requireBatch(batchId, farmId);
-        BatchSettlement settlement = settlementMapper.selectOne(Wrappers.<BatchSettlement>lambdaQuery()
-                .eq(BatchSettlement::getBatchId, batchId)
-                .last("LIMIT 1"));
-        if (settlement == null) {
-            settlement = new BatchSettlement();
-            settlement.setFarmId(farmId);
-            settlement.setBatchId(batchId);
-            settlement.setStatus(FinanceConst.SETTLE_RUNNING);
-            settlement.setSaleIncome(BigDecimal.ZERO);
-            settlement.setCostFeed(BigDecimal.ZERO);
-            settlement.setFeedKg(BigDecimal.ZERO);
-            settlement.setCostIntro(BigDecimal.ZERO);
-            settlement.setIntroCount(0);
-            settlement.setCostDrug(BigDecimal.ZERO);
-            settlement.setCostOther(BigDecimal.ZERO);
-            settlement.setCostTotal(BigDecimal.ZERO);
-            settlement.setProfit(BigDecimal.ZERO);
-            settlement.setSoldCount(0);
-            settlement.setCalcAt(BeijingTime.now());
-            settlement.setVersion(0);
-            settlementMapper.insert(settlement);
-        }
-        if (FinanceConst.SETTLE_RUNNING.equals(settlement.getStatus())) {
-            recompute(settlement, batch, false);
-            settlementMapper.updateById(settlement);
+        BatchSettlement settlement = loadForCalculation(farmId, batchId);
+        if (FinanceConst.SETTLE_RUNNING.equals(settlement.getStatus()) || batch.active()) {
+            recompute(settlement, batch, !batch.active());
+            save(settlement);
         }
         return toVo(settlement, batch);
+    }
+
+    @Override
+    @Transactional
+    public void recalculateForSale(Long farmId, Long batchId) {
+        BatchInfo batch = batchQueryService.requireBatch(batchId);
+        if (!Objects.equals(farmId, batch.farmId())) throw new BizException(ErrorCode.NOT_FOUND);
+        TenantSkip.run(() -> {
+            BatchSettlement settlement = loadForCalculation(farmId, batchId);
+            if (FinanceConst.SETTLE_LOCKED.equals(settlement.getStatus()) && !batch.active()) {
+                // 出栏修正立即更新收入；锁定的成本快照仍须通过补录确认改变。
+                updateSales(settlement, batch);
+                updateMetrics(settlement, batch, true);
+            } else {
+                recompute(settlement, batch, !batch.active());
+            }
+            save(settlement);
+        });
+    }
+
+    private BatchSettlement loadForCalculation(Long farmId, Long batchId) {
+        settlementMapper.ensureExists(farmId, batchId);
+        BatchSettlement settlement = settlementMapper.selectOne(Wrappers.<BatchSettlement>lambdaQuery()
+                .eq(BatchSettlement::getFarmId, farmId).eq(BatchSettlement::getBatchId, batchId)
+                .last("LIMIT 1 FOR UPDATE"));
+        if (settlement == null) throw new BizException(ErrorCode.STATE_CHANGED, "批次核算正在更新，请刷新重试");
+        return settlement;
+    }
+
+    private void save(BatchSettlement settlement) {
+        if (settlementMapper.updateById(settlement) == 0) throw new BizException(ErrorCode.VERSION_CONFLICT);
     }
 
     @Override
@@ -190,16 +205,17 @@ public class BatchSettlementServiceImpl implements BatchSettlementService {
     // ===== 计算 =====
 
     private void recompute(BatchSettlement settlement, BatchInfo batch, boolean locked) {
-        List<SaleOrder> orders = TenantSkip.call(() -> orderMapper.selectList(Wrappers.<SaleOrder>lambdaQuery()
-                .eq(SaleOrder::getBatchId, batch.batchId())
-                .ne(SaleOrder::getPaymentStatus, FinanceConst.PAY_VOIDED)));
-        BigDecimal saleIncome = FinanceSupport.scale2(orders.stream().map(SaleOrder::getSaleAmount)
-                .map(FinanceSupport::nz).reduce(BigDecimal.ZERO, BigDecimal::add));
-        int soldCount = orders.stream().mapToInt(o -> o.getQuantity() == null ? 0 : o.getQuantity()).sum();
-        settlement.setSaleIncome(saleIncome);
-        settlement.setSoldCount(soldCount);
-
-        StockCostPort.BatchCost cost = stockCostPort.costOf(batch.batchId());
+        updateSales(settlement, batch);
+        var basis = batchQueryService.accountingBasis(batch.batchId());
+        if (basis != null && (!locked || settlement.getSettledAt() == null)) {
+            settlement.setIntroCount(batch.entryCount());
+            settlement.setIntroUnitPrice(basis.introUnitPrice());
+            settlement.setCostIntro(basis.introUnitPrice() == null ? BigDecimal.ZERO
+                    : basis.introUnitPrice().multiply(BigDecimal.valueOf(batch.entryCount() == null ? 0 : batch.entryCount())));
+            settlement.setIntroWeightKg(basis.entryAvgWeight() == null || batch.entryCount() == null ? null
+                    : basis.entryAvgWeight().multiply(BigDecimal.valueOf(batch.entryCount())));
+        }
+        StockCostPort.BatchCost cost = stockCostPort.costOf(batch.farmId(), batch.batchId());
         // 已确认补录按成本项幂等叠加：确认后重算不会丢失，重算多次结果一致
         BigDecimal feedExtra = BigDecimal.ZERO;
         BigDecimal feedKgExtra = BigDecimal.ZERO;
@@ -226,9 +242,8 @@ public class BatchSettlementServiceImpl implements BatchSettlementService {
             settlement.setIntroCount(batch.entryCount());
             settlement.setCostIntro(FinanceSupport.scale2(settlement.getIntroUnitPrice()
                     .multiply(BigDecimal.valueOf(batch.entryCount())).add(introExtra)));
-        } else if (introExtra.signum() > 0) {
-            settlement.setCostIntro(FinanceSupport.scale2(
-                    FinanceSupport.nz(settlement.getCostIntro()).add(introExtra)));
+        } else {
+            settlement.setCostIntro(FinanceSupport.scale2(introExtra));
         }
         settlement.setCostOther(FinanceSupport.scale2(FinanceSupport.nz(otherCost(batch.batchId()))
                 .add(otherExtra)));
@@ -237,21 +252,39 @@ public class BatchSettlementServiceImpl implements BatchSettlementService {
                 .add(FinanceSupport.nz(settlement.getCostDrug()))
                 .add(FinanceSupport.nz(settlement.getCostOther())));
         settlement.setCostTotal(total);
-        settlement.setProfit(FinanceSupport.scale2(saleIncome.subtract(total)));
+        updateMetrics(settlement, batch, locked);
+        settlement.setStatus(locked ? FinanceConst.SETTLE_LOCKED : FinanceConst.SETTLE_RUNNING);
+        settlement.setSettledAt(locked ? (basis != null && basis.endedAt() != null ? basis.endedAt() : BeijingTime.now()) : null);
+    }
 
-        int perHeadCount = locked ? soldCount : (batch.currentCount() == null ? 0 : batch.currentCount());
-        if (perHeadCount > 0) {
-            settlement.setCostPerHead(total.divide(BigDecimal.valueOf(perHeadCount), 2, RoundingMode.HALF_UP));
-            settlement.setProfitPerHead(settlement.getProfit().divide(BigDecimal.valueOf(perHeadCount), 2,
-                    RoundingMode.HALF_UP));
-        } else {
-            settlement.setCostPerHead(null);
-            settlement.setProfitPerHead(null);
+    private void updateSales(BatchSettlement settlement, BatchInfo batch) {
+        List<SaleOrder> orders = TenantSkip.call(() -> orderMapper.selectList(Wrappers.<SaleOrder>lambdaQuery()
+                .eq(SaleOrder::getFarmId, batch.farmId()).eq(SaleOrder::getBatchId, batch.batchId())
+                .ne(SaleOrder::getPaymentStatus, FinanceConst.PAY_VOIDED)));
+        settlement.setSaleIncome(FinanceSupport.scale2(orders.stream().map(SaleOrder::getSaleAmount)
+                .map(FinanceSupport::nz).reduce(BigDecimal.ZERO, BigDecimal::add)));
+        settlement.setSoldCount(orders.stream().mapToInt(o -> o.getQuantity() == null ? 0 : o.getQuantity()).sum());
+        settlement.setSoldWeightKg(orders.stream().map(SaleOrder::getTotalWeight)
+                .map(FinanceSupport::nz).reduce(BigDecimal.ZERO, BigDecimal::add));
+    }
+
+    private void updateMetrics(BatchSettlement settlement, BatchInfo batch, boolean locked) {
+        BigDecimal total = FinanceSupport.nz(settlement.getCostTotal());
+        settlement.setProfit(FinanceSupport.scale2(FinanceSupport.nz(settlement.getSaleIncome()).subtract(total)));
+        int perHeadCount = locked ? settlement.getSoldCount() : (batch.currentCount() == null ? 0 : batch.currentCount());
+        settlement.setCostPerHead(perHeadCount > 0 ? total.divide(BigDecimal.valueOf(perHeadCount), 2, RoundingMode.HALF_UP) : null);
+        settlement.setProfitPerHead(perHeadCount > 0 ? settlement.getProfit().divide(BigDecimal.valueOf(perHeadCount), 2, RoundingMode.HALF_UP) : null);
+        BigDecimal stockWeight = BigDecimal.ZERO;
+        if (batch.currentCount() != null && batch.currentCount() > 0) {
+            var latest = growthQueryService.latestWeights(batch.farmId(), List.of(batch.batchId())).get(batch.batchId());
+            stockWeight = latest == null ? null : latest.avgWeight().multiply(BigDecimal.valueOf(batch.currentCount()));
         }
+        BigDecimal gain = settlement.getIntroWeightKg() == null || stockWeight == null ? null
+                : FinanceSupport.nz(settlement.getSoldWeightKg()).add(stockWeight).subtract(settlement.getIntroWeightKg());
+        settlement.setNetGainKg(gain);
+        settlement.setFcr(gain == null || gain.signum() <= 0 ? null
+                : FinanceSupport.nz(settlement.getFeedKg()).divide(gain, 2, RoundingMode.HALF_UP));
         settlement.setCalcAt(BeijingTime.now());
-        if (locked && settlement.getStatus() == null) {
-            settlement.setStatus(FinanceConst.SETTLE_LOCKED);
-        }
     }
 
     private List<BatchSettlementSupplement> confirmedSupplements(Long batchId) {
@@ -298,7 +331,8 @@ public class BatchSettlementServiceImpl implements BatchSettlementService {
         vo.setProfit(settlement.getProfit());
         vo.setSaleIncome(settlement.getSaleIncome());
         vo.setReceivedAmount(FinanceSupport.scale2(TenantSkip.call(() -> orderMapper.selectList(
-                        Wrappers.<SaleOrder>lambdaQuery().eq(SaleOrder::getBatchId, batch.batchId())))
+                        Wrappers.<SaleOrder>lambdaQuery().eq(SaleOrder::getBatchId, batch.batchId())
+                                .ne(SaleOrder::getPaymentStatus, FinanceConst.PAY_VOIDED)))
                 .stream().map(SaleOrder::getReceivedAmount).map(FinanceSupport::nz)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)));
         vo.setCostTotal(settlement.getCostTotal());

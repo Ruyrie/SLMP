@@ -194,6 +194,45 @@ public class AiChatViewModelTest {
     }
 
     @Test
+    public void publicProcess_canCollapseDuringGenerationAndAutoCollapsesWhenAnswerCompletes() {
+        ask("换料后采食下降怎么办？");
+        assertEquals("", lastAnswer().processText);
+        stream.onNext(AiStreamEvent.meta(meta(5510)));
+        stream.onNext(AiStreamEvent.heartbeat());
+        assertEquals("没有实际进度事件时不虚构步骤", "", lastAnswer().processText);
+        stream.onNext(AiStreamEvent.progress("RETRIEVAL", "正在检索平台知识"));
+        assertTrue(lastAnswer().processExpanded);
+        assertEquals("正在检索平台知识", lastAnswer().processText);
+        long roundId = lastAnswer().roundId;
+        vm.toggleProcess(roundId);
+        stream.onNext(AiStreamEvent.progress("GENERATING", "正在整理回答"));
+        assertFalse("下一条进度不能强行打开用户收起的过程", lastAnswer().processExpanded);
+        stream.onNext(AiStreamEvent.analysisSummary("已检索到 2 条相关知识，结合采食变化整理建议"));
+        stream.onNext(AiStreamEvent.delta("先观察饮水和采食情况。"));
+        vm.toggleProcess(roundId);
+        assertTrue(lastAnswer().processExpanded);
+        stream.onNext(done(5510, AiCodes.ANSWER_NORMAL, "先观察饮水和采食情况。"));
+        assertEquals(ChatItem.AnswerState.DONE, lastAnswer().state);
+        assertFalse("结果到达后自动折叠", lastAnswer().processExpanded);
+        assertTrue(lastAnswer().processText.contains("已检索到 2 条相关知识"));
+        vm.toggleProcess(roundId);
+        assertTrue("完成后仍能重新查看公开摘要", lastAnswer().processExpanded);
+    }
+
+    @Test
+    public void historicalAnswer_restoresPublicSummaryCollapsed() {
+        AiMessageVO message = new AiMessageVO();
+        message.setId(5511);
+        message.setStatus(AiCodes.STATUS_ANSWERED);
+        message.setAnalysisSummary("已结合关联批次资料整理回答");
+        ChatRound round = ChatRound.fromMessage(1, message,
+                new AskInput(null, "采食下降怎么办？", Collections.emptyList(), null, null, "summary-test"));
+        assertEquals("已结合关联批次资料整理回答", round.processText());
+        assertFalse(round.processExpanded);
+        assertTrue("历史摘要不编造当时的逐步进度", round.progressMessages.isEmpty());
+    }
+
+    @Test
     public void stop_keepsText_thenRegenerate() {
         ask("保育猪换料后拉稀，要停料吗？");
         stream.onNext(AiStreamEvent.meta(meta(5600)));

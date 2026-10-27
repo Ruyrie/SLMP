@@ -12,7 +12,7 @@ import com.zhimu.slmp.today.model.vo.TodoPageVO;
 import io.reactivex.rxjava3.functions.Consumer;
 
 /**
- * 首页“今天和已逾期”分页（API-T02，filter 固定 ALL，每页 20 条）；第 1 页到达时回调 total。
+ * 首页“今天和已逾期”分页（API-T02，首页使用 HOME，每页 20 条）；第 1 页到达时回调 total。
  */
 public class TodayTodoPagingSource extends PagedSource<TodoItemVO> {
 

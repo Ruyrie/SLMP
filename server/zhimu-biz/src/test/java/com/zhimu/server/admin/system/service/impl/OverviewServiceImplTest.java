@@ -2,6 +2,7 @@ package com.zhimu.server.admin.system.service.impl;
 
 import com.zhimu.server.admin.audit.service.AuditPendingService;
 import com.zhimu.server.admin.system.mapper.readonly.AdminOverviewQueryMapper;
+import com.zhimu.server.admin.system.query.CategoryDistRow;
 import com.zhimu.server.admin.system.query.DailyStatRow;
 import com.zhimu.server.admin.system.query.FarmMapQuery;
 import com.zhimu.server.admin.system.query.TrendQuery;
@@ -23,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class OverviewServiceImplTest {
@@ -87,5 +89,63 @@ class OverviewServiceImplTest {
         query.setLevel("CITY");
         assertThatThrownBy(() -> service.farmMap(query))
                 .isInstanceOfSatisfying(BizException.class, e -> assertThat(e.getCode()).isEqualTo(40001));
+    }
+
+    @Test
+    void 地图筛选把品类编号传给查询() {
+        when(mapper.selectFarmMap(eq("PROVINCE"), eq(null), eq("PIG"), eq(101L))).thenReturn(List.of());
+        FarmMapQuery query = new FarmMapQuery();
+        query.setCategoryGroup("PIG");
+        query.setCategoryId(101L);
+
+        service.farmMap(query);
+
+        verify(mapper).selectFarmMap("PROVINCE", null, "PIG", 101L);
+    }
+
+    @Test
+    void 地区明细按品类过滤并校验品类编号() {
+        when(mapper.selectRegionCounts("15", 101L)).thenReturn(null);
+        when(mapper.selectRegionName("15")).thenReturn("内蒙古自治区");
+        when(mapper.selectPendingFarms("15", 101L)).thenReturn(List.of());
+
+        var detail = service.regionDetail("15", 101L);
+
+        assertThat(detail.getRegionCode()).isEqualTo("15");
+        assertThat(detail.getRegionName()).isEqualTo("内蒙古自治区");
+        verify(mapper).selectRegionCounts("15", 101L);
+        verify(mapper).selectPendingFarms("15", 101L);
+
+        assertThatThrownBy(() -> service.regionDetail("15", 0L))
+                .isInstanceOfSatisfying(BizException.class, e -> assertThat(e.getCode()).isEqualTo(40001));
+    }
+
+    @Test
+    void 品类分布按品类名称返回并计算占比() {
+        CategoryDistRow pig = new CategoryDistRow();
+        pig.setCategoryId(101L);
+        pig.setCategoryName("育肥猪");
+        pig.setSpecies("PIG");
+        pig.setCount(3L);
+        CategoryDistRow chicken = new CategoryDistRow();
+        chicken.setCategoryId(201L);
+        chicken.setCategoryName("肉鸡");
+        chicken.setSpecies("POULTRY");
+        chicken.setCount(1L);
+        when(mapper.selectCategoryDistribution()).thenReturn(List.of(pig, chicken));
+        when(mapper.selectFarmStats()).thenReturn(null);
+        when(mapper.selectUserStats(org.mockito.ArgumentMatchers.any())).thenReturn(null);
+        when(mapper.selectActiveStats(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.any())).thenReturn(null);
+        when(mapper.selectMonthAudit(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any())).thenReturn(List.of());
+
+        var overview = service.overview();
+
+        assertThat(overview.getCategoryDist()).hasSize(2);
+        assertThat(overview.getCategoryDist().get(0).getCategoryId()).isEqualTo(101L);
+        assertThat(overview.getCategoryDist().get(0).getCategoryName()).isEqualTo("育肥猪");
+        assertThat(overview.getCategoryDist().get(0).getSpeciesText()).isEqualTo("猪");
+        assertThat(overview.getCategoryDist().get(0).getRatio()).isEqualByComparingTo("0.7500");
+        assertThat(overview.getCategoryDist().get(1).getRatio()).isEqualByComparingTo("0.2500");
     }
 }

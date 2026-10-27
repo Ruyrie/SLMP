@@ -10,6 +10,8 @@ import com.zhimu.server.biz.common.change.ChangeRequestHandler;
 import com.zhimu.server.biz.common.change.ChangeRequestJson;
 import com.zhimu.server.biz.common.change.ChangeValidation;
 import com.zhimu.server.biz.common.entity.ChangeRequest;
+import com.zhimu.server.biz.finance.api.FinanceSourceWriteService;
+import com.zhimu.server.biz.finance.support.FinanceConst;
 import com.zhimu.server.biz.stock.entity.Drug;
 import com.zhimu.server.biz.stock.entity.DrugLot;
 import com.zhimu.server.biz.stock.entity.Feed;
@@ -55,6 +57,7 @@ public class InboundChangeHandler implements ChangeRequestHandler {
     private final StockInboundMapper inboundMapper;
     private final StockFlowMapper flowMapper;
     private final StockLedger ledger;
+    private final FinanceSourceWriteService financeWriter;
     private final StockChangeSupport support;
 
     @Override
@@ -234,6 +237,11 @@ public class InboundChangeHandler implements ChangeRequestHandler {
         inbound.setAmount(newAmount);
         inbound.setMeasurePrice(measurePrice);
         inbound.setUpdatedBy(adminId);
+        inbound.setFinanceRecordId(financeWriter.syncInboundExpense(new FinanceSourceWriteService.InboundExpense(
+                inbound.getFarmId(), StockCodes.isFeed(inbound.getMaterialType()) ? FinanceConst.SOURCE_FEED : FinanceConst.SOURCE_DRUG,
+                inbound.getId(), inbound.getInboundNo(), inbound.getAmount(), inbound.getInboundDate(),
+                materialName(inbound) + " " + newQty.stripTrailingZeros().toPlainString() + " " + measureUnit(inbound),
+                !Boolean.FALSE.equals(inbound.getIsSyncFinance()) && StockCodes.STATUS_NORMAL.equals(inbound.getStatus()), adminId)));
         inboundMapper.updateById(inbound);
         updateFlow(inbound, newQty, measurePrice, newAmount, deltaQty, deltaAmount);
         Map<String, Object> before = new LinkedHashMap<>();

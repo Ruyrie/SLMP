@@ -27,6 +27,8 @@ public final class AiStreamTextProcessor {
     private final List<RetrievalHit> hits;
     private final StringBuilder tagBuffer = new StringBuilder();
     private final StringBuilder pending = new StringBuilder();
+    private final StringBuilder answerPrefix = new StringBuilder();
+    private boolean prefixDecided;
     private final Map<Integer, Integer> seqByHit = new LinkedHashMap<>();
     private final List<AiCitation> citations = new ArrayList<>();
     private boolean decided;
@@ -55,11 +57,11 @@ public final class AiStreamTextProcessor {
             String body = consumeTags(firstLine);
             if (body == null) {
                 // 首行不是标记：原样输出
-                return renumber(firstLine + (newline < 0 ? "" : "\n") + rest);
+                return cleanStart(renumber(firstLine + (newline < 0 ? "" : "\n") + rest), false);
             }
-            return renumber(body + (body.isEmpty() || rest.isEmpty() ? "" : "\n") + rest);
+            return cleanStart(renumber(body + (body.isEmpty() || rest.isEmpty() ? "" : "\n") + rest), false);
         }
-        return renumber(delta);
+        return cleanStart(renumber(delta), false);
     }
 
     /** 流结束：把缓存的类型标记后正文与未闭合标记一次性输出 */
@@ -67,17 +69,31 @@ public final class AiStreamTextProcessor {
         StringBuilder out = new StringBuilder();
         if (!decided) {
             decided = true;
-            String body = consumeTags(tagBuffer.toString());
+            String buffered = tagBuffer.toString();
+            String body = consumeTags(buffered);
             tagBuffer.setLength(0);
-            if (body != null) {
-                out.append(body);
-            }
+            out.append(renumber(body == null ? buffered : body));
         }
         if (pending.length() > 0) {
             out.append(pending);
             pending.setLength(0);
         }
-        return out.toString();
+        return cleanStart(out.toString(), true);
+    }
+
+    private String cleanStart(String text, boolean finished) {
+        if (prefixDecided) {
+            return text;
+        }
+        answerPrefix.append(text);
+        String candidate = answerPrefix.toString().stripLeading();
+        if (!finished && (AiCodes.NO_BASIS_LEAD.startsWith(candidate)
+                || ("**" + AiCodes.NO_BASIS_LEAD + "**").startsWith(candidate))) {
+            return "";
+        }
+        prefixDecided = true;
+        answerPrefix.setLength(0);
+        return AiText.answerBody(candidate);
     }
 
     /**

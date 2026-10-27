@@ -4,10 +4,15 @@ import { useRouter } from 'vue-router'
 import { setShellActions, shellState } from '@zmt/shared/layouts/shell'
 import { useAdminStore } from '@/stores/admin'
 import { useUiStore } from '@/stores/ui'
+import { useAdminMessagesStore } from '@/stores/messages'
+import AdminMessagesDrawer from '@/components/AdminMessagesDrawer.vue'
 
 const admin = useAdminStore()
 const ui = useUiStore()
+const messages = useAdminMessagesStore()
 const router = useRouter()
+
+watch(() => admin.admin?.admin_id, () => messages.reset(), { flush: 'sync' })
 
 watchEffect(() => {
   shellState.side = 'admin'
@@ -37,8 +42,7 @@ setShellActions({
     router.push({ name: 'WA-S05' })
   },
   openMessages() {
-    router.push({ name: 'WA-S02' })
-    ui.toast('管理端待办与消息角标已显示在左侧菜单', 'info')
+    void messages.show()
   },
   switchFarm: () => undefined,
   toggleAllFarms: () => undefined
@@ -60,6 +64,7 @@ watch(
 <template>
   <v-app class="zw-app zw-app--admin">
     <router-view />
+    <AdminMessagesDrawer v-if="admin.loaded && !admin.mustChangePassword && messages.open" />
     <zw-snack v-model="ui.snackVisible" :text="ui.snackText" :type="ui.snackType === 'info' ? '' : ui.snackType" />
   </v-app>
 </template>

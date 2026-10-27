@@ -33,6 +33,9 @@ import com.zhimu.slmp.feed.model.vo.FeedRecordDetailVO;
 import com.zhimu.slmp.feed.model.vo.FeedRecordLookupVO;
 import com.zhimu.slmp.feed.model.vo.FeedTaskFormVO;
 import com.zhimu.slmp.network.model.ApiResponse;
+import com.zhimu.slmp.network.GsonFactory;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -161,10 +164,41 @@ public class FeedRegisterViewModelTest {
     }
 
     @Test
+    public void staffWithLegacyEmptyOptionsCanSubmitAsSelf() throws IOException {
+        JsonObject data = TestRules.mockResponse("task_form_70108_staff.json").getAsJsonObject("data");
+        data.add("executor_options", new JsonArray());
+        when(repo.getTaskForm(80108L)).thenReturn(Single.just(GsonFactory.get().fromJson(data, FeedTaskFormVO.class)));
+        open(80108L);
+        assertTrue(vm.isStaffView());
+        assertFalse(vm.getExecutorVisible().getValue());
+        vm.getActualQty().setValue("160");
+        when(repo.createRecord(any(), anyString())).thenReturn(Single.just(created("已登记投喂")));
+        vm.submit();
+        ArgumentCaptor<FeedRecordCreateRequest> req = ArgumentCaptor.forClass(FeedRecordCreateRequest.class);
+        verify(repo).createRecord(req.capture(), anyString());
+        assertNull(req.getValue().executorId);
+    }
+
+    @Test
+    public void managerWithEmptyOptionsIsNotMistakenForStaff() throws IOException {
+        JsonObject data = TestRules.mockResponse("task_form_70108.json").getAsJsonObject("data");
+        data.add("executor_options", new JsonArray());
+        data.getAsJsonObject("current_user").addProperty("role", "MANAGER");
+        when(repo.getTaskForm(70108L)).thenReturn(Single.just(GsonFactory.get().fromJson(data, FeedTaskFormVO.class)));
+        open(70108L);
+        assertFalse(vm.isStaffView());
+        assertTrue(vm.getExecutorVisible().getValue());
+        vm.getActualQty().setValue("160");
+        vm.submit();
+        verify(repo, never()).createRecord(any(), anyString());
+        assertNotNull(vm.getFieldErrors().getValue().get(FeedRegisterViewModel.F_EXECUTOR));
+    }
+
+    @Test
     public void staff_noExecutorInRequest_andStaffTexts() throws IOException {
         open(80108L);
         assertFalse(vm.getExecutorVisible().getValue());
-        assertEquals("登记人：李明", vm.getProxyHint().getValue());
+        assertEquals("实际执行人：李明（本人）", vm.getProxyHint().getValue());
         vm.getActualQty().setValue("560");
         assertEquals("本次需要 560 千克，结存 500 千克，请联系所有者或场长先登记入库。",
                 TestRules.plain(vm.getOutboundError().getValue()));

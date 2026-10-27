@@ -46,4 +46,13 @@ public class StockOutboundVO {
     public UserBriefVO createdBy;
     public String createdAt;
     public Integer version;
+    public String refundStatus;
+    public BigDecimal refundAmount;
+    public String refundDate;
+    public String refundRemark;
+    public String refundRegisteredAt;
+    public UserBriefVO refundRegisteredBy;
+    public Long financeRecordId;
+    public String refundBlockReason;
+    public String refundEditDeadline;
 }

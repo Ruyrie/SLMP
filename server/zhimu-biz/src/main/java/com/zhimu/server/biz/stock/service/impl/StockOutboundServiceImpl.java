@@ -27,6 +27,8 @@ import com.zhimu.server.biz.stock.request.FeedOtherOutRequest;
 import com.zhimu.server.biz.stock.request.OutboundUpdateRequest;
 import com.zhimu.server.biz.stock.request.VoidRequest;
 import com.zhimu.server.biz.stock.service.StockOutboundService;
+import com.zhimu.server.biz.stock.service.StockReturnRefundService;
+import com.zhimu.server.biz.stock.support.StockReturnRefunds;
 import com.zhimu.server.biz.stock.support.BatchAllocator;
 import com.zhimu.server.biz.stock.support.DrugLotStatuses;
 import com.zhimu.server.biz.stock.support.StockActions;
@@ -85,6 +87,7 @@ public class StockOutboundServiceImpl implements StockOutboundService {
     private final BatchQueryService batchQueryService;
     private final PenQueryService penQueryService;
     private final DrugCatalogQueryService drugCatalogQueryService;
+    private final StockReturnRefundService refundService;
 
     // ------------------------------------------------------------------ 创建
 
@@ -368,6 +371,7 @@ public class StockOutboundServiceImpl implements StockOutboundService {
         } else {
             vo.setActions(StockActions.requestOnly(true));
         }
+        refundService.populate(outbound, vo);
         return vo;
     }
 
@@ -394,7 +398,8 @@ public class StockOutboundServiceImpl implements StockOutboundService {
     @Override
     @Transactional
     public StockOutboundVO update(Long id, OutboundUpdateRequest request) {
-        StockOutbound outbound = lookups.requireOutbound(id);
+        StockOutbound outbound = lookups.requireOutboundForUpdate(id);
+        StockReturnRefunds.requireUnrefunded(outbound);
         requireEditableToday(outbound);
         if (request.getVersion() == null || !request.getVersion().equals(outbound.getVersion())) {
             throw StockErrors.versionConflict();
@@ -502,7 +507,8 @@ public class StockOutboundServiceImpl implements StockOutboundService {
     @Override
     @Transactional
     public void voidOutbound(Long id, VoidRequest request) {
-        StockOutbound outbound = lookups.requireOutbound(id);
+        StockOutbound outbound = lookups.requireOutboundForUpdate(id);
+        StockReturnRefunds.requireUnrefunded(outbound);
         requireEditableToday(outbound);
         if (request.getVersion() == null || !request.getVersion().equals(outbound.getVersion())) {
             throw StockErrors.versionConflict();

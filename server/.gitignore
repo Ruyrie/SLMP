@@ -13,6 +13,8 @@ logs/
 tools/*
 !tools/README.md
 !tools/*.ps1
+!tools/repair_demo_course_duration.py
+!tools/test_repair_demo_course_duration.py
 !tools/contract/
 !tools/contract/**
 !tools/smoke/

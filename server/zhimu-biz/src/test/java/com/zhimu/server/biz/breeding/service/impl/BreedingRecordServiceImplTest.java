@@ -69,6 +69,7 @@ class BreedingRecordServiceImplTest {
     @Mock private BreedingSupport support;
     @Mock private OperationLogRecorder operationLogRecorder;
 
+    @Mock private com.zhimu.server.biz.herd.api.SelfBredBatchService selfBredBatchService;
     private BreedingRecordServiceImpl service;
 
     @BeforeEach
@@ -79,7 +80,7 @@ class BreedingRecordServiceImplTest {
         FarmContext.set(new FarmContext.FarmMember(1001L, "东山猪场", 10001L, 5001L, FarmRole.OWNER,
                 Set.of(), FarmStatus.NORMAL));
         service = new BreedingRecordServiceImpl(animalMapper, cycleMapper, matingMapper, checkMapper,
-                farrowingMapper, weaningMapper, support, new BreedingRecordConvert(), operationLogRecorder);
+                farrowingMapper, weaningMapper, support, new BreedingRecordConvert(), operationLogRecorder, selfBredBatchService);
         when(support.farmId()).thenReturn(1001L);
     }
 
@@ -320,6 +321,34 @@ class BreedingRecordServiceImplTest {
         request.setCheckDate("2026-10-19");
         request.setResult(result);
         return request;
+    }
+
+    @Test
+    void configuredCommercialOffspringCreatesLinkedBatchInFarrowingTransaction() {
+        BreedingAnimal animal = animal(4131L, "0131", BreedingCodes.STATUS_PREGNANT, 5131L);
+        when(support.requireAnimal(4131L)).thenReturn(animal);
+        when(support.requireCycle(5131L)).thenReturn(cycle(5131L,4131L,"PREGNANT",LocalDate.of(2026,6,27),LocalDate.of(2026,10,19)));
+        when(support.breed(1201L)).thenReturn(new BreedQueryService.BreedInfo(1201L,102L,"长大二元",114,null,21,1101L,true));
+        when(support.breed(1101L)).thenReturn(new BreedQueryService.BreedInfo(1101L,101L,"杜长大",null,null,null,null,true));
+        when(support.categoryOfBreed(1201L)).thenReturn(new com.zhimu.server.admin.base.api.CategoryInfo(102L,"种猪","PIG","猪","HEAD","头",true,true));
+        when(support.categoryOfBreed(1101L)).thenReturn(new com.zhimu.server.admin.base.api.CategoryInfo(101L,"育肥猪","PIG","猪","HEAD","头",false,true));
+        when(support.unitOfBreed(1101L)).thenReturn("头");
+        when(support.pen(2002L)).thenReturn(new PenInfo(2002L,1001L,"BY-02","2号保育舍","NURSERY","保育舍",400,"ENABLED"));
+        doAnswer(inv -> { ((FarrowingRecord) inv.getArgument(0)).setId(8401L); return 1; }).when(farrowingMapper).insert(any(FarrowingRecord.class));
+        when(farrowingMapper.updateById(any(FarrowingRecord.class))).thenReturn(1);
+        when(animalMapper.updateById(any(BreedingAnimal.class))).thenReturn(1);
+        when(cycleMapper.updateById(any(BreedingCycle.class))).thenReturn(1);
+        when(selfBredBatchService.create(eq(2002L),eq(1101L),eq(40),any(),eq(false),eq("FARROWING"),eq(8401L)))
+                .thenReturn(new com.zhimu.server.biz.herd.api.SelfBredBatchService.CreatedBatch(3501L,"ZM2610-080"));
+        var request=farrowingRequest(40,40,0);request.setTargetPenId(2002L);request.setOffspringBreedId(1101L);
+        var result=service.createFarrowing(request,"farrow-configured-child");
+        assertThat(result.getBatchId()).isEqualTo(3501L);
+        assertThat(result.getBatchNo()).isEqualTo("ZM2610-080");
+        assertThat(animal.getStatus()).isEqualTo("LACTATING");
+        var saved=org.mockito.ArgumentCaptor.forClass(FarrowingRecord.class);
+        org.mockito.Mockito.verify(farrowingMapper).updateById(saved.capture());
+        assertThat(saved.getValue().getBatchId()).isEqualTo(3501L);
+        assertThat(saved.getValue().getLiveBorn()).isEqualTo(40);
     }
 
     private static FarrowingRequest farrowingRequest(int total, int live, int still) {

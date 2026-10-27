@@ -230,6 +230,11 @@ public class AiChatFragment extends BaseFragment {
             }
 
             @Override
+            public void onToggleProcess(long roundId) {
+                vm.toggleProcess(roundId);
+            }
+
+            @Override
             public void onImageClick(@NonNull ChatItem item, int index) {
                 openImages(item, index);
             }

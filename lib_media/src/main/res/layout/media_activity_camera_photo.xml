@@ -42,8 +42,8 @@
             android:paddingStart="@dimen/base_space_3"
             android:paddingEnd="@dimen/base_space_4"
             app:layout_constraintBottom_toBottomOf="@id/media_top_space"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/media_flash"
+            app:layout_constraintStart_toEndOf="@id/media_close"
             app:layout_constraintTop_toTopOf="parent"
             app:visibleIf="@{safeUnbox(vm.recording)}">
 
@@ -74,10 +74,29 @@
             android:onClick="@{() -> vm.cycleFlash()}"
             android:src="@drawable/ic_flash_off"
             app:layout_constraintBottom_toBottomOf="@id/media_top_space"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/media_done"
             app:layout_constraintTop_toTopOf="parent"
             app:tint="?attr/colorOnMedia"
             app:visibleIf="@{vm.hasFlash}" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/media_done"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/base_touch_target"
+            android:layout_marginEnd="@dimen/base_space_2"
+            android:minWidth="88dp"
+            android:enabled="@{safeUnbox(vm.doneEnabled)}"
+            android:alpha="@{safeUnbox(vm.doneEnabled) ? 1f : 0.4f}"
+            android:onClick="@{() -> vm.onDone()}"
+            android:text="@{vm.doneText}"
+            android:textColor="?attr/colorOnMedia"
+            app:strokeColor="?attr/colorOnMedia"
+            app:cornerRadius="18dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/media_top_space"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="完成（1）" />
 
         <Space
             android:id="@+id/media_top_space"

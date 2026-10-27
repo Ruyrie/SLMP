@@ -69,6 +69,7 @@ class SaleOrderChangeHandlerTest {
     @Mock private AccountQueryService accountQueryService;
     @Mock private OperationLogRecorder operationLogRecorder;
 
+    @Mock private com.zhimu.server.biz.finance.service.BatchSettlementService batchSettlementService;
     private SaleOrderChangeHandler handler;
     private SaleOrder order;
 
@@ -76,7 +77,7 @@ class SaleOrderChangeHandlerTest {
     void setUp() {
         BeijingTime.setClock(CLOCK);
         handler = new SaleOrderChangeHandler(orderMapper, receiptMapper, financeRecordMapper,
-                batchQueryService, batchSalePort, accountQueryService, operationLogRecorder);
+                batchQueryService, batchSalePort, accountQueryService, operationLogRecorder, batchSettlementService);
         order = new SaleOrder();
         order.setId(9102L);
         order.setFarmId(1001L);
@@ -99,6 +100,9 @@ class SaleOrderChangeHandlerTest {
         order.setVersion(2);
         order.setCreatedBy(10001L);
         when(orderMapper.selectById(9102L)).thenReturn(order);
+        when(orderMapper.updateById(any(SaleOrder.class))).thenReturn(1);
+        when(receiptMapper.updateById(any(SaleReceipt.class))).thenReturn(1);
+        when(financeRecordMapper.updateById(any(FinanceRecord.class))).thenReturn(1);
 
         BatchInfo batch = new BatchInfo(1001L, 3001L, "ZM2609-012", 1L, 101L,
                 LocalDate.of(2026, 6, 1), 0, "ACTIVE", List.of(2003L), 120, 100, 0, 98, 2003L);
@@ -171,7 +175,7 @@ class SaleOrderChangeHandlerTest {
     }
 
     @Test
-    void validateUnitPriceChecksBelowReceived() {
+    void validateUnitPriceAllowsApprovedCorrectionBelowReceived() {
         ChangeForm form = handler.describeForm(handler.loadRecord(BizType.SALE_ORDER, 9102L));
         ChangeRecord record = handler.loadRecord(BizType.SALE_ORDER, 9102L);
 
@@ -184,9 +188,8 @@ class SaleOrderChangeHandlerTest {
         assertThatThrownBy(() -> handler.validateChange(record, form, ChangeType.UPDATE,
                 "unit_price", "16.00"))
                 .isInstanceOf(BizException.class).hasMessageContaining("新单价与原单价相同");
-        assertThatThrownBy(() -> handler.validateChange(record, form, ChangeType.UPDATE,
-                "unit_price", "8.00"))
-                .isInstanceOf(BizException.class).hasMessageContaining("不能低于已收");
+        assertThat(handler.validateChange(record, form, ChangeType.UPDATE, "unit_price", "8.00").afterValue())
+                .isEqualTo("8.00");
         assertThatThrownBy(() -> handler.validateChange(record, form, ChangeType.UPDATE,
                 "unit_price", "100000"))
                 .isInstanceOf(BizException.class).hasMessageContaining("单价不能超过");
@@ -280,6 +283,55 @@ class SaleOrderChangeHandlerTest {
         assertThat(savedOrder.getValue().getVoidSource()).isEqualTo("CHANGE_REQUEST");
         assertThat(savedOrder.getValue().getVoidedBy()).isEqualTo(90001L);
         verify(batchSalePort).restoreSale(anyLong(), anyLong(), any(), anyMap(), anyLong());
+    }
+
+    @Test
+    void approvedLowerPriceCorrectsReceiptAndIncomeTogether() {
+        SaleReceipt receipt = receipt(901L, "100000", 701L);
+        FinanceRecord income = income(701L, "100000");
+        when(receiptMapper.selectNormalByOrderId(9102L)).thenReturn(List.of(receipt));
+        when(financeRecordMapper.selectById(701L)).thenReturn(income);
+        var change = request("UPDATE", "unit_price", "{\"after\":{\"unit_price\":{\"value\":\"8.00\"}}}");
+        handler.validateForApprove(change, handler.loadRecord(BizType.SALE_ORDER, 9102L));
+        handleVoid(change);
+        assertThat(order.getSaleAmount()).isEqualByComparingTo("94080");
+        assertThat(order.getReceivedAmount()).isEqualByComparingTo("94080");
+        assertThat(order.getUnpaidAmount()).isZero();
+        assertThat(order.getPaymentStatus()).isEqualTo("PAID");
+        assertThat(receipt.getAmount()).isEqualByComparingTo("94080");
+        assertThat(income.getAmount()).isEqualByComparingTo("94080");
+        verify(receiptMapper).updateById(receipt);
+        verify(financeRecordMapper).updateById(income);
+        verify(batchSettlementService).recalculateForSale(1001L, 3001L);
+    }
+
+    @Test
+    void correctionAcrossMultipleReceiptsVoidsNewestAndAdjustsRemainder() {
+        SaleReceipt early = receipt(901L, "40000", 701L), late = receipt(902L, "60000", 702L);
+        FinanceRecord earlyIncome = income(701L, "40000"), lateIncome = income(702L, "60000");
+        when(receiptMapper.selectNormalByOrderId(9102L)).thenReturn(List.of(early, late));
+        when(financeRecordMapper.selectById(701L)).thenReturn(earlyIncome);
+        when(financeRecordMapper.selectById(702L)).thenReturn(lateIncome);
+        handleVoid(request("UPDATE", "unit_price", "{\"after\":{\"unit_price\":{\"value\":\"2.00\"}}}"));
+        assertThat(order.getReceivedAmount()).isEqualByComparingTo("23520");
+        assertThat(order.getReceiptCount()).isEqualTo(1);
+        assertThat(late.getStatus()).isEqualTo("VOID");
+        assertThat(lateIncome.getStatus()).isEqualTo("VOID");
+        assertThat(early.getAmount()).isEqualByComparingTo("23520");
+        assertThat(earlyIncome.getAmount()).isEqualByComparingTo("23520");
+    }
+
+    private SaleReceipt receipt(long id, String amount, long incomeId) {
+        SaleReceipt receipt = new SaleReceipt();
+        receipt.setId(id); receipt.setFarmId(1001L); receipt.setSaleOrderId(9102L);
+        receipt.setAmount(new BigDecimal(amount)); receipt.setFinanceRecordId(incomeId); receipt.setStatus("NORMAL");
+        return receipt;
+    }
+
+    private FinanceRecord income(long id, String amount) {
+        FinanceRecord income = new FinanceRecord();
+        income.setId(id); income.setFarmId(1001L); income.setAmount(new BigDecimal(amount)); income.setStatus("NORMAL");
+        return income;
     }
 
     private void handleVoid(ChangeRequest request) {

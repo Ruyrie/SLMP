@@ -15,4 +15,7 @@ public interface IPushService {
     void syncDevice();
 
     void unbindCurrent();
+
+    /** 清除本机推送身份与通知，不调用需要有效登录令牌的解绑接口。账号注销成功后使用。 */
+    void clearLocalBinding();
 }

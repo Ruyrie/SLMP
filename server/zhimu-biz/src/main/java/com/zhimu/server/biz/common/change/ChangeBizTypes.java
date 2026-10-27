@@ -104,6 +104,8 @@ public final class ChangeBizTypes {
             case "UPDATE" -> "修改";
             case "VOID" -> "作废";
             case "DELETE" -> "删除";
+            case "RETURN_REFUND_REGISTER" -> "登记退款";
+            case "RETURN_REFUND_CORRECT" -> "更正退款";
             default -> opAction;
         };
     }

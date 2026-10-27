@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.common;
 
+import com.zhimu.server.biz.account.support.AccountPersonalDataGuard;
 import com.zhimu.server.biz.common.controller.FileController;
 import com.zhimu.server.biz.common.entity.BizMedia;
 import com.zhimu.server.biz.common.entity.FileEntity;
@@ -57,9 +58,12 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -80,6 +84,7 @@ class FileServiceTest {
     private final ObjectStorage storage = mock(ObjectStorage.class);
     private final MediaProcessor mediaProcessor = mock(MediaProcessor.class);
     private final FarmMemberCache farmMemberCache = mock(FarmMemberCache.class);
+    private final AccountPersonalDataGuard personalDataGuard = mock(AccountPersonalDataGuard.class);
 
     private final Map<Long, FileEntity> files = new LinkedHashMap<>();
     private final Map<String, FileVariant> variants = new LinkedHashMap<>();
@@ -94,7 +99,7 @@ class FileServiceTest {
     void setUp() throws IOException {
         FileVoAssembler assembler = new FileVoAssembler(fileMapper, variantMapper, storage);
         service = new FileServiceImpl(fileMapper, variantMapper, bizMediaMapper, storage, mediaProcessor,
-                new ImageProcessor(), assembler, farmMemberCache);
+                new ImageProcessor(), assembler, farmMemberCache, List.of(), personalDataGuard);
         mvc = TestMvc.builder(new FileController(service)).build();
         UserContext.set(new UserContext.LoginUser(10001L, ClientType.APP_ANDROID, 0, "jti"));
 
@@ -186,6 +191,24 @@ class FileServiceTest {
         assertThat(vo.getMediaType()).isEqualTo("IMAGE");
         assertThat(vo.getUrl()).startsWith("https://files.test/avatar/");
         assertThat(files.get(vo.getFileId()).getScene()).isEqualTo("AVATAR");
+        var order = inOrder(personalDataGuard, storage, fileMapper);
+        order.verify(personalDataGuard).requireActive(10001L);
+        order.verify(storage).put(anyString(), eq(files.get(vo.getFileId()).getObjectKey()),
+                any(), anyLong(), anyString());
+        order.verify(fileMapper).insert(any(FileEntity.class));
+    }
+
+    @Test
+    void cancelledUserCannotUploadAfterCleanupHasStarted() {
+        doThrow(new BizException(ErrorCode.SESSION_INVALID).with("reason", "ACCOUNT_CANCELLED"))
+                .when(personalDataGuard).requireActive(10001L);
+        MockMultipartFile file = new MockMultipartFile("file", "avatar.png", "image/png", PNG_SIGNATURE);
+
+        assertThatThrownBy(() -> service.upload(file, FileScene.AVATAR, null, null, null, null))
+                .isInstanceOf(BizException.class)
+                .satisfies(e -> assertThat(((BizException) e).getCode()).isEqualTo(40104));
+
+        verifyNoInteractions(storage, fileMapper, variantMapper, bizMediaMapper, mediaProcessor);
     }
 
     @Test

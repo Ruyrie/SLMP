@@ -52,6 +52,17 @@ public class AppSettings {
         prefs.edit().putString(KEY_LAST_PHONE, phone).apply();
     }
 
+    /** 注销时移除个人偏好（手机号、上次日历场范围等），保留设备上的隐私同意与功能设置。 */
+    public void clearAccountData() {
+        boolean privacy = isPrivacyAgreed();
+        String version = getPrivacyVersion();
+        boolean wifi = isVideoWifiOnly();
+        boolean guide = isNotifyGuideShown();
+        prefs.edit().clear().putBoolean(KEY_PRIVACY_AGREED, privacy)
+                .putString(KEY_PRIVACY_VERSION, version).putBoolean(KEY_VIDEO_WIFI_ONLY, wifi)
+                .putBoolean(KEY_NOTIFY_GUIDE_SHOWN, guide).commit();
+    }
+
     /** 默认仅 Wi-Fi 播放 */
     public boolean isVideoWifiOnly() {
         return prefs.getBoolean(KEY_VIDEO_WIFI_ONLY, true);

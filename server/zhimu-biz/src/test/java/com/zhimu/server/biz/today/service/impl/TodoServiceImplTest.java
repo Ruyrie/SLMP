@@ -61,7 +61,7 @@ class TodoServiceImplTest {
     @BeforeEach
     void setUp() {
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-19T01:30:00Z"), ZoneId.of("Asia/Shanghai")));
-        service = new TodoServiceImpl(todoMapper, handleLogMapper, todoScope, todoConvert, farmQueryService);
+        service = new TodoServiceImpl(todoMapper, org.mockito.Mockito.mock(com.zhimu.server.biz.stock.support.StockWarningReconciler.class), handleLogMapper, todoScope, todoConvert, farmQueryService, org.mockito.Mockito.mock(com.zhimu.server.biz.feeding.api.FeedTaskReconciliationService.class));
         owner = new FarmContext.FarmMember(1001L, "东山猪场", 10001L, 5001L, FarmRole.OWNER, Set.of(),
                 FarmStatus.NORMAL);
         staff = new FarmContext.FarmMember(1001L, "东山猪场", 10003L, 5003L, FarmRole.STAFF,

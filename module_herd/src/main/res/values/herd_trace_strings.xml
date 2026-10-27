@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="herd_trace_title">批次溯源</string>
+    <string name="herd_trace_public">公开溯源 · 只读</string>
+    <string name="herd_trace_error">溯源信息加载失败</string>
+    <string name="herd_trace_events">养殖记录</string>
+    <string name="herd_trace_empty">暂无已公开的养殖记录</string>
+    <string name="herd_trace_updated">更新时间：%1$s</string>
+</resources>

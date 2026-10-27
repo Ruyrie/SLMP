@@ -11,5 +11,8 @@ public interface BatchSettlementService {
 
     SettlementVos.BatchSettlementVO detail(Long batchId);
 
+    /** 出栏写入/审核后同事务重算；显式养殖场用于管理员审核上下文。 */
+    void recalculateForSale(Long farmId, Long batchId);
+
     SettlementVos.BatchSettlementVO confirm(Long batchId, FinanceRequests.SupplementConfirmRequest request);
 }

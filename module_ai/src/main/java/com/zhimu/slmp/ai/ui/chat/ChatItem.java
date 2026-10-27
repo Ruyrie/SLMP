@@ -63,11 +63,23 @@ public final class ChatItem {
     public final String statusText;
     /** 其他轮次正在生成时为 false（38% 透明度，点按无效） */
     public final boolean actionsEnabled;
+    @Nullable
+    public final String processText;
+    public final boolean processExpanded;
 
     private ChatItem(@NonNull Type type, long id, long roundId, int version, @Nullable String text,
                      @Nullable List<String> localImages, @Nullable List<FileVO> remoteImages,
                      @Nullable AnswerState state, @Nullable AiMessageVO message, @Nullable String partialText,
                      @Nullable String statusText, boolean actionsEnabled) {
+        this(type, id, roundId, version, text, localImages, remoteImages, state, message, partialText,
+                statusText, actionsEnabled, null, false);
+    }
+
+    private ChatItem(@NonNull Type type, long id, long roundId, int version, @Nullable String text,
+                     @Nullable List<String> localImages, @Nullable List<FileVO> remoteImages,
+                     @Nullable AnswerState state, @Nullable AiMessageVO message, @Nullable String partialText,
+                     @Nullable String statusText, boolean actionsEnabled, @Nullable String processText,
+                     boolean processExpanded) {
         this.type = type;
         this.id = id;
         this.roundId = roundId;
@@ -80,6 +92,14 @@ public final class ChatItem {
         this.partialText = partialText;
         this.statusText = statusText;
         this.actionsEnabled = actionsEnabled;
+        this.processText = processText;
+        this.processExpanded = processExpanded;
+    }
+
+    @NonNull
+    ChatItem withProcess(@NonNull String text, boolean expanded) {
+        return new ChatItem(type, id, roundId, version, this.text, localImages, remoteImages, state, message,
+                partialText, statusText, actionsEnabled, text, expanded);
     }
 
     @NonNull
@@ -115,6 +135,7 @@ public final class ChatItem {
     /** 内容是否相同（DiffUtil） */
     boolean sameContent(@NonNull ChatItem o) {
         return type == o.type && version == o.version && actionsEnabled == o.actionsEnabled
+                && processExpanded == o.processExpanded && Objects.equals(processText, o.processText)
                 && state == o.state && Objects.equals(text, o.text) && Objects.equals(statusText, o.statusText)
                 && Objects.equals(partialText, o.partialText);
     }

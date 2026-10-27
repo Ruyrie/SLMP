@@ -203,7 +203,7 @@
             android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
             android:textColor="@color/media_color_on_media_variant"
             app:goneIfNull="@{vm.manualText == null ? null : vm.manualHint}"
-            app:layout_constraintBottom_toTopOf="@id/media_manual"
+            app:layout_constraintBottom_toTopOf="@id/media_scan_album_status"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             tools:text="二维码模糊或破损时，也可以输入批次号" />
@@ -220,10 +220,44 @@
             app:icon="@drawable/ic_keyboard"
             app:iconTint="?attr/colorOnMedia"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/media_scan_album"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintHorizontal_chainStyle="packed"
             app:onSafeClick="@{() -> vm.onManualInput()}"
             app:strokeColor="?attr/colorOnMedia"
             tools:text="输入批次号" />
+
+        <TextView
+            android:id="@+id/media_scan_album_status"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_page_margin"
+            android:layout_marginEnd="@dimen/base_page_margin"
+            android:layout_marginBottom="@dimen/base_space_3"
+            android:accessibilityLiveRegion="polite"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
+            android:textColor="?attr/colorOnMedia"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/media_scan_album"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/media_scan_album"
+            style="@style/Widget.Zmt.Button.Outlined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/base_space_3"
+            android:layout_marginEnd="@dimen/base_page_margin"
+            android:layout_marginBottom="@dimen/base_space_8"
+            android:text="@string/media_scan_album"
+            android:textColor="?attr/colorOnMedia"
+            app:icon="@drawable/ic_photo_library"
+            app:iconTint="?attr/colorOnMedia"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/media_manual"
+            app:strokeColor="?attr/colorOnMedia" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

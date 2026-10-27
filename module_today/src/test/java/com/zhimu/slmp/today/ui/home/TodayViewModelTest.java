@@ -66,6 +66,10 @@ public class TodayViewModelTest {
         pushService = mock(IPushService.class);
         when(todoService.todoChanges()).thenReturn(Observable.never());
         when(todoService.unreadCount()).thenReturn(new MutableLiveData<>(0));
+        when(todoRepository.getToday(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyInt(), org.mockito.ArgumentMatchers.anyInt()))
+                .thenReturn(Single.just(new com.zhimu.slmp.today.model.vo.TodoPageVO()));
+        when(todoRepository.getOverdue(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyInt(), org.mockito.ArgumentMatchers.anyInt()))
+                .thenReturn(Single.just(new com.zhimu.slmp.network.model.PageVO<>()));
         vm = new TodayViewModel(homeRepository, todoRepository, todoService, linkNavigator, appSettings, pushService);
     }
 
@@ -80,7 +84,7 @@ public class TodayViewModelTest {
         assertEquals("10月19日 周一 · 你是本场所有者", vm.getRoleLine().getValue());
         assertTrue(vm.getManagerView().getValue());
         assertEquals(870, vm.getOwnerMetrics().getValue().getStockCount());
-        assertEquals("3 号育肥舍有猪腹泻，先怎么处理？", vm.getAiHint().getValue());
+        org.junit.Assert.assertNull(vm.getAiHint().getValue());
         assertEquals(12, vm.getQuickItems().getValue().size());
         assertFalse(vm.getFarmBlocked().getValue());
         verify(todoService).setUnread(3);
@@ -113,22 +117,52 @@ public class TodayViewModelTest {
     }
 
     @Test
-    public void todoChanged_decrementsMetricsAndFadesItem() {
+    public void quickInspection_withoutPen_opensPenListForBothRoles() {
+        for (boolean manager : new boolean[]{false, true}) {
+            QuickRegisterItem inspection = QuickRegisterItem.forRole(manager).stream()
+                    .filter(item -> item.getName() == com.zhimu.slmp.today.R.string.today_quick_inspection)
+                    .findFirst().orElseThrow();
+
+            vm.onQuickItemClick(inspection);
+
+            NavTarget target = vm.getNavEvent().getValue();
+            assertNotNull(target);
+            assertEquals("快捷巡检尚未选择栏舍，应先进入今日巡检清单", "I01", target.getRoute());
+            assertTrue(target.getParams().isEmpty());
+        }
+    }
+
+    @Test
+    public void stockSubmission_refreshesAuthoritativeMetricsWithoutHidingUnresolvedWarning() {
         when(homeRepository.getHome()).thenReturn(Single.just(TestData.parse(TestData.OWNER_HOME, HomeVO.class)));
         vm.onFarmSwitched(TestData.farm1001());
-
-        vm.onTodoChanged(new TodoChange(90101L, "FEED_TASK", 70101L, 1001));
-
-        assertEquals(15, vm.getOwnerMetrics().getValue().getTodayTodoCount());
-        assertEquals(Long.valueOf(90101L), vm.getLeavingTodoId().getValue());
-
-        // 淡出后从列表移除并静默刷新：指标以服务端返回为准（Mock 仍为 16）
-        vm.removeTodoLocally(90101L);
-        assertTrue(vm.removedIdsSnapshot().contains(90101L));
-        verify(homeRepository, org.mockito.Mockito.times(2)).getHome();
-        // 同一待办再次回流不重复减
-        vm.onTodoChanged(new TodoChange(90101L, null, null, 1001));
+        vm.onTodoChanged(new TodoChange(90105L, "INBOUND", 70101L, 1001));
         assertEquals(16, vm.getOwnerMetrics().getValue().getTodayTodoCount());
+        verify(homeRepository, org.mockito.Mockito.times(2)).getHome();
+    }
+
+    @Test
+    public void overdueStartsCollapsedAndRefreshPreservesUserChoice() {
+        when(homeRepository.getHome()).thenReturn(Single.just(TestData.parse(TestData.OWNER_HOME, HomeVO.class)));
+        vm.onFarmSwitched(TestData.farm1001());
+        assertFalse(vm.getOverdueExpanded().getValue());
+        vm.toggleOverdue();
+        assertTrue(vm.getOverdueExpanded().getValue());
+        vm.refresh();
+        assertTrue(vm.getOverdueExpanded().getValue());
+        vm.onFarmSwitched(null);
+        assertFalse(vm.getOverdueExpanded().getValue());
+        assertEquals(0, vm.getOverdueItems().getValue().size());
+    }
+
+    @Test
+    public void warningCardOpensWarningCollectionAndTodayPreviewRequestsOnlyThree() {
+        when(homeRepository.getHome()).thenReturn(Single.just(TestData.parse(TestData.OWNER_HOME, HomeVO.class)));
+        vm.onFarmSwitched(TestData.farm1001());
+        verify(todoRepository).getToday(TodoRepository.FILTER_ALL, 1, 3);
+        vm.onMetricClick(TodayViewModel.CARD_WARNING);
+        assertEquals("T09", vm.getNavEvent().getValue().getRoute());
+        assertEquals("WARNING", vm.getNavEvent().getValue().param("filter"));
     }
 
     @Test

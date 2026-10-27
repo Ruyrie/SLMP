@@ -99,6 +99,7 @@ class StockControllerMockMvcTest {
     @Mock private StockInboundService inboundService;
     @Mock private StockLossService lossService;
     @Mock private StockOutboundService outboundService;
+    @Mock private com.zhimu.server.biz.stock.service.StockReturnRefundService refundService;
     @Mock private StocktakeService stocktakeService;
     @Mock private StockSettingService settingService;
     @Mock private StockRequestService requestService;
@@ -110,7 +111,7 @@ class StockControllerMockMvcTest {
         mvc = StockTestMvc.builder(new StockFeedController(feedService), new StockDrugController(drugService,
                         settingService, requestService), new StockDrugLotController(lotService),
                 new StockFlowController(flowService), new StockInboundController(inboundService),
-                new StockLossController(lossService), new StockOutboundController(outboundService),
+                new StockLossController(lossService), new StockOutboundController(outboundService, refundService),
                 new StocktakeController(stocktakeService)).build();
         StockFixtures.useClock();
         StockFixtures.loginOwner();

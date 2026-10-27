@@ -65,6 +65,7 @@ export interface ChangeRequestFormVO {
   linked_rules?: string[]
   review_tip?: string
   pending_request_id?: number | null
+  delete_allowed?: boolean
   void_allowed?: boolean
   void_notice?: string
   void_recalc_tags?: string[]

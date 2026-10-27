@@ -82,6 +82,8 @@ public final class AiCodes {
 
     // SSE 事件名
     public static final String SSE_META = "meta";
+    public static final String SSE_PROGRESS = "progress";
+    public static final String SSE_ANALYSIS_SUMMARY = "analysis_summary";
     public static final String SSE_DELTA = "delta";
     public static final String SSE_CITATION = "citation";
     public static final String SSE_DONE = "done";
@@ -97,5 +99,6 @@ public final class AiCodes {
     public static final String TOPIC_ACTION_REVIEW = "REVIEW";
 
     public static final String NO_BASIS_LEAD = "未找到平台知识依据，仅供参考。";
+    public static final String NO_BASIS_SOURCE_NOTE = "本回答暂无可核验的平台资料引用，请结合实际情况判断。";
     public static final String OFF_TOPIC_ANSWER = "这个问题与畜禽养殖无关，我不能回答。";
 }

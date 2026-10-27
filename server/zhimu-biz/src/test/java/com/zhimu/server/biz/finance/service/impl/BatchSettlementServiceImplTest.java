@@ -65,13 +65,14 @@ class BatchSettlementServiceImplTest {
     @Mock private BatchQueryService batchQueryService;
     @Mock private FinanceSupport support;
 
+    @Mock private com.zhimu.server.biz.feeding.api.BatchGrowthQueryService growthQueryService;
     private BatchSettlementServiceImpl service;
 
     @BeforeEach
     void setUp() {
         FinanceTestTables.init();
         service = new BatchSettlementServiceImpl(settlementMapper, supplementMapper, orderMapper, recordMapper,
-                categoryMapper, stockCostPort, batchQueryService, support);
+                categoryMapper, stockCostPort, batchQueryService, support, growthQueryService);
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-19T02:00:00Z"), ZONE));
         UserContext.set(new UserContext.LoginUser(10001L, ClientType.APP_ANDROID, 0, "jti"));
 
@@ -81,7 +82,7 @@ class BatchSettlementServiceImplTest {
         lenient().when(support.breedName(1101L)).thenReturn("杜长大");
         lenient().when(support.categoryName(101L)).thenReturn("育肥猪");
         lenient().when(support.countUnitText(101L)).thenReturn("头");
-        lenient().when(stockCostPort.costOf(BATCH_ID)).thenReturn(new StockCostPort.BatchCost(
+        lenient().when(stockCostPort.costOf(FARM_ID, BATCH_ID)).thenReturn(new StockCostPort.BatchCost(
                 new BigDecimal("120000"), new BigDecimal("25930"), new BigDecimal("8000"), BigDecimal.ZERO));
         lenient().when(settlementMapper.updateById(any(BatchSettlement.class))).thenReturn(1);
     }
@@ -174,7 +175,10 @@ class BatchSettlementServiceImplTest {
 
     @Test
     void detailCreatesSettlementOnFirstView() {
-        when(settlementMapper.selectOne(any())).thenReturn(null);
+        BatchSettlement initialized = settlement("RUNNING", 0);
+        initialized.setIntroUnitPrice(null);
+        initialized.setCostIntro(BigDecimal.ZERO);
+        when(settlementMapper.selectOne(any())).thenReturn(initialized);
         when(orderMapper.selectList(any())).thenReturn(List.of());
         when(recordMapper.selectList(any())).thenReturn(List.of());
         when(supplementMapper.selectList(any())).thenReturn(List.of());
@@ -218,6 +222,44 @@ class BatchSettlementServiceImplTest {
         assertThatThrownBy(() -> service.confirm(BATCH_ID, request))
                 .isInstanceOf(BizException.class)
                 .hasMessageContaining("补录已被处理");
+    }
+
+    @Test
+    void firstEndedBatchCalculationIncludesEntryCostAndLocksPerSoldHead() {
+        BatchSettlement empty = new BatchSettlement();
+        empty.setFarmId(FARM_ID); empty.setBatchId(BATCH_ID); empty.setStatus("RUNNING");
+        when(settlementMapper.selectOne(any())).thenReturn(empty);
+        BatchInfo ended = new BatchInfo(FARM_ID, BATCH_ID, "QA", 1101L, 101L, LocalDate.of(2026, 4, 28),
+                0, "ENDED", List.of(2005L), 0, 215, 15, 200, 2005L);
+        when(support.requireBatch(BATCH_ID, FARM_ID)).thenReturn(ended);
+        when(batchQueryService.accountingBasis(BATCH_ID)).thenReturn(new BatchQueryService.AccountingBasis(
+                new BigDecimal("430"), new BigDecimal("12"), BeijingTime.now()));
+        SaleOrder sale = order(1L, 200, "165000", "165000"); sale.setTotalWeight(new BigDecimal("10000"));
+        when(orderMapper.selectList(any())).thenReturn(List.of(sale));
+        when(stockCostPort.costOf(FARM_ID, BATCH_ID)).thenReturn(new StockCostPort.BatchCost(
+                new BigDecimal("10000"), new BigDecimal("14840"), new BigDecimal("500"), BigDecimal.ZERO));
+        var vo = service.detail(BATCH_ID);
+        assertThat(vo.getStatus()).isEqualTo("LOCKED");
+        assertThat(vo.getSaleIncome()).isEqualByComparingTo("165000");
+        assertThat(vo.getCostTotal()).isEqualByComparingTo("102950");
+        assertThat(vo.getProfit()).isEqualByComparingTo("62050");
+        assertThat(vo.getCostPerHead()).isEqualByComparingTo("514.75");
+        assertThat(vo.getFcr()).isEqualByComparingTo("2.00");
+        org.mockito.Mockito.verify(settlementMapper).ensureExists(FARM_ID, BATCH_ID);
+    }
+
+    @Test
+    void lockedSaleCorrectionPreservesCostSnapshotAndUpdatesIncome() {
+        var frozen = settlement("LOCKED", 1);
+        when(settlementMapper.selectOne(any())).thenReturn(frozen);
+        when(batchQueryService.requireBatch(BATCH_ID)).thenReturn(new BatchInfo(FARM_ID, BATCH_ID, "QA", 1101L, 101L,
+                LocalDate.of(2026, 4, 28), 0, "ENDED", List.of(), 0, 100, 2, 98, 2005L));
+        when(orderMapper.selectList(any())).thenReturn(List.of(order(1L, 98, "180000", "180000")));
+        service.recalculateForSale(FARM_ID, BATCH_ID);
+        assertThat(frozen.getCostTotal()).isEqualByComparingTo("185000");
+        assertThat(frozen.getSaleIncome()).isEqualByComparingTo("180000");
+        assertThat(frozen.getProfit()).isEqualByComparingTo("-5000");
+        org.mockito.Mockito.verifyNoInteractions(stockCostPort);
     }
 
     // ===== 夹具 =====

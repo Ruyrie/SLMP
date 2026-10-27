@@ -83,8 +83,8 @@ class StdQueryServiceImplTest {
         assertThat(vo.getWeight().getPoints().get(2).getUpper()).isEqualByComparingTo("68.2");
         assertThat(vo.getAtDay().getDayAge()).isEqualTo(96);
         assertThat(vo.getAtDay().getStdWeight()).isEqualByComparingTo("68.6");
-        assertThat(vo.getAtDay().getLower()).isEqualByComparingTo("61.7");
-        assertThat(vo.getAtDay().getUpper()).isEqualByComparingTo("75.5");
+        assertThat(vo.getAtDay().getLower()).isEqualByComparingTo("61.74");
+        assertThat(vo.getAtDay().getUpper()).isEqualByComparingTo("75.46");
         assertThat(vo.getAtDay().getStageName()).isEqualTo("育肥前期");
         assertThat(vo.getAtDay().getStageShortName()).isEqualTo("育肥猪");
         assertThat(vo.getFeed().getStages()).hasSize(4);
@@ -95,6 +95,27 @@ class StdQueryServiceImplTest {
     void u12Returns82() {
         BreedStandardsVO vo = service.standards(1101L, 82);
         assertThat(vo.getAtDay().getStdWeight()).isEqualByComparingTo("53.2");
+    }
+
+    @Test
+    void poultryStandardPreservesSmallStoredWeightsAndDistinctBounds() {
+        when(pointMapper.selectList(any())).thenReturn(List.of(point(1, "0.04"), point(7, "0.16"), point(14, "0.40")));
+
+        BreedStandardsVO vo = service.standards(1101L, 1);
+
+        assertThat(vo.getWeight().getPoints().get(0).getStdWeight()).isEqualByComparingTo("0.04");
+        assertThat(vo.getWeight().getPoints().get(0).getLower()).isEqualByComparingTo("0.036");
+        assertThat(vo.getWeight().getPoints().get(0).getUpper()).isEqualByComparingTo("0.044");
+        assertThat(vo.getWeight().getPoints().get(2).getLower()).isEqualByComparingTo("0.36");
+        assertThat(vo.getWeight().getPoints().get(2).getUpper()).isEqualByComparingTo("0.44");
+        assertThat(vo.getAtDay().getStdWeight()).isEqualByComparingTo("0.04");
+        assertThat(vo.getAtDay().getLower()).isEqualByComparingTo("0.036");
+        assertThat(vo.getAtDay().getUpper()).isEqualByComparingTo("0.044");
+
+        BreedStandardsVO between = service.standards(1101L, 4);
+        assertThat(between.getAtDay().getStdWeight()).isEqualByComparingTo("0.10");
+        assertThat(between.getAtDay().getLower()).isEqualByComparingTo("0.09");
+        assertThat(between.getAtDay().getUpper()).isEqualByComparingTo("0.11");
     }
 
     @Test

@@ -13,6 +13,8 @@ public final class HerdExtras {
 
     /** L09 入栏结果（String，BatchEntryResultVO 的 JSON） */
     public static final String EXTRA_RESULT_JSON = "result_json";
+    /** Public QR token; never a management batch ID or a farm-switch instruction. */
+    public static final String EXTRA_TRACE_TOKEN = "trace_token";
 
     /** 本组件内页面返回结果：成功提示文案（String） */
     public static final String RESULT_MESSAGE = "herd_result_message";

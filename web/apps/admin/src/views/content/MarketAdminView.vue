@@ -384,10 +384,6 @@ async function submitReview(): Promise<void> {
     reviewError.value = '请填写复核说明'
     return
   }
-  if (reviewTarget.value.entered_by_name && reviewTarget.value.entered_by_name === admin.displayName) {
-    reviewError.value = '复核人不能是录入人'
-    return
-  }
   reviewSaving.value = true
   reviewError.value = ''
   try {
@@ -648,7 +644,7 @@ onMounted(async () => {
   <zw-shell side="admin" active="WA-C02" :crumbs="['内容运营', '市场行情发布']">
     <zw-page-head
       title="市场行情发布"
-      desc="按地区、品类、品种发布每天的出栏价和种苗价，用户端市场行情和出栏单的参考价都取这里的数据。较上一个有数据的日期涨跌超过 20% 的价格，要由另一位管理员复核后才对用户可见。"
+      desc="按地区、品类、品种发布每天的出栏价和种苗价，用户端市场行情和出栏单的参考价都取这里的数据。较上一个有数据的日期涨跌超过 20% 的价格，经管理员复核后对用户可见。"
     >
       <template #actions>
         <v-text-field v-model="query.date" type="date" class="zw-w-160 market-date" :max="today()" density="compact" hide-details prepend-inner-icon="calendar_month" @update:model-value="changeDate" />
@@ -845,7 +841,7 @@ onMounted(async () => {
             <v-radio label="退回修改" value="RETURN" />
           </v-radio-group>
         </zw-form-item>
-        <zw-form-item label="复核说明" required hint="退回后录入人收到消息；复核人不能是录入人，结果记入操作日志">
+        <zw-form-item label="复核说明" required hint="退回后录入人收到消息；复核结果记入操作日志">
           <v-textarea v-model="reviewForm.review_note" placeholder="请填写复核说明" :rows="3" maxlength="100" counter />
         </zw-form-item>
         <div v-if="reviewError" class="market-form-error">{{ reviewError }}</div>
@@ -871,7 +867,7 @@ onMounted(async () => {
         <zw-form-item label="更正原因" required>
           <v-textarea v-model="correctionForm.reason" placeholder="请说明更正原因，记入操作日志" :rows="3" maxlength="100" counter />
         </zw-form-item>
-        <zw-notice type="info">更正后用户端会标“已更正”；后续日期的涨跌会按新价格重算。若更正后较上一次涨跌超过 20%，需要另一位管理员复核后才生效。</zw-notice>
+        <zw-notice type="info">更正后用户端会标“已更正”；后续日期的涨跌会按新价格重算。若更正后较上一次涨跌超过 20%，需要管理员复核后才生效。</zw-notice>
         <div v-if="correctionError" class="market-form-error">{{ correctionError }}</div>
       </template>
       <template #actions>

@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * G06 生长曲线（技术文档 2.7.1）：宽随父容器，高固定 200 dp；横轴日龄、纵轴平均体重（千克），刻度每 10 日龄、每 20 千克。
+ * G06 生长曲线：宽随父容器，高固定 200 dp；横轴日龄标签按可用宽度稀疏排列，纵轴平均体重（千克）。
  * <p>
  * 图层：网格与刻度 → 允许偏差带（surface-container-high）→ 标准线（2 dp outline 虚线）→ 对比线（2 dp outline 点线）
  * → 实际线（2.5 dp primary）→ 数据点（8 dp，2 dp 白色描边；入栏点空心；最新点 10 dp）→ 标注“标准 68.6”“60.0”。
@@ -59,6 +59,7 @@ public class GrowthCurveView extends View {
     private final Paint bandPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint stdPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint comparePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint comparePointPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint actualPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint pointFill = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint pointStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -168,6 +169,9 @@ public class GrowthCurveView extends View {
         comparePaint.setStrokeWidth(dp(2));
         comparePaint.setStrokeCap(Paint.Cap.ROUND);
         comparePaint.setPathEffect(new DashPathEffect(new float[]{dp(0.5f), dp(4)}, 0));
+        comparePointPaint.setColor(outline);
+        comparePointPaint.setStyle(Paint.Style.STROKE);
+        comparePointPaint.setStrokeWidth(dp(2));
 
         actualPaint.setColor(primary);
         actualPaint.setStyle(Paint.Style.STROKE);
@@ -314,12 +318,14 @@ public class GrowthCurveView extends View {
     }
 
     private void rebuild() {
-        plot.set(getPaddingLeft() + axisLeft, getPaddingTop() + padTop, getWidth() - getPaddingRight() - padRight,
+        GrowthChartModel m = model;
+        float rightSpace = m == null ? padRight : Math.max(padRight,
+                axisTextPaint.measureText(unitLabel) + axisTextPaint.measureText(String.valueOf(m.xEnd)) / 2f + dp(8));
+        plot.set(getPaddingLeft() + axisLeft, getPaddingTop() + padTop, getWidth() - getPaddingRight() - rightSpace,
                 getHeight() - getPaddingBottom() - axisBottom);
         bandPath.reset();
         stdPath.reset();
         actualPath.reset();
-        GrowthChartModel m = model;
         if (m == null || plot.width() <= 0 || plot.height() <= 0) {
             actualX = new float[0];
             actualY = new float[0];
@@ -330,19 +336,23 @@ public class GrowthCurveView extends View {
         ChartScale xs = xScale();
         ChartScale ys = yScale();
 
-        int yCount = (m.yMax - m.yMin) / GrowthChartModel.Y_STEP + 1;
+        int yCount = Math.round((m.yMax - m.yMin) / m.yStep) + 1;
         yLabels = new String[yCount];
         yLabelPos = new float[yCount];
         for (int i = 0; i < yCount; i++) {
-            int v = m.yMin + i * GrowthChartModel.Y_STEP;
-            yLabels[i] = String.valueOf(v);
+            float v = m.yMin + i * m.yStep;
+            yLabels[i] = java.math.BigDecimal.valueOf(v).setScale(3, java.math.RoundingMode.HALF_UP)
+                    .stripTrailingZeros().toPlainString();
             yLabelPos[i] = ys.toPixel(v);
         }
-        int xCount = (m.xEnd - m.xStart) / GrowthChartModel.X_STEP + 1;
+        float labelWidth = Math.max(axisTextPaint.measureText(String.valueOf(m.xStart)),
+                axisTextPaint.measureText(String.valueOf(m.xEnd)));
+        int[] ages = ChartScale.dayAgeLabels(m.xStart, m.xEnd, plot.width(), labelWidth + dp(12));
+        int xCount = ages.length;
         xLabels = new String[xCount];
         xLabelPos = new float[xCount];
         for (int i = 0; i < xCount; i++) {
-            int v = m.xStart + i * GrowthChartModel.X_STEP;
+            int v = ages[i];
             xLabels[i] = String.valueOf(v);
             xLabelPos[i] = xs.toPixel(v);
         }
@@ -472,6 +482,14 @@ public class GrowthCurveView extends View {
                 canvas.drawCircle(actualX[i], actualY[i], r, pointStroke);
             }
         }
+        // Path 只有 moveTo 时不会绘制任何内容；单次称重也必须有可点击、可见的对比点。
+        // 空心圈略大于实际点，两个批次数据重合时仍能看出已添加的对比系列。
+        for (SeriesPath sp : series) {
+            drawComparePoints(canvas, sp);
+        }
+        for (SeriesPath sp : fading) {
+            drawComparePoints(canvas, sp);
+        }
         // 标注
         if (m.stdAvailable && m.stdLabel != null) {
             float x = clampLabelX(stdLabelX, labelPaint.measureText(m.stdLabel));
@@ -494,6 +512,19 @@ public class GrowthCurveView extends View {
             canvas.drawPath(sp.segment, comparePaint);
         }
         comparePaint.setAlpha(255);
+    }
+
+    private void drawComparePoints(@NonNull Canvas canvas, @NonNull SeriesPath sp) {
+        if (sp.progress <= 0f) return;
+        comparePointPaint.setAlpha(sp.alpha);
+        int visible = Math.min(sp.xs.length, (int) Math.ceil(sp.xs.length * sp.progress));
+        for (int i = 0; i < visible; i++) {
+            if (sp.xs[i] >= plot.left && sp.xs[i] <= plot.right
+                    && sp.ys[i] >= plot.top && sp.ys[i] <= plot.bottom) {
+                canvas.drawCircle(sp.xs[i], sp.ys[i], pointRadius + dp(2), comparePointPaint);
+            }
+        }
+        comparePointPaint.setAlpha(255);
     }
 
     private float clampLabelX(float x, float textWidth) {

@@ -23,6 +23,7 @@ import com.zhimu.server.biz.stock.support.BatchAllocator;
 import com.zhimu.server.biz.stock.support.StockFlowWriter;
 import com.zhimu.server.biz.stock.support.StockLedger;
 import com.zhimu.server.biz.stock.support.StockQty;
+import com.zhimu.server.biz.stock.support.StockReturnRefunds;
 import com.zhimu.server.common.enums.BizType;
 import com.zhimu.server.common.enums.ChangeImpact;
 import com.zhimu.server.common.enums.ChangeType;
@@ -102,6 +103,7 @@ public class OutboundChangeHandler implements ChangeRequestHandler {
         if (outbound == null) {
             throw new BizException(ErrorCode.NOT_FOUND, "记录不存在或无权查看");
         }
+        StockReturnRefunds.requireUnrefunded(outbound);
         String unit = unitText(outbound);
         BigDecimal current = currentStock(outbound);
         BigDecimal max = current.add(StockQty.zeroIfNull(outbound.getQty()));
@@ -121,6 +123,9 @@ public class OutboundChangeHandler implements ChangeRequestHandler {
     @Override
     public ChangeValidation validateChange(ChangeRecord record, ChangeForm form, ChangeType changeType,
                                            String fieldCode, String newValue) {
+        // 提交申请与退款登记锁同一原单，防止检查后并发生成一张待审核申请。
+        StockOutbound locked = loadForUpdate(record);
+        StockReturnRefunds.requireUnrefunded(locked);
         if (changeType != ChangeType.UPDATE) {
             return ChangeValidation.withoutField(impacts(record), RECALC_TAGS);
         }
@@ -152,10 +157,11 @@ public class OutboundChangeHandler implements ChangeRequestHandler {
 
     @Override
     public void validateForApprove(ChangeRequest request, ChangeRecord record) {
+        StockOutbound outbound = loadForUpdate(record);
+        StockReturnRefunds.requireUnrefunded(outbound);
         if (!ChangeType.UPDATE.name().equals(request.getChangeType())) {
             return;
         }
-        StockOutbound outbound = load(record.bizId());
         if (outbound == null) {
             throw new BizException(ErrorCode.RECORD_DELETED, "该记录已被删除，无法查看");
         }
@@ -190,7 +196,8 @@ public class OutboundChangeHandler implements ChangeRequestHandler {
 
     @Override
     public ChangeApplyResult apply(ChangeRequest request, ChangeRecord record, Long adminId) {
-        StockOutbound outbound = load(record.bizId());
+        StockOutbound outbound = loadForUpdate(record);
+        StockReturnRefunds.requireUnrefunded(outbound);
         if (outbound == null) {
             throw new BizException(ErrorCode.RECORD_DELETED, "该记录已被删除，无法查看");
         }
@@ -358,6 +365,14 @@ public class OutboundChangeHandler implements ChangeRequestHandler {
 
     private StockOutbound load(Long bizId) {
         return bizId == null ? null : TenantSkip.call(() -> outboundMapper.selectById(bizId));
+    }
+
+    private StockOutbound loadForUpdate(ChangeRecord record) {
+        StockOutbound outbound = TenantSkip.call(() -> outboundMapper.selectForUpdate(record.bizId(), record.farmId()));
+        if (outbound == null || !record.farmId().equals(outbound.getFarmId())) {
+            throw new BizException(ErrorCode.RECORD_DELETED, "该记录已被删除，无法查看");
+        }
+        return outbound;
     }
 
     private static BigDecimal parseDecimal(String value) {

@@ -5,6 +5,7 @@ import com.zhimu.server.admin.base.api.BreedQueryService;
 import com.zhimu.server.admin.base.api.CategoryInfo;
 import com.zhimu.server.biz.common.api.BizMediaService;
 import com.zhimu.server.biz.farm.support.FarmLookup;
+import com.zhimu.server.biz.farm.entity.Farm;
 import com.zhimu.server.biz.herd.api.BatchTimelineProvider;
 import com.zhimu.server.biz.herd.entity.Batch;
 import com.zhimu.server.biz.herd.entity.BatchEvent;
@@ -19,12 +20,16 @@ import com.zhimu.server.biz.herd.request.BatchCreateRequest;
 import com.zhimu.server.biz.herd.request.DeathCreateRequest;
 import com.zhimu.server.biz.herd.request.EntryUpdateRequest;
 import com.zhimu.server.biz.herd.request.TransferCreateRequest;
+import com.zhimu.server.biz.herd.query.BatchLookupQuery;
 import com.zhimu.server.biz.herd.service.impl.BatchServiceImpl;
 import com.zhimu.server.biz.herd.support.BatchAccess;
 import com.zhimu.server.biz.herd.support.BatchNoGenerator;
 import com.zhimu.server.biz.herd.support.HerdSupport;
 import com.zhimu.server.biz.herd.vo.BatchEntryResultVO;
+import com.zhimu.server.biz.herd.vo.BatchLookupVO;
 import com.zhimu.server.common.context.FarmContext;
+import com.zhimu.server.common.context.UserContext;
+import com.zhimu.server.common.enums.ClientType;
 import com.zhimu.server.common.enums.FarmRole;
 import com.zhimu.server.common.enums.FarmStatus;
 import com.zhimu.server.common.error.BizException;
@@ -52,8 +57,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -84,7 +94,8 @@ class BatchServiceImplTest {
         lenient().when(timelineProviders.orderedStream()).thenReturn(java.util.stream.Stream.empty());
         service = new BatchServiceImpl(support, access, batchMapper, eventMapper, timelineMapper, batchPenMapper,
                 penMapper, batchNoGenerator, farmLookup, memberCache, bizMediaService, operationLogRecorder,
-                timelineProviders, medicationService, changeRequestService);
+                timelineProviders, medicationService, changeRequestService,
+                new com.zhimu.server.biz.herd.support.BatchQrLinks("http://127.0.0.1:5173"));
         var withdrawal = new com.zhimu.server.biz.health.vo.WithdrawalVO();
         withdrawal.setStatus("NONE");
         lenient().when(medicationService.withdrawal(anyLong())).thenReturn(withdrawal);
@@ -108,7 +119,66 @@ class BatchServiceImplTest {
     @AfterEach
     void tearDown() {
         FarmContext.clear();
+        UserContext.clear();
         BeijingTime.setClock(null);
+    }
+
+    @Test
+    void outsiderQrOpensPublicTraceButTypedBatchNumberDoesNotBypassPermissions() {
+        Batch batch = publicBatch();
+        assertThat(service.lookup(qrLookup(), 1002L).getResult()).isEqualTo(BatchLookupVO.PUBLIC_TRACE);
+        var publicResult = service.lookup(qrLookup(), 1002L);
+        assertThat(publicResult.getTraceToken()).isEqualTo(batch.getQrToken());
+        assertThat(publicResult.getBatchId()).isNull();
+        assertThat(publicResult.getFarmId()).isNull();
+        BatchLookupQuery typed = new BatchLookupQuery();
+        typed.setBatchNo(batch.getBatchNo());
+        assertThat(service.lookup(typed, 1002L).getResult()).isEqualTo(BatchLookupVO.NO_PERMISSION);
+    }
+
+    @Test
+    void memberKeepsInternalArchiveAndOutOfScopeStaffOnlyGetsPublicTrace() {
+        Batch batch = publicBatch();
+        var owner = FarmContext.get();
+        when(memberCache.get(1001L, 10001L)).thenReturn(owner);
+        when(support.visibleToStaff(batch, owner)).thenReturn(true);
+        batch.setTraceEnabled(false);
+        assertThat(service.lookup(qrLookup(), 1001L).getResult()).isEqualTo(BatchLookupVO.OK);
+        batch.setTraceEnabled(true);
+        var staff = new FarmContext.FarmMember(1001L, "东山猪场", 10001L, 5001L, FarmRole.STAFF,
+                Set.of(9999L), FarmStatus.NORMAL);
+        when(memberCache.get(1001L, 10001L)).thenReturn(staff);
+        assertThat(service.lookup(qrLookup(), 1001L).getResult()).isEqualTo(BatchLookupVO.PUBLIC_TRACE);
+    }
+
+    @Test
+    void disabledTraceAndRejectedFarmDoNotOfferPublicArchive() {
+        Batch batch = publicBatch();
+        batch.setTraceEnabled(false);
+        assertThat(service.lookup(qrLookup(), 1002L).getResult()).isEqualTo(BatchLookupVO.NO_PERMISSION);
+        batch.setTraceEnabled(true);
+        Farm rejected = new Farm();
+        rejected.setAuditStatus("REJECTED");
+        when(farmLookup.findFarm(1001L)).thenReturn(rejected);
+        assertThat(service.lookup(qrLookup(), 1002L).getResult()).isEqualTo(BatchLookupVO.NOT_FOUND);
+    }
+
+    private Batch publicBatch() {
+        UserContext.set(new UserContext.LoginUser(10001L, ClientType.APP_ANDROID, 0, "qr-test"));
+        Batch batch = batch(3001L, 2003L, "ACTIVE", 1, 100, 100);
+        batch.setTraceEnabled(true);
+        when(batchMapper.selectByQrTokenIncludingDeleted(batch.getQrToken())).thenReturn(batch);
+        when(batchMapper.selectByBatchNoIncludingDeleted(batch.getBatchNo())).thenReturn(batch);
+        Farm farm = new Farm();
+        farm.setAuditStatus("APPROVED");
+        when(farmLookup.findFarm(1001L)).thenReturn(farm);
+        return batch;
+    }
+
+    private BatchLookupQuery qrLookup() {
+        BatchLookupQuery query = new BatchLookupQuery();
+        query.setQrContent("http://127.0.0.1:5173/s/b/k7Rm2xQ9pT");
+        return query;
     }
 
     @Test
@@ -124,9 +194,13 @@ class BatchServiceImplTest {
     }
 
     @Test
-    void createBatchReturnsKeyFields() {
+    void createBatchAllowsAnotherActiveBatchOfSameCategoryAndReturnsKeyFields() {
         Pen pen = pen(2004L, "4 号育肥舍", 220, 150);
         when(support.pensOfFarm(1001L)).thenReturn(List.of(pen));
+        Batch existing = batch(3019L, 2004L, "ACTIVE", 1, 150, 150);
+        when(support.activeBatches(1001L)).thenReturn(List.of(existing));
+        lenient().when(support.positivePensOfBatch(3019L))
+                .thenReturn(List.of(batchPen(3019L, 2004L, 150, LocalDate.of(2026, 10, 1))));
         when(batchNoGenerator.next()).thenReturn(new BatchNoGenerator.Generated("2610", 58, "ZM2610-058"));
         doAnswer(invocation -> {
             Batch batch = invocation.getArgument(0);
@@ -150,6 +224,46 @@ class BatchServiceImplTest {
         assertThat(vo.getCapacity()).isEqualTo(220);
         assertThat(vo.getOverCapacityCount()).isEqualTo(20);
         assertThat(vo.getUnitText()).isEqualTo("头");
+    }
+
+    @Test
+    void createBatchRejectsDifferentCategoryAlreadyInTargetPenBeforeWriting() {
+        Pen pen = pen(2004L, "4 号育肥舍", 220, 150);
+        when(support.pensOfFarm(1001L)).thenReturn(List.of(pen));
+        Batch other = batch(3019L, 2004L, "ACTIVE", 1, 150, 150);
+        other.setCategoryId(102L);
+        when(support.activeBatches(1001L)).thenReturn(List.of(other));
+        when(support.positivePensOfBatch(3019L))
+                .thenReturn(List.of(batchPen(3019L, 2004L, 150, LocalDate.of(2026, 10, 1))));
+
+        BizException error = (BizException) catchException(() -> service.create(createRequest(40, false), "req-1"));
+
+        assertThat(error.getMessage()).contains("已有其他品类的批次在栏");
+        verify(batchMapper, never()).insert((Batch) any());
+        verify(penMapper, never()).addStock(anyLong(), anyInt(), any());
+    }
+
+    @Test
+    void correctingEntryCategoryExcludesTheBatchBeingCorrected() {
+        Batch existing = batch(3001L, 2004L, "ACTIVE", 7, 200, 200);
+        existing.setCategoryId(102L);
+        when(access.require(3001L)).thenReturn(existing);
+        when(support.pensOfFarm(1001L)).thenReturn(List.of(pen(2004L, "4 号育肥舍", 220, 200)));
+        when(support.activeBatches(1001L)).thenReturn(List.of(existing));
+        when(support.positivePensOfBatch(3001L))
+                .thenReturn(List.of(batchPen(3001L, 2004L, 200, LocalDate.of(2026, 10, 1))));
+        when(batchMapper.update(isNull(), any())).thenReturn(1);
+        BatchServiceImpl entryService = spy(service);
+        doReturn(new com.zhimu.server.biz.herd.vo.BatchDetailVO()).when(entryService).detail(3001L);
+        EntryUpdateRequest request = new EntryUpdateRequest();
+        request.setVersion(7); request.setPenId(2004L); request.setBreedId(1101L);
+        request.setEntryDate(LocalDate.of(2026, 10, 1)); request.setEntryAgeDays(70); request.setEntryCount(200);
+        request.setEntryAvgWeight(new BigDecimal("28.5")); request.setIntroUnitPrice(new BigDecimal("520"));
+
+        entryService.updateEntry(3001L, request);
+
+        verify(batchMapper).update(isNull(), any());
+        verify(batchPenMapper).updateById(any(BatchPen.class));
     }
 
     @Test
@@ -248,7 +362,9 @@ class BatchServiceImplTest {
         health.setLastMedDate(LocalDate.of(2026, 10, 9));
         when(medicationService.withdrawal(3001L)).thenReturn(health);
 
-        var withdrawal = service.detail(3001L).getWithdrawal();
+        var detail = service.detail(3001L);
+        assertThat(detail.getQrContent()).isEqualTo("http://127.0.0.1:5173/s/b/k7Rm2xQ9pT");
+        var withdrawal = detail.getWithdrawal();
 
         assertThat(withdrawal.getInWithdrawal()).isTrue();
         assertThat(withdrawal.getRemainingDays()).isEqualTo(10);

@@ -164,6 +164,7 @@ function inviteIcon(status: string): string {
 }
 
 function inviteNote(invite: InviteItemVO): string {
+  if (invite.status === 'ACCEPTED') return invite.handled_at ? `${formatDay(invite.handled_at)}已加入养殖场` : '已加入养殖场'
   if (invite.status === 'PENDING') return invite.expires_at ? `${formatDay(invite.expires_at)}前有效` : '等待对方接受'
   if (invite.status === 'EXPIRED') return '7 天未处理'
   if (invite.status === 'REJECTED') return invite.handled_at ? `${formatDay(invite.handled_at)}拒绝` : '对方已拒绝'
@@ -171,6 +172,7 @@ function inviteNote(invite: InviteItemVO): string {
 }
 
 function inviteStatusText(invite: InviteItemVO): string {
+  if (invite.status === 'ACCEPTED') return '邀请成功'
   return invite.status_text || ({ PENDING: '待接受', EXPIRED: '已过期', REJECTED: '已拒绝', ACCEPTED: '已加入' }[invite.status] || '')
 }
 

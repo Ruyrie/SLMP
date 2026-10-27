@@ -22,3 +22,30 @@ local.properties
 # Local runtime logs
 /logs/
 
+# Local IDE, agent worktrees, and browser test output
+/.idea/
+/.claude/worktrees/
+.playwright-cli/
+/web/output/playwright/
+__pycache__/
+*.py[cod]
+
+# Local credentials and signing keys
+.env
+.env.*
+!.env.example
+!.env.development
+!.env.production
+*.jks
+*.keystore
+*.p12
+*.pfx
+
+# Generated deployment bundles and local deployment configuration
+/zhimu-configure/
+/zhimu-configure.zip
+/zhimu-deploy/
+/zhimu-deploy.zip
+/zhimu-update/
+/zhimu-update.zip
+

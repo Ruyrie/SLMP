@@ -160,6 +160,11 @@ public class RegisterContextVO {
 
         private long breedId;
         @Nullable
+        private Long categoryId;
+
+        @Nullable
+        public Long getCategoryId() { return categoryId; }
+        @Nullable
         private String breedName;
 
         public long getBreedId() {

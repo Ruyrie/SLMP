@@ -289,13 +289,6 @@ public class BreedingAnimalServiceImpl implements BreedingAnimalService {
                 vo.setDaysSinceMating(BreedingDates.daysBetween(cycle.getFirstMatingDate(), today));
                 vo.setExpectedDueDate(BeijingTime.format(cycle.getExpectedDueDate()));
                 vo.setDaysToDue(BreedingDates.daysBetween(today, cycle.getExpectedDueDate()));
-                RegisterContextVO.DefaultPen defaultPen = new RegisterContextVO.DefaultPen();
-                defaultPen.setPenId(animal.getPenId() == null ? 0 : animal.getPenId());
-                defaultPen.setPenName(pen == null ? null : pen.penName());
-                defaultPen.setCapacity(pen == null || pen.capacity() == null ? 0 : pen.capacity());
-                defaultPen.setCurrentCount(support.penCurrentCount(animal.getPenId()));
-                defaultPen.setUnit(support.unitOfBreed(animal.getBreedId()));
-                vo.setDefaultPen(defaultPen);
                 Long offspringBreedId = breed == null ? null : breed.offspringBreedId();
                 if (offspringBreedId == null && breed != null) {
                     offspringBreedId = breed.id();
@@ -304,7 +297,25 @@ public class BreedingAnimalServiceImpl implements BreedingAnimalService {
                     RegisterContextVO.OffspringBreed offspring = new RegisterContextVO.OffspringBreed();
                     offspring.setBreedId(offspringBreedId);
                     offspring.setBreedName(support.breedName(offspringBreedId));
+                    var offspringInfo = support.breed(offspringBreedId);
+                    Long categoryId = offspringInfo == null ? null : offspringInfo.categoryId();
+                    offspring.setCategoryId(categoryId);
                     vo.setOffspringBreed(offspring);
+                    // 后代商品品类可能不同于母本种畜品类，默认只选择后代可入栏的位置。
+                    PenInfo target = penQueryService.listPensForCategory(support.farmId(), categoryId).stream()
+                            .sorted(Comparator.comparingInt((PenInfo p) -> "NURSERY".equals(p.penType()) ? 0
+                                    : "BROODING".equals(p.penType()) ? 1 : 2)
+                                    .thenComparing(p -> support.penCurrentCount(p.penId())))
+                            .findFirst().orElse(null);
+                    if (target != null) {
+                        RegisterContextVO.DefaultPen defaultPen = new RegisterContextVO.DefaultPen();
+                        defaultPen.setPenId(target.penId());
+                        defaultPen.setPenName(target.penName());
+                        defaultPen.setCapacity(target.capacity() == null ? 0 : target.capacity());
+                        defaultPen.setCurrentCount(support.penCurrentCount(target.penId()));
+                        defaultPen.setUnit(support.unitOfBreed(offspringBreedId));
+                        vo.setDefaultPen(defaultPen);
+                    }
                 }
             }
             default -> {

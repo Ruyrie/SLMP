@@ -12,7 +12,7 @@ public final class GrowthCalc {
     private GrowthCalc() {
     }
 
-    /** 标准体重按日龄点直线插值，保留 1 位；超出首末点返回 null（不外推） */
+    /** 标准体重按日龄点直线插值，保留计算精度；超出首末点返回 null（不外推） */
     public static BigDecimal interpolate(List<WeighVO.StdPoint> points, Integer dayAge) {
         if (points == null || points.isEmpty() || dayAge == null) {
             return null;
@@ -30,11 +30,10 @@ public final class GrowthCalc {
             if (i + 1 < points.size()) {
                 WeighVO.StdPoint next = points.get(i + 1);
                 if (dayAge > current.getDayAge() && dayAge < next.getDayAge()) {
-                    BigDecimal perDay = next.getStdWeight().subtract(current.getStdWeight())
-                            .divide(BigDecimal.valueOf(next.getDayAge() - current.getDayAge()), 6, RoundingMode.HALF_UP);
-                    return current.getStdWeight()
-                            .add(perDay.multiply(BigDecimal.valueOf(dayAge - current.getDayAge())))
-                            .setScale(1, RoundingMode.HALF_UP);
+                    return current.getStdWeight().add(next.getStdWeight().subtract(current.getStdWeight())
+                            .multiply(BigDecimal.valueOf(dayAge - current.getDayAge()))
+                            .divide(BigDecimal.valueOf(next.getDayAge() - current.getDayAge()), 6, RoundingMode.HALF_UP))
+                            .stripTrailingZeros();
                 }
             }
         }

@@ -1,6 +1,7 @@
 package com.zhimu.slmp.today.ui.home;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.os.Handler;
@@ -38,6 +39,7 @@ public class QuickRegisterSheet extends BaseBottomSheetDialogFragment {
     private static final long NAVIGATE_DELAY_MS = 250;
 
     private TodayViewModel vm;
+    private boolean navigating;
     @Nullable
     private TodaySheetQuickRegisterBinding binding;
 
@@ -49,7 +51,8 @@ public class QuickRegisterSheet extends BaseBottomSheetDialogFragment {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
-        vm = new ViewModelProvider(requireParentFragment(), TodayInjector.factory()).get(TodayViewModel.class);
+        vm = new ViewModelProvider(getParentFragment() != null ? requireParentFragment() : requireActivity(),
+                TodayInjector.factory()).get(TodayViewModel.class);
         super.onCreate(savedInstanceState);
     }
 
@@ -79,6 +82,7 @@ public class QuickRegisterSheet extends BaseBottomSheetDialogFragment {
         binding = TodaySheetQuickRegisterBinding.inflate(inflater, container, false);
         ClickThrottle.setOnClickListener(binding.stockBack, v -> showStockIn(false));
         buildStockIn(inflater);
+        vm.getCurrentFarm().observe(this, farm -> setDescription(getSheetDescription()));
         vm.getQuickItems().observe(this, this::render);
         return binding.getRoot();
     }
@@ -169,8 +173,18 @@ public class QuickRegisterSheet extends BaseBottomSheetDialogFragment {
             return;
         }
         TodayViewModel model = vm;
+        navigating = true;
         dismiss();
         new Handler(Looper.getMainLooper()).postDelayed(() -> model.onQuickItemClick(item), NAVIGATE_DELAY_MS);
+    }
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if (!navigating && getActivity() instanceof QuickRegisterActivity
+                && !requireActivity().isChangingConfigurations()) {
+            requireActivity().finish();
+        }
     }
 
     @Override

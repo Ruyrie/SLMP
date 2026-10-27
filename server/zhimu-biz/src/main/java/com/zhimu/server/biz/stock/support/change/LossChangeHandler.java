@@ -102,6 +102,8 @@ public class LossChangeHandler implements ChangeRequestHandler {
         String reason = feed ? StockCodes.feedLossReasonText(loss.getReason())
                 : StockCodes.scrapReasonText(loss.getReason());
         BigDecimal max = StockQty.zeroIfNull(currentStock(loss)).add(StockQty.zeroIfNull(loss.getQty()));
+        max = max.divide(inputUnit(loss).factor(), feed ? 2 : StockQty.QTY_SCALE,
+                java.math.RoundingMode.DOWN).stripTrailingZeros();
         ChangeField qty = new ChangeField(FIELD_INPUT_QTY, action + "数量",
                 StockChangeSupport.number(loss.getInputQty()), inputUnitText(loss), ChangeField.NUMBER,
                 List.of(), BigDecimal.ZERO, max, RECALC_TAGS, null);
@@ -110,7 +112,7 @@ public class LossChangeHandler implements ChangeRequestHandler {
                                 StockChangeSupport.qtyText(loss.getQty()) + " " + unit),
                         new ChangeCardItem(action + "原因", reason)),
                 List.of(qty),
-                List.of("修改报损数量会重新计算结存"),
+                List.of("修改" + action + "数量会重新计算结存"),
                 "这条记录会影响库存和成本统计，需要管理员审核。审核期间原记录照常有效，审核通过后才会修改并重新计算。",
                 true, false, null, List.of());
     }
@@ -130,14 +132,13 @@ public class LossChangeHandler implements ChangeRequestHandler {
         if (qty == null || qty.signum() <= 0) {
             throw StockChangeSupport.fieldError("new_value", "数量必须大于 0");
         }
-        if (qty.stripTrailingZeros().scale() > 2) {
-            throw StockChangeSupport.fieldError("new_value", "数量最多保留 2 位小数");
-        }
+        StockLoss loss = load(record.bizId());
+        checkedMeasureQty(loss, qty);
         if (field.max() != null && qty.compareTo(field.max()) > 0) {
             throw StockChangeSupport.fieldError("new_value",
                     "不能超过当前可用结存 " + StockChangeSupport.number(field.max()) + " " + field.valueUnit());
         }
-        if (qty.compareTo(new BigDecimal(StockChangeSupport.number(lossValue(record)))) == 0) {
+        if (qty.compareTo(StockQty.zeroIfNull(loss.getInputQty())) == 0) {
             throw StockChangeSupport.fieldError("new_value", "新值与原值相同，不需要提交");
         }
         String normalized = StockChangeSupport.number(qty);
@@ -156,15 +157,12 @@ public class LossChangeHandler implements ChangeRequestHandler {
             throw new BizException(ErrorCode.RECORD_DELETED, "该记录已被删除，无法查看");
         }
         String raw = ChangeRequestJson.afterValue(request.getAfterJson(), FIELD_INPUT_QTY);
-        if (raw == null) {
-            return;
-        }
         BigDecimal qty = parseDecimal(raw);
         if (qty == null || qty.signum() <= 0) {
             throw StockChangeSupport.fieldError("new_value", "数量必须大于 0");
         }
         BigDecimal available = StockQty.zeroIfNull(currentStock(loss)).add(StockQty.zeroIfNull(loss.getQty()));
-        if (qty.compareTo(available) > 0) {
+        if (checkedMeasureQty(loss, qty).compareTo(available) > 0) {
             throw new BizException(ErrorCode.STOCK_NOT_ENOUGH,
                     "超过当前可用结存 " + StockChangeSupport.qtyText(available) + " " + unitText(loss)
                             + "，出库后库存不能为负数");
@@ -191,9 +189,12 @@ public class LossChangeHandler implements ChangeRequestHandler {
             if (newInputQty == null) {
                 newInputQty = oldInputQty;
             }
-            BigDecimal newQty = support.measureQty(newInputQty, inputUnit(loss));
+            BigDecimal newQty = checkedMeasureQty(loss, newInputQty);
             BigDecimal unitPrice = StockQty.zeroIfNull(loss.getUnitPrice());
-            BigDecimal newAmount = StockQty.amount(newQty.multiply(unitPrice));
+            BigDecimal available = StockQty.zeroIfNull(currentStock(loss)).add(oldQty);
+            BigDecimal newAmount = newQty.compareTo(available) == 0
+                    ? StockQty.amount(currentStockAmount(loss).add(oldAmount))
+                    : StockQty.amount(newQty.multiply(unitPrice));
             BigDecimal deltaQty = oldQty.subtract(newQty);
             BigDecimal deltaAmount = oldAmount.subtract(newAmount);
             adjust(loss, deltaQty, deltaAmount);
@@ -268,9 +269,39 @@ public class LossChangeHandler implements ChangeRequestHandler {
         return lot == null ? BigDecimal.ZERO : StockQty.zeroIfNull(lot.getStockQty());
     }
 
-    private BigDecimal lossValue(ChangeRecord record) {
-        StockLoss loss = load(record.bizId());
-        return loss == null ? BigDecimal.ZERO : StockQty.zeroIfNull(loss.getInputQty());
+    private BigDecimal currentStockAmount(StockLoss loss) {
+        if (StockCodes.LOSS_TYPE_FEED.equals(loss.getLossType())) {
+            Feed feed = support.feed(loss.getFeedId());
+            return feed == null ? BigDecimal.ZERO : StockQty.zeroIfNull(feed.getStockAmount());
+        }
+        DrugLot lot = support.lot(loss.getDrugLotId());
+        return lot == null ? BigDecimal.ZERO : StockQty.zeroIfNull(lot.getStockAmount());
+    }
+
+    private BigDecimal checkedMeasureQty(StockLoss loss, BigDecimal input) {
+        if (loss == null) {
+            throw new BizException(ErrorCode.RECORD_DELETED, "该记录已被删除，无法查看");
+        }
+        if (input == null || input.signum() <= 0) {
+            throw StockChangeSupport.fieldError("new_value", "数量必须大于 0");
+        }
+        int scale = StockCodes.LOSS_TYPE_FEED.equals(loss.getLossType()) ? 2 : StockQty.QTY_SCALE;
+        if (input.stripTrailingZeros().scale() > scale) {
+            throw StockChangeSupport.fieldError("new_value", "数量最多保留 " + scale + " 位小数");
+        }
+        BigDecimal qty = input.multiply(inputUnit(loss).factor());
+        if (qty.stripTrailingZeros().scale() > StockQty.QTY_SCALE) {
+            throw StockChangeSupport.fieldError("new_value", "换算后的数量最多保留 3 位小数");
+        }
+        if (!StockCodes.LOSS_TYPE_FEED.equals(loss.getLossType())) {
+            DrugLot lot = support.lot(loss.getDrugLotId());
+            Drug drug = lot == null ? null : support.drug(lot.getDrugId());
+            if (drug != null && StockCodes.UNIT_DOSE.equals(drug.getUnit())
+                    && qty.stripTrailingZeros().scale() > 0) {
+                throw StockChangeSupport.fieldError("new_value", "头份必须是整数");
+            }
+        }
+        return StockQty.qty(qty);
     }
 
     private StockChangeSupport.UnitInfo inputUnit(StockLoss loss) {

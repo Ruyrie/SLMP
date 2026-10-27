@@ -47,6 +47,13 @@ public class StockOutbound extends AuditEntity {
     private LocalDateTime voidAt;
     private Long voidBy;
     private String clientRequestId;
+    private BigDecimal refundAmount;
+    private LocalDate refundDate;
+    private String refundRemark;
+    private LocalDateTime refundRegisteredAt;
+    private Long refundRegisteredBy;
+    private String refundRequestId;
+    private Long financeRecordId;
     @Version
     private Integer version;
     private Long updatedBy;

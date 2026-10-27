@@ -2,6 +2,8 @@ package com.zhimu.server.biz.stock.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.zhimu.server.admin.base.api.DrugCatalogQueryService;
+import com.zhimu.server.biz.finance.api.FinanceSourceWriteService;
+import com.zhimu.server.biz.finance.support.FinanceConst;
 import com.zhimu.server.biz.stock.entity.Drug;
 import com.zhimu.server.biz.stock.entity.DrugLot;
 import com.zhimu.server.biz.stock.entity.Feed;
@@ -47,7 +49,7 @@ import java.util.regex.Pattern;
  * <p>
  * 饲料入库：校验 → 写单据 → 移动加权平均记账 → 写 INBOUND 流水 → 回填 flow_id → 最近供应商。
  * 药品入库：在饲料流程上增加批号（按 farm + drug + lot_no 建或复用）、有效期一致性校验、平台停用批号拦截；
- * 疫苗按“每瓶单价 ÷ 每瓶头份”折算记账单位成本。模块10 的同步记账未接入，finance_record_id 留空。
+ * 疫苗按“每瓶单价 ÷ 每瓶头份”折算记账单位成本。同步记账与库存写入共用事务，按入库单唯一生成自动支出。
  */
 @Service
 @RequiredArgsConstructor
@@ -67,6 +69,7 @@ public class StockInboundServiceImpl implements StockInboundService {
     private final StockPartners partners;
     private final StockSettingService settingService;
     private final DrugCatalogQueryService drugCatalogQueryService;
+    private final FinanceSourceWriteService financeWriter;
 
     @Override
     @Transactional
@@ -115,6 +118,7 @@ public class StockInboundServiceImpl implements StockInboundService {
         StockFlow flow = flow(inbound, StockCodes.MATERIAL_FEED, feed.getId(), null, null,
                 measure.qty(), measurePrice, amount, move, request.getInboundDate());
         inbound.setFlowId(flow.getId());
+        syncFinance(inbound);
         inboundMapper.updateById(inbound);
         partners.touch(farmId, StockCodes.PARTNER_SUPPLIER, inbound.getSupplierName());
         lookups.log("CREATE", "INBOUND_CREATE", StockCodes.BIZ_INBOUND, inbound.getId(), feed.getName(), null,
@@ -206,6 +210,7 @@ public class StockInboundServiceImpl implements StockInboundService {
         StockFlow flow = flow(inbound, StockCodes.MATERIAL_DRUG, null, drug.getId(), lot.getId(),
                 measure.qty(), measurePrice, amount, move, request.getInboundDate());
         inbound.setFlowId(flow.getId());
+        syncFinance(inbound);
         inboundMapper.updateById(inbound);
         lookups.log("CREATE", "INBOUND_CREATE", StockCodes.BIZ_INBOUND, inbound.getId(), drug.getName(), null,
                 amount);
@@ -349,6 +354,7 @@ public class StockInboundServiceImpl implements StockInboundService {
             inbound.setIsSyncFinance(request.getSyncFinance());
         }
         inbound.setUpdatedBy(lookups.userId());
+        syncFinance(inbound);
         inboundMapper.updateById(inbound);
 
         StockFlow flow = inbound.getFlowId() == null ? null : flowMapper.selectById(inbound.getFlowId());
@@ -406,9 +412,24 @@ public class StockInboundServiceImpl implements StockInboundService {
         inbound.setVoidAt(BeijingTime.now());
         inbound.setVoidBy(lookups.userId());
         inbound.setUpdatedBy(lookups.userId());
+        syncFinance(inbound);
         inboundMapper.updateById(inbound);
         lookups.log("VOID", "INBOUND_VOID", StockCodes.BIZ_INBOUND, inbound.getId(), inbound.getInboundNo(),
                 inbound.getAmount(), null);
+    }
+
+    private void syncFinance(StockInbound inbound) {
+        boolean feed = StockCodes.isFeed(inbound.getMaterialType());
+        Feed feedInfo = feed ? feedMapper.selectById(inbound.getFeedId()) : null;
+        Drug drugInfo = feed ? null : drugMapper.selectById(inbound.getDrugId());
+        String name = feed ? (feedInfo == null ? "饲料" : feedInfo.getName()) : (drugInfo == null ? "药品" : drugInfo.getName());
+        String unit = feed ? "千克" : StockCodes.unitText(drugInfo == null ? null : drugInfo.getUnit());
+        String detail = name + " " + inbound.getQty().stripTrailingZeros().toPlainString() + " " + (unit == null ? "" : unit);
+        inbound.setFinanceRecordId(financeWriter.syncInboundExpense(new FinanceSourceWriteService.InboundExpense(
+                inbound.getFarmId(), feed ? FinanceConst.SOURCE_FEED : FinanceConst.SOURCE_DRUG,
+                inbound.getId(), inbound.getInboundNo(), inbound.getAmount(), inbound.getInboundDate(), detail,
+                !Boolean.FALSE.equals(inbound.getIsSyncFinance()) && StockCodes.STATUS_NORMAL.equals(inbound.getStatus()),
+                lookups.userId())));
     }
 
     private String unitOf(DrugLot lot) {

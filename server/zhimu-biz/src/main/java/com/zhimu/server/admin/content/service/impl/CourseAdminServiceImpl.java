@@ -50,6 +50,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,7 +91,7 @@ public class CourseAdminServiceImpl implements CourseAdminService {
     public PageVO<CourseRowVO> page(AdminCourseQuery query) {
         int pageNo = query.pageOrDefault();
         int size = query.sizeOrDefault();
-        var wrapper = baseWrapper(query);
+        var wrapper = baseWrapper(query, true);
         if (query.getTopicId() != null) {
             wrapper.orderByAsc(Course::getSectionNo).orderByAsc(Course::getId);
         } else {
@@ -118,7 +119,7 @@ public class CourseAdminServiceImpl implements CourseAdminService {
     }
 
     private com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Course> baseWrapper(
-            AdminCourseQuery query) {
+            AdminCourseQuery query, boolean includeStatus) {
         var wrapper = Wrappers.<Course>lambdaQuery();
         if (query.getTopicId() != null) {
             wrapper.eq(Course::getTopicId, query.getTopicId());
@@ -126,7 +127,7 @@ public class CourseAdminServiceImpl implements CourseAdminService {
         if (query.getCategoryId() != null) {
             wrapper.eq(Course::getCategoryId, query.getCategoryId());
         }
-        if (query.getStatus() != null && !query.getStatus().isBlank()
+        if (includeStatus && query.getStatus() != null && !query.getStatus().isBlank()
                 && !"ALL".equalsIgnoreCase(query.getStatus())) {
             wrapper.eq(Course::getStatus, query.getStatus().toUpperCase());
         }
@@ -142,7 +143,8 @@ public class CourseAdminServiceImpl implements CourseAdminService {
     }
 
     private long count(AdminCourseQuery query, String status) {
-        var wrapper = baseWrapper(query);
+        // Tab counts keep the same content filters, independently of the selected status tab.
+        var wrapper = baseWrapper(query, false);
         wrapper.eq(status != null, Course::getStatus, status);
         return courseMapper.selectCount(wrapper);
     }
@@ -222,7 +224,7 @@ public class CourseAdminServiceImpl implements CourseAdminService {
         course.setVersion(0);
         int shifted = shiftSections(course.getTopicId(), course.getSectionNo(), null);
         if ("ON_SHELF".equals(submit)) {
-            checkShelfReady(title, category, topic, course.getSectionNo(), video, cover);
+            checkShelfReady(course, title, category, topic, course.getSectionNo(), video, cover);
             course.setStatus("ON_SHELF");
             course.setOnShelfAt(now);
             course.setOnShelfBy(adminId);
@@ -259,7 +261,8 @@ public class CourseAdminServiceImpl implements CourseAdminService {
         validateTitle(request.getTitle(), effectiveVideo);
         validateApplicable(request.getApplicableCategoryIds());
         String title = titleOf(request.getTitle(), effectiveVideo);
-        FileEntity cover = request.getCoverFileId() == null && course.getCoverFileId() != null
+        FileEntity cover = (request.getCoverFileId() == null || Objects.equals(request.getCoverFileId(), course.getCoverFileId()))
+                && course.getCoverFileId() != null
                 ? fileMapper.selectById(course.getCoverFileId())
                 : resolveCover(request, effectiveVideo, submit);
 
@@ -291,7 +294,7 @@ public class CourseAdminServiceImpl implements CourseAdminService {
         }
         course.setUpdatedBy(AdminContext.requireAdminId());
         if ("ON_SHELF".equals(submit)) {
-            checkShelfReady(title, category, topic, section, effectiveVideo, cover != null ? cover
+            checkShelfReady(course, title, category, topic, section, effectiveVideo, cover != null ? cover
                     : course.getCoverFileId() == null ? null : fileMapper.selectById(course.getCoverFileId()));
             if (!"ON_SHELF".equals(course.getStatus())) {
                 course.setStatus("ON_SHELF");
@@ -355,10 +358,10 @@ public class CourseAdminServiceImpl implements CourseAdminService {
     @Transactional
     public TranscodeStateVO retryTranscode(Long id) {
         Course course = requireCourse(id);
-        if (!TranscodeStatus.FAILED.name().equals(course.getTranscodeStatus())) {
+        FileEntity video = course.getVideoFileId() == null ? null : fileMapper.selectById(course.getVideoFileId());
+        if (!TranscodeStatus.FAILED.name().equals(playbackState(course, video, List.of()).status())) {
             throw ContentErrors.stateChanged("只有转码失败的课程可以重试");
         }
-        FileEntity video = course.getVideoFileId() == null ? null : fileMapper.selectById(course.getVideoFileId());
         if (video == null) {
             throw ContentErrors.stateChanged("原片已清理，请重新上传");
         }
@@ -395,7 +398,7 @@ public class CourseAdminServiceImpl implements CourseAdminService {
         FileEntity cover = course.getCoverFileId() == null ? null : fileMapper.selectById(course.getCoverFileId());
         CourseCategory category = categoryMapper.selectById(course.getCategoryId());
         CourseTopic topic = course.getTopicId() == null ? null : topicMapper.selectById(course.getTopicId());
-        checkShelfReady(course.getTitle(), category, topic, course.getSectionNo(), video, cover);
+        checkShelfReady(course, course.getTitle(), category, topic, course.getSectionNo(), video, cover);
         LocalDateTime now = BeijingTime.now();
         course.setStatus("ON_SHELF");
         course.setOnShelfAt(now);
@@ -468,7 +471,7 @@ public class CourseAdminServiceImpl implements CourseAdminService {
                          Map<Long, List<CourseMedia>> mediaMap) {
         vo.setId(course.getId());
         vo.setTitle(course.getTitle());
-        vo.setCoverUrl(course.getCoverUrl());
+        vo.setCoverUrl(media.coverUrl(course));
         vo.setDurationSec(course.getDurationSec());
         vo.setCategoryId(course.getCategoryId());
         vo.setCategoryName(course.getCategoryName());
@@ -479,13 +482,11 @@ public class CourseAdminServiceImpl implements CourseAdminService {
         if (video != null) {
             vo.setUploadStatus(video.getUploadStatus());
         }
-        vo.setTranscodeStatus(course.getTranscodeStatus());
-        vo.setTranscodeStatusText(ContentTexts.transcodeStatus(course.getTranscodeStatus()));
-        Map<String, FileVariant> variants = media.variantMap(course.getVideoFileId());
-        FileVariant p720 = variants.get(VariantCode.HLS_720P.name());
-        FileVariant p480 = variants.get(VariantCode.HLS_480P.name());
-        vo.setP720(slot(p720));
-        vo.setP480(slot(p480));
+        PlaybackState playback = playbackState(course, video, mediaMap.getOrDefault(course.getId(), List.of()));
+        vo.setTranscodeStatus(playback.status());
+        vo.setTranscodeStatusText(ContentTexts.transcodeStatus(playback.status()));
+        vo.setP720(playback.p720());
+        vo.setP480(playback.p480());
         vo.setStatus(course.getStatus());
         vo.setStatusText(ContentTexts.contentStatus(course.getStatus()));
         if (!"DRAFT".equals(course.getStatus())) {
@@ -499,7 +500,7 @@ public class CourseAdminServiceImpl implements CourseAdminService {
         vo.setUpdatedAt(course.getUpdatedAt());
         Long adminId = course.getUpdatedBy() != null ? course.getUpdatedBy() : course.getCreatedBy();
         vo.setUpdatedByName(adminNames.get(adminId));
-        vo.setCanOnShelf(canOnShelf(course, video, p720, p480));
+        vo.setCanOnShelf(canOnShelf(course, playback));
     }
 
     private CourseSlotVO slot(FileVariant variant) {
@@ -507,21 +508,77 @@ public class CourseAdminServiceImpl implements CourseAdminService {
             return null;
         }
         CourseSlotVO vo = new CourseSlotVO();
-        vo.setStatus(variant.getStatus());
+        vo.setStatus("SUCCESS".equals(variant.getStatus()) && !hasText(variant.getObjectKey())
+                ? "FAILED" : variant.getStatus());
         vo.setProgress(variant.getProgress());
         return vo;
     }
 
-    private boolean canOnShelf(Course course, FileEntity video, FileVariant p720, FileVariant p480) {
-        return video != null
-                && TranscodeStatus.SUCCESS.name().equals(video.getTranscodeStatus())
-                && p720 != null && TranscodeStatus.SUCCESS.name().equals(p720.getStatus())
-                && p480 != null && TranscodeStatus.SUCCESS.name().equals(p480.getStatus())
-                && course.getCoverFileId() != null
-                && course.getTitle() != null && !course.getTitle().isBlank()
-                && course.getCategoryId() != null
-                && (course.getTopicId() == null || course.getSectionNo() != null);
+    private boolean canOnShelf(Course course, PlaybackState playback) {
+        CourseCategory category = course.getCategoryId() == null ? null : categoryMapper.selectById(course.getCategoryId());
+        FileEntity cover = course.getCoverFileId() == null ? null : fileMapper.selectById(course.getCoverFileId());
+        return playback.ready() && coverReady(course, cover) && hasText(course.getTitle())
+                && category != null && "ENABLED".equals(category.getStatus())
+                && (course.getTopicId() == null || (course.getSectionNo() != null && course.getSectionNo() > 0
+                    && topicMapper.selectById(course.getTopicId()) != null));
     }
+
+    /** Match the player: a bound video never falls back to an older course-media row. */
+    private PlaybackState playbackState(Course course, FileEntity video, List<CourseMedia> legacy) {
+        boolean bound = course.getVideoFileId() != null && course.getVideoFileId() > 0;
+        CourseSlotVO p720;
+        CourseSlotVO p480;
+        if (bound) {
+            Map<String, FileVariant> variants = media.variantMap(course.getVideoFileId());
+            p720 = slot(variants.get(VariantCode.HLS_720P.name()));
+            p480 = slot(variants.get(VariantCode.HLS_480P.name()));
+        } else {
+            p720 = legacySlot(legacy, "P720");
+            p480 = legacySlot(legacy, "P480");
+        }
+        boolean ready = successful(p720) && successful(p480) && (!bound || (video != null
+                && "READY".equals(video.getUploadStatus()) && "SUCCESS".equals(video.getTranscodeStatus())));
+        String status = ready ? "SUCCESS" : bound && video != null ? video.getTranscodeStatus()
+                : bound || !legacy.isEmpty() ? "FAILED" : "NONE";
+        if (!ready && ("SUCCESS".equals(status) || failed(p720) || failed(p480))) status = "FAILED";
+        return new PlaybackState(p720, p480, status == null ? "NONE" : status, ready);
+    }
+
+    private CourseSlotVO legacySlot(List<CourseMedia> rows, String quality) {
+        for (CourseMedia row : rows) {
+            if (quality.equals(row.getQuality()) && "HLS".equals(row.getMediaType())
+                    && "SUCCESS".equals(row.getStatus()) && usableUrl(row.getUrl())) {
+                CourseSlotVO slot = new CourseSlotVO();
+                slot.setStatus("SUCCESS");
+                slot.setProgress(BigDecimal.ONE);
+                return slot;
+            }
+        }
+        return null;
+    }
+
+    private static boolean usableUrl(String value) {
+        if (!hasText(value)) return false;
+        try {
+            URI uri = URI.create(value.trim());
+            String host = uri.getHost();
+            return host != null && ("https".equalsIgnoreCase(uri.getScheme()) || "http".equalsIgnoreCase(uri.getScheme()))
+                    && !host.equalsIgnoreCase("example.com") && !host.toLowerCase(java.util.Locale.ROOT).endsWith(".example.com");
+        } catch (IllegalArgumentException ignored) { return false; }
+    }
+
+    private boolean coverReady(Course course, FileEntity cover) {
+        if (course.getCoverFileId() != null && course.getCoverFileId() > 0) {
+            return cover != null && "READY".equals(cover.getUploadStatus())
+                    && hasText(cover.getBucket()) && hasText(cover.getObjectKey());
+        }
+        return usableUrl(media.coverUrl(course));
+    }
+
+    private static boolean hasText(String value) { return value != null && !value.isBlank(); }
+    private static boolean successful(CourseSlotVO slot) { return slot != null && "SUCCESS".equals(slot.getStatus()); }
+    private static boolean failed(CourseSlotVO slot) { return slot != null && "FAILED".equals(slot.getStatus()); }
+    private record PlaybackState(CourseSlotVO p720, CourseSlotVO p480, String status, boolean ready) { }
 
     private TranscodeStateVO state(Course course) {
         TranscodeStateVO vo = new TranscodeStateVO();
@@ -532,13 +589,14 @@ public class CourseAdminServiceImpl implements CourseAdminService {
             vo.setUploadStatus(video.getUploadStatus());
             vo.setTranscodeError(video.getTranscodeError());
         }
-        vo.setTranscodeStatus(course.getTranscodeStatus());
-        Map<String, FileVariant> variants = media.variantMap(course.getVideoFileId());
-        vo.setP720(slot(variants.get(VariantCode.HLS_720P.name())));
-        vo.setP480(slot(variants.get(VariantCode.HLS_480P.name())));
+        PlaybackState playback = playbackState(course, video, mediaMapper.selectPlayable(course.getId()));
+        vo.setTranscodeStatus(playback.status());
+        vo.setP720(playback.p720());
+        vo.setP480(playback.p480());
         List<CoverCandidateVO> covers = media.coverCandidates(course.getVideoFileId());
         vo.setCoverCandidates(covers);
-        vo.setCoversReady(!covers.isEmpty());
+        vo.setCoversReady(!covers.isEmpty() || coverReady(course,
+                course.getCoverFileId() == null ? null : fileMapper.selectById(course.getCoverFileId())));
         return vo;
     }
 
@@ -708,7 +766,7 @@ public class CourseAdminServiceImpl implements CourseAdminService {
         return cover;
     }
 
-    private void checkShelfReady(String title, CourseCategory category, CourseTopic topic, Integer sectionNo,
+    private void checkShelfReady(Course course, String title, CourseCategory category, CourseTopic topic, Integer sectionNo,
                                  FileEntity video, FileEntity cover) {
         if (title == null || title.isBlank()) {
             throw ContentErrors.field("title", "请填写课程标题");
@@ -719,17 +777,12 @@ public class CourseAdminServiceImpl implements CourseAdminService {
         if (topic != null && (sectionNo == null || sectionNo < 1)) {
             throw ContentErrors.field("section_no", "加入专题时请填写节次");
         }
-        if (video == null || !TranscodeStatus.SUCCESS.name().equals(video.getTranscodeStatus())) {
+        PlaybackState playback = playbackState(course, video, course.getId() == null ? List.of()
+                : mediaMapper.selectPlayable(course.getId()));
+        if (!playback.ready()) {
             throw ContentErrors.stateChanged("720P 和 480P 都转码完成后才能上架");
         }
-        Map<String, FileVariant> variants = media.variantMap(video.getId());
-        FileVariant p720 = variants.get(VariantCode.HLS_720P.name());
-        FileVariant p480 = variants.get(VariantCode.HLS_480P.name());
-        if (p720 == null || !TranscodeStatus.SUCCESS.name().equals(p720.getStatus())
-                || p480 == null || !TranscodeStatus.SUCCESS.name().equals(p480.getStatus())) {
-            throw ContentErrors.stateChanged("720P 和 480P 都转码完成后才能上架");
-        }
-        if (cover == null) {
+        if (!coverReady(course, cover)) {
             throw ContentErrors.stateChanged("请选择封面");
         }
     }

@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.common.service.impl;
 
+import com.zhimu.server.biz.account.support.AccountPersonalDataGuard;
 import com.zhimu.server.biz.common.api.BizRef;
 import com.zhimu.server.biz.common.entity.BizMedia;
 import com.zhimu.server.biz.common.entity.FileEntity;
@@ -87,6 +88,7 @@ public class FileServiceImpl implements FileService {
     private final FileVoAssembler fileVoAssembler;
     private final FarmMemberCache farmMemberCache;
     private final java.util.List<com.zhimu.server.biz.common.api.BusinessMediaAccess> businessMediaAccess;
+    private final AccountPersonalDataGuard personalDataGuard;
 
     @Override
     @Transactional
@@ -99,6 +101,7 @@ public class FileServiceImpl implements FileService {
             throw CommonErrors.fieldError("scene", "不支持的上传场景");
         }
         Long userId = UserContext.requireUserId();
+        personalDataGuard.requireActive(userId);
         Long effectiveFarmId = NO_FARM_SCENES.contains(scene) ? null : farmId;
         String clientType = clientType();
         byte[] head = readHead(file);

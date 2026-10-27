@@ -135,3 +135,20 @@ curl -fsS -H 'X-Client: ADMIN_WEB' http://8.208.12.217/admin/v1/auth/captcha
 3. `/etc/zhimu/env` 同步改为 `MINIO_PUBLIC_ENDPOINT=https://<域名>`、`HLS_BASE_URL=https://<域名>/zmt-course/hls`、`ALLOWED_ORIGINS=https://<域名>`、`COOKIE_SECURE=true`。
 4. App 的 `local.properties` 改为 `zmt.baseUrl=https://<域名>/`，删除明文放行 domain-config 后重新打 APK。
 5. 验证头像签名地址、管理端 Cookie、App 登录与上传下载。
+
+## 用户协议与隐私政策
+
+正文源文件位于 `web/apps/user/public/agreements/`，随用户端构建复制到 `dist/agreements/`，部署目录为 `/var/www/zhimu/agreements/`。Nginx 的 `/agreements/` 必须使用 `try_files $uri =404`，避免文件缺失时显示 Web 登录首页。
+
+当前版本为 `2026-10-26`。线上 `/etc/zhimu/env` 使用 Spring Boot 的直接属性环境变量：
+
+```properties
+ZHIMU_ACCOUNT_AGREEMENTBASEURL=http://8.208.12.217/agreements
+ZHIMU_ACCOUNT_AGREEMENTVERSION=2026-10-26
+```
+
+更新配置后重启 `zhimu`，确认 `/api/v1/agreements/current` 返回该前缀下的 `user-2026-10-26.html` 与 `privacy-2026-10-26.html`，且两个 URL 分别返回对应标题的 HTML。新版 `application.yml` 也支持 `AGREEMENT_BASE_URL` 与 `AGREEMENT_VERSION`；直接属性环境变量优先，改配置时不要遗留相互冲突的值。
+
+App 的 `PrivacyManager.POLICY_VERSION` 与服务端版本一起更新。协议页支持 HTTPS，以及与 `BuildConfig.BASE_URL` 同源且已被网络安全配置放行的 HTTP 页面。切换 HTTPS 时同步修改上述协议地址。
+
+正文按当前项目试用功能生成，引用高德、极光官方隐私说明，未虚构公司名称和联系电话。正式对外运营前，需由运营方确认主体、联系方式、存储地区及实际数据处理范围。高德参考：https://lbs.amap.com/pages/privacy/；极光参考：https://docs.jiguang.cn/jpush/practice/compliance。

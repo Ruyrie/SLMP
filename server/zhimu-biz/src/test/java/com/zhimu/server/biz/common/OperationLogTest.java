@@ -202,8 +202,159 @@ class OperationLogTest {
         assertThat(logs.get(0).getChanges().get(0).getAfter()).isEqualTo("已作废");
     }
 
+    @Test
+    void penLegacyPartialSnapshotShowsOnlyTheActualCapacityChange() {
+        List<RecordLogVO> logs = logs(BizType.PEN, "UPDATE",
+                "{\"pen_name\":\"1 号保育舍\",\"pen_type\":\"NURSERY\",\"capacity\":320}",
+                "{\"pen_name\":\"1 号保育舍\",\"capacity\":360}");
+
+        assertThat(logs).hasSize(1);
+        assertThat(logs.get(0).getChanges()).singleElement().satisfies(change -> {
+            assertThat(change.getFieldName()).isEqualTo("容量");
+            assertThat(change.getBefore()).isEqualTo("320");
+            assertThat(change.getAfter()).isEqualTo("360");
+        });
+    }
+
+    @Test
+    void penLegacyUnchangedSnapshotDoesNotInventTypeRemovalOrShowEmptyModification() {
+        assertThat(logs(BizType.PEN, "UPDATE",
+                "{\"pen_name\":\"1 号保育舍\",\"pen_type\":\"NURSERY\",\"capacity\":360}",
+                "{\"pen_name\":\"1 号保育舍\",\"capacity\":360}")).isEmpty();
+    }
+
+    @Test
+    void penLegacyTypeAndStatusCodesHaveChineseDisplay() {
+        List<RecordLogVO> typeLogs = logs(BizType.PEN, "UPDATE",
+                "{\"pen_type\":\"NURSERY\"}", "{\"pen_type\":\"FATTENING\"}");
+        assertThat(typeLogs.get(0).getChanges()).singleElement().satisfies(change -> {
+            assertThat(change.getFieldName()).isEqualTo("栏舍类型");
+            assertThat(change.getBefore()).isEqualTo("保育舍");
+            assertThat(change.getAfter()).isEqualTo("育肥舍");
+        });
+        List<RecordLogVO> statusLogs = logs(BizType.PEN, "DISABLE",
+                "{\"status\":\"ENABLED\"}", "{\"status\":\"DISABLED\"}");
+        assertThat(statusLogs.get(0).getChanges()).singleElement().satisfies(change -> {
+            assertThat(change.getFieldName()).isEqualTo("栏舍状态");
+            assertThat(change.getBefore()).isEqualTo("启用");
+            assertThat(change.getAfter()).isEqualTo("停用");
+        });
+    }
+
+    @Test
+    void explicitNullStillMeansAFieldWasCleared() {
+        List<RecordLogVO> logs = logs(BizType.PEN, "UPDATE",
+                "{\"pen_type\":\"NURSERY\"}", "{\"pen_type\":null}");
+        assertThat(logs.get(0).getChanges()).singleElement().satisfies(change -> {
+            assertThat(change.getBefore()).isEqualTo("保育舍");
+            assertThat(change.getAfter()).isNull();
+        });
+    }
+
+    @Test
+    void structuredPenSnapshotKeepsUnitsAndDropsUnchangedFields() {
+        List<RecordLogVO> logs = logs(BizType.PEN, "UPDATE",
+                "{\"pen_type\":{\"name\":\"栏舍类型\",\"display\":\"保育舍\"},"
+                        + "\"capacity\":{\"name\":\"容量\",\"display\":\"320 头\"}}",
+                "{\"pen_type\":{\"name\":\"栏舍类型\",\"display\":\"保育舍\"},"
+                        + "\"capacity\":{\"name\":\"容量\",\"display\":\"360 头\"}}");
+        assertThat(logs.get(0).getChanges()).singleElement().satisfies(change -> {
+            assertThat(change.getFieldName()).isEqualTo("容量");
+            assertThat(change.getBefore()).isEqualTo("320 头");
+            assertThat(change.getAfter()).isEqualTo("360 头");
+        });
+    }
+
+    @Test
+    void otherRecordDeletionRetainsTheBeforeOnlyValue() {
+        List<RecordLogVO> logs = logs(BizType.FEED_RECORD, "DELETE",
+                "{\"actual_qty\":{\"name\":\"实际投喂量\",\"display\":\"140 千克\"}}", null);
+        assertThat(logs.get(0).getOpActionText()).isEqualTo("删除");
+        assertThat(logs.get(0).getChanges()).singleElement().satisfies(change -> {
+            assertThat(change.getBefore()).isEqualTo("140 千克");
+            assertThat(change.getAfter()).isNull();
+        });
+    }
+
+    @Test
+    void medicationLegacyCreateUsesChineseLabelsAndAction() {
+        RecordLogVO log = logs(BizType.MEDICATION_RECORD, "CREATE", null,
+                "{\"used_qty\":555,\"first_date\":\"2026-10-27\"}").get(0);
+        assertThat(log.getOpActionText()).isEqualTo("登记用药");
+        assertThat(log.getChanges()).extracting(RecordLogVO.Change::getFieldName)
+                .containsExactly("实际用量", "首次用药日期");
+        assertThat(log.getChanges().get(0).getAfter()).isEqualTo("555");
+    }
+
+    @Test
+    void medicationLegacyMissingBeforeValueIsUnknownInsteadOfEmpty() {
+        RecordLogVO log = logs(BizType.MEDICATION_RECORD, "UPDATE",
+                "{\"last_date\":\"2026-10-31\"}",
+                "{\"last_date\":\"2026-10-31\",\"used_qty\":555}").get(0);
+        assertThat(log.getChanges()).singleElement().satisfies(change -> {
+            assertThat(change.getFieldName()).isEqualTo("实际用量");
+            assertThat(change.getBefore()).isEqualTo("未记录");
+            assertThat(change.getAfter()).isEqualTo("555");
+        });
+    }
+
+    @Test
+    void medicationStructuredSnapshotsKeepUnitsAndRealDifferencesOnly() {
+        RecordLogVO log = logs(BizType.MEDICATION_RECORD, "UPDATE",
+                "{\"used_qty\":{\"name\":\"实际用量\",\"display\":\"500 克\"},"
+                        + "\"reason\":{\"name\":\"用药原因\",\"display\":\"原说明\"}}",
+                "{\"used_qty\":{\"name\":\"实际用量\",\"display\":\"555 克\"},"
+                        + "\"reason\":{\"name\":\"用药原因\",\"display\":null}}").get(0);
+        assertThat(log.getChanges()).hasSize(2);
+        assertThat(log.getChanges().get(0).getBefore()).isEqualTo("500 克");
+        assertThat(log.getChanges().get(0).getAfter()).isEqualTo("555 克");
+        assertThat(log.getChanges().get(1).getAfter()).isNull();
+    }
+
+    @Test
+    void medicationLegacyDeleteUsesReadableState() {
+        RecordLogVO log = logs(BizType.MEDICATION_RECORD, "DELETE",
+                "{\"deleted\":false}", "{\"deleted\":true}").get(0);
+        assertThat(log.getOpActionText()).isEqualTo("删除用药记录");
+        assertThat(log.getChanges()).singleElement().satisfies(change -> {
+            assertThat(change.getFieldName()).isEqualTo("记录状态");
+            assertThat(change.getBefore()).isEqualTo("有效");
+            assertThat(change.getAfter()).isEqualTo("已删除");
+        });
+    }
+
+    private List<RecordLogVO> logs(BizType type, String action, String before, String after) {
+        RecordLogRow row = new RecordLogRow();
+        row.setId(1L);
+        row.setOperatorId(10001L);
+        row.setOperatorName("王建国");
+        row.setOpAction(action);
+        row.setBeforeJson(before);
+        row.setAfterJson(after);
+        row.setFarmId(1001L);
+        when(operationLogMapper.selectUserLogs(type.name(), 2001L, 20)).thenReturn(List.of(row));
+        grant(1001L, 10001L);
+        return queryService.listByBiz(type, 2001L, 20);
+    }
+
     private void grant(Long farmId, Long userId) {
         when(farmMemberCache.get(farmId, userId)).thenReturn(new com.zhimu.server.common.context.FarmContext.FarmMember(
                 farmId, "东山猪场", userId, 5001L, FarmRole.OWNER, java.util.Set.of(), FarmStatus.NORMAL));
+    }
+
+    @Test
+    void financeModificationHistoryKeepsTheSameManagerOnlyAccessAsFinanceRecords() {
+        RecordLogRow row = new RecordLogRow();
+        row.setId(1L);
+        row.setFarmId(1001L);
+        row.setBeforeJson("{\"amount\":{\"name\":\"金额\",\"display\":\"18.00 元\"}}");
+        row.setAfterJson("{\"amount\":{\"name\":\"金额\",\"display\":\"25.50 元\"}}");
+        when(operationLogMapper.selectUserLogs("FINANCE_RECORD", 98001L, 20)).thenReturn(List.of(row));
+        when(farmMemberCache.get(1001L, 10001L)).thenReturn(new com.zhimu.server.common.context.FarmContext.FarmMember(
+                1001L, "东山猪场", 10001L, 5001L, FarmRole.STAFF, java.util.Set.of(), FarmStatus.NORMAL));
+
+        assertThatThrownBy(() -> queryService.listByBiz(BizType.FINANCE_RECORD, 98001L, 20))
+                .isInstanceOf(BizException.class)
+                .satisfies(error -> assertThat(((BizException) error).getCode()).isEqualTo(ErrorCode.ROLE_FORBIDDEN.getCode()));
     }
 }

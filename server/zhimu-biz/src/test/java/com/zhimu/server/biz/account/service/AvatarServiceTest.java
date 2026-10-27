@@ -23,7 +23,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,6 +46,7 @@ class AvatarServiceTest {
         FileVoAssembler assembler = new FileVoAssembler(fileMapper, variantMapper, objectStorage);
         service = new AvatarServiceImpl(userMapper, fileMapper, assembler);
         UserContext.set(new UserContext.LoginUser(10001L, ClientType.APP_ANDROID, 0, "jti"));
+        when(userMapper.selectByIdForUpdate(10001L)).thenReturn(user());
         when(objectStorage.presignedGetUrl(anyString(), anyString())).thenAnswer(invocation ->
                 "https://files.test/" + invocation.getArgument(1));
     }
@@ -57,8 +60,8 @@ class AvatarServiceTest {
     @Test
     void 绑定头像写入文件并返回临时地址() {
         User user = user();
-        when(userMapper.selectById(10001L)).thenReturn(user);
-        when(fileMapper.selectById(900L)).thenReturn(file(900L, 10001L, "AVATAR", "IMAGE"));
+        when(userMapper.selectByIdForUpdate(10001L)).thenReturn(user);
+        when(fileMapper.selectActiveForUpdate(900L)).thenReturn(file(900L, 10001L, "AVATAR", "IMAGE"));
         when(userMapper.updateAvatar(eq(10001L), eq(900L), any())).thenReturn(1);
 
         AccountUserVO vo = service.updateAvatar(900L);
@@ -69,13 +72,17 @@ class AvatarServiceTest {
         assertThat(user.getAvatarFileId()).isEqualTo(900L);
         assertThat(user.getProfileVersion()).isEqualTo(4);
         verify(userMapper).updateAvatar(eq(10001L), eq(900L), any());
+        var order = inOrder(userMapper, fileMapper);
+        order.verify(userMapper).selectByIdForUpdate(10001L);
+        order.verify(fileMapper).selectActiveForUpdate(900L);
+        order.verify(userMapper).updateAvatar(eq(10001L), eq(900L), any());
     }
 
     @Test
     void 清除头像置空并返回空地址() {
         User user = user();
         user.setAvatarFileId(900L);
-        when(userMapper.selectById(10001L)).thenReturn(user);
+        when(userMapper.selectByIdForUpdate(10001L)).thenReturn(user);
         when(userMapper.clearAvatar(eq(10001L), any())).thenReturn(1);
 
         AccountUserVO vo = service.clearAvatar();
@@ -87,7 +94,7 @@ class AvatarServiceTest {
 
     @Test
     void 非本人文件返回40303() {
-        when(fileMapper.selectById(900L)).thenReturn(file(900L, 10002L, "AVATAR", "IMAGE"));
+        when(fileMapper.selectActiveForUpdate(900L)).thenReturn(file(900L, 10002L, "AVATAR", "IMAGE"));
 
         BizException e = (BizException) catchException(() -> service.updateAvatar(900L));
 
@@ -97,7 +104,7 @@ class AvatarServiceTest {
 
     @Test
     void 非头像场景返回40001() {
-        when(fileMapper.selectById(900L)).thenReturn(file(900L, 10001L, "INSPECTION", "IMAGE"));
+        when(fileMapper.selectActiveForUpdate(900L)).thenReturn(file(900L, 10001L, "INSPECTION", "IMAGE"));
 
         BizException e = (BizException) catchException(() -> service.updateAvatar(900L));
 
@@ -107,7 +114,7 @@ class AvatarServiceTest {
 
     @Test
     void 非图片返回40001() {
-        when(fileMapper.selectById(900L)).thenReturn(file(900L, 10001L, "AVATAR", "VIDEO"));
+        when(fileMapper.selectActiveForUpdate(900L)).thenReturn(file(900L, 10001L, "AVATAR", "VIDEO"));
 
         BizException e = (BizException) catchException(() -> service.updateAvatar(900L));
 
@@ -117,7 +124,7 @@ class AvatarServiceTest {
 
     @Test
     void 文件不存在返回40401() {
-        when(fileMapper.selectById(999L)).thenReturn(null);
+        when(fileMapper.selectActiveForUpdate(999L)).thenReturn(null);
 
         BizException e = (BizException) catchException(() -> service.updateAvatar(999L));
 
@@ -139,6 +146,22 @@ class AvatarServiceTest {
 
         assertThat(service.avatarUrl(999L)).isNull();
         assertThat(service.avatarUrl(null)).isNull();
+    }
+
+    @Test
+    void 注销提交后的迟到头像绑定和清除都不能回写() {
+        User cancelled = user();
+        cancelled.setStatus("CANCELLED");
+        when(userMapper.selectByIdForUpdate(10001L)).thenReturn(cancelled);
+
+        BizException bind = (BizException) catchException(() -> service.updateAvatar(900L));
+        BizException clear = (BizException) catchException(service::clearAvatar);
+
+        assertThat(bind.getCode()).isEqualTo(40104);
+        assertThat(clear.getCode()).isEqualTo(40104);
+        verifyNoInteractions(fileMapper, variantMapper, objectStorage);
+        verify(userMapper, never()).updateAvatar(any(), any(), any());
+        verify(userMapper, never()).clearAvatar(any(), any());
     }
 
     private static User user() {

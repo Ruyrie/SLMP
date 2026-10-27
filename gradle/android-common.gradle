@@ -23,7 +23,7 @@ android {
         buildConfigField "boolean", "USE_MOCK", "${props.getProperty('zmt.useMock', 'true')}"
         buildConfigField "String", "APP_VERSION_NAME", "\"${rootProject.findProperty('zmt.versionName') ?: '1.0.0'}\""
 
-        // 第三方 Key（local.properties：amap.key、jpush.appKey），为空时对应 SDK 不初始化
+        // Debug 第三方 Key（local.properties：amap.key、jpush.appKey），Release 在下方单独配置
         // 极光 AppKey 绑定包名：jpush.appKey 对应 debug 包 com.zhimu.slmp.debug；release 包用 jpush.releaseAppKey（见下方 buildTypes）
         buildConfigField "String", "AMAP_KEY", "\"${props.getProperty('amap.key', '')}\""
         buildConfigField "String", "JPUSH_APPKEY", "\"${props.getProperty('jpush.appKey', '')}\""
@@ -37,6 +37,9 @@ android {
 
     buildTypes {
         release {
+            // 高德 Key 绑定包名和签名 SHA1，Release 不复用 Debug Key
+            buildConfigField "String", "AMAP_KEY", "\"${props.getProperty('amap.releaseKey', '')}\""
+            manifestPlaceholders.put('AMAP_KEY', props.getProperty('amap.releaseKey', ''))
             // release 包名 com.zhimu.slmp 需在极光另建应用；未填写时不初始化推送
             buildConfigField "String", "JPUSH_APPKEY", "\"${props.getProperty('jpush.releaseAppKey', '')}\""
             manifestPlaceholders.put('JPUSH_APPKEY', props.getProperty('jpush.releaseAppKey', ''))

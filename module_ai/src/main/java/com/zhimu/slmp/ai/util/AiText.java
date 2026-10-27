@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.zhimu.slmp.ai.model.AiCodes;
+import com.zhimu.slmp.ai.model.vo.AiMessageVO;
 import com.zhimu.slmp.ai.model.vo.AiSessionItemVO;
 import com.zhimu.slmp.ai.model.vo.ContinueWatchingVO;
 import com.zhimu.slmp.ai.model.vo.CourseCardVO;
@@ -19,6 +20,27 @@ import java.util.regex.Pattern;
  * 模块11 文案（UI 文档 2.5 节）与格式化，纯 Java，单元测试覆盖。
  */
 public final class AiText {
+
+    private static final String LEGACY_SOURCE_PREFIX = "未找到平台知识依据，仅供参考。";
+
+    /** Move only the old, fixed source banner out of historical answer bodies; preserve all substantive caveats. */
+    @NonNull
+    public static String answerBody(@NonNull AiMessageVO message) {
+        String body = message.getAnswerText() == null ? "" : message.getAnswerText().trim();
+        if (AiCodes.ANSWER_NO_BASIS.equals(message.getAnswerType()) && body.startsWith(LEGACY_SOURCE_PREFIX)) {
+            body = body.substring(LEGACY_SOURCE_PREFIX.length()).trim();
+        }
+        return body;
+    }
+
+    @NonNull
+    public static String sourceNote(@NonNull AiMessageVO message) {
+        if (message.getSourceNote() != null && !message.getSourceNote().trim().isEmpty()) {
+            return message.getSourceNote();
+        }
+        return AiCodes.ANSWER_NO_BASIS.equals(message.getAnswerType())
+                ? "本次回答缺少平台知识依据，请结合实际情况核实。" : "";
+    }
 
     public static final int MAX_QUESTION = 500;
     public static final int COUNT_FROM = 480;

@@ -72,8 +72,9 @@ public final class GrowthChartModel {
 
     public final int xStart;
     public final int xEnd;
-    public final int yMin;
-    public final int yMax;
+    public final float yMin;
+    public final float yMax;
+    public final float yStep;
     @NonNull
     public final List<Point> actual;
     @NonNull
@@ -92,7 +93,7 @@ public final class GrowthChartModel {
     @Nullable
     public final String latestLabel;
 
-    public GrowthChartModel(int xStart, int xEnd, int yMin, int yMax, @NonNull List<Point> actual,
+    public GrowthChartModel(int xStart, int xEnd, float yMin, float yMax, float yStep, @NonNull List<Point> actual,
                             @NonNull List<StdPoint> std, @NonNull List<Series> compare, int latestIndex,
                             boolean stdAvailable, @Nullable String stdLabel, float stdLabelDay, float stdLabelWeight,
                             @Nullable String latestLabel) {
@@ -100,6 +101,7 @@ public final class GrowthChartModel {
         this.xEnd = xEnd;
         this.yMin = yMin;
         this.yMax = yMax;
+        this.yStep = yStep;
         this.actual = Collections.unmodifiableList(actual);
         this.std = Collections.unmodifiableList(std);
         this.compare = Collections.unmodifiableList(compare);
@@ -145,7 +147,7 @@ public final class GrowthChartModel {
             for (GrowthCurveVO.GrowthComparePointVO p : s.getPoints()) {
                 if (p.getAvgWeight() != null) {
                     pts.add(new Point(p.getDayAge(), p.getAvgWeight().floatValue(), false,
-                            no + FeedFormat.DOT + p.getDayAge() + " 日龄" + FeedFormat.DOT + FeedFormat.kg1(p.getAvgWeight())));
+                            no + FeedFormat.DOT + p.getDayAge() + " 日龄" + FeedFormat.DOT + FeedFormat.weightKg(p.getAvgWeight())));
                 }
             }
             compare.add(new Series(s.getBatchId(), no, pts));
@@ -154,19 +156,27 @@ public final class GrowthChartModel {
             return null;
         }
 
-        // 横轴：x_min、x_max 向外取整到 10；没有给出时取数据范围
+        // 服务端范围是主批次的建议范围；对比批次可能更年轻或更老，必须完整纳入。
         float xLo = vo.getXMin() != null ? vo.getXMin() : Float.MAX_VALUE;
         float xHi = vo.getXMax() != null ? vo.getXMax() : -Float.MAX_VALUE;
-        if (vo.getXMin() == null || vo.getXMax() == null) {
-            for (Point p : actual) {
+        for (Point p : actual) {
+            xLo = Math.min(xLo, p.dayAge);
+            xHi = Math.max(xHi, p.dayAge);
+        }
+        for (Series s : compare) {
+            for (Point p : s.points) {
                 xLo = Math.min(xLo, p.dayAge);
                 xHi = Math.max(xHi, p.dayAge);
             }
+        }
+        if (vo.getXMin() == null || vo.getXMax() == null) {
             for (StdPoint p : std) {
                 xLo = Math.min(xLo, p.dayAge);
                 xHi = Math.max(xHi, p.dayAge);
             }
         }
+        if (xLo == Float.MAX_VALUE) xLo = 0;
+        if (xHi == -Float.MAX_VALUE) xHi = xLo + X_STEP;
         int[] x = ChartScale.niceRange(xLo, xHi, X_STEP);
 
         // 纵轴：横轴范围内全部可见值（实际、标准与偏差带、对比）向外取整到 20
@@ -203,23 +213,30 @@ public final class GrowthChartModel {
             yLo = 0f;
             yHi = Y_STEP;
         }
-        int[] y = ChartScale.niceRange(yLo, yHi, Y_STEP);
+        // 小体重品类也要保留可辨认的变化，不能统一按 20 千克取整。
+        float yStep = weightStep(Math.max(yHi - yLo, yHi * 0.05f));
+        float yMin = Math.max(0f, (float) Math.floor(yLo / yStep) * yStep);
+        float yMax = (float) Math.ceil(yHi / yStep) * yStep;
+        if (yMax <= yMin) {
+            yMax = yMin + yStep;
+        }
 
         String stdLabel = null;
         float stdDay = 0f;
         float stdWeight = 0f;
-        Integer current = vo.getCurrentDayAge();
-        if (stdAvailable && current != null) {
+        // 有称重时与最近实际点使用同一日龄，避免把今天标准与数日前的体重放在一起比较。
+        Integer referenceDay = latest >= 0 ? actual.get(latest).dayAge : vo.getCurrentDayAge();
+        if (stdAvailable && referenceDay != null) {
             List<StdPointVO> pts = vo.getStdPoints();
-            BigDecimal at = GrowthCalc.interpolate(pts, current);
+            BigDecimal at = GrowthCalc.interpolate(pts, referenceDay);
             if (at != null) {
-                stdLabel = "标准 " + FeedFormat.num1(at);
-                stdDay = current;
+                stdLabel = "标准 " + FeedFormat.weightNumber(at);
+                stdDay = referenceDay;
                 stdWeight = at.floatValue();
             }
         }
-        String latestLabel = latest >= 0 ? FeedFormat.num1(BigDecimal.valueOf(actual.get(latest).weight)) : null;
-        return new GrowthChartModel(x[0], x[1], y[0], y[1], actual, std, compare, latest, stdAvailable,
+        String latestLabel = latest >= 0 ? FeedFormat.weightNumber(BigDecimal.valueOf(actual.get(latest).weight)) : null;
+        return new GrowthChartModel(x[0], x[1], yMin, yMax, yStep, actual, std, compare, latest, stdAvailable,
                 stdLabel, stdDay, stdWeight, latestLabel);
     }
 
@@ -232,19 +249,40 @@ public final class GrowthChartModel {
                 left.add(s);
             }
         }
-        return new GrowthChartModel(xStart, xEnd, yMin, yMax, actual, std, left, latestIndex, stdAvailable, stdLabel,
+        return new GrowthChartModel(xStart, xEnd, yMin, yMax, yStep, actual, std, left, latestIndex, stdAvailable, stdLabel,
                 stdLabelDay, stdLabelWeight, latestLabel);
+    }
+
+    /** 已选批次缺少曲线时直接说明，避免只显示图例让用户误以为添加没有生效。 */
+    @NonNull
+    public String comparisonNotice() {
+        StringBuilder notice = new StringBuilder();
+        for (Series s : compare) {
+            if (s.points.size() > 1) continue;
+            if (notice.length() > 0) notice.append("；");
+            notice.append(s.batchNo).append(s.points.isEmpty()
+                    ? " 暂无可对比的称重数据" : " 仅有 1 个数据点，已显示为圆点");
+        }
+        return notice.toString();
+    }
+
+    private static float weightStep(float span) {
+        double raw = Math.max(span, 0.01f) / 4d;
+        double magnitude = Math.pow(10, Math.floor(Math.log10(raw)));
+        double residual = raw / magnitude;
+        double nice = residual <= 1 ? 1 : residual <= 2 ? 2 : residual <= 5 ? 5 : 10;
+        return (float) (nice * magnitude);
     }
 
     @NonNull
     private static String actualTip(@NonNull GrowthCurveVO.GrowthActualPointVO p) {
         StringBuilder sb = new StringBuilder();
         sb.append(FeedFormat.date(p.getDate())).append(FeedFormat.DOT).append(p.getDayAge()).append(" 日龄")
-                .append(FeedFormat.DOT).append(FeedFormat.kg1(p.getAvgWeight()));
+                .append(FeedFormat.DOT).append(FeedFormat.weightKg(p.getAvgWeight()));
         if (p.isEntry()) {
             sb.append("（入栏）");
         } else if (p.getStdWeight() != null) {
-            sb.append("（标准 ").append(FeedFormat.num1(p.getStdWeight())).append("）");
+            sb.append("（标准 ").append(FeedFormat.weightNumber(p.getStdWeight())).append("）");
         }
         return sb.toString();
     }

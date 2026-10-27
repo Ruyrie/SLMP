@@ -33,7 +33,8 @@ class ReminderSettingServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new ReminderSettingServiceImpl(reminderSettingMapper, new ReminderSettingConvert());
+        service = new ReminderSettingServiceImpl(org.mockito.Mockito.mock(
+                com.zhimu.server.biz.account.support.AccountPersonalDataGuard.class), reminderSettingMapper, new ReminderSettingConvert());
     }
 
     @Test

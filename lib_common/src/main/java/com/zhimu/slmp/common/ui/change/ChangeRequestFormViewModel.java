@@ -15,6 +15,7 @@ import com.zhimu.slmp.base.mvvm.SingleLiveEvent;
 import com.zhimu.slmp.base.mvvm.UiMessage;
 import com.zhimu.slmp.base.util.IdemKey;
 import com.zhimu.slmp.common.model.vo.ChangeRequestFormVO;
+import com.zhimu.slmp.common.model.vo.OptionVO;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.common.ui.change.model.request.ChangeRequestSubmitRequest;
 import com.zhimu.slmp.common.model.vo.ChangeRequestVO;
@@ -42,6 +43,7 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
     public static final String FIELD_REASON = "reason";
     /** 修改项“作废这条记录” */
     public static final String VOID_CODE = "__VOID__";
+    public static final String DELETE_CODE = "__DELETE__";
     public static final int REASON_MAX = 200;
 
     public static final String MSG_PICK_FIELD = "请选择要修改的项目";
@@ -148,7 +150,7 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
         load(repository.getForm(bizType, bizId), f -> {
             form.setValue(f);
             List<ChangeRequestFormVO.Field> fields = f.getFields();
-            if (fields.size() == 1 && !f.isVoidAllowed()) {
+            if (fields.size() == 1 && !f.isVoidAllowed() && !f.isDeleteAllowed()) {
                 selectedField.setValue(fields.get(0).getFieldCode());
             }
             userEdited = false;
@@ -159,6 +161,8 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
     private void prefill(@NonNull ChangeRequestVO last) {
         if (last.isVoid()) {
             selectedField.setValue(VOID_CODE);
+        } else if (last.isDelete()) {
+            selectedField.setValue(DELETE_CODE);
         } else {
             selectedField.setValue(last.getFieldCode());
             newValue.setValue(last.getAfterValue() == null ? "" : last.getAfterValue());
@@ -180,10 +184,27 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
         return VOID_CODE.equals(selectedField.getValue());
     }
 
+    public boolean isDeleteSelected() {
+        return DELETE_CODE.equals(selectedField.getValue());
+    }
+
     @Nullable
     public ChangeRequestFormVO.Field currentField() {
         ChangeRequestFormVO f = form.getValue();
-        return f == null || isVoidSelected() ? null : f.fieldOf(selectedField.getValue());
+        return f == null || isVoidSelected() || isDeleteSelected() ? null : f.fieldOf(selectedField.getValue());
+    }
+
+    @NonNull
+    public static String displayValue(@Nullable ChangeRequestFormVO.Field field, @Nullable String value) {
+        if (field != null && "SELECT".equals(field.getInputType())) {
+            for (OptionVO option : field.getOptions()) {
+                if (Objects.equals(option.getValue(), value)) {
+                    return option.getLabel() == null ? "" : option.getLabel();
+                }
+            }
+            return value == null || value.isEmpty() ? "" : "原选项已不可用";
+        }
+        return value == null ? "" : value;
     }
 
     /** 当前修改项的重新计算范围（作废时为作废的范围） */
@@ -284,12 +305,30 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
         FormValidator v = new FormValidator();
         String code = selectedField.getValue();
         v.requiredValue(FIELD_FIELD_CODE, code, MSG_PICK_FIELD);
-        if (code != null && !VOID_CODE.equals(code)) {
+        ChangeRequestFormVO context = form.getValue();
+        if (VOID_CODE.equals(code)) {
+            v.check(FIELD_FIELD_CODE, context != null && context.isVoidAllowed(), "这条记录暂不能作废");
+        } else if (DELETE_CODE.equals(code)) {
+            v.check(FIELD_FIELD_CODE, context != null && context.isDeleteAllowed(), "这条记录暂不能删除");
+        } else if (code != null) {
+            v.check(FIELD_FIELD_CODE, currentField() != null, MSG_PICK_FIELD);
+        }
+        if (code != null && !VOID_CODE.equals(code) && !DELETE_CODE.equals(code)) {
             ChangeRequestFormVO.Field field = currentField();
             String value = newValue.getValue() == null ? "" : newValue.getValue().trim();
             v.required(FIELD_NEW_VALUE, value, MSG_NEW_VALUE_EMPTY);
             if (field != null) {
                 v.check(FIELD_NEW_VALUE, !sameValue(value, field.getValue()), MSG_SAME_VALUE);
+                if ("SELECT".equals(field.getInputType())) {
+                    boolean validOption = false;
+                    for (OptionVO option : field.getOptions()) {
+                        if (!option.isDisabled() && Objects.equals(option.getValue(), value)) {
+                            validOption = true;
+                            break;
+                        }
+                    }
+                    v.check(FIELD_NEW_VALUE, validOption, "请选择有效的新值");
+                }
                 if ("NUMBER".equals(field.getInputType())) {
                     BigDecimal min = field.getMin();
                     BigDecimal max = field.getMax();
@@ -303,7 +342,7 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
         }
         String r = reason.getValue() == null ? "" : reason.getValue().trim();
         v.required(FIELD_REASON, r, MSG_REASON_EMPTY);
-        v.maxLength(FIELD_REASON, r, REASON_MAX, MSG_REASON_EMPTY);
+        v.maxLength(FIELD_REASON, r, REASON_MAX, "修改原因不能超过 200 字");
         return v.validate();
     }
 
@@ -338,12 +377,13 @@ public class ChangeRequestFormViewModel extends BaseViewModel {
             idemKey = IdemKey.newKey();
         }
         boolean isVoid = isVoidSelected();
+        boolean isDelete = isDeleteSelected();
         ChangeRequestSubmitRequest req = new ChangeRequestSubmitRequest(
                 f.getBizType() != null ? f.getBizType() : (bizType == null ? "" : bizType),
                 f.getBizId() != 0 ? f.getBizId() : bizId,
-                isVoid ? ChangeRequestSubmitRequest.CHANGE_VOID : ChangeRequestSubmitRequest.CHANGE_UPDATE,
-                isVoid ? null : selectedField.getValue(),
-                isVoid ? null : (newValue.getValue() == null ? null : newValue.getValue().trim()),
+                isVoid ? ChangeRequestSubmitRequest.CHANGE_VOID : isDelete ? ChangeRequestSubmitRequest.CHANGE_DELETE : ChangeRequestSubmitRequest.CHANGE_UPDATE,
+                isVoid || isDelete ? null : selectedField.getValue(),
+                isVoid || isDelete ? null : (newValue.getValue() == null ? null : newValue.getValue().trim()),
                 f.getRecordVersion(),
                 reason.getValue() == null ? "" : reason.getValue().trim(),
                 resubmitOfId);

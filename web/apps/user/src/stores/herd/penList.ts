@@ -58,8 +58,11 @@ export const usePenListStore = defineStore('herdPenList', {
     detail: null as PenDetail | null,
     detailLoading: false,
     detailError: '',
+    detailRequestId: 0,
     penLogs: [] as RecordLog[],
     logsLoading: false,
+    logsError: '',
+    logsRequestId: 0,
     disableDialog: false,
     disablePen: null as PenActionTarget | null,
     statusBusy: false,
@@ -241,6 +244,8 @@ export const usePenListStore = defineStore('herdPenList', {
         version: Number(detail.version || 0)
       }
       this.formErrors = {}
+      // Temporary drawers share the same edge; the detail otherwise covers the editor.
+      this.detailDrawer = false
       this.formDrawer = true
     },
     validateForm(): boolean {
@@ -309,39 +314,56 @@ export const usePenListStore = defineStore('herdPenList', {
       }
     },
     async openDetail(penId: number): Promise<void> {
+      const requestId = ++this.detailRequestId
+      ++this.logsRequestId
       this.detailDrawer = true
+      this.detail = null
       this.detailError = ''
       this.detailLoading = true
       this.penLogs = []
+      this.logsError = ''
+      this.logsLoading = false
       try {
         const detail = await herdApi.penDetail(penId)
+        if (requestId !== this.detailRequestId) return
         this.detail = detail
         this.details[penId] = detail
         void this.loadPenLogs(penId)
       } catch (error) {
+        if (requestId !== this.detailRequestId) return
         this.detail = null
         this.detailError = errorText(error, '栏舍详情加载失败')
       } finally {
-        this.detailLoading = false
+        if (requestId === this.detailRequestId) this.detailLoading = false
       }
     },
     async refreshDetail(penId: number): Promise<void> {
+      const requestId = this.detailRequestId
       try {
         const detail = await herdApi.penDetail(penId)
-        this.detail = detail
         this.details[penId] = detail
+        if (requestId === this.detailRequestId && this.detail?.pen_id === penId) {
+          this.detail = detail
+          await this.loadPenLogs(penId)
+        }
       } catch {
         /* 保持旧值 */
       }
     },
     async loadPenLogs(penId: number): Promise<void> {
+      const requestId = ++this.logsRequestId
       this.logsLoading = true
+      this.logsError = ''
       try {
-        this.penLogs = await herdApi.recordLogs('PEN', penId)
-      } catch {
+        const logs = await herdApi.recordLogs('PEN', penId)
+        if (requestId !== this.logsRequestId || this.detail?.pen_id !== penId) return
+        this.penLogs = logs
+      } catch (error) {
+        if (requestId !== this.logsRequestId || this.detail?.pen_id !== penId) return
         this.penLogs = []
+        this.logsError = errorText(error, '修改记录加载失败，请重试')
       } finally {
-        this.logsLoading = false
+        if (requestId === this.logsRequestId) this.logsLoading = false
       }
     },
     askDisable(pen: PenActionTarget): void {
@@ -356,7 +378,10 @@ export const usePenListStore = defineStore('herdPenList', {
         const detail = await this.getDetailForAction(id)
         const updated = await herdApi.disablePen(id, Number(detail.version || 0))
         this.details[id] = updated
-        if (this.detail?.pen_id === id) this.detail = updated
+        if (this.detail?.pen_id === id) {
+          this.detail = updated
+          await this.loadPenLogs(id)
+        }
         this.disableDialog = false
         useUiStore().toast(`已停用${updated.pen_name || this.disablePen.pen_name || '栏舍'}`)
         await this.load(true)
@@ -378,7 +403,10 @@ export const usePenListStore = defineStore('herdPenList', {
         const detail = await this.getDetailForAction(Number(pen.pen_id))
         const updated = await herdApi.enablePen(Number(pen.pen_id), Number(detail.version || 0))
         this.details[Number(pen.pen_id)] = updated
-        if (this.detail?.pen_id === updated.pen_id) this.detail = updated
+        if (this.detail?.pen_id === updated.pen_id) {
+          this.detail = updated
+          await this.loadPenLogs(Number(updated.pen_id))
+        }
         useUiStore().toast(`已启用${updated.pen_name || pen.pen_name || '栏舍'}`)
         await this.load(true)
       } catch (error) {

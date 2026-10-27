@@ -5,6 +5,7 @@ import com.zhimu.server.admin.base.api.BaseDataQueryService;
 import com.zhimu.server.admin.base.api.CategoryInfo;
 import com.zhimu.server.biz.account.api.AccountBrief;
 import com.zhimu.server.biz.account.api.AccountQueryService;
+import com.zhimu.server.biz.account.config.AccountProperties;
 import com.zhimu.server.biz.common.api.BizMediaService;
 import com.zhimu.server.biz.farm.api.AccountFarmStats;
 import com.zhimu.server.biz.farm.api.CancelExitFarm;
@@ -31,6 +32,8 @@ import com.zhimu.server.biz.farm.support.FarmLogs;
 import com.zhimu.server.biz.farm.support.FarmLookup;
 import com.zhimu.server.biz.farm.support.FarmNotify;
 import com.zhimu.server.biz.farm.support.FarmStatuses;
+import com.zhimu.server.biz.farm.support.FarmErrors;
+import com.zhimu.server.biz.farm.support.FarmCancellationDataCleaner;
 import com.zhimu.server.biz.herd.api.PenQueryService;
 import com.zhimu.server.common.enums.BizType;
 import com.zhimu.server.common.enums.FarmStatus;
@@ -40,6 +43,7 @@ import com.zhimu.server.framework.mybatis.TenantSkip;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -76,6 +80,8 @@ public class FarmAccountServiceImpl implements FarmAccountService {
     private final FarmCache cache;
     private final FarmNotify notify;
     private final FarmLogs logs;
+    private final AccountProperties accountProperties;
+    private final FarmCancellationDataCleaner cancellationDataCleaner;
 
     @Override
     public Long resolveDefaultFarm(Long userId, Long lastFarmId) {
@@ -206,18 +212,7 @@ public class FarmAccountServiceImpl implements FarmAccountService {
         for (FarmListRow row : rows) {
             Farm farm = farm(row);
             if ("OWNER".equals(row.getRole())) {
-                cancelPendingOfFarm(farm.getId(), now);
-                farm.setDeleteType("ACCOUNT_CANCEL");
-                farm.setDeletedAt(now);
-                farm.setUpdatedBy(userId);
-                TenantSkip.run(() -> farmMapper.updateById(farm));
-                TenantSkip.run(() -> farmMapper.deleteById(farm.getId()));
-                bizMedia.removeAll(BizType.FARM, farm.getId());
-                List<Long> others = lookup.activeMembers(farm.getId()).stream()
-                        .map(FarmMember::getUserId)
-                        .filter(id -> !Objects.equals(id, userId)).toList();
-                cache.evictUsers(farm.getId(), others);
-                notify.farmDeleted(farm, others);
+                cancelOwnedFarm(row.getFarmId(), userId, now);
             } else {
                 FarmMember member = lookup.findActiveMember(farm.getId(), userId);
                 if (member == null) {
@@ -267,8 +262,92 @@ public class FarmAccountServiceImpl implements FarmAccountService {
                 .opType("FARM")
                 .opAction("DELETE")
                 .bizType(BizType.FARM.name())
-                .extraText("账号注销联动：删除本人创建的养殖场并退出其他养殖场")
+                .extraText("账号注销联动：未审核空场删除，停用场保留至到期，退出成员关系")
                 .build());
+    }
+
+    private void cancelOwnedFarm(Long farmId, Long userId, LocalDateTime now) {
+        Farm farm = TenantSkip.call(() -> farmMapper.lockOwnedForCancellation(farmId, userId));
+        if (farm == null) throw FarmErrors.versionConflict();
+        FarmStatus status = FarmStatuses.of(farm);
+        if (status != FarmStatus.DISABLED && status != FarmStatus.PENDING && status != FarmStatus.REJECTED) {
+            throw FarmErrors.stateChanged("养殖场状态已改变，请刷新注销清单后重试");
+        }
+        if (status != FarmStatus.DISABLED && cancellationDataCleaner.hasOperationalData(farmId)) {
+            throw FarmErrors.stateChanged("未审核养殖场存在业务数据，请联系管理员核实后再注销");
+        }
+        List<Long> members = lookup.activeMembers(farmId).stream().map(FarmMember::getUserId).toList();
+        List<Long> others = members.stream().filter(id -> !Objects.equals(id, userId)).toList();
+        cancelPendingOfFarm(farmId, now);
+        farm.setDeleteType("ACCOUNT_CANCEL");
+        farm.setDeletedAt(null);
+        farm.setUpdatedBy(userId);
+        // 缺失旧数据不允许被解释为已到期；与预览的保守回退一致，从本次注销开始保留。
+        if (status == FarmStatus.DISABLED && farm.getDisabledAt() == null) farm.setDisabledAt(now);
+        if (TenantSkip.call(() -> farmMapper.updateById(farm)) != 1) throw FarmErrors.versionConflict();
+        TenantSkip.run(() -> memberPenMapper.delete(Wrappers.<MemberPen>lambdaQuery()
+                .eq(MemberPen::getFarmId, farmId).eq(MemberPen::getUserId, userId)));
+        TenantSkip.run(() -> memberMapper.update(new FarmMember(), Wrappers.<FarmMember>lambdaUpdate()
+                .eq(FarmMember::getFarmId, farmId).eq(FarmMember::getUserId, userId)
+                .eq(FarmMember::getStatus, "ACTIVE")
+                .set(FarmMember::getStatus, "ACCOUNT_CANCELED").set(FarmMember::getActiveFlag, null)
+                .set(FarmMember::getLeftAt, now).set(FarmMember::getUpdatedBy, userId)
+                .setSql("version = version + 1")));
+        cache.evictUsers(farmId, members);
+        if (status == FarmStatus.DISABLED) {
+            notify.ownerCancelledRetained(farm, others, retentionDue(farm));
+        } else {
+            cancellationDataCleaner.purge(farmId, userId, now);
+            notify.farmDeleted(farm, others);
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public LocalDateTime cleanupCancelledOwnerFarms(Long userId, LocalDateTime now) {
+        Objects.requireNonNull(userId, "userId");
+        Objects.requireNonNull(now, "now");
+        AccountBrief owner = accountQuery.getBrief(userId);
+        if (owner == null || !owner.cancelled() || !"CANCELLED".equals(owner.status())) return null;
+        List<Farm> farms = TenantSkip.call(() -> farmMapper.lockCancelledOwnerFarms(userId));
+        LocalDateTime next = null;
+        for (Farm farm : farms) {
+            // SQL 之外再次校验，避免错误映射或后续调用变更扩大清理范围。
+            if (!Objects.equals(farm.getOwnerUserId(), userId) || !"ACCOUNT_CANCEL".equals(farm.getDeleteType())) continue;
+            FarmStatus status = FarmStatuses.of(farm);
+            if (status == FarmStatus.PENDING || status == FarmStatus.REJECTED) {
+                if (cancellationDataCleaner.hasOperationalData(farm.getId())) {
+                    throw new IllegalStateException("Unapproved cancelled farm contains operational data: " + farm.getId());
+                }
+            } else if (status == FarmStatus.DISABLED) {
+                if (farm.getDisabledAt() == null) {
+                    // 旧记录没有可靠起算时间，先建立保守起点，再由下一轮处理。
+                    farm.setDisabledAt(now);
+                    if (TenantSkip.call(() -> farmMapper.initializeMissingRetentionStart(farm.getId(), userId, now)) != 1) {
+                        throw FarmErrors.versionConflict();
+                    }
+                }
+                LocalDateTime due = retentionDue(farm);
+                if (now.isBefore(due)) {
+                    if (next == null || due.isBefore(next)) next = due;
+                    continue;
+                }
+            } else {
+                // 平台冻结或被异常重新启用时不清理，保留后续复核机会。
+                LocalDateTime retry = now.plusDays(1);
+                if (next == null || retry.isBefore(next)) next = retry;
+                continue;
+            }
+            List<Long> receivers = lookup.activeMembers(farm.getId()).stream().map(FarmMember::getUserId).toList();
+            cancellationDataCleaner.purge(farm.getId(), userId, now);
+            cache.evictFarm(farm.getId());
+            notify.farmDeleted(farm, receivers);
+        }
+        return next;
+    }
+
+    private LocalDateTime retentionDue(Farm farm) {
+        return farm.getDisabledAt().plus(accountProperties.getFarmRetention());
     }
 
     // ===== 共用 =====
@@ -285,21 +364,21 @@ public class FarmAccountServiceImpl implements FarmAccountService {
                 .eq(FarmChange::getStatus, "PENDING")
                 .set(FarmChange::getStatus, "CANCELED")
                 .set(FarmChange::getPendingFlag, null)
-                .set(FarmChange::getCancelReason, "养殖场已删除")));
+                .set(FarmChange::getCancelReason, "所有者注销账号")));
         TenantSkip.run(() -> inviteMapper.update(new FarmInvite(), Wrappers.<FarmInvite>lambdaUpdate()
                 .eq(FarmInvite::getFarmId, farmId)
                 .eq(FarmInvite::getStatus, "PENDING")
                 .set(FarmInvite::getStatus, "CANCELED")
                 .set(FarmInvite::getPendingFlag, null)
                 .set(FarmInvite::getHandledAt, now)
-                .set(FarmInvite::getCancelReason, "养殖场已删除")));
+                .set(FarmInvite::getCancelReason, "所有者注销账号")));
         TenantSkip.run(() -> transferMapper.update(new FarmTransfer(), Wrappers.<FarmTransfer>lambdaUpdate()
                 .eq(FarmTransfer::getFarmId, farmId)
                 .eq(FarmTransfer::getStatus, "PENDING")
                 .set(FarmTransfer::getStatus, "CANCELED")
                 .set(FarmTransfer::getPendingFlag, null)
                 .set(FarmTransfer::getHandledAt, now)
-                .set(FarmTransfer::getCancelReason, "养殖场已删除")));
+                .set(FarmTransfer::getCancelReason, "所有者注销账号")));
     }
 
     private FarmTransfer pendingTransfer(Long farmId) {

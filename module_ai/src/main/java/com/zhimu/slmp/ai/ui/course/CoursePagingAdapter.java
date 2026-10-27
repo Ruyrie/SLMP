@@ -41,8 +41,13 @@ public class CoursePagingAdapter extends PagingDataAdapter<CourseCardVO, CourseP
 
             @Override
             public boolean areContentsTheSame(@NonNull CourseCardVO a, @NonNull CourseCardVO b) {
-                return Objects.equals(a.getLearnStatus(), b.getLearnStatus()) && a.getPositionSec() == b.getPositionSec()
-                        && Objects.equals(a.getTitle(), b.getTitle());
+                return Objects.equals(a.getTitle(), b.getTitle())
+                        && Objects.equals(a.getCoverUrl(), b.getCoverUrl())
+                        && Objects.equals(a.getCategoryName(), b.getCategoryName())
+                        && a.getDurationSec() == b.getDurationSec()
+                        && Objects.equals(a.getLearnStatus(), b.getLearnStatus())
+                        && a.getPositionSec() == b.getPositionSec()
+                        && Objects.equals(a.getProgressRatio(), b.getProgressRatio());
             }
         });
         this.onClick = onClick;

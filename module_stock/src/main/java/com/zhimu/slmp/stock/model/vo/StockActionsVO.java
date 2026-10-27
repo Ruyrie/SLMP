@@ -10,4 +10,6 @@ public class StockActionsVO {
     public Boolean canRequestChange;
     public Boolean canScrap;
     public Boolean canOut;
+    public Boolean canRefund;
+    public Boolean canEditRefund;
 }

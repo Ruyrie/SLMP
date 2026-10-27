@@ -1,6 +1,8 @@
 package com.zhimu.server.biz.today.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.zhimu.server.biz.account.entity.User;
+import com.zhimu.server.biz.account.mapper.UserMapper;
 import com.zhimu.server.biz.today.convert.PushDeviceConvert;
 import com.zhimu.server.biz.today.entity.PushDevice;
 import com.zhimu.server.biz.today.mapper.PushDeviceMapper;
@@ -28,6 +30,7 @@ public class PushDeviceServiceImpl implements PushDeviceService {
     private final PushDeviceMapper pushDeviceMapper;
     private final PushDeviceConvert convert;
     private final PushClient pushClient;
+    private final UserMapper userMapper;
 
     @Override
     @Transactional
@@ -35,10 +38,11 @@ public class PushDeviceServiceImpl implements PushDeviceService {
         if (!"ANDROID".equalsIgnoreCase(request.getPlatform())) {
             throw new BizException(ErrorCode.PARAM_INVALID, "当前客户端不支持推送设备登记");
         }
+        requireActiveUserForUpdate(userId);
         String alias = PushClient.alias(userId);
         PushDevice device = pushDeviceMapper.selectOne(Wrappers.<PushDevice>lambdaQuery()
                 .eq(PushDevice::getRegistrationId, request.getRegistrationId())
-                .last("LIMIT 1"));
+                .last("LIMIT 1 FOR UPDATE"));
         boolean changedUser = device != null && !userId.equals(device.getUserId());
         if (changedUser) {
             // 同一设备换账号：先解除原用户别名，避免旧账号继续收到推送
@@ -86,10 +90,11 @@ public class PushDeviceServiceImpl implements PushDeviceService {
         if (registrationId == null || registrationId.isBlank()) {
             return;
         }
+        requireActiveUserForUpdate(userId);
         PushDevice device = pushDeviceMapper.selectOne(Wrappers.<PushDevice>lambdaQuery()
                 .eq(PushDevice::getRegistrationId, registrationId)
                 .eq(PushDevice::getUserId, userId)
-                .last("LIMIT 1"));
+                .last("LIMIT 1 FOR UPDATE"));
         if (device == null) {
             // 不属于本人或不存在时直接成功（幂等）
             return;
@@ -98,5 +103,14 @@ public class PushDeviceServiceImpl implements PushDeviceService {
         device.setStatus("UNBOUND");
         device.setAliasBound(false);
         pushDeviceMapper.updateById(device);
+    }
+
+    /** 与账号注销/清理共用 user → device 锁序，鉴权通过后账号也可能已被另一个请求注销。 */
+    private void requireActiveUserForUpdate(Long userId) {
+        User user = userMapper.selectByIdForUpdate(userId);
+        if (user == null || !"NORMAL".equals(user.getStatus())) {
+            throw new BizException(ErrorCode.SESSION_INVALID).with("reason",
+                    user != null && "CANCELLED".equals(user.getStatus()) ? "ACCOUNT_CANCELLED" : "EXPIRED");
+        }
     }
 }

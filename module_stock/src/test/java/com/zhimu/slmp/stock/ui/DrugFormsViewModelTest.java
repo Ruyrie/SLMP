@@ -10,6 +10,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.SavedStateHandle;
@@ -22,6 +24,9 @@ import com.zhimu.slmp.stock.StockExtras;
 import com.zhimu.slmp.stock.TestRules;
 import com.zhimu.slmp.stock.data.StockRepository;
 import com.zhimu.slmp.stock.model.StockEnums;
+import com.zhimu.slmp.stock.model.request.DrugScrapRequest;
+import com.zhimu.slmp.base.error.ApiException;
+import com.zhimu.slmp.base.error.ErrorCodes;
 import com.zhimu.slmp.stock.model.vo.DrugLotDetailVO;
 import com.zhimu.slmp.stock.model.vo.DrugOptionListResult;
 import com.zhimu.slmp.stock.model.vo.FeedOptionVO;
@@ -36,8 +41,10 @@ import com.zhimu.slmp.stock.ui.otherout.FeedOtherOutViewModel;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,12 +83,16 @@ public class DrugFormsViewModelTest {
     // ===================== M07 =====================
 
     private DrugScrapViewModel scrap(long lotId) throws IOException {
+        return scrap(TestRules.mock("lot_" + lotId + ".json", DrugLotDetailVO.class));
+    }
+
+    private DrugScrapViewModel scrap(DrugLotDetailVO lot) throws IOException {
+        long lotId = lot.lotId;
         BaseDataRepository base = mock(BaseDataRepository.class);
         List<DictItemVO> dict = TestRules.mock("dict_scrap_reason.json", new TypeToken<List<DictItemVO>>() {
         }.getType());
         when(base.getDicts(eq("SCRAP_REASON"), isNull())).thenReturn(Single.just(dict));
-        when(repo.getDrugLot(lotId)).thenReturn(Single.just(TestRules.mock("lot_" + lotId + ".json",
-                DrugLotDetailVO.class)));
+        when(repo.getDrugLot(lotId)).thenReturn(Single.just(lot));
         DrugScrapViewModel vm = new DrugScrapViewModel(repo, TestRules.noDrafts(), base, farm);
         vm.getLossText().observeForever(v -> {
         });
@@ -148,6 +159,86 @@ public class DrugFormsViewModelTest {
                 StockLossVO.class)));
         vm.doScrap();
         assertEquals("已登记报废，口蹄疫灭活疫苗 2025047 结存已清零", vm.getScrapped().getValue());
+    }
+
+    @Test
+    public void scrap_packRequestPreservesQuantityAndUnit() throws IOException {
+        DrugScrapViewModel vm = scrap(6103);
+        when(repo.createDrugScrap(any(), anyString())).thenReturn(Single.just(TestRules.mock("scrap_created.json",
+                StockLossVO.class)));
+        vm.doScrap();
+        ArgumentCaptor<DrugScrapRequest> request = ArgumentCaptor.forClass(DrugScrapRequest.class);
+        verify(repo).createDrugScrap(request.capture(), anyString());
+        assertEquals(StockEnums.INPUT_PACK, request.getValue().inputUnit);
+        assertEquals(0, new BigDecimal("3").compareTo(request.getValue().inputQty));
+    }
+
+    @Test
+    public void scrap_residualUsesExactBaseQuantityAndRemainingAmount() throws IOException {
+        DrugLotDetailVO lot = TestRules.mock("lot_6103.json", DrugLotDetailVO.class);
+        lot.stock.value = new BigDecimal("2982.05");
+        lot.stock.packCount = null;
+        lot.stock.restValue = null;
+        lot.stockAmount = new BigDecimal("89.46");
+        DrugScrapViewModel vm = scrap(lot);
+        assertEquals("2982.05", vm.getInputQty().getValue());
+        assertEquals("克", vm.getUnitText().getValue());
+        assertEquals("89.46", vm.getLossText().getValue());
+        vm.submit();
+        assertTrue(vm.getFieldErrors().getValue().isEmpty());
+        assertTrue(TestRules.plain(vm.getShowConfirm().getValue()[1]).contains("2,982.05 克将全部报废"));
+        when(repo.createDrugScrap(any(), anyString())).thenReturn(Single.just(TestRules.mock("scrap_created.json",
+                StockLossVO.class)));
+        vm.doScrap();
+        ArgumentCaptor<DrugScrapRequest> request = ArgumentCaptor.forClass(DrugScrapRequest.class);
+        verify(repo).createDrugScrap(request.capture(), anyString());
+        assertEquals(StockEnums.INPUT_MEASURE, request.getValue().inputUnit);
+        assertEquals(0, lot.stock.value.compareTo(request.getValue().inputQty));
+    }
+
+    @Test
+    public void scrap_tinyResidualCanBeClearedWithoutRoundingToZero() throws IOException {
+        DrugLotDetailVO lot = TestRules.mock("lot_6103.json", DrugLotDetailVO.class);
+        lot.stock.value = new BigDecimal("0.001");
+        lot.stock.packCount = null;
+        lot.stock.restValue = null;
+        DrugScrapViewModel vm = scrap(lot);
+        assertEquals("0.001", vm.getInputQty().getValue());
+        assertEquals("克", vm.getUnitText().getValue());
+        vm.submit();
+        assertTrue(vm.getFieldErrors().getValue().isEmpty());
+        vm.getInputQty().setValue("0.0001");
+        vm.doScrap();
+        assertEquals("数量最多保留 3 位小数", vm.getFieldErrors().getValue().get(DrugScrapViewModel.F_QTY));
+        verify(repo, never()).createDrugScrap(any(), anyString());
+    }
+
+    @Test
+    public void scrap_doesNotClaimClearedWhenServerStillHasStock() throws IOException {
+        DrugScrapViewModel vm = scrap(6103);
+        StockLossVO response = TestRules.mock("scrap_created.json", StockLossVO.class);
+        response.remaining.value = new BigDecimal("1497");
+        when(repo.createDrugScrap(any(), anyString())).thenReturn(Single.just(response));
+        vm.doScrap();
+        assertFalse(vm.getScrapped().getValue().contains("清零"));
+    }
+
+    @Test
+    public void scrap_conflictRefreshesInputUnitAndExactMaximum() throws IOException {
+        DrugScrapViewModel vm = scrap(6103);
+        DrugLotDetailVO fresh = TestRules.mock("lot_6103.json", DrugLotDetailVO.class);
+        fresh.stock.value = new BigDecimal("1499.999");
+        fresh.stock.packCount = null;
+        fresh.stock.restValue = null;
+        fresh.stockVersion++;
+        when(repo.getDrugLot(fresh.lotId)).thenReturn(Single.just(fresh));
+        when(repo.createDrugScrap(any(), anyString())).thenReturn(Single.error(
+                new ApiException(ErrorCodes.VERSION_CONFLICT, "库存已变化")));
+        vm.doScrap();
+        assertEquals("1499.999", vm.getInputQty().getValue());
+        assertEquals("克", vm.getUnitText().getValue());
+        assertTrue(vm.getFieldErrors().getValue().get(DrugScrapViewModel.F_QTY).contains("重新确认"));
+        assertEquals(StockEnums.SCRAP_EXPIRED, vm.getReason().getValue());
     }
 
     // ===================== M08 =====================

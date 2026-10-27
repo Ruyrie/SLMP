@@ -76,6 +76,8 @@ public final class AiCodes {
     // SSE 事件名
     public static final String SSE_META = "meta";
     public static final String SSE_DELTA = "delta";
+    public static final String SSE_PROGRESS = "progress";
+    public static final String SSE_ANALYSIS_SUMMARY = "analysis_summary";
     public static final String SSE_CITATION = "citation";
     public static final String SSE_DONE = "done";
     public static final String SSE_ERROR = "error";

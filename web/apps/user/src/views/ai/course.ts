@@ -25,6 +25,22 @@ export function progressPercent(ratio?: number | null, completed?: boolean): num
   return Math.max(0, Math.min(100, value * 100))
 }
 
+/** 卡片标注“看到”的是续播位置，进度条也使用同一位置，避免最远历史位置造成误导。 */
+export function courseProgressPercent(course: {
+  position_sec?: number | null
+  duration_sec?: number | null
+  progress_ratio?: number | null
+  learn_status?: string | null
+}): number {
+  if (course.learn_status === 'COMPLETED') return 100
+  const duration = Number(course.duration_sec)
+  const position = Number(course.position_sec)
+  if (course.position_sec != null && Number.isFinite(position) && Number.isFinite(duration) && duration > 0) {
+    return progressPercent(position / duration)
+  }
+  return progressPercent(course.progress_ratio)
+}
+
 export function topicDurationText(courseCount?: number, totalDurationSec?: number): string {
   const count = Number(courseCount || 0)
   const minutes = Math.max(1, Math.round(Number(totalDurationSec || 0) / 60))

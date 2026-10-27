@@ -87,6 +87,21 @@ public class CalendarViewModelTest {
         DateFormatter.setClock(Clock.system(DateFormatter.ZONE));
     }
 
+    @Test
+    public void overdueDefaultsCollapsedAndScopeChangeResetsExpansion() {
+        vm.init("2026-10-19", null, "DAY");
+        assertFalse(vm.getOverdueExpanded().getValue());
+        vm.toggleOverdue();
+        assertTrue(vm.getOverdueExpanded().getValue());
+        vm.reload();
+        assertTrue(vm.getOverdueExpanded().getValue());
+        vm.switchScope(CalendarViewModel.SCOPE_ALL);
+        assertFalse(vm.getOverdueExpanded().getValue());
+        vm.onAllOverdueClick();
+        assertEquals("T09", vm.getNavEvent().getValue().getRoute());
+        assertEquals("ALL", vm.getNavEvent().getValue().param("scope"));
+    }
+
     // ===================== CalendarRange =====================
 
     @Test
@@ -168,7 +183,7 @@ public class CalendarViewModelTest {
         assertFalse(vm.getShowScope().getValue());
         assertFalse(vm.getShowFarmTag().getValue());
         verify(todoRepository).getCalendar(eq("2026-10-19"), eq("2026-10-25"), isNull(), isNull());
-        verify(todoRepository).getOverdue(isNull(), eq(1), eq(TodoRepository.EXPAND_SIZE));
+        verify(todoRepository).getOverdue(isNull(), eq(1), eq(5));
         assertNull(vm.lastDayKey().scope);
     }
 

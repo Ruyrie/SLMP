@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"
+    android:layout_marginTop="@dimen/base_space_5" android:visibility="gone">
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/stock_refund_title"
+        android:textAppearance="@style/TextAppearance.Zmt.TitleSmall" android:textColor="?attr/colorPrimary" />
+    <com.zhimu.slmp.base.widget.GroupedListLayout android:id="@+id/stock_refund_rows"
+        android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/base_space_3" />
+    <TextView android:id="@+id/stock_refund_notice" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_3" android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+    <com.google.android.material.button.MaterialButton android:id="@+id/stock_refund_action"
+        style="@style/Widget.Zmt.Button" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_3" android:text="@string/stock_refund_register" />
+    <com.google.android.material.button.MaterialButton android:id="@+id/stock_refund_finance"
+        style="@style/Widget.Zmt.Button.Outlined" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/base_space_2" android:text="@string/stock_refund_view_income" />
+</LinearLayout>

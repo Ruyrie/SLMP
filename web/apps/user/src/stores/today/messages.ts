@@ -46,6 +46,7 @@ export const useMessagesStore = defineStore('todayMessages', {
     status: 'loading' as MessageListStatus,
     error: '',
     loadingMore: false,
+    refreshing: false,
     selectedId: null as number | null,
     detail: null as MessageDetailVO | null,
     detailStatus: 'idle' as DetailStatus,
@@ -82,7 +83,8 @@ export const useMessagesStore = defineStore('todayMessages', {
   actions: {
     async fetchList(reset = true): Promise<void> {
       this.controller?.abort()
-      this.controller = new AbortController()
+      const controller = new AbortController()
+      this.controller = controller
       if (reset) {
         this.query.page = 1
         this.status = 'loading'
@@ -100,8 +102,9 @@ export const useMessagesStore = defineStore('todayMessages', {
             farm_id: this.query.farmId || undefined,
             unread_only: this.query.unreadOnly || undefined
           },
-          this.controller.signal
+          controller.signal
         )
+        if (this.controller !== controller) return
         const incoming = data.list || []
         this.list = reset ? incoming : [...this.list, ...incoming]
         this.total = data.total || 0
@@ -109,18 +112,57 @@ export const useMessagesStore = defineStore('todayMessages', {
         this.hasMore = !!data.has_more
         this.status = this.list.length ? 'ready' : this.filtered ? 'filtered_empty' : 'empty'
       } catch (error) {
-        if (isCancel(error)) return
+        if (isCancel(error) || this.controller !== controller) return
         const state = errorState(error)
         this.status = state.status
         this.error = state.message
       } finally {
-        this.loadingMore = false
+        if (this.controller === controller) this.loadingMore = false
       }
     },
     async loadMore(): Promise<void> {
       if (!this.hasMore || this.loadingMore || this.status === 'loading') return
       this.query.page += 1
       await this.fetchList(false)
+    },
+    /** 页面停留时同步撤回状态；保留当前分页和详情，避免轮询造成闪烁。 */
+    async refreshVisible(): Promise<void> {
+      if (this.refreshing || this.loadingMore || this.status === 'loading') return
+      this.refreshing = true
+      const controller = this.controller
+      const selectedId = this.selectedId
+      const previousDetail = this.detail
+      try {
+        const params = {
+          size: this.query.size,
+          category: this.query.category || undefined,
+          farm_id: this.query.farmId || undefined,
+          unread_only: this.query.unreadOnly || undefined
+        }
+        const [pages, detail] = await Promise.all([
+          Promise.all(Array.from({ length: this.query.page }, (_, index) =>
+            fetchMessages({ ...params, page: index + 1 }, controller?.signal))),
+          selectedId && previousDetail?.msg_type === 'NOTICE'
+            ? fetchMessageDetail(selectedId)
+            : Promise.resolve(null)
+        ])
+        if (this.controller !== controller) return
+        const lastPage = pages[pages.length - 1]
+        if (lastPage) {
+          this.list = pages.flatMap((page) => page.list || [])
+          this.total = lastPage.total || 0
+          this.filteredUnread = lastPage.filtered_unread || 0
+          this.hasMore = !!lastPage.has_more
+          this.status = this.list.length ? 'ready' : this.filtered ? 'filtered_empty' : 'empty'
+        }
+        if (detail && this.selectedId === selectedId && this.detail === previousDetail) {
+          this.detail = detail
+        }
+      } catch {
+        /* 后台同步失败保留当前内容，用户仍可使用重新加载。 */
+      } finally {
+        this.refreshing = false
+      }
     },
     setCategory(category: string): void {
       if (this.query.category === category) return
@@ -157,7 +199,6 @@ export const useMessagesStore = defineStore('todayMessages', {
       this.todoStatus = 'idle'
     },
     async select(id: number): Promise<void> {
-      if (this.selectedId === id && this.detailStatus === 'ready') return
       this.selectedId = id
       await this.loadDetail(id)
     },
@@ -173,7 +214,8 @@ export const useMessagesStore = defineStore('todayMessages', {
     },
     async loadDetail(id: number): Promise<void> {
       this.detailController?.abort()
-      this.detailController = new AbortController()
+      const controller = new AbortController()
+      this.detailController = controller
       this.detailStatus = 'loading'
       this.detailError = ''
       this.detail = null
@@ -181,7 +223,7 @@ export const useMessagesStore = defineStore('todayMessages', {
       this.todoStatus = 'idle'
       try {
         const detail = await fetchMessageDetail(id)
-        if (this.selectedId !== id) return
+        if (this.detailController !== controller || this.selectedId !== id) return
         this.detail = detail
         this.detailStatus = 'ready'
         const brief = this.list.find((item) => item.message_id === id)
@@ -196,7 +238,7 @@ export const useMessagesStore = defineStore('todayMessages', {
           void this.loadTodoDetail(detail.todo_id)
         }
       } catch (error) {
-        if (isCancel(error)) return
+        if (isCancel(error) || this.detailController !== controller || this.selectedId !== id) return
         this.detailStatus = 'error'
         this.detailError = error instanceof ApiError ? error.message : '消息加载失败，请检查网络后重试'
       }

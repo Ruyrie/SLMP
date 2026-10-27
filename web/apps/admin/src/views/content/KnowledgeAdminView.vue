@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ApiError, dayjs, formatDateTime, formatNumber, formatPercent, today } from '@zmt/shared'
 import {
   closeKnowledgeTask,
@@ -31,11 +32,13 @@ import {
 } from '@/api/content'
 import { getAdmins } from '@/api/system'
 import { getCategoryTree, type CategoryNode } from '@/api/base'
+import { applicableCategoryOptions } from '@/utils/contentCategories'
 import { useAdminStore } from '@/stores/admin'
 import { useUiStore } from '@/stores/ui'
 
 const ui = useUiStore()
 const admin = useAdminStore()
+const route = useRoute()
 const canHandle = computed(() => admin.hasPerm('WA-C04:HANDLE'))
 
 const tab = ref<'items' | 'tasks'>('items')
@@ -473,7 +476,7 @@ const keywordOptions = computed(() => {
   for (const keyword of form.keywords) set.add(keyword)
   return [...set].map((value) => ({ title: value, value }))
 })
-const applicableOptions = computed(() => applicableCategories.value.flatMap((category) => (category.breeds || []).map((breed) => ({ title: `${category.name} · ${breed.name}`, value: breed.id }))))
+const applicableOptions = computed(() => applicableCategoryOptions(applicableCategories.value))
 const onlineText = computed(() => editing.value?.online ? `线上为 版本 ${editing.value.online.version_no}${editing.value.online.published_at ? ' · ' + dayjs(editing.value.online.published_at).format('M月D日') + ' ' + (editing.value.online.published_by_name || '') + '发布' : ''}` : '还没有发布版本')
 
 function clearErrors(): void {
@@ -764,6 +767,14 @@ const taskPage = ref(1)
 const taskSize = ref(20)
 const taskTotal = ref(0)
 const taskCounts = reactive<Record<string, number>>({ ALL: 0, PENDING: 0, DONE: 0, CLOSED: 0 })
+let taskRequest = 0
+const messageTaskId = computed(() => {
+  const value = route.query.task_id
+  const id = typeof value === 'string' && /^[1-9]\d*$/.test(value) ? Number(value) : NaN
+  return Number.isSafeInteger(id) ? id : null
+})
+const messageTaskOnPage = computed(() => taskList.value.some((task) => task.id === messageTaskId.value))
+const invalidMessageTask = computed(() => route.query.task_id !== undefined && messageTaskId.value === null)
 const taskTabs = [
   { label: '全部', value: 'ALL' },
   { label: '待处理', value: 'PENDING' },
@@ -805,18 +816,21 @@ async function loadTaskPending(): Promise<void> {
 }
 
 async function fetchTasks(): Promise<void> {
+  const request = ++taskRequest
   taskLoading.value = true
   taskError.value = ''
   try {
     const data = await getKnowledgeTasks({ status: taskTab.value === 'ALL' ? undefined : taskTab.value, page: taskPage.value, size: taskSize.value })
+    if (request !== taskRequest) return
     taskList.value = data.list || []
     taskTotal.value = data.total || 0
     Object.assign(taskCounts, data.tab_counts || {})
   } catch (e) {
+    if (request !== taskRequest) return
     taskError.value = e instanceof Error ? e.message : '任务加载失败'
     taskList.value = []
   } finally {
-    taskLoading.value = false
+    if (request === taskRequest) taskLoading.value = false
   }
 }
 
@@ -935,6 +949,21 @@ function taskEdit(task: KnowledgeTask): void {
 
 const taskTabItems = computed(() => taskTabs.map((t) => ({ ...t, count: taskCounts[t.value] || 0 })))
 
+watch([() => route.query.tab, () => route.query.task_id], () => {
+  taskRequest++
+  taskLoading.value = false
+  if (route.query.tab === 'tasks' || messageTaskId.value !== null) {
+    tab.value = 'tasks'
+    taskTab.value = 'ALL'
+    taskPage.value = 1
+    void fetchTasks()
+  } else {
+    tab.value = 'items'
+  }
+}, { immediate: true })
+
+onBeforeUnmount(() => { taskRequest++ })
+
 onMounted(async () => {
   loading.value = true
   void loadOptions()
@@ -1026,6 +1055,10 @@ onMounted(async () => {
     </template>
 
     <template v-if="!forbidden && tab === 'tasks'">
+      <zw-notice v-if="invalidMessageTask" type="warning" title="消息中的任务编号无效">已打开补充任务列表，可继续查看任务。</zw-notice>
+      <zw-notice v-else-if="messageTaskId" type="info" :title="`消息关联任务 #${messageTaskId}`">
+        {{ taskLoading ? '正在加载任务…' : messageTaskOnPage ? '已在当前页标出关联任务。' : '当前页未找到该任务，可切换分页查找。' }}
+      </zw-notice>
       <zw-card flush>
         <div class="zw-toolbar knowledge-toolbar">
           <zw-seg :items="taskTabItems" :model-value="taskTab" @update:model-value="taskTab = String($event); taskPage = 1; fetchTasks()" />
@@ -1038,7 +1071,7 @@ onMounted(async () => {
         <template v-else>
           <v-data-table :headers="taskHeaders" :items="taskList" item-key="id" hide-default-footer density="compact">
             <template #item.title="{ item }">
-              <div class="knowledge-title">{{ item.title }}</div>
+              <div class="knowledge-title"><zw-tag v-if="item.id === messageTaskId" type="primary" size="small">消息关联 #{{ item.id }}</zw-tag> {{ item.title }}</div>
               <div v-if="item.source_question" class="knowledge-sub">{{ item.source_question }}</div>
             </template>
             <template #item.mode="{ item }">{{ item.mode_text }}<span v-if="item.target_title" class="zw-muted"> · {{ item.target_title }}</span></template>

@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
  * </ul>
  */
 @Component
+@org.springframework.transaction.annotation.Transactional
 @RequiredArgsConstructor
 public class StockLedger {
 
@@ -31,6 +32,7 @@ public class StockLedger {
 
     private final FeedMapper feedMapper;
     private final DrugLotMapper drugLotMapper;
+    private final StockWarningReconciler warnings;
 
     /**
      * 一次记账后的快照。
@@ -62,6 +64,7 @@ public class StockLedger {
             int rows = feedMapper.updateStock(current.getId(), current.getVersion(), newQty, newAmount, avg,
                     BeijingTime.now());
             if (rows > 0) {
+                warnings.reconcileFeed(current.getFarmId(), current.getId());
                 return new Move(newQty, newAmount, avg,
                         qty.signum() == 0 ? avg : amount.divide(qty, StockQty.PRICE_SCALE, RoundingMode.HALF_UP),
                         amount, current.getVersion() + 1);
@@ -92,6 +95,7 @@ public class StockLedger {
             int rows = feedMapper.updateStock(current.getId(), current.getVersion(), newQty, newAmount, avg,
                     BeijingTime.now());
             if (rows > 0) {
+                warnings.reconcileFeed(current.getFarmId(), current.getId());
                 return new Move(newQty, newAmount, avg, avg, amount, current.getVersion() + 1);
             }
         }
@@ -119,6 +123,7 @@ public class StockLedger {
             int rows = feedMapper.updateStock(current.getId(), current.getVersion(), newQty, newAmount, avg,
                     BeijingTime.now());
             if (rows > 0) {
+                warnings.reconcileFeed(current.getFarmId(), current.getId());
                 return new Move(newQty, newAmount, avg, avg, deltaAmount, current.getVersion() + 1);
             }
         }
@@ -127,6 +132,7 @@ public class StockLedger {
 
     /** 药品批号入库 */
     public Move inLot(DrugLot lot, BigDecimal qty, BigDecimal amount) {
+        warnings.lockDrug(lot.getFarmId(), lot.getDrugId());
         for (int attempt = 0; attempt < MAX_RETRY; attempt++) {
             DrugLot current = attempt == 0 ? lot : drugLotMapper.selectById(lot.getId());
             if (current == null) {
@@ -141,6 +147,7 @@ public class StockLedger {
             int rows = drugLotMapper.updateStock(current.getId(), current.getVersion(), newQty, newAmount, avg,
                     BeijingTime.now());
             if (rows > 0) {
+                warnings.reconcileDrug(current.getFarmId(), current.getDrugId());
                 return new Move(newQty, newAmount, avg,
                         qty.signum() == 0 ? avg : amount.divide(qty, StockQty.PRICE_SCALE, RoundingMode.HALF_UP),
                         amount, current.getVersion() + 1);
@@ -151,6 +158,7 @@ public class StockLedger {
 
     /** 药品批号出库：结存不足抛 42201（带记账单位文字） */
     public Move outLot(DrugLot lot, BigDecimal qty, String unitText) {
+        warnings.lockDrug(lot.getFarmId(), lot.getDrugId());
         for (int attempt = 0; attempt < MAX_RETRY; attempt++) {
             DrugLot current = attempt == 0 ? lot : drugLotMapper.selectById(lot.getId());
             if (current == null) {
@@ -171,6 +179,7 @@ public class StockLedger {
             int rows = drugLotMapper.updateStock(current.getId(), current.getVersion(), newQty, newAmount, avg,
                     BeijingTime.now());
             if (rows > 0) {
+                warnings.reconcileDrug(current.getFarmId(), current.getDrugId());
                 return new Move(newQty, newAmount, avg, avg, amount, current.getVersion() + 1);
             }
         }
@@ -179,6 +188,7 @@ public class StockLedger {
 
     /** 批号结存按增量调整（入库单修改 / 作废、报废回滚用） */
     public Move adjustLot(DrugLot lot, BigDecimal deltaQty, BigDecimal deltaAmount, String unitText) {
+        warnings.lockDrug(lot.getFarmId(), lot.getDrugId());
         for (int attempt = 0; attempt < MAX_RETRY; attempt++) {
             DrugLot current = attempt == 0 ? lot : drugLotMapper.selectById(lot.getId());
             if (current == null) {
@@ -195,6 +205,7 @@ public class StockLedger {
             int rows = drugLotMapper.updateStock(current.getId(), current.getVersion(), newQty, newAmount, avg,
                     BeijingTime.now());
             if (rows > 0) {
+                warnings.reconcileDrug(current.getFarmId(), current.getDrugId());
                 return new Move(newQty, newAmount, avg, avg, deltaAmount, current.getVersion() + 1);
             }
         }

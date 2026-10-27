@@ -5,15 +5,14 @@ import com.zhimu.server.biz.ai.vo.LinkedBatchVO;
 import java.util.List;
 
 /**
- * 批次上下文（模块04 未接入前的临时实现）：返回与 App Mock 一致的东山猪场在栏批次。
- * 模块04 落地后由 BatchQueryService 替换本接口的实现，调用方不变。
+ * AI 批次上下文：读取真实在栏批次、负责栏舍与最新称重，供关联面板和每轮提问使用。
  */
 public interface AiBatchContextService {
 
     /** 可关联的在栏批次：员工只返回负责栏舍的批次 */
     List<LinkedBatchVO> listLinkable(Long farmId, boolean staff, Iterable<Long> penIds);
 
-    /** 按 ID 取批次；不存在或不属于该场返回 null */
+    /** 按 ID 取在栏批次；不存在、不属于该场或员工无负责栏舍时返回 null */
     LinkedBatchVO resolve(Long farmId, Long batchId, boolean staff, Iterable<Long> penIds);
 
     /** 从会话快照 JSON 反序列化 */

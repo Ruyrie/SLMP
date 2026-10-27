@@ -38,6 +38,7 @@ public final class BreedingCodes {
     public static final String INCUBATION_CANDLED = "CANDLED";
     public static final String INCUBATION_HATCHED = "HATCHED";
 
+    public static final String GROUP_OVERDUE = "OVERDUE";
     public static final String GROUP_TODAY = "TODAY";
     public static final String GROUP_WITHIN_7 = "WITHIN_7";
     public static final String GROUP_LATER = "LATER";
@@ -99,6 +100,7 @@ public final class BreedingCodes {
             INCUBATION_HATCHED, "已出雏");
 
     private static final Map<String, String> GROUP_TEXT = Map.of(
+            GROUP_OVERDUE, "已逾期",
             GROUP_TODAY, "今天",
             GROUP_WITHIN_7, "7 天内",
             GROUP_LATER, "更晚");
@@ -177,7 +179,8 @@ public final class BreedingCodes {
 
     /** DUE_GROUP：TODAY ≤ 0（含已超期）、WITHIN_7 1–7、LATER ≥ 8 */
     public static String dueGroup(int days) {
-        if (days <= 0) {
+        if (days < 0) return GROUP_OVERDUE;
+        if (days == 0) {
             return GROUP_TODAY;
         }
         if (days <= 7) {

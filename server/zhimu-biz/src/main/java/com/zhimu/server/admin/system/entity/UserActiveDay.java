@@ -9,8 +9,8 @@ import lombok.ToString;
 import java.time.LocalDate;
 
 /**
- * 账号日活跃（t_user_active_day，管理端-04 2.3.6）。由 ActiveStatFlushJob 以绝对值覆盖写入，
- * 可重复执行；保留 400 天。第 2 批 4A 只建表，写入任务随 4B/统计模块。
+ * 账号日活跃（t_user_active_day，管理端-04 2.3.6）。已鉴权请求实时累加 op_count；
+ * UserActivityStatJob 按真实登记记录重算 record_count，并从真实日志补齐历史活跃。
  */
 @Getter
 @Setter

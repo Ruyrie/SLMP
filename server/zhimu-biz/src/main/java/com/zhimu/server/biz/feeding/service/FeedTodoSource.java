@@ -47,6 +47,7 @@ public class FeedTodoSource implements TodoSource {
     private final FeedLookup lookup;
     private final FeedStockPort feedStockPort;
     private final TodoSourceWriteService todoWriter;
+    private final com.zhimu.server.biz.feeding.api.FeedTaskReconciliationService reconciliation;
 
     @Override
     public String moduleName() {
@@ -60,6 +61,7 @@ public class FeedTodoSource implements TodoSource {
             return List.of();
         }
         Long farmId = context.getFarmId();
+        reconciliation.reconcileFarm(farmId);
         LocalDate date = context.getDate() == null ? BeijingTime.today() : context.getDate();
         List<FeedTask> tasks = taskMapper.selectList(Wrappers.<FeedTask>lambdaQuery()
                 .eq(FeedTask::getFarmId, farmId)

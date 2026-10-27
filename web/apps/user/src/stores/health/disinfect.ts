@@ -1009,7 +1009,7 @@ export const useDisinfectStore = defineStore('healthDisinfect', {
           recordType: record.record_type === 'EMPTY_PEN' || record.record_type === 'EMERGENCY' ? record.record_type : 'PLAN_TASK',
           taskId: Number(record.task_id || 0),
           penId: Number(record.pen_id || 0),
-          actualTime: (record.actual_time || '').slice(0, 16),
+          actualTime: (record.actual_time || '').replace(' ', 'T').slice(0, 16),
           executorId: record.executor_id === null || record.executor_id === undefined ? null : Number(record.executor_id),
           drugId: Number(record.drug_id || 0),
           lotId: Number(record.drug_lot_id || 0),

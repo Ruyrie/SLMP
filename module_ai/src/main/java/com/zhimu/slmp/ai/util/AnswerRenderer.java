@@ -4,13 +4,11 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.graphics.Typeface;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.text.style.ReplacementSpan;
-import android.text.style.StyleSpan;
 import android.util.TypedValue;
 import android.view.View;
 
@@ -18,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.material.color.MaterialColors;
-import com.zhimu.slmp.ai.model.AiCodes;
 import com.zhimu.slmp.ai.model.vo.AiMessageVO;
 import com.zhimu.slmp.ai.model.vo.CitationBriefVO;
 
@@ -29,7 +26,7 @@ import java.util.regex.Pattern;
 
 /**
  * K01 回答正文的 Span（技术文档 2.6.1 第 12 步）：完成后 [^n] 转为 18 dp 圆形可点角标（按 seq_no 对应引用，点击区 32 dp），
- * NO_BASIS 首句加粗；生成中末尾挂 2 × 20 dp 闪烁光标（{@link CursorSpan}）。
+ * 来源不足说明独立展示；生成中末尾挂 2 × 20 dp 闪烁光标（{@link CursorSpan}）。
  */
 public final class AnswerRenderer {
 
@@ -46,7 +43,7 @@ public final class AnswerRenderer {
     @NonNull
     public static CharSequence render(@NonNull Context context, @NonNull AiMessageVO m,
                                       @Nullable OnCitationClick listener) {
-        String text = trimLeading(m.getAnswerText() == null ? "" : m.getAnswerText());
+        String text = AiText.answerBody(m);
         Map<Integer, CitationBriefVO> bySeq = new HashMap<>();
         for (CitationBriefVO c : m.getCitations()) {
             bySeq.put(c.getSeqNo(), c);
@@ -80,12 +77,6 @@ public final class AnswerRenderer {
             last = matcher.end();
         }
         sb.append(text.substring(last));
-        if (AiCodes.ANSWER_NO_BASIS.equals(m.getAnswerType())) {
-            int end = firstSentenceEnd(sb);
-            if (end > 0) {
-                sb.setSpan(new StyleSpan(Typeface.BOLD), 0, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
-        }
         return sb;
     }
 

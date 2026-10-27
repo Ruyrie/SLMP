@@ -36,6 +36,9 @@ import io.reactivex.rxjava3.functions.Consumer;
 public class TodoRepository {
 
     public static final String FILTER_ALL = "ALL";
+    public static final String FILTER_HOME = "HOME";
+    public static final String FILTER_WARNING = "WARNING";
+    public static final String FILTER_OVERDUE = "OVERDUE";
     public static final String STATUS_ALL = "ALL";
     public static final int EXPAND_SIZE = 100;
 
@@ -63,6 +66,10 @@ public class TodoRepository {
             todaySource = new WeakReference<>(s);
             return s;
         }));
+    }
+
+    public Single<TodoPageVO> getToday(String filter, int page, int size) {
+        return api.getTodayTodos(filter, page, size).compose(RxResult.unwrap());
     }
 
     public void invalidateToday() {

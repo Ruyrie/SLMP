@@ -22,12 +22,14 @@ import com.zhimu.server.biz.finance.query.FinanceQueries;
 import com.zhimu.server.biz.finance.request.FinanceRequests;
 import com.zhimu.server.biz.finance.service.MarketPriceService;
 import com.zhimu.server.biz.finance.service.SaleOrderService;
+import com.zhimu.server.biz.finance.service.BatchSettlementService;
 import com.zhimu.server.biz.finance.support.FinanceConst;
 import com.zhimu.server.biz.finance.support.FinanceErrors;
 import com.zhimu.server.biz.finance.support.FinanceSupport;
 import com.zhimu.server.biz.finance.vo.SaleOrderVos;
 import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.herd.api.BatchQueryService;
+import com.zhimu.server.biz.today.api.TodoSourceWriteService;
 import com.zhimu.server.common.context.UserContext;
 import com.zhimu.server.common.error.BizException;
 import com.zhimu.server.common.error.ErrorCode;
@@ -35,6 +37,7 @@ import com.zhimu.server.common.util.BeijingTime;
 import com.zhimu.server.common.vo.UserBriefVO;
 import com.zhimu.server.framework.mybatis.TenantSkip;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,6 +78,8 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     private final MarketPriceService marketPriceService;
     private final AccountQueryService accountQueryService;
     private final FinanceSupport support;
+    private final TodoSourceWriteService todoWriter;
+    private final BatchSettlementService batchSettlementService;
 
     // ===== E14 可出栏批次 =====
 
@@ -232,7 +237,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         order.setVersion(0);
         order.setCreatedBy(userId);
         order.setUpdatedBy(userId);
-        orderMapper.insert(order);
+        insertWithSaleNoRetry(order);
 
         Map<Long, Integer> penMap = allocations.stream().collect(Collectors.toMap(
                 SaleOrderVos.PenAllocation::getPenId, SaleOrderVos.PenAllocation::getQuantity, Integer::sum,
@@ -246,6 +251,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             order.setUpdatedBy(userId);
             orderMapper.updateById(order);
         }
+        batchSettlementService.recalculateForSale(farmId, batch.batchId());
         return createdVO(order, remainingCount);
     }
 
@@ -465,6 +471,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         if (!delta.isEmpty()) {
             batchSalePort.adjustSale(farmId, batch.batchId(), saleDate, delta, order.getId());
         }
+        batchSettlementService.recalculateForSale(farmId, order.getBatchId());
         return detailOf(order);
     }
 
@@ -500,6 +507,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         }
         batchSalePort.restoreSale(farmId, order.getBatchId(), order.getSaleDate(),
                 quantityMap(allocationsOf(order)), order.getId());
+        batchSettlementService.recalculateForSale(farmId, order.getBatchId());
         return detailOf(order);
     }
 
@@ -523,7 +531,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                 SaleOrderVos.ReceiptResult result = new SaleOrderVos.ReceiptResult();
                 result.setAmount(existing.getAmount());
                 result.setUnpaidAmount(order.getUnpaidAmount());
-                result.setPaidOff(existing.getAmount().compareTo(FinanceSupport.nz(order.getUnpaidAmount())) == 0);
+                result.setPaidOff(FinanceConst.PAY_PAID.equals(order.getPaymentStatus()));
                 vo.setReceiptResult(result);
                 return vo;
             }
@@ -605,6 +613,10 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         order.setUpdatedBy(userId);
         if (orderMapper.updateById(order) == 0) {
             throw new BizException(ErrorCode.STATE_CHANGED, "这张出栏单已收齐，不需要再登记收款");
+        }
+        if (newUnpaid.signum() == 0) {
+            todoWriter.completeFromSource(farmId, "RECEIVABLE", "SALE_ORDER:" + order.getId(),
+                    FinanceConst.SOURCE_SALE, receipt.getId(), userId);
         }
         SaleOrderVos.DetailVO vo = detailOf(order);
         SaleOrderVos.ReceiptResult result = new SaleOrderVos.ReceiptResult();
@@ -808,16 +820,14 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     }
 
     private SaleOrderVos.SettlementBrief settlementBrief(Long batchId) {
-        BatchSettlement settlement = settlementMapper.selectOne(Wrappers.<BatchSettlement>lambdaQuery()
-                .eq(BatchSettlement::getBatchId, batchId)
-                .last("LIMIT 1"));
+        var settlement = batchSettlementService.detail(batchId);
         SaleOrderVos.SettlementBrief brief = new SaleOrderVos.SettlementBrief();
-        brief.setStatus(settlement == null ? FinanceConst.SETTLE_RUNNING : settlement.getStatus());
-        brief.setProfit(settlement == null ? null : settlement.getProfit());
-        brief.setSaleIncome(settlement == null ? null : settlement.getSaleIncome());
-        brief.setCostTotal(settlement == null ? null : settlement.getCostTotal());
-        brief.setCostPerHead(settlement == null ? null : settlement.getCostPerHead());
-        brief.setFcr(settlement == null ? null : settlement.getFcr());
+        brief.setStatus(settlement.getStatus());
+        brief.setProfit(settlement.getProfit());
+        brief.setSaleIncome(settlement.getSaleIncome());
+        brief.setCostTotal(settlement.getCostTotal());
+        brief.setCostPerHead(settlement.getCostPerHead());
+        brief.setFcr(settlement.getFcr());
         Long pendingSupplementCount = supplementMapper.selectCount(
                 Wrappers.<BatchSettlementSupplement>lambdaQuery()
                         .eq(BatchSettlementSupplement::getBatchId, batchId)
@@ -1022,6 +1032,8 @@ public class SaleOrderServiceImpl implements SaleOrderService {
                                       String buyerName) {
         FinanceErrors.require(totalWeight != null, "total_weight", "请输入总重");
         FinanceErrors.require(totalWeight.signum() > 0, "total_weight", "总重必须大于 0");
+        FinanceErrors.require(totalWeight.compareTo(new BigDecimal("99999999.99")) <= 0, "total_weight",
+                "总重不能超过 99,999,999.99 千克，请核对输入");
         FinanceErrors.require(totalWeight.stripTrailingZeros().scale() <= 2, "total_weight", "总重最多保留 2 位小数");
         FinanceErrors.require(FinanceConst.PRICE_WEIGHT.equals(method) || FinanceConst.PRICE_HEAD.equals(method),
                 "pricing_method", "请选择计价方式");
@@ -1039,7 +1051,10 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         BigDecimal amount = FinanceConst.PRICE_HEAD.equals(method)
                 ? unitPrice.multiply(BigDecimal.valueOf(quantity))
                 : totalWeight.multiply(unitPrice);
-        return amount.setScale(0, RoundingMode.HALF_UP);
+        BigDecimal rounded = amount.setScale(0, RoundingMode.HALF_UP);
+        FinanceErrors.require(rounded.compareTo(new BigDecimal("9999999999")) <= 0, "unit_price",
+                "销售金额不能超过 9,999,999,999 元，请核对数量、总重和单价");
+        return rounded;
     }
 
     private static BigDecimal progress(SaleOrder order) {
@@ -1052,20 +1067,41 @@ public class SaleOrderServiceImpl implements SaleOrderService {
 
     private String nextSaleNo(LocalDate saleDate) {
         String prefix = "CL" + saleDate.format(SALE_NO_DATE);
-        List<SaleOrder> orders = orderMapper.selectList(Wrappers.<SaleOrder>lambdaQuery()
-                .likeRight(SaleOrder::getSaleNo, prefix));
-        int max = 0;
+        // 单号全平台唯一；仅取单号，其他业务查询继续按养殖场隔离。
+        List<SaleOrder> orders = TenantSkip.call(() -> orderMapper.selectList(Wrappers.<SaleOrder>lambdaQuery()
+                .select(SaleOrder::getSaleNo).likeRight(SaleOrder::getSaleNo, prefix)));
+        long max = 0;
         for (SaleOrder order : orders) {
             String no = order.getSaleNo();
-            if (no != null && no.length() == prefix.length() + 3) {
+            if (no != null && no.startsWith(prefix) && no.length() > prefix.length()) {
                 try {
-                    max = Math.max(max, Integer.parseInt(no.substring(prefix.length())));
+                    max = Math.max(max, Long.parseLong(no.substring(prefix.length())));
                 } catch (NumberFormatException ignored) {
                     // 忽略异常单号
                 }
             }
         }
         return prefix + String.format("%03d", max + 1);
+    }
+
+    private void insertWithSaleNoRetry(SaleOrder order) {
+        String prefix = order.getSaleNo().substring(0, 8);
+        long sequence = Long.parseLong(order.getSaleNo().substring(8));
+        for (int attempt = 0; attempt < 50; attempt++) {
+            try {
+                orderMapper.insert(order);
+                return;
+            } catch (DuplicateKeyException e) {
+                String cause = e.getMostSpecificCause().getMessage();
+                if (cause == null || !cause.contains("uk_sale_order_no")) {
+                    throw e;
+                }
+                // 并发登记可能取到相同序号。直接顺延，避免事务快照重复读到旧最大值。
+                order.setId(null);
+                order.setSaleNo(prefix + String.format("%03d", ++sequence));
+            }
+        }
+        throw new BizException(ErrorCode.STATE_CHANGED, "当前登记人数较多，请稍后重试");
     }
 
     private String batchNo(Long batchId) {

@@ -18,8 +18,6 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
-import androidx.paging.CombinedLoadStates;
-import androidx.paging.LoadState;
 import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -45,6 +43,8 @@ import com.zhimu.slmp.today.model.vo.TodoItemVO;
 import com.zhimu.slmp.today.ui.common.ListStateAdapter;
 import com.zhimu.slmp.today.ui.common.SingleViewAdapter;
 import com.zhimu.slmp.today.ui.common.TodoPagingAdapter;
+import com.zhimu.slmp.today.ui.common.TodoListAdapter;
+import com.zhimu.slmp.today.ui.common.SectionAdapter;
 import com.zhimu.slmp.today.ui.detail.TodoDetailActivity;
 import com.zhimu.slmp.today.util.NavTarget;
 import com.zhimu.slmp.today.util.Texts;
@@ -55,11 +55,10 @@ import com.zhimu.slmp.common.router.RouterPath;
 import java.util.ArrayList;
 import java.util.List;
 
-import kotlin.Unit;
 
 /**
- * T01 今日首页（底部导航“今日”，TabRegistry.TODAY）：一级页顶部栏、问候区、按角色的指标卡与 AI 横幅 / 我负责的栏舍、
- * “今天和已逾期”分页列表（ConcatAdapter：头部 + 待办 + 列表状态）、扩展 FAB“登记”打开 T02。
+ * T01 今日首页（底部导航“今日”，TabRegistry.TODAY）：一级页顶部栏、问候区、按角色的指标卡 / 我负责的栏舍、
+ * 今日三项预览与默认折叠的逾期分组（ConcatAdapter：头部 + 待办 + 列表状态）、扩展 FAB“登记”打开 T02。
  * 长按待办以 Activity Result 打开 T04；回到前台刷新未读数与首页；首次进入后先说明再申请通知权限（Android 13 及以上）。
  */
 public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Listener {
@@ -71,7 +70,11 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
     private TodayFragmentTodayBinding binding;
     @Nullable
     private TodayItemHomeHeaderBinding header;
-    private TodoPagingAdapter todoAdapter;
+    private TodoListAdapter todoAdapter;
+    private TodoListAdapter overdueAdapter;
+    private final SectionAdapter overdueSection = new SectionAdapter();
+    private final SectionAdapter overdueMore = new SectionAdapter();
+    private final ListStateAdapter overdueFooter = new ListStateAdapter();
     private ListStateAdapter footer;
 
     private final ActivityResultLauncher<Intent> detailLauncher = Router.registerForResult(this, result -> {
@@ -132,10 +135,18 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
         header.setVm(vm);
         bindHeaderClicks(header);
 
-        todoAdapter = new TodoPagingAdapter(this, false);
+        todoAdapter = new TodoListAdapter(this, false);
+        overdueAdapter = new TodoListAdapter(this, false);
+        overdueSection.setVisible(false);
+        overdueSection.setOnClickListener(v -> vm.toggleOverdue());
+        overdueMore.setVisible(false);
+        overdueMore.set(getString(R.string.today_view_all), "›");
+        overdueMore.setOnClickListener(v -> vm.onAllOverdueClick());
+        overdueFooter.setOnActionClickListener(v -> vm.loadOverduePreview());
         footer = new ListStateAdapter();
         footer.setOnActionClickListener(v -> onFooterAction());
-        ConcatAdapter concat = new ConcatAdapter(new SingleViewAdapter(header.getRoot()), todoAdapter, footer);
+        ConcatAdapter concat = new ConcatAdapter(new SingleViewAdapter(header.getRoot()), todoAdapter, footer,
+                overdueSection, overdueAdapter, overdueFooter, overdueMore);
         b.list.setItemAnimator(null);
         b.list.setAdapter(concat);
         b.list.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -155,22 +166,18 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
                 TodayViewModel.NO_FARM_MESSAGE, getString(R.string.today_new_farm), com.zhimu.slmp.base.R.drawable.ic_add,
                 StateLayout.EMPTY_ACTION_TONAL, v -> Router.open(requireContext(), RouterPath.F02));
 
-        todoAdapter.addLoadStateListener(states -> {
-            updateFooter(states);
-            return Unit.INSTANCE;
-        });
-        vm.getTodoPaging().observe(owner, data -> todoAdapter.submitData(owner.getLifecycle(), data));
+        vm.getTodoItems().observe(owner, todoAdapter::submitList);
+        vm.getPreviewState().observe(owner, state -> updateFooter(null));
+        vm.getOverdueTotal().observe(owner, total -> renderOverdue());
+        vm.getOverdueExpanded().observe(owner, expanded -> renderOverdue());
+        vm.getOverdueItems().observe(owner, items -> renderOverdue());
+        vm.getOverdueState().observe(owner, state -> renderOverdue());
         vm.getManagerView().observe(owner, manager -> updateFooter(null));
         vm.getHasPen().observe(owner, has -> updateFooter(null));
         vm.getFarmBlocked().observe(owner, blocked -> updateFooter(null));
         vm.getMyPens().observe(owner, this::renderPens);
         vm.getHome().observe(owner, this::renderFarmNotice);
         vm.getNavEvent().observe(owner, this::open);
-        vm.getLeavingTodoId().observe(owner, id -> {
-            if (id != null && binding != null) {
-                todoAdapter.fadeOut(binding.list, id, 1, () -> vm.removeTodoLocally(id));
-            }
-        });
         vm.getOpenQuickRegister().observe(owner, v -> QuickRegisterSheet.show(getChildFragmentManager()));
         vm.getSwitchTab().observe(owner, tab -> {
             if (tab != null && requireActivity() instanceof MainTabHost) {
@@ -206,7 +213,7 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
         h.cardToday.setOnClickListener(v -> vm.onMetricClick(TodayViewModel.CARD_TODAY));
         h.cardWarning.setOnClickListener(v -> vm.onMetricClick(TodayViewModel.CARD_WARNING));
         h.cardOverdue.setOnClickListener(v -> vm.onMetricClick(TodayViewModel.CARD_OVERDUE));
-        h.todoHeader.setOnActionClickListener(v -> vm.onCalendarClick());
+        h.todoHeader.setOnActionClickListener(v -> vm.onMetricClick(TodayViewModel.CARD_TODAY));
     }
 
     private void onFarmContext(@Nullable FarmContextVO ctx) {
@@ -288,11 +295,10 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
     }
 
     /** 列表区：加载更多圈、今天没有待办、还没有栏舍、加载失败 */
-    private void updateFooter(@Nullable CombinedLoadStates states) {
+    private void updateFooter(@Nullable Object ignored) {
         if (footer == null || todoAdapter == null) {
             return;
         }
-        CombinedLoadStates s = states;
         boolean blocked = Boolean.TRUE.equals(vm.getFarmBlocked().getValue());
         boolean manager = Boolean.TRUE.equals(vm.getManagerView().getValue());
         boolean staffNoPen = !manager && vm.getHome().getValue() != null && vm.getMyPens().getValue() != null
@@ -307,27 +313,49 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
                     manager ? getString(R.string.today_home_add_pen) : null));
             return;
         }
-        if (s == null) {
-            return;
-        }
-        LoadState refresh = s.getRefresh();
-        LoadState append = s.getAppend();
-        if (refresh instanceof LoadState.Error) {
+        UiState state = vm.getPreviewState().getValue();
+        if (state == null) return;
+        if (state.is(UiState.Status.ERROR)) {
             footer.setState(ListStateAdapter.State.error(getString(R.string.today_home_error_title),
-                    ((LoadState.Error) refresh).getError().getMessage(), getString(com.zhimu.slmp.base.R.string.base_action_retry)));
-        } else if (append instanceof LoadState.Loading) {
+                    state.getTitle(), getString(com.zhimu.slmp.base.R.string.base_action_retry)));
+        } else if (state.is(UiState.Status.LOADING)) {
             footer.setState(ListStateAdapter.State.loading());
-        } else if (refresh instanceof LoadState.NotLoading && todoAdapter.getItemCount() == 0) {
-            footer.setState(ListStateAdapter.State.empty(com.zhimu.slmp.base.R.drawable.ic_task_alt,
-                    getString(R.string.today_home_empty_title), getString(R.string.today_home_empty_desc), null));
+        } else if (state.is(UiState.Status.EMPTY)) {
+            footer.setState(ListStateAdapter.State.note(getString(R.string.today_home_empty_title)));
         } else {
             footer.setState(ListStateAdapter.State.none());
         }
     }
 
+    private void renderOverdue() {
+        if (overdueAdapter == null) return;
+        int total = vm.getOverdueTotal().getValue() == null ? 0 : vm.getOverdueTotal().getValue();
+        boolean expanded = Boolean.TRUE.equals(vm.getOverdueExpanded().getValue());
+        overdueSection.set(getString(R.string.today_calendar_overdue_title, total),
+                getString(expanded ? R.string.today_collapse : R.string.today_expand));
+        overdueSection.setVisible(total > 0 && !Boolean.TRUE.equals(vm.getFarmBlocked().getValue()));
+        overdueAdapter.submitList(expanded && total > 0 ? vm.getOverdueItems().getValue() : java.util.Collections.emptyList());
+        overdueMore.setVisible(expanded && total > 5);
+        UiState state = vm.getOverdueState().getValue();
+        if (!expanded || total == 0 || state == null) overdueFooter.setState(ListStateAdapter.State.none());
+        else if (state.is(UiState.Status.LOADING)) overdueFooter.setState(ListStateAdapter.State.loading());
+        else if (state.is(UiState.Status.ERROR)) overdueFooter.setState(ListStateAdapter.State.error(
+                "逾期待办加载失败", state.getTitle(), getString(com.zhimu.slmp.base.R.string.base_action_retry)));
+        else overdueFooter.setState(ListStateAdapter.State.none());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (vm != null) {
+            vm.collapseOverdue();
+            vm.onAppForeground();
+        }
+    }
+
     private void onFooterAction() {
         if (footer.getState().getType() == ListStateAdapter.State.ERROR) {
-            todoAdapter.retry();
+            vm.retry();
         } else {
             vm.onAddPenClick();
         }

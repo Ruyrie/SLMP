@@ -313,6 +313,26 @@ class FarmAssemblerTest {
         assertThat(cancelled.getAvatarUrl()).isNull();
     }
 
+    @Test
+    void acceptedInviteRemainsSuccessfulAfterItsOldExpiryDate() {
+        var invite = new com.zhimu.server.biz.farm.entity.FarmInvite();
+        invite.setId(7001L);
+        invite.setFarmId(1001L);
+        invite.setInviteePhone("13800006621");
+        invite.setRole("STAFF");
+        invite.setStatus("ACCEPTED");
+        invite.setCreatedAt(LocalDateTime.of(2026, 10, 1, 9, 0));
+        invite.setExpiresAt(LocalDateTime.of(2026, 10, 8, 9, 0));
+        invite.setHandledAt(LocalDateTime.of(2026, 10, 2, 10, 0));
+        when(invitePenMapper.selectList(any())).thenReturn(List.of());
+        var item = assembler.inviteItem(farm(FarmStatus.NORMAL), invite, true);
+        assertThat(item.getStatus()).isEqualTo("ACCEPTED");
+        assertThat(item.getStatusText()).isEqualTo("邀请成功");
+        assertThat(item.getCanReinvite()).isFalse();
+        assertThat(item.getHandledAt()).isEqualTo("2026-10-02 10:00:00");
+        assertThat(assembler.inviteItem(farm(FarmStatus.NORMAL), invite, false).getInviteePhone()).isNull();
+    }
+
     private static Farm farm(FarmStatus status) {
         Farm farm = new Farm();
         farm.setId(1001L);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- T01 头部：问候区、审核横幅、指标卡行（养殖户：存栏 / 今日待办 / 预警；员工：负责栏舍 / 今日待办 / 已逾期）、AI 入口横幅、
-     我负责的栏舍（员工）、“今天和已逾期 · N 项”分组标题 + “日历” -->
+<!-- T01 头部：问候区、审核横幅、指标卡行（养殖户：存栏 / 今日待办 / 预警；员工：负责栏舍 / 今日待办 / 已逾期）、
+     我负责的栏舍（员工）、“今日待办 · N 项”分组标题 + “查看全部” -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -28,7 +28,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:text="@{vm.greetingText}"
-            android:textAppearance="@style/TextAppearance.Zmt.HeadlineLarge"
+            android:textAppearance="@style/TextAppearance.Zmt.TitleLarge"
             android:textColor="?attr/colorOnSurface" />
 
         <TextView
@@ -113,57 +113,6 @@
                 app:visibleIf="@{!safeUnbox(vm.managerView)}" />
         </LinearLayout>
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/ai_banner"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="@dimen/base_space_3"
-            android:clickable="true"
-            android:focusable="true"
-            app:cardBackgroundColor="?attr/colorTertiaryContainer"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="0dp"
-            app:onSafeClick="@{v -> vm.onAiBannerClick()}"
-            app:strokeWidth="0dp"
-            app:visibleIf="@{safeUnbox(vm.managerView) &amp;&amp; !safeUnbox(vm.farmBlocked)}">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingStart="@dimen/base_space_4"
-                android:paddingEnd="@dimen/base_space_4">
-
-                <ImageView
-                    android:layout_width="@dimen/base_icon_size"
-                    android:layout_height="@dimen/base_icon_size"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/ic_auto_awesome"
-                    app:tint="?attr/colorTertiary" />
-
-                <TextView
-                    android:id="@+id/ai_text"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/base_space_3"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:singleLine="true"
-                    android:text="@{TodayBindingAdapters.aiText(context, vm.aiHint)}"
-                    android:textAppearance="@style/TextAppearance.Zmt.BodyMedium"
-                    android:textColor="?attr/colorOnTertiaryContainer" />
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="@dimen/base_space_3"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/ic_arrow_forward"
-                    app:tint="?attr/colorOnTertiaryContainer" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
         <LinearLayout
             android:id="@+id/my_pens_section"
             android:layout_width="match_parent"
@@ -199,8 +148,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/base_space_4"
-            app:sectionActionIcon="@drawable/ic_calendar_month"
-            app:sectionActionText="@string/today_home_calendar"
+            app:sectionActionText="@string/today_view_all"
             app:sectionTitle="@{@string/today_home_section_todos(safeUnbox(vm.todoTotal))}"
             app:visibleIf="@{!safeUnbox(vm.farmBlocked) &amp;&amp; safeUnbox(vm.hasPen)}" />
     </LinearLayout>

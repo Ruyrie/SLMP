@@ -52,6 +52,37 @@ public final class StdCalculator {
         return round1(stdWeight.multiply(BigDecimal.ONE.add(toleranceRate)));
     }
 
+    /** 接口计算保留体重精度；显示层可自行格式化，不能把 0.04 千克或允许偏差带舍为零。 */
+    public static StandardAt exactAtWeight(BigDecimal stdWeight, BigDecimal toleranceRate) {
+        return new StandardAt(stdWeight,
+                stdWeight == null || toleranceRate == null ? null : stdWeight.multiply(BigDecimal.ONE.subtract(toleranceRate)),
+                stdWeight == null || toleranceRate == null ? null : stdWeight.multiply(BigDecimal.ONE.add(toleranceRate)));
+    }
+
+    public static StandardAt interpolateExact(List<StdWeightPoint> sortedPoints, int dayAge, BigDecimal toleranceRate) {
+        if (sortedPoints == null || sortedPoints.isEmpty()
+                || dayAge < sortedPoints.get(0).getDayAge()
+                || dayAge > sortedPoints.get(sortedPoints.size() - 1).getDayAge()) {
+            return null;
+        }
+        for (int i = 0; i < sortedPoints.size(); i++) {
+            StdWeightPoint current = sortedPoints.get(i);
+            if (current.getDayAge() == dayAge) {
+                return exactAtWeight(current.getStdWeight(), toleranceRate);
+            }
+            if (i + 1 < sortedPoints.size()) {
+                StdWeightPoint next = sortedPoints.get(i + 1);
+                if (dayAge > current.getDayAge() && dayAge < next.getDayAge()) {
+                    BigDecimal offsetWeight = next.getStdWeight().subtract(current.getStdWeight())
+                            .multiply(BigDecimal.valueOf(dayAge - current.getDayAge()))
+                            .divide(BigDecimal.valueOf(next.getDayAge() - current.getDayAge()), 6, RoundingMode.HALF_UP);
+                    return exactAtWeight(current.getStdWeight().add(offsetWeight).stripTrailingZeros(), toleranceRate);
+                }
+            }
+        }
+        return null;
+    }
+
     /** 日增重 = (本点体重 − 前点体重) ÷ (本点日龄 − 前点日龄)，首点为 null */
     public static BigDecimal dailyGain(List<StdWeightPoint> sortedPoints, int index) {
         if (sortedPoints == null || index <= 0 || index >= sortedPoints.size()) {

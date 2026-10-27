@@ -53,6 +53,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /** API-B12–B21：猪的配种 → 妊检 → 产仔 → 断奶。 */
 @Service
@@ -68,6 +69,7 @@ public class BreedingRecordServiceImpl implements BreedingRecordService {
     private final BreedingSupport support;
     private final BreedingRecordConvert convert;
     private final OperationLogRecorder operationLogRecorder;
+    private final com.zhimu.server.biz.herd.api.SelfBredBatchService selfBredBatchService;
 
     // ===== 配种 =====
 
@@ -412,8 +414,8 @@ public class BreedingRecordServiceImpl implements BreedingRecordService {
                     "活仔数为 0，不能转为新批次。请关闭“活仔一键转为新批次”。");
         }
         Long targetPenId = request.getTargetPenId() == null ? animal.getPenId() : request.getTargetPenId();
-        Long offspringBreedId = offspringBreed(request.getOffspringBreedId(), animal.getBreedId());
-        String unit = support.unitOfBreed(offspringBreedId);
+        Long offspringBreedId = transfer ? offspringBreed(request.getOffspringBreedId(), animal.getBreedId()) : null;
+        String unit = transfer ? support.unitOfBreed(offspringBreedId) : null;
         if (transfer) {
             requirePen(targetPenId, "请选择入栏栏舍");
             PenInfo pen = support.pen(targetPenId);
@@ -434,9 +436,6 @@ public class BreedingRecordServiceImpl implements BreedingRecordService {
         record.setTargetPenId(targetPenId);
         record.setOffspringBreedId(offspringBreedId);
         record.setCapacityConfirmed(Boolean.TRUE.equals(request.getCapacityConfirmed()));
-        // TODO 模块04 提供写入口（如 BatchCommandService.createSelfBredBatch）后改为同一事务创建自繁批次：
-        //  入栏栏舍 targetPenId、数量 = 活仔、入栏日期 = farrowDate、日龄 0、source = SELF_BRED、
-        //  source_record_type = FARROWING；当前批次只读，batch_id 暂空，App 按未转批次显示。
         record.setBatchId(null);
         record.setClientRequestId(requestId);
         record.setVersion(1);
@@ -445,6 +444,13 @@ public class BreedingRecordServiceImpl implements BreedingRecordService {
             farrowingMapper.insert(record);
         } catch (DuplicateKeyException ex) {
             throw duplicateSubmit();
+        }
+        com.zhimu.server.biz.herd.api.SelfBredBatchService.CreatedBatch createdBatch = null;
+        if (transfer) {
+            createdBatch = selfBredBatchService.create(targetPenId, offspringBreedId, counts.liveBorn(), farrowDate,
+                    Boolean.TRUE.equals(request.getCapacityConfirmed()), "FARROWING", record.getId());
+            record.setBatchId(createdBatch.batchId());
+            if (farrowingMapper.updateById(record) == 0) throw BreedingErrors.versionConflict();
         }
         animal.setParity((animal.getParity() == null ? 0 : animal.getParity()) + 1);
         if (counts.liveBorn() > 0) {
@@ -470,7 +476,7 @@ public class BreedingRecordServiceImpl implements BreedingRecordService {
         }
         log(BizType.FARROWING, record.getId(), "CREATE", Map.of("live_born", counts.liveBorn()));
         return convert.registerResult(BreedingCodes.RECORD_FARROWING, record.getId(), animal, cycle.getId(),
-                null, null, null, null, true);
+                null, null, record.getBatchId(), createdBatch == null ? null : createdBatch.batchNo(), true);
     }
 
     @Override
@@ -820,7 +826,9 @@ public class BreedingRecordServiceImpl implements BreedingRecordService {
         }
         CategoryInfo motherCategory = support.categoryOfBreed(motherBreedId);
         CategoryInfo offspringCategory = support.categoryOfBreed(breedId);
-        if (requested != null && motherCategory != null && offspringCategory != null
+        BreedQueryService.BreedInfo mother = support.breed(motherBreedId);
+        boolean configuredOffspring = mother != null && Objects.equals(mother.offspringBreedId(), breedId);
+        if (requested != null && !configuredOffspring && motherCategory != null && offspringCategory != null
                 && !motherCategory.id().equals(offspringCategory.id())) {
             throw BreedingErrors.invalid("offspring_breed_id", "后代品种需与母本同品类");
         }

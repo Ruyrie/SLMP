@@ -338,17 +338,17 @@ public class SaleOrderDetailViewModel extends FinanceViewModel implements Receip
                     onReceived(amount, null);
                 } else {
                     receipt.setSubmitting(false);
-                    showMessage(FinanceErrors.MSG_TIMEOUT);
+                    receipt.setSubmissionError(FinanceErrors.MSG_TIMEOUT);
                 }
             }, e2 -> {
                 receipt.setSubmitting(false);
-                showMessage(FinanceErrors.MSG_TIMEOUT);
+                receipt.setSubmissionError(FinanceErrors.MSG_TIMEOUT);
             });
             return;
         }
         receipt.setSubmitting(false);
         if (e.isNetwork()) {
-            showMessage(e.keptMessage(FinanceErrors.MSG_NETWORK_KEPT));
+            receipt.setSubmissionError(e.keptMessage(FinanceErrors.MSG_NETWORK_KEPT));
             return;
         }
         receipt.idem().clear();
@@ -365,6 +365,8 @@ public class SaleOrderDetailViewModel extends FinanceViewModel implements Receip
         }
         if (ErrorCodes.isNoPermission(e.getCode())) {
             receipt.close();
+        } else {
+            receipt.setSubmissionError(e.getMessage());
         }
         handleError(e);
     }

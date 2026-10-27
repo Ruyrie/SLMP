@@ -75,6 +75,30 @@ public class AiRepositoryStreamTest {
     }
 
     @Test
+    public void publicProgressAndSummary_areParsedButRawReasoningIsIgnored() {
+        String sse = "event: meta\ndata: {\"message_id\":5501}\n\n"
+                + "event: progress\ndata: {\"stage\":\"RETRIEVAL\",\"message\":\"正在检索平台知识\"}\n\n"
+                + "event: reasoning_content\ndata: {\"text\":\"internal reasoning must not be shown\"}\n\n"
+                + "event: analysis_summary\ndata: {\"text\":\"已检索平台知识，找到 2 条相关资料\"}\n\n"
+                + "event: delta\ndata: {\"text\":\"请先观察采食变化。\"}\n\n"
+                + "event: done\ndata: {\"message\":{\"id\":5501,\"status\":\"ANSWERED\","
+                + "\"answer_text\":\"请先观察采食变化。\",\"analysis_summary\":\"找到 2 条相关资料\","
+                + "\"source_note\":\"引用资料见下方\"}}\n\n";
+        TestSubscriber<AiStreamEvent> subscriber = repo(200, "text/event-stream", sse)
+                .ask(new AiAskRequest(), "public-progress").test();
+        subscriber.assertComplete().assertNoErrors();
+        List<AiStreamEvent> events = subscriber.values();
+        assertEquals(5, events.size());
+        assertEquals(AiStreamEvent.Type.PROGRESS, events.get(1).getType());
+        assertEquals("RETRIEVAL", events.get(1).getProgress().getStage());
+        assertEquals("正在检索平台知识", events.get(1).getProgress().getMessage());
+        assertEquals(AiStreamEvent.Type.ANALYSIS_SUMMARY, events.get(2).getType());
+        assertEquals("已检索平台知识，找到 2 条相关资料", events.get(2).getText());
+        assertEquals("找到 2 条相关资料", events.get(4).getDone().getMessage().getAnalysisSummary());
+        assertEquals("引用资料见下方", events.get(4).getDone().getMessage().getSourceNote());
+    }
+
+    @Test
     public void mockReplay_jsonContentTypeButSseBody() throws IOException {
         String sse = AiTestRules.read("ask_timeout.sse");
         TestSubscriber<AiStreamEvent> ts = repo(200, "application/json", sse).retry(5501).test();

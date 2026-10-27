@@ -21,9 +21,9 @@ public class ProductionOverviewVO {
     private Integer stockTotal;
     /** 待模块03接入：今日生产类待办数 */
     private Integer todayTodoCount;
-    /** 待模块03/07/08接入：巡检异常、紧急诊断、库存偏低等预警数 */
+    /** 当前成员可见的未解除 WARNING 待办数，与预警合集一致；不额外累计休药和巡检概况。 */
     private Integer warningCount;
-    /** 生产提醒总数 = 休药中批次 + 预警项；休药待模块08接入 */
+    /** 生产提醒总数，包含休药中批次、预警项和巡检概况提示。 */
     private Integer reminderTotal;
     private String unit;
     private String unitText;

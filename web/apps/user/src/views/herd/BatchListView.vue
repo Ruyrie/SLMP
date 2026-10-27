@@ -182,10 +182,7 @@ watch(
   }
 )
 
-useFarmReload(async () => {
-  store.reset()
-  await store.load(isStaff.value)
-})
+useFarmReload(() => store.load(isStaff.value, true))
 </script>
 
 <template>

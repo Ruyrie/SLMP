@@ -75,7 +75,7 @@ public final class GrowthCalc {
         for (int i = 0; i < sorted.size(); i++) {
             StdPointVO p = sorted.get(i);
             if (p.getDayAge() == dayAge) {
-                return p.getStdWeight().setScale(1, RoundingMode.HALF_UP);
+                return p.getStdWeight();
             }
             if (p.getDayAge() > dayAge && i > 0) {
                 StdPointVO a = sorted.get(i - 1);
@@ -83,7 +83,7 @@ public final class GrowthCalc {
                 BigDecimal offset = BigDecimal.valueOf(dayAge - a.getDayAge());
                 BigDecimal v = a.getStdWeight().add(p.getStdWeight().subtract(a.getStdWeight())
                         .multiply(offset).divide(span, 6, RoundingMode.HALF_UP));
-                return v.setScale(1, RoundingMode.HALF_UP);
+                return v.stripTrailingZeros();
             }
         }
         return null;

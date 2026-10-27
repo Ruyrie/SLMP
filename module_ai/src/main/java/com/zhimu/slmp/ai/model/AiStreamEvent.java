@@ -10,6 +10,7 @@ import com.zhimu.slmp.ai.model.vo.StreamDeltaVO;
 import com.zhimu.slmp.ai.model.vo.StreamDoneVO;
 import com.zhimu.slmp.ai.model.vo.StreamErrorVO;
 import com.zhimu.slmp.ai.model.vo.StreamMetaVO;
+import com.zhimu.slmp.ai.model.vo.StreamProgressVO;
 import com.zhimu.slmp.common.ai.AiSseEvent;
 
 import java.util.Collections;
@@ -24,6 +25,8 @@ public final class AiStreamEvent {
     public enum Type {
         META,
         DELTA,
+        PROGRESS,
+        ANALYSIS_SUMMARY,
         CITATION,
         DONE,
         ERROR,
@@ -42,16 +45,25 @@ public final class AiStreamEvent {
     private final StreamDoneVO done;
     @Nullable
     private final StreamErrorVO error;
+    @Nullable
+    private final StreamProgressVO progress;
 
     private AiStreamEvent(@NonNull Type type, @Nullable StreamMetaVO meta, @Nullable String text,
                           @Nullable List<CitationBriefVO> citations, @Nullable StreamDoneVO done,
                           @Nullable StreamErrorVO error) {
+        this(type, meta, text, citations, done, error, null);
+    }
+
+    private AiStreamEvent(@NonNull Type type, @Nullable StreamMetaVO meta, @Nullable String text,
+                          @Nullable List<CitationBriefVO> citations, @Nullable StreamDoneVO done,
+                          @Nullable StreamErrorVO error, @Nullable StreamProgressVO progress) {
         this.type = type;
         this.meta = meta;
         this.text = text;
         this.citations = citations;
         this.done = done;
         this.error = error;
+        this.progress = progress;
     }
 
     @NonNull
@@ -62,6 +74,17 @@ public final class AiStreamEvent {
     @NonNull
     public static AiStreamEvent delta(@NonNull String text) {
         return new AiStreamEvent(Type.DELTA, null, text, null, null, null);
+    }
+
+    @NonNull
+    public static AiStreamEvent progress(@NonNull String stage, @NonNull String message) {
+        return new AiStreamEvent(Type.PROGRESS, null, null, null, null, null,
+                new StreamProgressVO(stage, message));
+    }
+
+    @NonNull
+    public static AiStreamEvent analysisSummary(@NonNull String text) {
+        return new AiStreamEvent(Type.ANALYSIS_SUMMARY, null, text, null, null, null);
     }
 
     @NonNull
@@ -114,6 +137,14 @@ public final class AiStreamEvent {
                 StreamDeltaVO d = gson.fromJson(e.getData(), StreamDeltaVO.class);
                 return delta(d == null || d.getText() == null ? "" : d.getText());
             }
+            case AiCodes.SSE_PROGRESS: {
+                StreamProgressVO p = gson.fromJson(e.getData(), StreamProgressVO.class);
+                return p == null ? null : progress(p.getStage(), p.getMessage());
+            }
+            case AiCodes.SSE_ANALYSIS_SUMMARY: {
+                StreamDeltaVO d = gson.fromJson(e.getData(), StreamDeltaVO.class);
+                return analysisSummary(d == null || d.getText() == null ? "" : d.getText());
+            }
             case AiCodes.SSE_CITATION: {
                 StreamCitationVO c = gson.fromJson(e.getData(), StreamCitationVO.class);
                 return citation(c == null ? Collections.emptyList() : c.getCitations());
@@ -155,6 +186,11 @@ public final class AiStreamEvent {
     @Nullable
     public StreamErrorVO getError() {
         return error;
+    }
+
+    @Nullable
+    public StreamProgressVO getProgress() {
+        return progress;
     }
 
     @NonNull

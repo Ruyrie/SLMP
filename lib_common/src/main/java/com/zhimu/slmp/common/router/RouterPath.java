@@ -80,6 +80,8 @@ public final class RouterPath {
     public static final String T07 = PREFIX + "T07";
     /** T08 关联记录已失效 */
     public static final String T08 = PREFIX + "T08";
+    /** T09 预警 / 逾期待办合集 */
+    public static final String T09 = PREFIX + "T09";
 
     // ===== 模块04 栏舍与存栏 =====
     /** L01 生产页 */
@@ -246,6 +248,8 @@ public final class RouterPath {
     public static final String K07 = PREFIX + "K07";
 
     // ===== 无编号页面 =====
+    /** 库存单据只读详情（入库、出库、报损报废、盘点）。 */
+    public static final String STOCK_RECORD = PREFIX + "STOCK_RECORD";
     /** 主页（底部导航，app 壳工程） */
     public static final String MAIN = PREFIX + "MAIN";
     /** 修改密码页（A08 进入，无编号） */
@@ -456,7 +460,7 @@ public final class RouterPath {
     static final String[] PAGE_CODES = {
             "U01", "U02", "U03", "A01", "A02", "A03", "A04", "A05", "A06", "A07", "A08", "A09",
             "F01", "F02", "F03", "F04", "F05", "F06", "F07", "F08", "F09", "F10", "T01", "T02",
-            "T03", "T04", "T05", "T06", "T07", "T08", "L01", "L02", "L03", "L04", "L05", "L06",
+            "T03", "T04", "T05", "T06", "T07", "T08", "T09", "L01", "L02", "L03", "L04", "L05", "L06",
             "L07", "L08", "L09", "L10", "L11", "B01", "B02", "B03", "B04", "B05", "B06", "B07",
             "G01", "G02", "G03", "G04", "G05", "G06", "I01", "I02", "I03", "I04", "I05", "I06",
             "I07", "I08", "I09", "D01", "D02", "D03", "D04", "D05", "D06", "D07", "D08", "D09",

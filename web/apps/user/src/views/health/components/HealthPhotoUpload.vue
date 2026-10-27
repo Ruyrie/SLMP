@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { healthApi } from '@/api/health'
 
 interface PhotoItem {
@@ -87,7 +87,8 @@ function onFiles(event: Event): void {
 }
 
 function addFile(file: File): void {
-  const item: PhotoItem = {
+  // 上传回调与页面必须修改同一个响应式对象，才能及时解除提交锁定。
+  const item = reactive<PhotoItem>({
     localId: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
     file,
     fileId: 0,
@@ -96,7 +97,7 @@ function addFile(file: File): void {
     progress: 0,
     uploading: true,
     error: false
-  }
+  })
   items.value.push(item)
   void upload(item)
 }
@@ -110,7 +111,9 @@ async function upload(item: PhotoItem): Promise<void> {
     const file = await healthApi.uploadPhoto(item.file, (percent) => {
       item.progress = percent
     })
-    item.fileId = Number(file.file_id || 0)
+    const fileId = Number(file.file_id)
+    if (!Number.isInteger(fileId) || fileId <= 0) throw new Error('上传未返回有效文件编号')
+    item.fileId = fileId
     item.progress = 100
     item.uploading = false
     if (file.url) item.url = String(file.url)

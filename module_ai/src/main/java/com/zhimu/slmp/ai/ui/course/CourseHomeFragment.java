@@ -178,15 +178,25 @@ public class CourseHomeFragment extends BaseFragment {
             Router.open(requireContext(), RouterPath.K07, b);
         });
         if (!isHidden()) {
-            vm.start();
+            vm.onVisible();
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (!isHidden()) refreshVisible();
+    }
+
+    public void refreshVisible() {
+        if (binding != null && vm != null) vm.onVisible();
     }
 
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
         if (!hidden && vm != null) {
-            vm.start();
+            vm.onVisible();
         }
     }
 

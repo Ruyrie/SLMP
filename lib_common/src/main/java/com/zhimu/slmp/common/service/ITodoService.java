@@ -24,4 +24,7 @@ public interface ITodoService {
 
     /** 重新获取未读数（应用回到前台、收到推送时） */
     void refreshUnread();
+
+    /** 注销成功后停止旧会话刷新并清空进程内的消息角标。 */
+    void clearSessionState();
 }

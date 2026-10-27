@@ -103,7 +103,8 @@ public class DirectAnswerEngine implements AnswerEngine {
                                 return Flowable.just(AiStreamEvent.heartbeat());
                             }
                             started[0] = true;
-                            return Flowable.just(AiStreamEvent.meta(meta(localId, input)));
+                            return Flowable.just(AiStreamEvent.meta(meta(localId, input)),
+                                    AiStreamEvent.progress("GENERATING", "已连接回答服务，正在生成回答"));
                         case CONTENT: {
                             String out = DirectPrompt.clean(tag.feed(chunk.getText()));
                             if (out.isEmpty()) {
@@ -172,6 +173,9 @@ public class DirectAnswerEngine implements AnswerEngine {
         m.setStatus(AiCodes.STATUS_ANSWERED);
         m.setAnswerType(type);
         m.setAnswerText(body);
+        if (AiCodes.ANSWER_NO_BASIS.equals(type)) {
+            m.setSourceNote("本次回答未引用平台知识库，请结合实际情况核实。");
+        }
         m.setCitations(Collections.emptyList());
         boolean offTopic = AiCodes.ANSWER_OFF_TOPIC.equals(type);
         m.setCanRate(!offTopic);

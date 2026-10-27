@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import type { DataTableHeader } from 'vuetify'
@@ -21,6 +21,10 @@ import {
 } from '@/stores/finance/shared'
 import VoucherUpload from './components/VoucherUpload.vue'
 import FinanceDateField from './components/FinanceDateField.vue'
+import StockDocumentDrawer from '@/views/stock/components/StockDocumentDrawer.vue'
+import { financeApi, type FinanceRecordDetail } from '@/api/finance'
+import type { StockFlowItem } from '@/api/stock'
+import { stockDocumentScope } from '@/stores/stock/refund'
 
 const store = useFinanceRecordsStore()
 const farm = useFarmStore()
@@ -28,6 +32,55 @@ const route = useRoute()
 const router = useRouter()
 const ui = useUiStore()
 const { summary, form } = storeToRefs(store)
+const sourceDocumentOpen = ref(false)
+const sourceFlow = ref<StockFlowItem | null>(null)
+const linkedRecordOpen = ref(false)
+const linkedRecordLoading = ref(false)
+const linkedRecordError = ref('')
+const linkedRecord = ref<FinanceRecordDetail | null>(null)
+let linkedRecordRequest = 0
+let sourceRequest = 0
+
+function closeLinkedRecord(): void {
+  ++linkedRecordRequest
+  linkedRecordOpen.value = false
+  linkedRecord.value = null
+  linkedRecordLoading.value = false
+  linkedRecordError.value = ''
+}
+
+function onRefundSaved(): void {
+  void Promise.all([store.loadSummary(), store.loadList()])
+}
+
+function onViewRefundRecord(id: number): void {
+  // 已在相同流水地址时 router.push 不触发 query 监听，仍应重新打开更新后的详情。
+  if (String(route.query.recordId) === String(id) && route.query.detail === '1') void openLinkedRecord(id)
+}
+
+async function openLinkedRecord(id: number): Promise<void> {
+  const request = ++linkedRecordRequest
+  const scope = stockDocumentScope()
+  linkedRecordOpen.value = true
+  linkedRecordLoading.value = true
+  linkedRecord.value = null
+  linkedRecordError.value = ''
+  try {
+    const record = await financeApi.recordDetail(id)
+    if (request === linkedRecordRequest && scope === stockDocumentScope()) linkedRecord.value = record
+  } catch (error) {
+    if (request === linkedRecordRequest && scope === stockDocumentScope()) linkedRecordError.value = (error as Error).message || '关联流水加载失败'
+  } finally {
+    if (request === linkedRecordRequest && scope === stockDocumentScope()) linkedRecordLoading.value = false
+  }
+}
+
+watch(stockDocumentScope, () => {
+  closeLinkedRecord()
+  sourceDocumentOpen.value = false
+  sourceFlow.value = null
+}, { flush: 'sync' })
+onBeforeUnmount(() => { ++sourceRequest; closeLinkedRecord() })
 
 const headers = computed<DataTableHeader[]>(() => {
   const rows: DataTableHeader[] = [
@@ -43,7 +96,7 @@ const headers = computed<DataTableHeader[]>(() => {
 const desc = computed(() =>
   farm.viewAll
     ? '只合计你担任所有者或场长的养殖场；先分别相加收入和支出，再算结余'
-    : '按记账日期归月；物资入库勾选“同步记账”和出栏收款会自动生成账目'
+    : '按记账日期归月；物资入库勾选“同步记账”、出栏收款和登记退货退款会自动生成账目'
 )
 
 const managerFarmCount = computed(
@@ -244,9 +297,24 @@ function openRecord(item: Record<string, unknown>): void {
   void store.openEdit(item as never)
 }
 
-function openSource(item: Record<string, unknown>): void {
+async function openSource(item: Record<string, unknown> | FinanceRecordDetail): Promise<void> {
   const target = item.sourceTarget as { bizType?: string; bizId?: number } | undefined
   if (!target?.bizType || !target.bizId) return
+  if (target.bizType === 'OUTBOUND') {
+    const request = ++sourceRequest
+    const targetFarm = Number(item.farmId || farm.currentFarmId)
+    closeLinkedRecord()
+    try {
+      if (targetFarm !== farm.currentFarmId) await farm.switchTo(targetFarm)
+      await nextTick()
+      if (request !== sourceRequest || farm.currentFarmId !== targetFarm) return
+      sourceFlow.value = { flow_id: 0, biz_type: 'OUTBOUND', biz_id: target.bizId, flow_type: 'RETURN' }
+      sourceDocumentOpen.value = true
+    } catch (error) {
+      if (request === sourceRequest) ui.toast((error as Error).message || '来源退货单打开失败', 'error')
+    }
+    return
+  }
   if (target.bizType === 'SALE_ORDER') {
     void router.push({ name: 'WU-E04', params: { id: String(target.bizId) } })
     return
@@ -326,6 +394,7 @@ async function handleQuery(): Promise<void> {
   }
   const recordId = Number(route.query.recordId || 0)
   if (recordId) {
+    if (route.query.detail === '1') void openLinkedRecord(recordId)
     await store.locateRecord(recordId, String(route.query.date || ''))
   }
   const batchId = Number(route.query.batchId || 0)
@@ -341,6 +410,8 @@ onMounted(async () => {
   await handleQuery()
 })
 
+watch(() => [route.query.recordId, route.query.date, route.query.detail], () => void handleQuery())
+
 useFarmReload(async () => {
   store.reset()
   await store.load()
@@ -349,6 +420,30 @@ useFarmReload(async () => {
 
 <template>
   <zw-shell side="user" active="WU-E02" :crumbs="['经营管理', '收支记账']">
+    <StockDocumentDrawer v-model="sourceDocumentOpen" :flow="sourceFlow" :staff="farm.role === 'staff'" @refund-saved="onRefundSaved" @view-finance-record="onViewRefundRecord" />
+    <zw-drawer :model-value="linkedRecordOpen" title="关联收支流水" width="560" @update:model-value="!$event && closeLinkedRecord()">
+      <v-skeleton-loader v-if="linkedRecordLoading" type="article" />
+      <zw-notice v-else-if="linkedRecordError" type="warning">
+        {{ linkedRecordError }}
+        <v-btn variant="text" @click="openLinkedRecord(Number(route.query.recordId))">重试</v-btn>
+      </zw-notice>
+      <template v-else-if="linkedRecord">
+        <zw-desc :cols="2" bordered :label-width="88">
+          <zw-desc-item label="收支项目">{{ linkedRecord.title || '—' }}</zw-desc-item>
+          <zw-desc-item label="金额">{{ amountDisplay(linkedRecord) }}</zw-desc-item>
+          <zw-desc-item label="记账日期">{{ linkedRecord.recordDate || '—' }}</zw-desc-item>
+          <zw-desc-item label="状态">{{ linkedRecord.statusText || '有效' }}</zw-desc-item>
+          <zw-desc-item label="来源">{{ linkedRecord.sourceLabel || '—' }}</zw-desc-item>
+          <zw-desc-item label="来源单号">{{ linkedRecord.sourceNo || '—' }}</zw-desc-item>
+          <zw-desc-item label="说明" :span="2">{{ linkedRecord.note || linkedRecord.detailText || '—' }}</zw-desc-item>
+        </zw-desc>
+        <zw-notice v-if="linkedRecord.sourceType === 'DRUG_RETURN_REFUND'" type="info" class="mt-4">由退货单登记退款自动生成；需要更正时请在登记当天返回退货单操作，请勿重复手工记账。</zw-notice>
+      </template>
+      <template #foot>
+        <v-btn variant="outlined" @click="closeLinkedRecord">关闭</v-btn>
+        <v-btn v-if="linkedRecord?.sourceTarget?.bizId" color="primary" @click="openSource(linkedRecord)">查看原单据</v-btn>
+      </template>
+    </zw-drawer>
     <zw-page-head title="收支记账" :desc="desc">
       <template #actions>
         <v-btn variant="outlined" prepend-icon="category" @click="openCategories">支出分类</v-btn>
@@ -939,7 +1034,7 @@ useFarmReload(async () => {
             : log.reason || ''
         }))"
       />
-      <div v-else class="fin-log-empty">这条记录还没有修改过</div>
+      <div v-else class="fin-log-empty">暂无可查看的修改记录</div>
       <template #foot>
         <v-btn variant="outlined" @click="store.logOpen = false">关闭</v-btn>
       </template>

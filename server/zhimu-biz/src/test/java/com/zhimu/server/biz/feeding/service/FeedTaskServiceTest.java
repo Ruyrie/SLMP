@@ -11,6 +11,9 @@ import com.zhimu.server.biz.feeding.mapper.FeedTaskMapper;
 import com.zhimu.server.biz.feeding.support.FeedErrors;
 import com.zhimu.server.biz.feeding.support.FeedLookup;
 import com.zhimu.server.biz.feeding.vo.FeedTaskVO;
+import com.zhimu.server.common.vo.UserBriefVO;
+import com.zhimu.server.biz.herd.api.BatchInfo;
+import com.zhimu.server.framework.jackson.CacheJson;
 import com.zhimu.server.common.context.FarmContext;
 import com.zhimu.server.common.enums.FarmRole;
 import com.zhimu.server.common.enums.FarmStatus;
@@ -70,7 +73,7 @@ class FeedTaskServiceTest {
     @BeforeEach
     void setUp() {
         com.zhimu.server.biz.feeding.FeedingTableInfo.ensure();
-        service = new FeedTaskService(taskMapper, planMapper, stageMapper, mealMapper, recordMapper, lookup);
+        service = new FeedTaskService(taskMapper, planMapper, stageMapper, mealMapper, recordMapper, lookup, org.mockito.Mockito.mock(com.zhimu.server.biz.feeding.api.FeedTaskReconciliationService.class));
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-19T01:30:00Z"), ZONE));
         FarmContext.set(new FarmContext.FarmMember(1001L, "东山猪场", 10001L, 5001L, FarmRole.OWNER,
                 Set.of(), FarmStatus.NORMAL));
@@ -129,6 +132,48 @@ class FeedTaskServiceTest {
                 .isInstanceOf(BizException.class)
                 .extracting("code")
                 .isEqualTo(40304);
+    }
+
+    @Test
+    void staffFormUsesSelfAndOmitsExecutorOptionsOnWire() {
+        FeedTaskVO.Form form = executorForm(FarmRole.STAFF);
+        assertThat(form.getDefaultExecutor().getUserId()).isEqualTo(10003L);
+        assertThat(form.getExecutorOptions()).isNull();
+        String json = CacheJson.write(form);
+        assertThat(json).doesNotContain("executor_options");
+        assertThat(json).contains("\"default_executor\"", "\"role\":\"STAFF\"");
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(value = FarmRole.class, names = {"OWNER", "MANAGER"})
+    void managersCanSelectActiveMembers(FarmRole role) {
+        FeedTaskVO.Form form = executorForm(role);
+        assertThat(form.getExecutorOptions()).extracting(UserBriefVO::getUserId).containsExactly(10003L, 10004L);
+        assertThat(form.getDefaultExecutor().getUserId()).isEqualTo(10004L);
+        assertThat(CacheJson.write(form)).contains("\"executor_options\"");
+    }
+
+    private FeedTaskVO.Form executorForm(FarmRole role) {
+        FarmContext.set(new FarmContext.FarmMember(1001L, "东山猪场", 10003L, 5003L, role,
+                Set.of(2003L), FarmStatus.NORMAL));
+        when(lookup.context()).thenReturn(FarmContext.get());
+        FeedTask task = task(70108L, 3001L, 2003L, 2, "午餐", "11:30", 160, "PENDING", 4001L);
+        task.setAssigneeId(10004L);
+        when(taskMapper.selectById(70108L)).thenReturn(task);
+        when(lookup.requireOwnedBatch(3001L)).thenReturn(new BatchInfo(1001L, 3001L, "ZM2610-031",
+                1101L, 101L, LocalDate.of(2026, 9, 1), 200, "ACTIVE", List.of(2003L), 48, 200, 0, 0, 2003L));
+        when(lookup.feed(4001L)).thenReturn(new FeedStockPort.FeedBrief(4001L, "育肥全价料", "KG",
+                new BigDecimal("500.0"), 1, false, true, null));
+        UserBriefVO current = new UserBriefVO();
+        current.setUserId(10003L);
+        current.setName("新成员");
+        current.setRole(role.name());
+        UserBriefVO other = new UserBriefVO();
+        other.setUserId(10004L);
+        other.setName("其他员工");
+        when(lookup.currentUserBrief()).thenReturn(current);
+        when(lookup.memberOptions()).thenReturn(List.of(current, other));
+        return service.form(70108L);
     }
 
     private static FeedTask task(Long id, Long batchId, Long penId, int mealNo, String mealName, String time,

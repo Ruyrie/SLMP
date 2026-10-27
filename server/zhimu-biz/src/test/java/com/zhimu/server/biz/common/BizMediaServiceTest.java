@@ -43,6 +43,19 @@ class BizMediaServiceTest {
     private final BizMediaServiceImpl service = new BizMediaServiceImpl(bizMediaMapper, fileMapper, assembler,
             CommonFlowFixture.provider(null));
 
+    @org.junit.jupiter.api.BeforeEach
+    void lockAvailableFiles() {
+        when(fileMapper.selectActiveForUpdate(any())).thenReturn(new FileEntity());
+    }
+
+    @Test
+    void replaceRejectsRetiredCancellationFile() {
+        when(fileMapper.selectActiveForUpdate(501L)).thenReturn(null);
+        assertThatThrownBy(() -> service.replace(BizType.FEED_RECORD, 7001L, 1001L, List.of(501L)))
+                .isInstanceOf(BizException.class);
+        verify(bizMediaMapper, never()).insert(any(BizMedia.class));
+    }
+
     @Test
     void replaceRevivesLogicallyDeletedRowInsteadOfInserting() {
         BizMedia deleted = media(77L, BizType.FEED_RECORD, 7001L, 501L, 1);

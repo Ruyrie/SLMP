@@ -791,11 +791,14 @@ export const financeApi = {
   },
 
   saleAdviceLatest(batchId: number): Promise<SaleAdvice> {
-    return http().get<unknown>('/sale-advices/latest', { batch_id: batchId }).then((data) => camelize<SaleAdvice>(data))
+    // 首次读取会同步生成：服务端允许 60s 推理及 10s 排队，不能沿用普通查询的 15s 超时。
+    return http().get<unknown>('/sale-advices/latest', { batch_id: batchId }, { timeout: 90_000 })
+      .then((data) => camelize<SaleAdvice>(data))
   },
 
   regenerateSaleAdvice(batchId: number): Promise<SaleAdvice> {
-    return http().post<unknown>('/sale-advices', { batch_id: batchId }).then((data) => camelize<SaleAdvice>(data))
+    return http().post<unknown>('/sale-advices', { batch_id: batchId }, { timeout: 90_000 })
+      .then((data) => camelize<SaleAdvice>(data))
   },
 
   saleAdviceHistory(params: Record<string, unknown>): Promise<Paged<SaleAdvice>> {

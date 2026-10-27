@@ -47,7 +47,8 @@ export class HttpClient {
       if (token) config.headers.Authorization = `Bearer ${token}`
       config.headers['X-Client'] = this.options.client
       const farmId = this.options.getFarmId?.()
-      if (farmId !== null && farmId !== undefined && farmId !== '') {
+      // 调用方可显式覆盖养殖场，或传 null 表示用户级接口不带当前场范围。
+      if (!config.headers.has('X-Farm-Id') && farmId !== null && farmId !== undefined && farmId !== '') {
         config.headers['X-Farm-Id'] = String(farmId)
       }
       const method = (config.method || 'get').toUpperCase()
@@ -124,10 +125,12 @@ export class HttpClient {
     return this.request<T>({ ...config, url, method: 'DELETE' })
   }
 
-  /** 上传：multipart，带进度；不设总超时。 */
-  async upload<T>(url: string, form: FormData, onProgress?: (percent: number) => void): Promise<T> {
+  /** 上传：multipart，带进度；调用方可设置超时和取消信号。 */
+  async upload<T>(url: string, form: FormData, onProgress?: (percent: number) => void,
+    config?: Pick<AxiosRequestConfig, 'timeout' | 'signal'>): Promise<T> {
     const response = await this.instance.post<ApiResponse<T>>(url, form, {
       timeout: 0,
+      ...config,
       onUploadProgress: (event) => {
         if (onProgress && event.total) onProgress(Math.round((event.loaded / event.total) * 100))
       }

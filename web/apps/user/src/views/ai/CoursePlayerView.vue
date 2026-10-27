@@ -5,9 +5,10 @@ import { dayjs, formatDuration, TZ } from '@zmt/shared'
 import type { CourseCard, EntryType, ProgressResult, VideoQuality } from '@/api/ai'
 import { useAiCoursePlayerStore } from '@/stores/ai/coursePlayer'
 import { useUiStore } from '@/stores/ui'
-import { coverKind, learnStatusText, progressPercent } from './course'
+import { coverKind, learnStatusText, courseProgressPercent } from './course'
 import { CourseProgressReporter } from './progress'
 import CourseVideoPlayer from './components/CourseVideoPlayer.vue'
+import CourseCover from './components/CourseCover.vue'
 
 const store = useAiCoursePlayerStore()
 const ui = useUiStore()
@@ -26,6 +27,7 @@ interface PlayerExpose {
 
 const player = ref<PlayerExpose | null>(null)
 const playPosition = ref(0)
+const mediaDuration = ref(0)
 const playPlaying = ref(false)
 const liveQuality = ref<VideoQuality>('P720')
 const justCompleted = ref(false)
@@ -41,7 +43,7 @@ const topic = computed(() => store.topic)
 const lessons = computed(() => store.topicCourses)
 const nextCourse = computed(() => store.nextCourse)
 const pageTitle = computed(() => course.value?.title || '视频播放')
-const duration = computed(() => Number(course.value?.duration_sec || 0))
+const duration = computed(() => mediaDuration.value > 0 ? Math.floor(mediaDuration.value) : Number(course.value?.duration_sec || 0))
 const completed = computed(() => !!course.value?.progress?.completed)
 const currentPercent = computed(() => {
   if (completed.value) return 100
@@ -59,7 +61,7 @@ const updatedText = computed(() => {
 const metaText = computed(() => {
   const value = course.value
   if (!value) return ''
-  return [formatDuration(value.duration_sec), value.source_label, updatedText.value].filter(Boolean).join(' · ')
+  return [formatDuration(duration.value), value.source_label, updatedText.value].filter(Boolean).join(' · ')
 })
 const entryType = computed<EntryType>(() => {
   const from = String(route.query.from || '')
@@ -79,7 +81,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  reporter?.leave(player.value?.getPosition() || playPosition.value)
+  reporter?.leave(player.value?.getPosition() ?? playPosition.value)
   reporter = null
   if (resumeTimer.value) window.clearTimeout(resumeTimer.value)
   window.removeEventListener('pagehide', onPageHide)
@@ -92,7 +94,7 @@ watch(
     const nextId = Number(value || 0)
     const oldId = Number(previous || 0)
     if (!nextId || nextId === oldId) return
-    reporter?.switchCourse(player.value?.getPosition() || playPosition.value)
+    reporter?.switchCourse(player.value?.getPosition() ?? playPosition.value)
     reporter = null
     progressStartedFor = 0
     await loadCourse(nextId)
@@ -101,12 +103,15 @@ watch(
 
 async function loadCourse(id: number): Promise<void> {
   if (!id) return
+  mediaDuration.value = 0
+  playPosition.value = 0
   await store.load(id)
+  if (id !== courseId.value || store.courseId !== id) return
   resumeShown = false
   justCompleted.value = false
   playPlaying.value = false
   if (store.status === 'ready' && store.course) {
-    playPosition.value = Number(store.course.progress?.resume_position_sec || store.course.progress?.position_sec || 0)
+    playPosition.value = Number(store.course.progress?.resume_position_sec ?? store.course.progress?.position_sec ?? 0)
     liveQuality.value = 'P720'
     progressStartedFor = 0
   }
@@ -115,6 +120,8 @@ async function loadCourse(id: number): Promise<void> {
 function onReady(payload: { duration: number; resume: number; quality: VideoQuality }): void {
   const current = course.value
   if (!current) return
+  if (payload.duration > 0 && Number.isFinite(payload.duration)) mediaDuration.value = payload.duration
+  playPosition.value = payload.resume
   liveQuality.value = payload.quality
   if (payload.resume > 0 && !resumeShown) {
     resumeShown = true
@@ -132,9 +139,10 @@ function onReady(payload: { duration: number; resume: number; quality: VideoQual
 function startProgress(position: number): void {
   const current = course.value
   if (!current) return
-  reporter?.leave(player.value?.getPosition() || playPosition.value)
+  reporter?.leave(player.value?.getPosition() ?? playPosition.value)
   reporter = new CourseProgressReporter({
     onResult: (result: ProgressResult) => {
+      if (store.courseId !== current.id || courseId.value !== current.id) return
       store.applyProgress(result)
       if (result.just_completed) justCompleted.value = true
     }
@@ -143,6 +151,7 @@ function startProgress(position: number): void {
 }
 
 function onTick(payload: { position: number; duration: number; playing: boolean; quality: VideoQuality }): void {
+  if (payload.duration > 0 && Number.isFinite(payload.duration)) mediaDuration.value = payload.duration
   playPosition.value = payload.position
   playPlaying.value = payload.playing
   liveQuality.value = payload.quality
@@ -164,10 +173,11 @@ function onSeeked(payload: { position: number; duration: number }): void {
   reporter?.seek(payload.position, liveQuality.value)
 }
 
-function onEnded(): void {
+function onEnded(payload: { position: number; duration: number }): void {
   playPlaying.value = false
-  playPosition.value = duration.value
-  reporter?.ended(duration.value, duration.value)
+  playPosition.value = payload.position
+  if (payload.duration > 0 && Number.isFinite(payload.duration)) mediaDuration.value = payload.duration
+  reporter?.ended(payload.position, payload.duration)
 }
 
 function onQualityChange(quality: VideoQuality): void {
@@ -195,7 +205,7 @@ function replay(): void {
 
 function switchTo(courseItem: CourseCard, from = 'topic'): void {
   if (!courseItem.id || courseItem.id === courseId.value) return
-  reporter?.switchCourse(player.value?.getPosition() || playPosition.value)
+  reporter?.switchCourse(player.value?.getPosition() ?? playPosition.value)
   reporter = null
   progressStartedFor = 0
   void router.push({
@@ -209,7 +219,7 @@ function goNext(): void {
   const next = nextCourse.value
   if (next) switchTo(next, String(route.query.from || 'topic'))
   else if (course.value?.next_course_id) {
-    reporter?.switchCourse(player.value?.getPosition() || playPosition.value)
+    reporter?.switchCourse(player.value?.getPosition() ?? playPosition.value)
     progressStartedFor = 0
     void router.push({
       name: 'WU-K04',
@@ -225,7 +235,7 @@ function lessonTitle(item: CourseCard): string {
 
 function rowPercent(item: CourseCard): number {
   if (item.id === courseId.value) return currentPercent.value
-  return progressPercent(item.progress_ratio, item.learn_status === 'COMPLETED')
+  return courseProgressPercent(item)
 }
 
 function rowStatus(item: CourseCard): string {
@@ -240,7 +250,7 @@ function askAi(): void {
   const value = course.value
   if (!value) return
   player.value?.pause()
-  reporter?.engagement('ask_ai', player.value?.getPosition() || playPosition.value, liveQuality.value)
+  reporter?.engagement('ask_ai', player.value?.getPosition() ?? playPosition.value, liveQuality.value)
   void router.push({
     name: 'WU-K01',
     query: { new: '1', course_id: String(value.id), course_title: value.title || '' }
@@ -251,7 +261,7 @@ function openKnowledge(): void {
   const value = course.value
   if (!value?.knowledge_id) return
   player.value?.pause()
-  reporter?.engagement('knowledge', player.value?.getPosition() || playPosition.value, liveQuality.value)
+  reporter?.engagement('knowledge', player.value?.getPosition() ?? playPosition.value, liveQuality.value)
   void router.push({ name: 'WU-K02', params: { id: String(value.knowledge_id) } })
 }
 
@@ -275,14 +285,14 @@ function goTopic(): void {
 }
 
 function onPageHide(): void {
-  reporter?.leave(player.value?.getPosition() || playPosition.value)
+  reporter?.leave(player.value?.getPosition() ?? playPosition.value)
 }
 
 function onVisibilityChange(): void {
   if (document.visibilityState === 'hidden') {
-    reporter?.leave(player.value?.getPosition() || playPosition.value)
+    reporter?.leave(player.value?.getPosition() ?? playPosition.value)
   } else if (progressStartedFor === courseId.value) {
-    startProgress(player.value?.getPosition() || playPosition.value)
+    startProgress(player.value?.getPosition() ?? playPosition.value)
   }
 }
 </script>
@@ -325,6 +335,9 @@ function onVisibilityChange(): void {
           <CourseVideoPlayer
             ref="player"
             :sources="course.sources || []"
+            :poster-url="course.cover_url"
+            :poster-alt="course.title"
+            :poster-kind="coverKind(course.category_name)"
             :resume-position="course.progress?.resume_position_sec || 0"
             :autoplay="true"
             :duration-hint="course.duration_sec || 0"
@@ -365,7 +378,7 @@ function onVisibilityChange(): void {
               <span>本节进度</span>
               <v-progress-linear :model-value="currentPercent" height="6" rounded bg-color="fill-3" class="k04-prog-bar" />
               <span v-if="completed" class="k04-done"><zw-icon name="check" :size="16" />已学完</span>
-              <span v-else class="num">看到 {{ formatDuration(playPosition) }} / {{ formatDuration(duration) }}</span>
+              <span v-else class="num">看到 {{ formatDuration(Math.floor(playPosition)) }} / {{ formatDuration(duration) }}</span>
               <span class="zw-faint k04-note">进度自动保存，App 和网页版同步；看到 90% 以上算已学完</span>
             </div>
           </zw-card>
@@ -391,7 +404,7 @@ function onVisibilityChange(): void {
             @click="switchTo(item, String(route.query.from || 'topic'))"
           >
             <span class="k04-les-cover">
-              <zw-thumb :kind="coverKind(item.category_name)" class="k04-fill-thumb" />
+              <CourseCover :src="item.cover_url" :alt="item.title" :kind="coverKind(item.category_name)" class="k04-fill-thumb" />
               <span v-if="item.learn_status !== 'NOT_STARTED' || item.id === courseId" class="k04-bar">
                 <i :style="{ width: `${rowPercent(item)}%` }" />
               </span>

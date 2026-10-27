@@ -269,9 +269,21 @@ public class AccountRepository {
     /** API-A20：成功后清除本机全部数据（含解绑推送） */
     @NonNull
     public Completable cancelAccount(@NonNull AccountCancelRequest request, @NonNull String idemKey) {
-        return directSms.verifyThenComplete(directSms.accountPhone(), request.getSmsCode(),
-                        code -> RxResult.completable(api.cancelAccount(request.withSmsCode(code), idemKey)))
-                .andThen(Completable.fromAction(sessionManager::logout));
+        return Completable.defer(() -> {
+            AccountUserVO expected = sessionManager.currentUser();
+            if (expected == null) return Completable.error(new ApiException(ErrorCodes.UNKNOWN, "当前账号已切换，请重新进入账号安全页面"));
+            long expectedUserId = expected.getUserId();
+            String verifiedPhone = directSms.accountPhone();
+            return directSms.verifyThenComplete(verifiedPhone, request.getSmsCode(),
+                            code -> RxResult.completable(api.cancelAccount(request.withSmsCode(code), idemKey)))
+                    .andThen(Completable.fromAction(() -> {
+                        // The server has already invalidated this account's token. Local cleanup must not use it.
+                        if (!sessionManager.clearAfterAccountCancellation(expectedUserId)) {
+                            throw new ApiException(ErrorCodes.UNKNOWN, "原账号已注销，当前登录账号已切换，请返回当前账号页面");
+                        }
+                        if (verifiedPhone != null) directSms.forget(verifiedPhone);
+                    }));
+        });
     }
 
     /** API-A21 */

@@ -16,4 +16,7 @@ public interface StockCostQueryService {
      * @return 饲料 / 药品 / 入栏 / 其他与合计，金额单位元、两位小数；无明细时全为 0.00
      */
     BatchCost batchCost(Long farmId, Long batchId);
+
+    /** 有效饲料成本流水的用量，单位千克，作废流水不计入。 */
+    java.math.BigDecimal feedKg(Long farmId, Long batchId);
 }

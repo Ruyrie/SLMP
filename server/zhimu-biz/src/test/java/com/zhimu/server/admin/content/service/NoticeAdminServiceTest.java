@@ -64,7 +64,8 @@ class NoticeAdminServiceTest {
         messageService = mock(MessageService.class);
         service = new NoticeAdminService(noticeMapper, targetMapper, recipientMapper, audienceService,
                 statService, fileService, mock(com.zhimu.server.admin.content.mapper.ContentLookupMapper.class),
-                operationLogService, messageService, mock(ContentExportService.class));
+                operationLogService, messageService, mock(ContentExportService.class),
+                mock(com.zhimu.server.biz.common.api.BizMediaService.class));
     }
 
     @AfterEach

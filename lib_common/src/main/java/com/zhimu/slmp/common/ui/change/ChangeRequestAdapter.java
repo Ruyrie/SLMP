@@ -112,7 +112,7 @@ public class ChangeRequestAdapter extends PagingDataAdapter<ChangeRequestVO, Cha
 
             String type = ChangeBizTypes.textOf(item.getBizType(), item.getBizTypeText());
             b.commonChangeItemTitle.setText(type + " · " + (item.isVoid() ? "作废"
-                    : (item.getFieldName() == null ? "" : item.getFieldName())));
+                    : item.isDelete() ? "删除" : (item.getFieldName() == null ? "" : item.getFieldName())));
             renderStatus(item.getStatus(), item.getStatusText());
 
             b.commonChangeItemFarm.setVisibility(item.getFarmName() == null ? View.GONE : View.VISIBLE);
@@ -120,10 +120,10 @@ public class ChangeRequestAdapter extends PagingDataAdapter<ChangeRequestVO, Cha
             b.commonChangeItemLocator.setText(item.getRecordLocator());
 
             b.commonChangeItemVoidTag.setVisibility(item.isVoid() ? View.VISIBLE : View.GONE);
-            b.commonChangeItemBefore.setText(item.isVoid() ? root.getContext().getString(R.string.common_change_valid)
+            b.commonChangeItemBefore.setText(item.isVoid() || item.isDelete() ? root.getContext().getString(R.string.common_change_valid)
                     : item.getBeforeDisplay());
             b.commonChangeItemAfter.setText(item.isVoid() ? root.getContext().getString(R.string.common_change_voided)
-                    : item.getAfterDisplay());
+                    : item.isDelete() ? root.getContext().getString(R.string.common_change_deleted) : item.getAfterDisplay());
 
             boolean rejected = ChangeRequestVO.STATUS_REJECTED.equals(item.getStatus());
             String reject = item.getRejectReason();

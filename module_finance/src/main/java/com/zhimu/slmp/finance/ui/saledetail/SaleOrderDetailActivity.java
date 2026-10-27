@@ -64,6 +64,8 @@ public class SaleOrderDetailActivity extends FinancePageActivity implements Rece
         vm.getReceipt().getShowSheet().observe(this, show -> {
             if (Boolean.TRUE.equals(show)) {
                 ReceiptBottomSheet.show(getSupportFragmentManager());
+            } else {
+                ReceiptBottomSheet.dismiss(getSupportFragmentManager());
             }
         });
         vm.getDetail().observe(this, this::render);

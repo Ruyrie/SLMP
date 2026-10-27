@@ -14,7 +14,7 @@ import com.zhimu.slmp.common.session.AppSettings;
 public final class PrivacyManager {
 
     /** 当前隐私政策版本（与 API-A21 的协议版本一致） */
-    public static final String POLICY_VERSION = "2026-10-01";
+    public static final String POLICY_VERSION = "2026-10-26";
 
     static final String REQUEST_KEY = "common_core_privacy";
     static final String RESULT_AGREED = "agreed";

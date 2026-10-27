@@ -26,8 +26,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * CameraX ImageAnalysis 的二维码分析器（03 号规范 8.7 节、模块04 文档 2.6.3）：
- * 取 YUV_420_888 的 Y 平面亮度（以 rowStride 为数据宽度），裁剪到画面中央的正方形（取景框区域），
- * 交给 ZXing QRCodeReader（只识别 QR_CODE、UTF-8）；未识别继续下一帧，识别成功后自动停止并在主线程回调。
+ * 取 YUV_420_888 的 Y 平面亮度（以 rowStride 为数据宽度），优先识别中央正方形，失败后回退到完整有效画面。
+ * 预览经过旋转和裁剪，界面上方的取景框不一定对应传感器中心，不能仅分析固定中心区域。
+ * ZXing QRCodeReader 只识别 QR_CODE、UTF-8；未识别继续下一帧，识别成功后自动停止并在主线程回调。
  * finally 中关闭 ImageProxy，避免分析停住。
  * <p>
  * 配合 {@code ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST} 与单线程执行器使用；相机页 I08 的扫码模式即用本类，
@@ -83,7 +84,8 @@ public class QrCodeAnalyzer implements ImageAnalysis.Analyzer {
     }
 
     @Nullable
-    private String decode(@NonNull ImageProxy image) {
+    @VisibleForTesting
+    String decode(@NonNull ImageProxy image) {
         ImageProxy.PlaneProxy plane = image.getPlanes()[0];
         ByteBuffer y = plane.getBuffer();
         int rowStride = plane.getRowStride();
@@ -99,6 +101,14 @@ public class QrCodeAnalyzer implements ImageAnalysis.Analyzer {
         int[] crop = centerCrop(width, height, CROP_RATIO);
         PlanarYUVLuminanceSource source = new PlanarYUVLuminanceSource(buffer, rowStride, height,
                 crop[0], crop[1], crop[2], crop[3], false);
+        String text = read(source);
+        if (text != null) return text;
+        // Keep row padding out of the valid image while allowing visible off-center labels.
+        return read(new PlanarYUVLuminanceSource(buffer, rowStride, height, 0, 0, width, height, false));
+    }
+
+    @Nullable
+    private String read(@NonNull PlanarYUVLuminanceSource source) {
         try {
             Result result = reader.decode(new BinaryBitmap(new HybridBinarizer(source)), hints);
             return result.getText();

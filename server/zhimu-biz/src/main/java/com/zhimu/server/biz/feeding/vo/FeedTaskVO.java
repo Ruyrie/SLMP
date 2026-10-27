@@ -133,7 +133,8 @@ public final class FeedTaskVO {
         private FeedRecordVO.OptionBrief defaultFeed;
         private List<FeedRecordVO.OptionBrief> feedOptions = new ArrayList<>();
         private UserBriefVO defaultExecutor;
-        private List<UserBriefVO> executorOptions = new ArrayList<>();
+        /** 员工固定为本人，省略选项；所有者、场长由表单服务提供成员列表。 */
+        private List<UserBriefVO> executorOptions;
         private UserBriefVO currentUser;
         private Boolean canRegister;
         private String blockReason;

@@ -217,10 +217,12 @@ public interface FinanceApi {
                                                              @Query("page") int page, @Query("size") int size);
 
     /** API-E33 批次最近一次建议 */
+    @retrofit2.http.Headers("X-Zmt-Read-Timeout: 90")
     @GET("api/v1/sale-advices/latest")
     Single<ApiResponse<SaleAdviceVO>> getLatestAdvice(@Query("batch_id") long batchId);
 
     /** API-E34 重新生成出栏建议 */
+    @retrofit2.http.Headers("X-Zmt-Read-Timeout: 90")
     @POST("api/v1/sale-advices")
     Single<ApiResponse<SaleAdviceVO>> regenerateAdvice(@Body SaleAdviceRequest body);
 

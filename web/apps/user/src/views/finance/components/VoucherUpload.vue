@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { financeApi } from '@/api/finance'
 import { useUiStore } from '@/stores/ui'
 
@@ -68,7 +68,8 @@ function onFiles(event: Event): void {
 
 function addFile(file: File): void {
   const url = URL.createObjectURL(file)
-  const item: VoucherItem = {
+  // 上传回调与页面必须修改同一个响应式对象，才能及时解除提交锁定。
+  const item = reactive<VoucherItem>({
     localId: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
     file,
     fileId: 0,
@@ -77,7 +78,7 @@ function addFile(file: File): void {
     progress: 0,
     uploading: true,
     error: false
-  }
+  })
   items.value.push(item)
   void upload(item, file)
 }
@@ -90,7 +91,9 @@ async function upload(item: VoucherItem, file: File): Promise<void> {
     const result = await financeApi.uploadFile(file, 'VOUCHER', (percent) => {
       item.progress = percent
     })
-    item.fileId = Number(result.file_id || 0)
+    const fileId = Number(result.file_id)
+    if (!Number.isInteger(fileId) || fileId <= 0) throw new Error('上传未返回有效文件编号')
+    item.fileId = fileId
     item.progress = 100
     item.uploading = false
     emitIds()

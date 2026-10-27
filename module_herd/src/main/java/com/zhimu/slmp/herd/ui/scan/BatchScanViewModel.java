@@ -42,6 +42,7 @@ public class BatchScanViewModel extends BaseViewModel {
     private final SingleLiveEvent<Void> scanEvent = new SingleLiveEvent<>();
     private final SingleLiveEvent<Void> inputEvent = new SingleLiveEvent<>();
     private final SingleLiveEvent<BatchLookupVO> openArchiveEvent = new SingleLiveEvent<>();
+    private final SingleLiveEvent<String> openPublicTraceEvent = new SingleLiveEvent<>();
     private final SingleLiveEvent<String> noPermissionEvent = new SingleLiveEvent<>();
 
     @Nullable
@@ -89,6 +90,10 @@ public class BatchScanViewModel extends BaseViewModel {
 
     public SingleLiveEvent<BatchLookupVO> getOpenArchiveEvent() {
         return openArchiveEvent;
+    }
+
+    public SingleLiveEvent<String> getOpenPublicTraceEvent() {
+        return openPublicTraceEvent;
     }
 
     public SingleLiveEvent<String> getNoPermissionEvent() {
@@ -167,6 +172,18 @@ public class BatchScanViewModel extends BaseViewModel {
             openArchiveEvent.setValue(vo);
         } else if (BatchLookupVO.SWITCH_FARM.equals(result)) {
             switchFarmThenOpen(vo);
+        } else if (BatchLookupVO.PUBLIC_TRACE.equals(result)) {
+            // Only scanning a shareable token opens public data. Typing a batch number never grants access.
+            String token = vo.getTraceToken();
+            if (!fromInput && token != null && !token.trim().isEmpty()) {
+                switchedFromFarmId = null;
+                switchedFromFarmName = null;
+                openPublicTraceEvent.setValue(token);
+            } else if (fromInput) {
+                noPermissionEvent.setValue("请扫描该批次的公开二维码查看溯源信息");
+            } else {
+                showMessage(MSG_NOT_BATCH_QR);
+            }
         } else if (BatchLookupVO.NO_PERMISSION.equals(result)) {
             noPermissionEvent.setValue(vo.getMessage());
         } else if (fromInput) {

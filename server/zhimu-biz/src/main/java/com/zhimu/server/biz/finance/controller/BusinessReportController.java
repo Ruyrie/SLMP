@@ -6,7 +6,9 @@ import com.zhimu.server.biz.finance.service.BusinessReportService;
 import com.zhimu.server.biz.finance.vo.ReportVos;
 import com.zhimu.server.common.api.ApiResponse;
 import com.zhimu.server.common.enums.FarmRole;
+import com.zhimu.server.common.enums.FarmStatus;
 import com.zhimu.server.framework.security.annotation.FarmRoles;
+import com.zhimu.server.framework.security.annotation.RequireFarm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -59,6 +61,7 @@ public class BusinessReportController {
 
     /** E42 导出 */
     @PostMapping("/export")
+    @RequireFarm(allowStatus = {FarmStatus.NORMAL, FarmStatus.DISABLED})
     public ApiResponse<ReportVos.ReportExportVO> export(
             @RequestBody FinanceRequests.ReportExportRequest request) {
         return ApiResponse.ok(reportService.export(request));

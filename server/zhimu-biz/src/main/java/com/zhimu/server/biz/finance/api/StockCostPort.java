@@ -11,6 +11,8 @@ public interface StockCostPort {
     /** 该批次截至当前的成本；无实现时返回全 0 */
     BatchCost costOf(Long batchId);
 
+    default BatchCost costOf(Long farmId, Long batchId) { return costOf(batchId); }
+
     /**
      * 批次成本。
      *

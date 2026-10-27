@@ -13,7 +13,7 @@ public class MessageActionVO {
     /** INVITE / TRANSFER */
     private String actionType;
     private Long actionId;
-    /** PENDING / ACCEPTED / REJECTED / EXPIRED */
+    /** PENDING / ACCEPTED / REJECTED / EXPIRED / CANCELED */
     private String status;
     private String statusText;
     private String roleText;

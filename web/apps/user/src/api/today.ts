@@ -363,8 +363,23 @@ export interface MessageQueryParams {
   unread_only?: boolean
 }
 
+/** 消息页面自行选择养殖场；未选时为全部养殖场，不能再叠加顶栏的当前场。 */
+function messageScopeConfig(signal?: AbortSignal): AxiosRequestConfig {
+  return { signal, headers: { 'X-Farm-Id': null } }
+}
+
 export function fetchMessages(params: MessageQueryParams, signal?: AbortSignal): Promise<MessagePageVO> {
-  return http().get<MessagePageVO>('/messages', { ...params }, config(signal))
+  return http().get<MessagePageVO>('/messages', { ...params }, messageScopeConfig(signal))
+}
+
+export interface UnreadCountVO {
+  total_unread?: number
+  filtered_unread?: number
+  by_category?: Record<string, number>
+}
+
+export function fetchUnreadCount(params: { category?: string; farm_id?: number } = {}): Promise<UnreadCountVO> {
+  return http().get<UnreadCountVO>('/messages/unread-count', { ...params }, messageScopeConfig())
 }
 
 export function fetchMessageDetail(id: number): Promise<MessageDetailVO> {
@@ -399,7 +414,7 @@ export interface ReadAllResult {
 }
 
 export function readAllMessages(payload: ReadAllPayload): Promise<ReadAllResult> {
-  return http().post<ReadAllResult>('/messages/read-all', payload)
+  return http().post<ReadAllResult>('/messages/read-all', payload, messageScopeConfig())
 }
 
 export interface MessageDeleteResult {

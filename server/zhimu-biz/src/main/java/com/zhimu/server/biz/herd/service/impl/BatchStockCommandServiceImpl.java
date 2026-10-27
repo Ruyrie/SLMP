@@ -382,7 +382,7 @@ public class BatchStockCommandServiceImpl implements BatchStockCommandService {
                 "数量", total + " 头")));
         row.setOperatorUserId(operatorId);
         row.setDeleted(false);
-        timelineMapper.insert(row);
+        timelineMapper.upsertSaleTimeline(row);
     }
 
     private BatchSaleResult resultOf(Batch batch, List<BatchEvent> events) {

@@ -86,9 +86,10 @@ public class InvitePagingAdapter extends PagingDataAdapter<InviteItemVO, InviteP
                 : item.getRoleText() + " · 负责 " + FarmUi.joinNames(pens));
         b.inviteLine3.setText(line3(item));
         int type = InviteItemVO.STATUS_PENDING.equals(status) ? StatusTagView.PRIMARY
-                : InviteItemVO.STATUS_EXPIRED.equals(status) ? StatusTagView.ERROR : StatusTagView.NEUTRAL;
-        b.inviteStatus.setStatus(item.getStatusText(), type);
-        boolean reinvite = canInvite && item.isCanReinvite();
+                : InviteItemVO.STATUS_EXPIRED.equals(status) ? StatusTagView.ERROR
+                : InviteItemVO.STATUS_ACCEPTED.equals(status) ? StatusTagView.SUCCESS : StatusTagView.NEUTRAL;
+        b.inviteStatus.setStatus(InviteItemVO.STATUS_ACCEPTED.equals(status) ? "邀请成功" : item.getStatusText(), type);
+        boolean reinvite = canInvite && item.isCanReinvite() && !InviteItemVO.STATUS_ACCEPTED.equals(status);
         b.inviteReinvite.setVisibility(reinvite ? View.VISIBLE : View.GONE);
         b.inviteReinvite.setOnClickListener(reinvite ? v -> listener.onReinvite(item) : null);
     }
@@ -96,6 +97,9 @@ public class InvitePagingAdapter extends PagingDataAdapter<InviteItemVO, InviteP
     @NonNull
     static String line3(@NonNull InviteItemVO item) {
         String status = item.getStatus();
+        if (InviteItemVO.STATUS_ACCEPTED.equals(status)) {
+            return item.getHandledAt() == null ? "已加入养殖场" : FarmUi.monthDay(item.getHandledAt()) + "已加入养殖场";
+        }
         if (InviteItemVO.STATUS_REJECTED.equals(status)) {
             return FarmUi.monthDay(item.getHandledAt()) + "拒绝";
         }

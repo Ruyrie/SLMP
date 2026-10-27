@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 /**
  * AI 会话（t_ai_session）。
- * batchSnapshotJson 保存关联批次快照：模块04 未接入时批次表不存在，只能按快照展示；接入后由批次服务刷新。
+ * batchSnapshotJson 保存关联时的批次资料；会话详情和每次提问通过批次服务刷新当前数据与权限。
  */
 @Getter
 @Setter

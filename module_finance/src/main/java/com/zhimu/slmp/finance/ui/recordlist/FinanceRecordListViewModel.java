@@ -208,6 +208,9 @@ public class FinanceRecordListViewModel extends FinanceListViewModel<FinanceReco
             open(NavTarget.of(RouterPath.M06).put(RouterPath.EXTRA_LOT_ID, t.getBizId()));
         } else if (FinanceConst.BIZ_SALE_ORDER.equals(t.getBizType())) {
             open(NavTarget.of(RouterPath.E07).put(RouterPath.EXTRA_SALE_ORDER_ID, t.getBizId()).forResult());
+        } else if ("OUTBOUND".equals(t.getBizType())) {
+            open(NavTarget.of(RouterPath.STOCK_RECORD).put(RouterPath.EXTRA_RECORD_KIND, "OUTBOUND")
+                    .put(RouterPath.EXTRA_RECORD_ID, t.getBizId()).forResult());
         }
     }
 

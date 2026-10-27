@@ -68,7 +68,7 @@ const batchEmpty = computed(() => {
 const showContent = computed(() => store.status === 'ready' || store.status === 'empty')
 
 onMounted(() => {
-  void store.load()
+  void store.load(true)
 })
 useFarmReload(async () => {
   store.reset()

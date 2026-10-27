@@ -37,7 +37,9 @@ export type BreedingAnimalDetail = Camelize<S<'BreedingAnimalDetailVO'>>
 export type BreedingStats = NonNullable<BreedingAnimalDetail['stats']>
 export type BreedingCycle = NonNullable<BreedingAnimalDetail['currentCycle']>
 export type BreedingRecord = Camelize<S<'BreedingRecordVO'>>
-export type RegisterContext = Camelize<S<'RegisterContextVO'>>
+export type RegisterContext = Omit<Camelize<S<'RegisterContextVO'>>, 'offspringBreed'> & {
+  offspringBreed?: { breedId?: number; breedName?: string; categoryId?: number }
+}
 export type RegisterResult = Camelize<S<'RegisterResultVO'>>
 export type PendingCheck = Camelize<S<'PendingCheckVO'>>
 export type FarrowDueItem = Camelize<S<'FarrowDueItemVO'>>

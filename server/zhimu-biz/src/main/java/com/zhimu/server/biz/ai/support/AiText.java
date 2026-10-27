@@ -18,8 +18,15 @@ public final class AiText {
 
     private static final Pattern PUNCTUATION = Pattern.compile("[\\s\\p{Punct}，。！？、；：“”‘’（）《》【】…—·]+");
     private static final DateTimeFormatter MONTH_DAY_TIME = DateTimeFormatter.ofPattern("M月d日 HH:mm");
+    private static final Pattern LEGACY_SOURCE_LEAD = Pattern.compile("^\\s*(?:\\*\\*)?"
+            + Pattern.quote(AiCodes.NO_BASIS_LEAD) + "(?:\\*\\*)?\\s*");
 
     private AiText() {
+    }
+
+    /** 来源说明单独展示；同时兼容历史答案中曾经强制插入的首句。 */
+    public static String answerBody(String answer) {
+        return answer == null ? null : LEGACY_SOURCE_LEAD.matcher(answer).replaceFirst("");
     }
 
     /** 首问去标点与空白后截前 50 字；只有附图时为“图片提问” */
@@ -118,7 +125,7 @@ public final class AiText {
         if (durationSec <= 0) {
             return java.math.BigDecimal.ZERO.setScale(4);
         }
-        return java.math.BigDecimal.valueOf(Math.min(maxPositionSec, durationSec))
+        return java.math.BigDecimal.valueOf(Math.max(0, Math.min(maxPositionSec, durationSec)))
                 .divide(java.math.BigDecimal.valueOf(durationSec), 4, java.math.RoundingMode.HALF_UP);
     }
 

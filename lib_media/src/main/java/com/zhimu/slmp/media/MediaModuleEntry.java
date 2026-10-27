@@ -8,12 +8,17 @@ import com.zhimu.slmp.common.di.CoreComponent;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.common.service.DebugPage;
 import com.zhimu.slmp.common.service.IModuleEntry;
+import com.zhimu.slmp.common.service.IAccountCleanupService;
+import com.zhimu.slmp.common.service.ServiceHub;
 import com.zhimu.slmp.media.camera.CameraArgs;
 import com.zhimu.slmp.media.data.MediaScene;
 import com.zhimu.slmp.media.di.MediaInjector;
 import com.zhimu.slmp.media.ui.viewer.MediaViewer;
 import com.zhimu.slmp.media.ui.viewer.ViewerItem;
 import com.zhimu.slmp.media.util.MediaFiles;
+import com.zhimu.slmp.media.queue.UploadQueue;
+import androidx.work.WorkManager;
+import io.reactivex.rxjava3.core.Completable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +29,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 /**
  * 多媒体组件入口：创建 MediaComponent，后台清理超过 24 小时的拍照与压缩临时文件。
  * 本组件被业务组件直接依赖（CameraContract、PickImagesContract、MediaPickerView、UploadManager、MediaViewer），
- * 不向 ServiceHub 注册服务。
+ * 向 ServiceHub 注册注销时停止上传任务的清理服务。
  */
 public class MediaModuleEntry implements IModuleEntry {
 
@@ -40,6 +45,9 @@ public class MediaModuleEntry implements IModuleEntry {
     @Override
     public void onCreate(@NonNull Application app, @NonNull CoreComponent core) {
         MediaInjector.init(core);
+        ServiceHub.register(IAccountCleanupService.class, () -> Completable.fromAction(() ->
+                WorkManager.getInstance(app).cancelAllWorkByTag(UploadQueue.TAG_ALL).getResult()
+                        .get(5, java.util.concurrent.TimeUnit.SECONDS)));
         Schedulers.io().scheduleDirect(() -> MediaFiles.cleanupExpired(app));
     }
 

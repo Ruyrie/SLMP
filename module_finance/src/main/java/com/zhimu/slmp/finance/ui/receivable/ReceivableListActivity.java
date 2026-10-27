@@ -108,6 +108,8 @@ public class ReceivableListActivity extends FinancePageActivity implements Recei
         vm.getReceipt().getShowSheet().observe(this, show -> {
             if (Boolean.TRUE.equals(show)) {
                 ReceiptBottomSheet.show(getSupportFragmentManager());
+            } else {
+                ReceiptBottomSheet.dismiss(getSupportFragmentManager());
             }
         });
     }

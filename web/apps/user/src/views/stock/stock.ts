@@ -27,16 +27,16 @@ export function packQtyText(qty?: Qty | null, fallbackUnit = ''): string {
   if (!qty) return '—'
   if (qty.pack_unit && Number(qty.pack_count || 0) > 0) {
     const pack = `${formatNumber(qty.pack_count ?? 0)} ${qty.pack_unit}`
-    const rest = Number(qty.rest_value || 0) > 0 ? ` + ${formatNumber(qty.rest_value ?? 0)} ${qty.unit_text || ''}` : ''
-    return `${pack}${rest}（${formatNumber(qty.value ?? 0)} ${qty.unit_text || ''}）`
+    const rest = Number(qty.rest_value || 0) > 0 ? ` + ${formatNumber(qty.rest_value ?? 0, decimals(qty.rest_value))} ${qty.unit_text || ''}` : ''
+    return `${pack}${rest}（${formatNumber(qty.value ?? 0, decimals(qty.value))} ${qty.unit_text || ''}）`
   }
   return qtyText(qty, fallbackUnit)
 }
 
-/** 输入单位数量：疫苗按头份显示整数，其余最多两位小数 */
+/** 按实际精度显示记账数量，最多三位，不把零头显示为零。 */
 export function decimals(value?: number | string | null): number {
   const n = Number(value || 0)
-  return Number.isInteger(n) ? 0 : n < 1 ? 2 : 1
+  return Math.min(3, String(n).split('.')[1]?.length || 0)
 }
 
 export function priceText(value?: number | null, unit = '千克'): string {

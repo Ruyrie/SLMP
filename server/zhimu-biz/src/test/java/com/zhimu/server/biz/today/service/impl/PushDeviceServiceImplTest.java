@@ -1,5 +1,13 @@
 package com.zhimu.server.biz.today.service.impl;
 
+import com.zhimu.server.biz.account.entity.User;
+import com.zhimu.server.biz.account.mapper.UserMapper;
+import com.zhimu.server.common.error.BizException;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.MybatisConfiguration;
+import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
+import org.apache.ibatis.builder.MapperBuilderAssistant;
+import org.mockito.ArgumentCaptor;
 import com.zhimu.server.biz.today.convert.PushDeviceConvert;
 import com.zhimu.server.biz.today.entity.PushDevice;
 import com.zhimu.server.biz.today.mapper.PushDeviceMapper;
@@ -16,11 +24,14 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 /** API-T20/T21：别名绑定、同设备换账号先解绑、解绑幂等。 */
 @ExtendWith(MockitoExtension.class)
@@ -29,12 +40,20 @@ class PushDeviceServiceImplTest {
 
     @Mock private PushDeviceMapper pushDeviceMapper;
     @Mock private PushClient pushClient;
+    @Mock private UserMapper userMapper;
 
     private PushDeviceServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service = new PushDeviceServiceImpl(pushDeviceMapper, new PushDeviceConvert(), pushClient);
+        MapperBuilderAssistant metadata = new MapperBuilderAssistant(new MybatisConfiguration(), "push-device-test");
+        metadata.setCurrentNamespace(PushDeviceMapper.class.getName());
+        TableInfoHelper.initTableInfo(metadata, PushDevice.class);
+        service = new PushDeviceServiceImpl(pushDeviceMapper, new PushDeviceConvert(), pushClient, userMapper);
+        User user = new User();
+        user.setId(10001L);
+        user.setStatus("NORMAL");
+        when(userMapper.selectByIdForUpdate(10001L)).thenReturn(user);
         when(pushClient.bindAlias(anyString(), anyString())).thenReturn(PushResult.sent("msg-1"));
         when(pushClient.unbindAlias(anyString())).thenReturn(PushResult.sent(null));
         when(pushDeviceMapper.insert(any(PushDevice.class))).thenReturn(1);
@@ -66,6 +85,15 @@ class PushDeviceServiceImplTest {
         verify(pushClient).bindAlias("190e35f7e0a5b1c2d3", "u10001");
         assertThat(old.getUserId()).isEqualTo(10001L);
         assertThat(old.getStatus()).isEqualTo("ACTIVE");
+        var order = inOrder(userMapper, pushDeviceMapper, pushClient);
+        order.verify(userMapper).selectByIdForUpdate(10001L);
+        order.verify(pushDeviceMapper).selectOne(any());
+        order.verify(pushClient).unbindAlias("190e35f7e0a5b1c2d3");
+        order.verify(pushClient).bindAlias("190e35f7e0a5b1c2d3", "u10001");
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<LambdaQueryWrapper<PushDevice>> query = ArgumentCaptor.forClass(LambdaQueryWrapper.class);
+        verify(pushDeviceMapper).selectOne(query.capture());
+        assertThat(query.getValue().getSqlSegment()).endsWith("LIMIT 1 FOR UPDATE");
     }
 
     @Test
@@ -88,6 +116,20 @@ class PushDeviceServiceImplTest {
         assertThat(device.getStatus()).isEqualTo("UNBOUND");
         assertThat(device.getAliasBound()).isFalse();
         verify(pushClient).unbindAlias("190e35f7e0a5b1c2d3");
+    }
+
+    @Test
+    void cancelledAccountCannotRebindOrUnbindAnyDevice() {
+        User user = new User();
+        user.setId(10001L);
+        user.setStatus("CANCELLED");
+        when(userMapper.selectByIdForUpdate(10001L)).thenReturn(user);
+
+        assertThatThrownBy(() -> service.register(request("isolated-device"), 10001L))
+                .isInstanceOf(BizException.class).extracting("code").isEqualTo(40104);
+        assertThatThrownBy(() -> service.unbind("isolated-device", 10001L))
+                .isInstanceOf(BizException.class).extracting("code").isEqualTo(40104);
+        verifyNoInteractions(pushDeviceMapper, pushClient);
     }
 
     private static PushDeviceRequest request(String registrationId) {

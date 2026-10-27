@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.zhimu.server.admin.content.vo.AdminFileVO;
 import com.zhimu.server.admin.content.vo.CoverCandidateVO;
 import com.zhimu.server.admin.content.vo.VideoInfoVO;
+import com.zhimu.server.biz.ai.entity.Course;
+import com.zhimu.server.biz.ai.entity.CourseTopic;
+import com.zhimu.server.biz.ai.support.CourseCoverResolver;
 import com.zhimu.server.biz.common.entity.FileEntity;
 import com.zhimu.server.biz.common.entity.FileVariant;
 import com.zhimu.server.biz.common.mapper.FileMapper;
@@ -32,6 +35,15 @@ public class ContentMediaSupport {
     private final FileMapper fileMapper;
     private final FileVariantMapper fileVariantMapper;
     private final ObjectStorage objectStorage;
+    private final CourseCoverResolver coverResolver;
+
+    public String coverUrl(Course course) {
+        return coverResolver.resolve(course);
+    }
+
+    public String coverUrl(CourseTopic topic) {
+        return coverResolver.resolve(topic);
+    }
 
     public FileEntity require(Long id) {
         if (id == null) {

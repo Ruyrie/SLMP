@@ -29,6 +29,7 @@ import com.zhimu.slmp.base.widget.TopAppBarHelper;
 import com.zhimu.slmp.common.R;
 import com.zhimu.slmp.common.databinding.CommonChangeActivityFormBinding;
 import com.zhimu.slmp.common.model.vo.ChangeRequestFormVO;
+import com.zhimu.slmp.common.model.vo.OptionVO;
 import com.zhimu.slmp.common.router.RouterPath;
 
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ public class ChangeRequestFormActivity extends BaseActivity {
     private ChangeRequestFormViewModel vm;
     private CommonChangeActivityFormBinding binding;
     private final List<Option> options = new ArrayList<>();
+    private final List<OptionVO> valueOptions = new ArrayList<>();
 
     /** 修改项菜单的一项 */
     private static final class Option {
@@ -82,6 +84,13 @@ public class ChangeRequestFormActivity extends BaseActivity {
 
         vm.getForm().observe(this, this::renderForm);
         vm.selectedField.observe(this, code -> renderField());
+        vm.newValue.observe(this, value -> binding.commonChangeNewSelectionInput.setText(
+                ChangeRequestFormViewModel.displayValue(vm.currentField(), value), false));
+        binding.commonChangeNewSelectionInput.setOnItemClickListener((parent, view, position, id) -> {
+            if (position >= 0 && position < valueOptions.size()) {
+                vm.newValue.setValue(valueOptions.get(position).getValue());
+            }
+        });
         vm.getRejectReason().observe(this, r -> {
             binding.commonChangeReject.setVisibility(r == null ? View.GONE : View.VISIBLE);
             binding.commonChangeReject.setText(r == null ? null : getString(R.string.common_change_reject_prefix, r));
@@ -164,6 +173,9 @@ public class ChangeRequestFormActivity extends BaseActivity {
         if (f.isVoidAllowed()) {
             options.add(new Option(ChangeRequestFormViewModel.VOID_CODE, getString(R.string.common_change_void_option), true));
         }
+        if (f.isDeleteAllowed()) {
+            options.add(new Option(ChangeRequestFormViewModel.DELETE_CODE, getString(R.string.common_change_delete_option), true));
+        }
         binding.commonChangeFieldInput.setAdapter(new OptionAdapter(this, options));
         renderField();
     }
@@ -197,6 +209,7 @@ public class ChangeRequestFormActivity extends BaseActivity {
             return;
         }
         boolean isVoid = vm.isVoidSelected();
+        boolean isDelete = vm.isDeleteSelected();
         String code = vm.selectedField.getValue();
         String label = null;
         for (Option o : options) {
@@ -207,17 +220,38 @@ public class ChangeRequestFormActivity extends BaseActivity {
         binding.commonChangeFieldInput.setText(label, false);
 
         ChangeRequestFormVO.Field field = vm.currentField();
-        binding.commonChangeValueRow.setVisibility(isVoid ? View.GONE : View.VISIBLE);
-        binding.commonChangeVoidNotice.setVisibility(isVoid ? View.VISIBLE : View.GONE);
-        if (isVoid) {
-            String[] parts = splitConclusion(f.getVoidNotice() == null ? "" : f.getVoidNotice());
+        binding.commonChangeValueRow.setVisibility(isVoid || isDelete ? View.GONE : View.VISIBLE);
+        binding.commonChangeVoidNotice.setVisibility(isVoid || isDelete ? View.VISIBLE : View.GONE);
+        if (isVoid || isDelete) {
+            String notice = isDelete ? getString("MEDICATION_RECORD".equals(f.getBizType())
+                    ? R.string.common_change_medication_delete_notice : R.string.common_change_delete_notice)
+                    : f.getVoidNotice() == null ? "" : f.getVoidNotice();
+            String[] parts = splitConclusion(notice);
             binding.commonChangeVoidNotice.setNotice(parts[0], parts[1]);
         }
         String unit = field == null ? null : field.getValueUnit();
         binding.commonChangeOldValue.setSuffixText(unit);
         binding.commonChangeNewValue.setSuffixText(unit);
-        binding.commonChangeOldValueInput.setText(field == null ? null : field.getValue());
+        binding.commonChangeOldValueInput.setText(ChangeRequestFormViewModel.displayValue(field,
+                field == null ? null : field.getValue()));
         binding.commonChangeNewValue.setHelperText(f.hintOf(code));
+        boolean select = field != null && "SELECT".equals(field.getInputType());
+        binding.commonChangeNewValue.setVisibility(select ? View.GONE : View.VISIBLE);
+        binding.commonChangeNewSelection.setVisibility(select ? View.VISIBLE : View.GONE);
+        valueOptions.clear();
+        List<String> labels = new ArrayList<>();
+        if (select) {
+            for (OptionVO option : field.getOptions()) {
+                if (option.isDisabled()) continue;
+                valueOptions.add(option);
+                labels.add(option.getLabel() == null ? "" : option.getLabel());
+            }
+        }
+        binding.commonChangeNewSelectionInput.setAdapter(new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, labels));
+        binding.commonChangeNewSelectionInput.setText(
+                ChangeRequestFormViewModel.displayValue(field, vm.newValue.getValue()), false);
+        binding.commonChangeNewSelection.setHelperText(f.hintOf(code));
         boolean number = field == null || "NUMBER".equals(field.getInputType());
         binding.commonChangeNewValueInput.setInputType(number
                 ? InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL
@@ -238,6 +272,7 @@ public class ChangeRequestFormActivity extends BaseActivity {
     private void renderErrors(@Nullable Map<String, String> errors) {
         setError(binding.commonChangeField, errors, ChangeRequestFormViewModel.FIELD_FIELD_CODE);
         setError(binding.commonChangeNewValue, errors, ChangeRequestFormViewModel.FIELD_NEW_VALUE);
+        setError(binding.commonChangeNewSelection, errors, ChangeRequestFormViewModel.FIELD_NEW_VALUE);
         setError(binding.commonChangeReason, errors, ChangeRequestFormViewModel.FIELD_REASON);
     }
 
@@ -252,6 +287,11 @@ public class ChangeRequestFormActivity extends BaseActivity {
     private void focus(@Nullable String key) {
         EditText target = null;
         if (ChangeRequestFormViewModel.FIELD_NEW_VALUE.equals(key)) {
+            if (binding.commonChangeNewSelection.getVisibility() == View.VISIBLE) {
+                binding.commonChangeNewSelectionInput.requestFocus();
+                binding.commonChangeNewSelectionInput.showDropDown();
+                return;
+            }
             target = binding.commonChangeNewValueInput;
         } else if (ChangeRequestFormViewModel.FIELD_REASON.equals(key)) {
             target = binding.commonChangeReasonInput;

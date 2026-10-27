@@ -53,4 +53,14 @@ public class StockOutboundVO {
     private UserBriefVO createdBy;
     private String createdAt;
     private Integer version;
+    private String refundStatus;
+    @ManagerView
+    private BigDecimal refundAmount;
+    private String refundDate;
+    private String refundRemark;
+    private String refundRegisteredAt;
+    private UserBriefVO refundRegisteredBy;
+    private Long financeRecordId;
+    private String refundBlockReason;
+    private String refundEditDeadline;
 }

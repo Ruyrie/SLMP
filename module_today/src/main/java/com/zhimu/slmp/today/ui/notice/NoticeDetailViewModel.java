@@ -30,8 +30,14 @@ import com.zhimu.slmp.today.util.Texts;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.SerialDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 /**
  * T07 通知详情（NoticeDetailActivity），技术文档 2.4.6：平台通知（重要 / 普通、配图、正文、已撤回）、所有权转让（接受 / 拒绝）、
@@ -40,6 +46,7 @@ import javax.inject.Inject;
 public class NoticeDetailViewModel extends BaseViewModel {
 
     private static final DateTimeFormatter HM = DateTimeFormatter.ofPattern("HH:mm");
+    static final long REFRESH_INTERVAL_SECONDS = 60;
 
     private final MessageRepository repository;
     private final TodayServiceImpl todoService;
@@ -58,11 +65,18 @@ public class NoticeDetailViewModel extends BaseViewModel {
     private final SingleLiveEvent<Void> confirmRejectTransfer = new SingleLiveEvent<>();
 
     private long messageId;
+    private boolean visible;
+    private boolean hasBeenVisible;
+    private boolean refreshingDetail;
+    private final SerialDisposable refreshTimer = new SerialDisposable();
+    private final SerialDisposable refreshRequest = new SerialDisposable();
 
     @Inject
     public NoticeDetailViewModel(@NonNull MessageRepository repository, @NonNull TodayServiceImpl todoService) {
         this.repository = repository;
         this.todoService = todoService;
+        disposables.add(refreshTimer);
+        disposables.add(refreshRequest);
     }
 
     @Override
@@ -134,6 +148,46 @@ public class NoticeDetailViewModel extends BaseViewModel {
         load(repository.getDetail(id), this::apply);
     }
 
+    /** 回到详情时立即核对状态；停留时每分钟同步，避免继续显示管理员已撤回的正文。 */
+    public void onVisible() {
+        if (visible) return;
+        visible = true;
+        if (hasBeenVisible) refreshVisible();
+        hasBeenVisible = true;
+        if (!isRevoked()) {
+            refreshTimer.set(Observable.interval(REFRESH_INTERVAL_SECONDS, TimeUnit.SECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(t -> refreshVisible()));
+        }
+    }
+
+    /** 离开页面或切到后台后不再发起请求，也不让旧请求覆盖重新进入时的状态。 */
+    public void onInvisible() {
+        visible = false;
+        refreshTimer.set(null);
+        refreshRequest.set(null);
+        refreshingDetail = false;
+    }
+
+    private boolean isRevoked() {
+        MessageDetailVO current = detail.getValue();
+        NoticePayload payload = notice.getValue();
+        return current != null && (current.isRevoked() || payload != null && payload.isRevoked());
+    }
+
+    private void refreshVisible() {
+        MessageDetailVO current = detail.getValue();
+        if (!visible || refreshingDetail || messageId <= 0 || current == null || isRevoked()) return;
+        refreshingDetail = true;
+        refreshRequest.set(repository.getDetail(messageId)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(() -> refreshingDetail = false)
+                .subscribe(this::apply, e -> {
+                    // 后台同步失败保留已有内容，下一轮或回到页面时再尝试。
+                }));
+    }
+
     @Override
     public void retry() {
         if (messageId > 0) {
@@ -180,6 +234,7 @@ public class NoticeDetailViewModel extends BaseViewModel {
         } else {
             frozenText.setValue(null);
         }
+        if (isRevoked()) refreshTimer.set(null);
     }
 
     /** “10月18日 周日 16:00” */

@@ -14,13 +14,13 @@ public interface TodoMapper extends BaseMapper<Todo> {
 
     /**
      * 按来源去重键取（含已逻辑删除的行）：唯一键 uk_todo_dedup 覆盖已删除行，
-     * 来源幂等写入前必须能看到这些行，避免重复插入触发唯一键冲突。
+     * 来源幂等写入使用当前读，避免并发补货事务的旧快照漏掉已生成的预警。
      */
     @Select("""
             SELECT *
             FROM t_todo
             WHERE farm_id = #{farmId} AND todo_type = #{todoType} AND dedup_key = #{dedupKey}
-            LIMIT 1
+            LIMIT 1 FOR UPDATE
             """)
     Todo selectByDedupIncludingDeleted(@Param("farmId") Long farmId, @Param("todoType") String todoType,
                                        @Param("dedupKey") String dedupKey);

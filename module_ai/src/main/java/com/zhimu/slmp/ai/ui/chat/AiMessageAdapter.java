@@ -27,6 +27,7 @@ import com.zhimu.slmp.ai.model.AiCodes;
 import com.zhimu.slmp.ai.model.vo.AiMessageVO;
 import com.zhimu.slmp.ai.model.vo.CitationBriefVO;
 import com.zhimu.slmp.ai.util.AnswerRenderer;
+import com.zhimu.slmp.ai.util.AiText;
 import com.zhimu.slmp.common.model.vo.FileVO;
 
 import java.util.ArrayList;
@@ -51,6 +52,8 @@ public class AiMessageAdapter extends ListAdapter<ChatItem, RecyclerView.ViewHol
         void onRate(long roundId, @NonNull String rating);
 
         void onCopy(long roundId);
+
+        void onToggleProcess(long roundId);
 
         void onImageClick(@NonNull ChatItem item, int index);
     }
@@ -262,6 +265,17 @@ public class AiMessageAdapter extends ListAdapter<ChatItem, RecyclerView.ViewHol
             b.aiAnswerThinking.setVisibility(st == ChatItem.AnswerState.THINKING ? View.VISIBLE : View.GONE);
             AiMessageVO m = it.message;
             boolean done = st == ChatItem.AnswerState.DONE && m != null;
+            boolean hasProcess = it.processText != null && !it.processText.isEmpty();
+            b.aiAnswerProcess.setVisibility(hasProcess ? View.VISIBLE : View.GONE);
+            b.aiAnswerProcessText.setText(it.processText);
+            b.aiAnswerProcessText.setVisibility(it.processExpanded ? View.VISIBLE : View.GONE);
+            Context context = b.getRoot().getContext();
+            String processTitle = context.getString(done ? R.string.ai_chat_analysis_title : R.string.ai_chat_process_title);
+            b.aiAnswerProcessToggle.setText(context.getString(it.processExpanded
+                    ? R.string.ai_chat_process_collapse : R.string.ai_chat_process_expand, processTitle));
+            b.aiAnswerProcessToggle.setIconResource(it.processExpanded
+                    ? com.zhimu.slmp.base.R.drawable.ic_expand_less : com.zhimu.slmp.base.R.drawable.ic_expand_more);
+            b.aiAnswerProcessToggle.setOnClickListener(v -> listener.onToggleProcess(it.roundId));
             b.aiAnswerBanned.setVisibility(done && AiCodes.ANSWER_BANNED_DRUG.equals(m.getAnswerType())
                     ? View.VISIBLE : View.GONE);
             // 正文
@@ -304,6 +318,10 @@ public class AiMessageAdapter extends ListAdapter<ChatItem, RecyclerView.ViewHol
 
         private void bindSources(@Nullable AiMessageVO m) {
             b.aiAnswerSources.removeAllViews();
+            String note = m == null ? "" : AiText.sourceNote(m);
+            b.aiAnswerSourceNote.setText(note.isEmpty() ? ""
+                    : b.getRoot().getContext().getString(R.string.ai_chat_source_note, note));
+            b.aiAnswerSourceNote.setVisibility(note.isEmpty() ? View.GONE : View.VISIBLE);
             List<CitationBriefVO> list = m == null ? Collections.emptyList() : new ArrayList<>(m.getCitations());
             if (list.isEmpty()) {
                 b.aiAnswerSources.setVisibility(View.GONE);

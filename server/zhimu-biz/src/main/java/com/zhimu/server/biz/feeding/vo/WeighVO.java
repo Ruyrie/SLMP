@@ -174,6 +174,8 @@ public final class WeighVO {
     /** 曲线指标 */
     @Data
     public static class Metrics {
+        /** RECORDED：原称重快照；CURRENT_STANDARD：旧记录缺快照，按该次日龄与当前标准作展示对比。 */
+        private String comparisonSource;
         private BigDecimal avgWeight;
         private Integer dayAge;
         private String weighDate;

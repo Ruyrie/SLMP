@@ -167,6 +167,41 @@ class InspectionServiceImplTest {
     }
 
     @Test
+    void registerPersistsTheRemarkAlongsideTheSelectedInspectionItems() {
+        org.mockito.Mockito.doAnswer(call -> {
+            call.<Inspection>getArgument(0).setId(50132L);
+            return 1;
+        }).when(inspectionMapper).insert(any(Inspection.class));
+        InspectionSubmitRequest request = request(2003L, "remark-register", false);
+        request.setRemark("  已清理料槽并观察采食  ");
+        service.register(request);
+        org.mockito.ArgumentCaptor<Inspection> saved = org.mockito.ArgumentCaptor.forClass(Inspection.class);
+        org.mockito.Mockito.verify(inspectionMapper).insert(saved.capture());
+        assertThat(saved.getValue().getRemark()).isEqualTo("已清理料槽并观察采食");
+    }
+
+    @Test
+    void backfillAlsoPersistsTheRemark() {
+        org.mockito.Mockito.doAnswer(call -> {
+            call.<Inspection>getArgument(0).setId(50133L);
+            return 1;
+        }).when(inspectionMapper).insert(any(Inspection.class));
+        com.zhimu.server.biz.inspect.request.InspectionBackfillRequest request =
+                new com.zhimu.server.biz.inspect.request.InspectionBackfillRequest();
+        request.setPenId(2003L);
+        request.setInspectDate("2026-10-18");
+        request.setExecutorId(10003L);
+        request.setClientRequestId("remark-backfill");
+        request.setItemResults(List.of(item(101L, 1011L), item(102L, 1021L), item(103L, 1033L)));
+        request.setIsManualMarked(false);
+        request.setRemark("  补充当天观察记录  ");
+        service.backfill(request);
+        org.mockito.ArgumentCaptor<Inspection> saved = org.mockito.ArgumentCaptor.forClass(Inspection.class);
+        org.mockito.Mockito.verify(inspectionMapper).insert(saved.capture());
+        assertThat(saved.getValue().getRemark()).isEqualTo("补充当天观察记录");
+    }
+
+    @Test
     void staffBackfillReturns40303() {
         InspectFixtures.loginStaff(10003L, Set.of(2003L));
         doThrow(new BizException(ErrorCode.ROLE_FORBIDDEN, "只有所有者和场长可以补录"))

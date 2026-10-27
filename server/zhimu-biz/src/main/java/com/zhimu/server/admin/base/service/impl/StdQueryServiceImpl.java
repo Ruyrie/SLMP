@@ -60,9 +60,10 @@ public class StdQueryServiceImpl implements StdQueryService {
             for (StdWeightPoint point : points) {
                 BreedStandardsVO.WeightPointVO vo = new BreedStandardsVO.WeightPointVO();
                 vo.setDayAge(point.getDayAge());
-                vo.setStdWeight(StdCalculator.round1(point.getStdWeight()));
-                vo.setLower(StdCalculator.lower(point.getStdWeight(), weightVersion.getToleranceRate()));
-                vo.setUpper(StdCalculator.upper(point.getStdWeight(), weightVersion.getToleranceRate()));
+                StdCalculator.StandardAt exact = StdCalculator.exactAtWeight(point.getStdWeight(), weightVersion.getToleranceRate());
+                vo.setStdWeight(exact.stdWeight());
+                vo.setLower(exact.lower());
+                vo.setUpper(exact.upper());
                 pointVOs.add(vo);
             }
             weight.setPoints(pointVOs);
@@ -104,7 +105,7 @@ public class StdQueryServiceImpl implements StdQueryService {
             BreedStandardsVO.AtDayVO atDay = new BreedStandardsVO.AtDayVO();
             atDay.setDayAge(dayAge);
             if (weightVersion != null) {
-                StdCalculator.StandardAt at = StdCalculator.interpolate(points, dayAge, weightVersion.getToleranceRate());
+                StdCalculator.StandardAt at = StdCalculator.interpolateExact(points, dayAge, weightVersion.getToleranceRate());
                 if (at != null) {
                     atDay.setStdWeight(at.stdWeight());
                     atDay.setLower(at.lower());

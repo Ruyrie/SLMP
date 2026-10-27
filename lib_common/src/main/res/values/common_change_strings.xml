@@ -5,6 +5,10 @@
     <string name="common_change_record_label">原记录</string>
     <string name="common_change_field">修改项</string>
     <string name="common_change_void_option">作废这条记录</string>
+    <string name="common_change_delete_option">删除这条记录</string>
+    <string name="common_change_deleted">已删除</string>
+    <string name="common_change_delete_notice">审核通过后删除这条记录并重新计算相关数据。审核期间原记录保持不变。</string>
+    <string name="common_change_medication_delete_notice">审核通过后删除这条用药记录，回滚对应药品库存并重新计算休药期与可出栏日期。如需更正用药信息，请在审核完成后重新登记。</string>
     <string name="common_change_old_value">原值</string>
     <string name="common_change_new_value">新值</string>
     <string name="common_change_reason">修改原因</string>

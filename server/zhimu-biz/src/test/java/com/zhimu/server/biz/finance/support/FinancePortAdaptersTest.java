@@ -29,13 +29,14 @@ class FinancePortAdaptersTest {
                 new BigDecimal("120000.00"), new BigDecimal("8000.00"),
                 BigDecimal.ZERO, new BigDecimal("100.00"), new BigDecimal("128100.00")));
 
+        when(query.feedKg(null, 3001L)).thenReturn(new BigDecimal("25930"));
         StockCostAdapter adapter = new StockCostAdapter(query);
         StockCostPort.BatchCost cost = adapter.costOf(3001L);
 
         assertThat(cost.feed()).isEqualByComparingTo("120000.00");
         assertThat(cost.drug()).isEqualByComparingTo("8000.00");
         assertThat(cost.death()).isEqualByComparingTo("0");
-        assertThat(cost.feedKg()).isEqualByComparingTo("0");
+        assertThat(cost.feedKg()).isEqualByComparingTo("25930");
     }
 
     @Test
@@ -44,7 +45,7 @@ class FinancePortAdaptersTest {
         when(command.sale(any())).thenReturn(new BatchStockCommandService.BatchSaleResult(
                 3001L, "ACTIVE", 50, 150, 50, false, List.of(), List.of()));
 
-        BatchSaleAdapter adapter = new BatchSaleAdapter(command);
+        BatchSaleAdapter adapter = new BatchSaleAdapter(command, mock(com.zhimu.server.biz.finance.mapper.SaleOrderMapper.class));
         int remaining = adapter.saleOut(1001L, 3001L, LocalDate.of(2026, 10, 19),
                 Map.of(2003L, 50), 9106L);
 
@@ -55,7 +56,7 @@ class FinancePortAdaptersTest {
     @Test
     void batchSaleAdapterRestoresByIdempotentKey() {
         BatchStockCommandService command = mock(BatchStockCommandService.class);
-        BatchSaleAdapter adapter = new BatchSaleAdapter(command);
+        BatchSaleAdapter adapter = new BatchSaleAdapter(command, mock(com.zhimu.server.biz.finance.mapper.SaleOrderMapper.class));
 
         adapter.restoreSale(1001L, 3001L, LocalDate.of(2026, 10, 19), Map.of(2003L, 50), 9106L);
 
@@ -63,10 +64,20 @@ class FinancePortAdaptersTest {
     }
 
     @Test
-    void batchSaleAdapterReturnsMinusOneWhenPortCannotAdjust() {
-        BatchSaleAdapter adapter = new BatchSaleAdapter(mock(BatchStockCommandService.class));
+    void batchSaleAdapterReplaysCorrectedQuantityAfterRestoringOriginal() {
+        var command = mock(BatchStockCommandService.class);
+        var mapper = mock(com.zhimu.server.biz.finance.mapper.SaleOrderMapper.class);
+        var order = new com.zhimu.server.biz.finance.entity.SaleOrder();
+        order.setFarmId(1001L); order.setBatchId(3001L); order.setQuantity(40);
+        order.setPenAllocations("[{\"pen_id\":2003,\"quantity\":40}]");
+        when(mapper.selectById(9106L)).thenReturn(order);
+        when(command.sale(any())).thenReturn(new BatchStockCommandService.BatchSaleResult(
+                3001L, "ACTIVE", 40, 160, 40, false, List.of(), List.of()));
+        BatchSaleAdapter adapter = new BatchSaleAdapter(command, mapper);
         assertThat(adapter.adjustSale(1001L, 3001L, LocalDate.of(2026, 10, 19),
-                Map.of(2003L, -10), 9106L)).isEqualTo(-1);
-        assertThat(adapter.penStocks(3001L)).isEmpty();
+                Map.of(2003L, -10), 9106L)).isEqualTo(160);
+        var sequence = org.mockito.Mockito.inOrder(command);
+        sequence.verify(command).restoreSale(BizType.SALE_ORDER, 9106L);
+        sequence.verify(command).sale(org.mockito.ArgumentMatchers.argThat(value -> value.quantity() == 40));
     }
 }

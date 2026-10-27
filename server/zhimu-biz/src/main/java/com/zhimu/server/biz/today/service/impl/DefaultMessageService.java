@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.today.service.impl;
 
+import com.zhimu.server.biz.account.support.AccountPersonalDataGuard;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.zhimu.server.biz.farm.api.FarmQueryService;
 import com.zhimu.server.biz.today.api.MessageCommand;
@@ -49,6 +50,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DefaultMessageService implements MessageService {
 
+    private final AccountPersonalDataGuard personalDataGuard;
     private final MessageMapper messageMapper;
     private final PushRecordMapper pushRecordMapper;
     private final ReminderSettingMapper reminderSettingMapper;
@@ -65,8 +67,9 @@ public class DefaultMessageService implements MessageService {
         LocalDateTime now = BeijingTime.now();
         MsgType msgType = command.getMsgType();
         MsgCategory category = msgType == null ? MsgCategory.OTHER : msgType.getCategory();
-        for (Long userId : command.getReceiverUserIds()) {
-            if (userId == null) {
+        for (Long userId : command.getReceiverUserIds().stream()
+                .filter(java.util.Objects::nonNull).distinct().sorted().toList()) {
+            if (!personalDataGuard.lockActive(userId)) {
                 continue;
             }
             var member = command.getFarmId() == null ? null : memberLoader.load(command.getFarmId(), userId);

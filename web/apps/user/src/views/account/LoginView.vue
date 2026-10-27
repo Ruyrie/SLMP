@@ -87,7 +87,7 @@ async function afterLogin(): Promise<void> {
   notice.start()
   const step = auth.nextStep
   if (step === 'SAVE_RECOVERY_CODE' || step === 'RECOVERY_CHANGE_PASSWORD') {
-    await router.replace({ name: 'WU-A03', query: { step } })
+    await router.replace({ name: 'WU-A03', query: { step, redirect: targetAfterLogin() } })
     return
   }
   await router.replace(targetAfterLogin())

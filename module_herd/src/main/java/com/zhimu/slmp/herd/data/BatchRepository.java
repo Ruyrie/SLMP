@@ -20,6 +20,7 @@ import com.zhimu.slmp.herd.model.vo.BatchEntryResultVO;
 import com.zhimu.slmp.herd.model.vo.BatchEventDetailVO;
 import com.zhimu.slmp.herd.model.vo.BatchListItemVO;
 import com.zhimu.slmp.herd.model.vo.BatchLookupVO;
+import com.zhimu.slmp.herd.model.vo.BatchTraceVO;
 import com.zhimu.slmp.herd.model.vo.DeathResultVO;
 import com.zhimu.slmp.herd.model.vo.PenStockVO;
 import com.zhimu.slmp.herd.model.vo.RequestCheckVO;
@@ -87,6 +88,11 @@ public class BatchRepository {
     @NonNull
     public Single<BatchLookupVO> lookupByNo(@NonNull String batchNo) {
         return api.lookup(null, batchNo).compose(RxResult.unwrap());
+    }
+
+    @NonNull
+    public Single<BatchTraceVO> getPublicTrace(@NonNull String token) {
+        return api.getPublicTrace(token).compose(RxResult.unwrap());
     }
 
     /** API-L15 */

@@ -34,6 +34,7 @@ public class TodayServiceImpl implements ITodoService {
     private final Subject<TodoChange> changes = PublishSubject.<TodoChange>create().toSerialized();
     private final MutableLiveData<Integer> unread = new MutableLiveData<>(0);
     private Disposable refreshing = Disposable.disposed();
+    private long sessionGeneration;
 
     @Inject
     public TodayServiceImpl(@NonNull MessageRepository messageRepository) {
@@ -73,8 +74,20 @@ public class TodayServiceImpl implements ITodoService {
         if (!refreshing.isDisposed()) {
             return;
         }
+        long generation = sessionGeneration;
         refreshing = messageRepository.getUnreadCount(null, null)
                 .subscribeOn(Schedulers.io())
-                .subscribe(vo -> setUnread(vo.getTotalUnread()), t -> Log.i(TAG, "未读数刷新失败：" + t.getMessage()));
+                .subscribe(vo -> {
+                    synchronized (TodayServiceImpl.this) {
+                        if (generation == sessionGeneration) setUnread(vo.getTotalUnread());
+                    }
+                }, t -> Log.i(TAG, "未读数刷新失败：" + t.getMessage()));
+    }
+
+    @Override public synchronized void clearSessionState() {
+        sessionGeneration++;
+        refreshing.dispose();
+        refreshing = Disposable.disposed();
+        setUnread(0);
     }
 }

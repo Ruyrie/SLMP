@@ -120,7 +120,12 @@
             android:exported="false" />
         <activity
             android:name=".ui.record.StockRecordActivity"
-            android:exported="false" />
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.zhimu.slmp.page.STOCK_RECORD" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

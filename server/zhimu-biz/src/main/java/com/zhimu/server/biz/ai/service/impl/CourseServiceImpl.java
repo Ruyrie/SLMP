@@ -1,6 +1,7 @@
 package com.zhimu.server.biz.ai.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.zhimu.server.biz.account.support.AccountPersonalDataGuard;
 import com.zhimu.server.biz.ai.convert.CourseConvert;
 import com.zhimu.server.biz.ai.entity.Course;
 import com.zhimu.server.biz.ai.entity.CourseCategory;
@@ -10,7 +11,7 @@ import com.zhimu.server.biz.ai.entity.CourseProgress;
 import com.zhimu.server.biz.ai.entity.CourseTopic;
 import com.zhimu.server.biz.ai.mapper.CourseCategoryMapper;
 import com.zhimu.server.biz.ai.mapper.CourseMapper;
-import com.zhimu.server.biz.ai.mapper.CourseMediaMapper;
+import com.zhimu.server.biz.ai.support.CourseMediaResolver;
 import com.zhimu.server.biz.ai.mapper.CoursePlayRecordMapper;
 import com.zhimu.server.biz.ai.mapper.CourseProgressMapper;
 import com.zhimu.server.biz.ai.mapper.CourseTopicMapper;
@@ -63,10 +64,11 @@ public class CourseServiceImpl implements CourseService {
     private final CourseCategoryMapper categoryMapper;
     private final CourseTopicMapper topicMapper;
     private final CourseMapper courseMapper;
-    private final CourseMediaMapper mediaMapper;
+    private final CourseMediaResolver mediaResolver;
     private final CourseProgressMapper progressMapper;
     private final CoursePlayRecordMapper playRecordMapper;
     private final CourseConvert convert;
+    private final AccountPersonalDataGuard personalDataGuard;
 
     @Override
     public List<CourseCategoryVO> categories() {
@@ -117,7 +119,7 @@ public class CourseServiceImpl implements CourseService {
             vo.setId(topic.getId());
             vo.setName(topic.getName());
             vo.setCategoryName(topic.getCategoryName());
-            vo.setCoverUrl(topic.getCoverUrl());
+            vo.setCoverUrl(convert.topicCover(topic));
             List<Course> topicCourses = byTopic.getOrDefault(topic.getId(), List.of());
             vo.setCourseCount(topicCourses.size());
             vo.setTotalDurationSec(topicCourses.stream().mapToInt(c -> value(c.getDurationSec())).sum());
@@ -167,7 +169,7 @@ public class CourseServiceImpl implements CourseService {
         vo.setId(topic.getId());
         vo.setName(topic.getName());
         vo.setCategoryName(topic.getCategoryName());
-        vo.setCoverUrl(topic.getCoverUrl());
+        vo.setCoverUrl(convert.topicCover(topic));
         vo.setIntro(topic.getIntro());
         vo.setCourseCount(courses.size());
         vo.setTotalDurationSec(courses.stream().mapToInt(c -> value(c.getDurationSec())).sum());
@@ -285,7 +287,7 @@ public class CourseServiceImpl implements CourseService {
             throw AiErrors.offShelf("这个视频已下架");
         }
         CourseProgress progress = progressMapper.selectByUserAndCourse(userId, courseId);
-        List<CourseMedia> media = mediaMapper.selectPlayable(courseId);
+        List<CourseMedia> media = mediaResolver.resolve(course);
         CoursePlayVO vo = convert.toPlay(course, media, progress);
         if (course.getTopicId() != null) {
             List<Course> topicCourses = courseMapper.selectList(Wrappers.<Course>lambdaQuery()
@@ -340,6 +342,7 @@ public class CourseServiceImpl implements CourseService {
             throw AiErrors.invalid("参数不正确");
         }
         validateProgress(request);
+        personalDataGuard.requireActive(userId);
         Course course = courseMapper.selectById(courseId);
         if (course == null || "DRAFT".equals(course.getStatus())) {
             throw AiErrors.notFound();
@@ -364,7 +367,7 @@ public class CourseServiceImpl implements CourseService {
         int maxPosition = Math.max(oldMax, position);
         int totalWatched = oldWatched + watched;
         boolean completed = oldCompleted
-                || (maxPosition >= duration * 0.9 && totalWatched >= duration * 0.6);
+                || (duration > 0 && maxPosition >= duration * 0.9 && totalWatched >= duration * 0.6);
         boolean justCompleted = !oldCompleted && completed;
 
         if (progress == null) {
@@ -411,7 +414,7 @@ public class CourseServiceImpl implements CourseService {
         ProgressResultVO vo = new ProgressResultVO();
         vo.setPositionSec(progress.getPositionSec());
         vo.setMaxPositionSec(progress.getMaxPositionSec());
-        vo.setProgressRatio(progress.getProgressRatio());
+        vo.setProgressRatio(convertRatio(completed, value(progress.getPositionSec()), duration));
         vo.setCompleted(completed);
         vo.setJustCompleted(justCompleted);
         vo.setLearnStatus(CourseConvert.learnStatus(progress));

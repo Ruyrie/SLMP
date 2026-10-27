@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 /**
  * 模块10 核算读取模块09 批次物资成本的适配器。
  * 模块09 的 BatchCost 含 feed/drug/intro/other，模块10 的核算口径只用 feed 与 drug；
- * feedKg 当前不从成本表推导，返回 0；死淘成本暂未进入核算口径。
+ * feedKg 汇总有效饲料成本记录的用量；死淘成本暂未进入核算口径。
  */
 @Component
 @Primary
@@ -22,14 +22,20 @@ public class StockCostAdapter implements StockCostPort {
 
     @Override
     public BatchCost costOf(Long batchId) {
+        return costOf(null, batchId);
+    }
+
+    @Override
+    public BatchCost costOf(Long farmId, Long batchId) {
         if (batchId == null) {
             return BatchCost.ZERO;
         }
-        var cost = stockCostQueryService.batchCost(null, batchId);
+        var cost = stockCostQueryService.batchCost(farmId, batchId);
         if (cost == null) {
             return BatchCost.ZERO;
         }
-        return new BatchCost(nz(cost.feedCost()), BigDecimal.ZERO, nz(cost.drugCost()), BigDecimal.ZERO);
+        return new BatchCost(nz(cost.feedCost()), nz(stockCostQueryService.feedKg(farmId, batchId)),
+                nz(cost.drugCost()), BigDecimal.ZERO);
     }
 
     private static BigDecimal nz(BigDecimal value) {

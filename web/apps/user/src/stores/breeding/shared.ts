@@ -86,6 +86,7 @@ export function dueBadgeText(days?: number | null): string {
 }
 
 export function dueGroupLabel(group?: string | null): string {
+  if (group === 'OVERDUE') return '已逾期'
   if (group === 'TODAY') return '今天'
   if (group === 'WITHIN_7') return '7 天内'
   if (group === 'LATER') return '更晚'

@@ -738,11 +738,11 @@ export function fetchRecordLogs(bizType: string, bizId: number): Promise<RecordL
 
 /* ---------------- 文件上传 ---------------- */
 
-export function uploadFile(file: File, scene: 'INSPECTION' | 'ABNORMAL' | 'DEATH' | 'DISINFECT', onProgress?: (percent: number) => void): Promise<FileVO> {
+export function uploadFile(file: File, scene: 'INSPECTION' | 'ABNORMAL' | 'DEATH' | 'DISINFECT', onProgress?: (percent: number) => void, signal?: AbortSignal): Promise<FileVO> {
   const form = new FormData()
   form.append('file', file)
   form.append('scene', scene)
-  return http().upload<FileVO>('/files', form, onProgress)
+  return http().upload<FileVO>('/files', form, onProgress, { signal, timeout: 120_000 })
 }
 
 /** 浏览器环境生成幂等键；提交超时后可用它查询是否已经保存。 */

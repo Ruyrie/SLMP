@@ -135,6 +135,15 @@
                     android:layout_height="1dp"
                     android:visibility="invisible" />
             </FrameLayout>
+
+            <TextView
+                android:id="@+id/feed_growth_compare_notice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/base_space_2"
+                android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="gone" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

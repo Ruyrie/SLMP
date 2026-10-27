@@ -16,6 +16,7 @@ import com.zhimu.server.biz.ai.support.AiCodes;
 import com.zhimu.server.biz.ai.support.AiErrors;
 import com.zhimu.server.biz.ai.support.AiHtmlSanitizer;
 import com.zhimu.server.biz.ai.support.AiText;
+import com.zhimu.server.biz.ai.support.CourseCoverResolver;
 import com.zhimu.server.biz.ai.vo.EmbeddedVideoVO;
 import com.zhimu.server.biz.ai.vo.KnowledgeBlockVO;
 import com.zhimu.server.biz.ai.vo.KnowledgeDetailVO;
@@ -43,6 +44,7 @@ public class KnowledgeViewServiceImpl implements KnowledgeViewService {
     private final AiMessageMapper messageMapper;
     private final AiCitationMapper citationMapper;
     private final com.zhimu.server.biz.ai.mapper.CourseMapper courseMapper;
+    private final CourseCoverResolver covers;
 
     @Override
     public KnowledgeDetailVO detail(Long userId, Long knowledgeId, Long citationId) {
@@ -91,7 +93,7 @@ public class KnowledgeViewServiceImpl implements KnowledgeViewService {
         vo.setCourseId(course.getId());
         vo.setTitle(course.getTitle());
         vo.setDurationSec(course.getDurationSec() == null ? 0 : course.getDurationSec());
-        vo.setCoverUrl(course.getCoverUrl());
+        vo.setCoverUrl(covers.resolve(course));
         return vo;
     }
 

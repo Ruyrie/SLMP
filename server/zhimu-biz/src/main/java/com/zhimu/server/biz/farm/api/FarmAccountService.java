@@ -3,6 +3,7 @@ package com.zhimu.server.biz.farm.api;
 import com.zhimu.server.common.vo.FarmBriefVO;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 /**
  * 模块02 提供给模块01 的账号相关能力（模块02 文档 1.4 节 FarmAccountService，规则见其 2.7 节）。
@@ -33,4 +34,10 @@ public interface FarmAccountService {
      * 调用前模块01 已校验没有 TRANSFER_OR_DISABLE、WAIT_UNFREEZE 的养殖场。
      */
     void handleAccountCancelled(Long userId, String phone);
+
+    /**
+     * 账号清理事务内调用。逐场按停用时间+保留期清理仍属于该注销所有者的场；
+     * 返回最早尚未到期的时间，没有剩余返回 null。不会按注销清单的最早日期批量提前删除。
+     */
+    LocalDateTime cleanupCancelledOwnerFarms(Long userId, LocalDateTime now);
 }

@@ -13,6 +13,9 @@ import com.zhimu.server.common.util.BeijingTime;
 import com.zhimu.server.framework.mybatis.TenantSkip;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.ObjectProvider;
+import com.zhimu.server.biz.herd.service.BatchService;
+import com.zhimu.server.biz.herd.request.BatchCreateRequest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -31,6 +34,33 @@ public class SelfBredBatchServiceImpl implements SelfBredBatchService {
     private final BatchMapper batchMapper;
     private final BatchPenMapper batchPenMapper;
     private final PenMapper penMapper;
+    private final ObjectProvider<BatchService> batchService;
+
+    @Override
+    @Transactional
+    public CreatedBatch create(Long penId, Long breedId, int quantity, LocalDate date,
+                               boolean capacityConfirmed, String sourceType, Long sourceId) {
+        if (sourceId == null || sourceType == null || !java.util.Set.of("FARROWING", "HATCH").contains(sourceType)) {
+            throw new BizException(ErrorCode.PARAM_INVALID, "自繁批次来源不正确");
+        }
+        BatchCreateRequest request = new BatchCreateRequest();
+        request.setPenId(penId);
+        request.setBreedId(breedId);
+        request.setPurpose("COMMERCIAL");
+        request.setSource("SELF_BRED");
+        request.setEntryDate(date);
+        request.setEntryAgeDays(0);
+        request.setEntryCount(quantity);
+        request.setCapacityConfirmed(capacityConfirmed);
+        var result = batchService.getObject().create(request, "self-bred:" + sourceType + ":" + sourceId);
+        if (batchMapper.update(null, Wrappers.<Batch>lambdaUpdate()
+                .eq(Batch::getId, result.getBatchId())
+                .set(Batch::getSourceRecordType, sourceType)
+                .set(Batch::getSourceRecordId, sourceId)) == 0) {
+            throw new BizException(ErrorCode.VERSION_CONFLICT);
+        }
+        return new CreatedBatch(result.getBatchId(), result.getBatchNo());
+    }
 
     @Override
     @Transactional

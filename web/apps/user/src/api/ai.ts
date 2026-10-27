@@ -115,6 +115,8 @@ export interface AiMessage {
   status?: string
   answer_type?: string | null
   answer_text?: string | null
+  analysis_summary?: string | null
+  source_note?: string | null
   citations?: CitationBrief[]
   rating?: string | null
   rated_at?: string | null
@@ -229,6 +231,11 @@ export interface StreamMeta {
 
 export interface StreamDelta {
   text: string
+}
+
+export interface StreamProgress {
+  stage: 'CONTEXT' | 'RETRIEVAL' | 'GENERATING'
+  message: string
 }
 
 export interface StreamCitation {

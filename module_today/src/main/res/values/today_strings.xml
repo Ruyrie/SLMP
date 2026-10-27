@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="today_quick_no_farm">请先选择养殖场，再进行登记</string>
+    <string name="today_quick_not_writable">当前养殖场暂不能登记，请确认审核状态与操作权限</string>
+    <string name="today_quick_farm_changed">养殖场已切换，请重新打开登记</string>
     <!-- 通知渠道（03 号 11.2 节） -->
     <string name="today_channel_todo">待办提醒</string>
     <string name="today_channel_todo_desc">饲喂、巡检、免疫、消毒、称重、预产等待办提醒与每日汇总</string>
@@ -19,11 +22,11 @@
     <string name="today_unit_pen">个</string>
     <string name="today_home_ai_default">问问 AI 养殖助手</string>
     <string name="today_home_ai_with_hint">问问 AI 养殖助手 · %1$s</string>
-    <string name="today_home_section_todos">今天和已逾期 · %1$d 项</string>
+    <string name="today_home_section_todos">今日待办 · %1$d 项</string>
     <string name="today_home_calendar">日历</string>
     <string name="today_home_section_my_pens">我负责的栏舍</string>
     <string name="today_home_no_my_pen">你还没有负责的栏舍。请联系所有者或场长分配栏舍。</string>
-    <string name="today_home_empty_title">今天没有待办，也没有逾期事项。</string>
+    <string name="today_home_empty_title">今天暂无待办</string>
     <string name="today_home_empty_desc">新的提醒会自动出现在这里。需要登记作业时，点右下角“登记”。</string>
     <string name="today_home_no_pen_title">还没有栏舍和批次。先新增栏舍，再登记批次入栏，系统会按批次生成待办。</string>
     <string name="today_home_add_pen">新增栏舍</string>
@@ -43,7 +46,7 @@
 
     <!-- T02 快捷登记 -->
     <string name="today_quick_title">快捷登记</string>
-    <string name="today_quick_desc">登记到%1$s，选一项直接进入登记页</string>
+    <string name="today_quick_desc">登记到%1$s，选择登记类型</string>
     <string name="today_quick_group_work">作业</string>
     <string name="today_quick_group_owner">养殖户</string>
     <string name="today_quick_inspection">巡检</string>
@@ -220,4 +223,12 @@
     <string name="today_invalid_default_title">该记录已被删除，无法查看</string>
     <string name="today_invalid_default_desc">这条消息关联的记录已被删除，相关的待办和记录不再显示。消息本身仍保留在消息中心。</string>
     <string name="today_new_farm">新建养殖场</string>
+    <string name="today_view_all">查看全部</string>
+    <string name="today_expand">展开 ▾</string>
+    <string name="today_collapse">收起 ▴</string>
+    <string name="today_warning_title">预警中心</string>
+    <string name="today_warning_empty">暂无未解除预警</string>
+    <string name="today_overdue_title">已逾期待办</string>
+    <string name="today_overdue_empty">暂无已逾期待办</string>
+    <string name="today_load_more">加载更多</string>
 </resources>

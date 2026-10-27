@@ -6,6 +6,7 @@ android {
 
 dependencies {
     implementation project(':lib_common')
+    implementation project(':lib_media')
     implementation libs.jpush
     annotationProcessor libs.dagger.compiler
 

@@ -182,7 +182,7 @@ public class DirectSmsGateway {
     }
 
     /** 重新发送后旧码失效，清除该号码的校验记录 */
-    private void forget(@NonNull String phone) {
+    void forget(@NonNull String phone) {
         String prefix = phone + "|";
         verified.keySet().removeIf(k -> k.startsWith(prefix));
     }

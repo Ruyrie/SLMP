@@ -67,6 +67,17 @@ public class DirectSmsGatewayTest {
         return Single.just("ok");
     }
 
+    @Test public void cancelledPhoneVerificationCacheIsForgottenWithoutAffectingAnotherPhone() {
+        DirectSmsGateway gateway = gateway(false);
+        gateway.verifyThen("13999126002", "123456", this::record).blockingGet();
+        gateway.verifyThen("13999126003", "654321", this::record).blockingGet();
+        gateway.forget("13999126002");
+        gateway.verifyThen("13999126002", "123456", this::record).blockingGet();
+        gateway.verifyThen("13999126003", "654321", this::record).blockingGet();
+        verify(client, times(2)).checkVerifyCode("13999126002", "123456");
+        verify(client).checkVerifyCode("13999126003", "654321");
+    }
+
     // ===== 场景 → 模板 =====
 
     @Test

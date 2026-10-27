@@ -420,6 +420,7 @@ export interface GrowthCurve {
   growth_status?: string
   growth_status_text?: string
   metrics?: {
+    comparison_source?: 'RECORDED' | 'CURRENT_STANDARD'
     avg_weight?: number
     day_age?: number
     weigh_date?: string

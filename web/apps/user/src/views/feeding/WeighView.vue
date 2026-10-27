@@ -9,6 +9,7 @@ import { useRole } from '@/composables/useRole'
 import { dayAgeAt, deviationText, monthDay, monthDayWeek, todayISO } from '@/stores/feeding/shared'
 import type { WeighRecordRow } from '@/api/feeding'
 import FeedingDateField from './components/FeedingDateField.vue'
+import { growthAgeLabels, growthAgeLabelInterval, growthComparisonNotices, growthWeightDigits, growthWeightRange, standardAt, standardBandAt, standardReferenceDay } from './growthChart'
 
 interface ChartGeom {
   x: (index: number) => number
@@ -28,39 +29,19 @@ const activeBatch = computed(() => (store.curve?.batch?.status || store.form?.ba
 const growthTag = computed(() => store.growthTag)
 const titleDesc = computed(() => store.desc)
 
-const labels = computed<string[]>(() => {
-  const curve = store.curve
-  if (!curve) return []
-  const min = Number(curve.x_min ?? 0)
-  const max = Number(curve.x_max ?? min + 1) + 4
-  const list: string[] = []
-  for (let day = min; day <= max; day += 1) list.push(String(day))
-  return list
-})
+const labels = computed(() => growthAgeLabels(store.curve))
+const compareNotices = computed(() => growthComparisonNotices(store.curve))
+const visibleComparisons = computed(() => (store.curve?.compare_series || []).filter(
+  (item) => (item.points || []).some((point) => Number.isFinite(point.day_age) && Number.isFinite(point.avg_weight))
+))
 
 function stdAt(day: number): number | null {
-  const points = (store.curve?.std_points || [])
-    .filter((item) => item.day_age !== undefined && item.std_weight !== undefined)
-    .map((item) => ({ day: Number(item.day_age), value: Number(item.std_weight) }))
-    .sort((a, b) => a.day - b.day)
-  if (!points.length) return null
-  if (day <= points[0].day) return points[0].value
-  if (day >= points[points.length - 1].day) return points[points.length - 1].value
-  for (let index = 1; index < points.length; index += 1) {
-    const prev = points[index - 1]
-    const next = points[index]
-    if (day <= next.day) {
-      const ratio = (day - prev.day) / Math.max(1, next.day - prev.day)
-      return prev.value + (next.value - prev.value) * ratio
-    }
-  }
-  return null
+  return store.curve?.std_available ? standardAt(store.curve.std_points || [], day) : null
 }
 
 const stdValues = computed<(number | null)[]>(() => {
   if (!store.curve?.std_available) return []
-  const max = Number(store.curve?.x_max ?? 0)
-  return labels.value.map((label) => (Number(label) <= max ? stdAt(Number(label)) : null))
+  return labels.value.map((label) => stdAt(Number(label)))
 })
 
 const series = computed(() => {
@@ -68,24 +49,22 @@ const series = computed(() => {
   if (stdValues.value.length) {
     list.push({ name: '标准', data: stdValues.value, color: 'chart-ref', dashed: true, dots: false })
   }
-  for (const compare of store.curve?.compare_series || []) {
-    const min = Number(store.curve?.x_min ?? 0)
+  for (const compare of visibleComparisons.value) {
     const map = new Map<number, number>()
     for (const point of compare.points || []) {
-      if (point.day_age !== undefined && point.avg_weight !== undefined) map.set(Number(point.day_age), Number(point.avg_weight))
+      if (Number.isFinite(point.day_age) && Number.isFinite(point.avg_weight)) map.set(Number(point.day_age), Number(point.avg_weight))
     }
     list.push({
       name: `${compare.batch_no || '对比批次'}${compare.status === 'ENDED' ? '（已结束）' : ''}`,
       data: labels.value.map((label) => map.get(Number(label)) ?? null),
       color: 'chart-2',
-      dots: false
+      dots: true
     })
   }
   const actualMap = new Map<number, number>()
   for (const point of store.curve?.actual_points || []) {
     if (point.day_age !== undefined && point.avg_weight !== undefined) actualMap.set(Number(point.day_age), Number(point.avg_weight))
   }
-  const min = Number(store.curve?.x_min ?? 0)
   list.push({
     name: '实际',
     data: labels.value.map((label) => actualMap.get(Number(label)) ?? null),
@@ -101,23 +80,29 @@ const yRange = computed(() => {
       if (value !== null && value !== undefined) values.push(value)
     }
   }
-  if (!values.length) return { min: 0, max: 100 }
-  const min = Math.max(0, Math.floor(Math.min(...values) * 0.7 / 10) * 10)
-  const max = Math.ceil(Math.max(...values) * 1.12 / 10) * 10
-  return { min, max: Math.max(max, min + 10) }
+  labels.value.forEach((label) => {
+    const band = standardBandAt(store.curve, Number(label))
+    if (band) values.push(band.lower, band.upper)
+  })
+  return growthWeightRange(values)
 })
-const xEvery = computed(() => (labels.value.length > 60 ? 14 : labels.value.length > 30 ? 10 : 5))
+const xEvery = computed(() => growthAgeLabelInterval(labels.value.length))
 const highlight = computed(() => {
   const current = Number(store.curve?.current_day_age ?? 0)
-  const min = Number(store.curve?.x_min ?? 0)
-  const index = current - min
+  const index = labels.value.indexOf(String(current))
   return index >= 0 && index < labels.value.length ? index : undefined
 })
-const currentStd = computed(() => {
-  const day = Number(store.curve?.current_day_age ?? 0)
-  return stdAt(day)
+const referenceIndex = computed(() => labels.value.indexOf(String(standardReferenceDay(store.curve))))
+const referenceStd = computed(() => {
+  const day = standardReferenceDay(store.curve)
+  return day === undefined ? null : stdAt(day)
 })
 const latest = computed(() => store.metrics.avg_weight ?? null)
+const latestIndex = computed(() => {
+  const age = store.metrics.day_age
+  const index = age === undefined ? -1 : labels.value.indexOf(String(age))
+  return index >= 0 ? index : undefined
+})
 
 const modeItems = [
   { label: '抽样汇总', value: 'SAMPLE' },
@@ -178,8 +163,10 @@ function bandPath(g: ChartGeom): string {
   const lower: string[] = []
   stdValues.value.forEach((value, index) => {
     if (value === null) return
-    upper += `${upper ? 'L' : 'M'}${g.x(index).toFixed(1)} ${g.y(value * 1.1).toFixed(1)}`
-    lower.unshift(`L${g.x(index).toFixed(1)} ${g.y(value * 0.9).toFixed(1)}`)
+    const band = standardBandAt(store.curve, Number(labels.value[index]))
+    if (!band) return
+    upper += `${upper ? 'L' : 'M'}${g.x(index).toFixed(1)} ${g.y(band.upper).toFixed(1)}`
+    lower.unshift(`L${g.x(index).toFixed(1)} ${g.y(band.lower).toFixed(1)}`)
   })
   return upper ? `${upper}${lower.join('')}Z` : ''
 }
@@ -203,8 +190,12 @@ function closeDrawer(): void {
 
 async function init(): Promise<void> {
   const queryBatch = Number(route.query.batchId || 0)
-  if (queryBatch) store.batchId = queryBatch
-  await store.load()
+  if (queryBatch && store.loaded && queryBatch !== store.batchId) {
+    await store.setBatch(queryBatch)
+  } else {
+    if (queryBatch) store.batchId = queryBatch
+    await store.load()
+  }
   if (route.query.action === 'weigh') await store.openWeigh()
 }
 
@@ -246,7 +237,7 @@ useFarmReload(async () => {
       </zw-card>
     </div>
 
-    <div v-else-if="store.status === 'error'">
+    <div v-else-if="store.status === 'error' || store.status === 'forbidden'">
       <zw-card>
         <zw-empty icon="cloud_off" tone="error" title="生长曲线加载失败" :desc="store.error">
           <v-btn color="primary" variant="outlined" @click="store.load(true)">重新加载</v-btn>
@@ -256,12 +247,12 @@ useFarmReload(async () => {
 
     <template v-else>
       <div class="zw-grid-4 mb-4">
-        <zw-stat label="平均体重" icon="scale" :value="store.metrics.avg_weight === undefined ? '—' : formatNumber(store.metrics.avg_weight, 1)" unit="千克" :foot="store.metrics.weigh_date ? `${store.metrics.day_age} 日龄 · ${monthDay(store.metrics.weigh_date)}称重` : '还没有称重记录'" />
-        <zw-stat label="偏离标准" icon="trending_down" :value="store.metrics.deviation_ratio === null || store.metrics.deviation_ratio === undefined ? '无数据' : deviationText(store.metrics.deviation_ratio)" :unit="store.metrics.deviation_ratio === null || store.metrics.deviation_ratio === undefined ? '' : '%'">
-          <template #foot><span :class="store.deviationTone === 'error' ? 'g03-err' : ''">{{ store.metrics.std_weight ? `标准 ${formatNumber(store.metrics.std_weight, 1)} 千克 · 允许 ±${Math.round(Number(store.metrics.allowed_deviation || 0.1) * 100)}%` : '平台还没有该品种的标准体重' }}</span></template>
+        <zw-stat label="平均体重" icon="scale" :value="store.metrics.avg_weight === undefined ? '—' : formatNumber(store.metrics.avg_weight, growthWeightDigits(store.metrics.avg_weight))" unit="千克" :foot="store.metrics.weigh_date ? `${store.metrics.day_age} 日龄 · ${monthDay(store.metrics.weigh_date)}称重` : '还没有称重记录'" />
+        <zw-stat label="偏离标准" icon="trending_down" :value="store.metrics.deviation_ratio === null || store.metrics.deviation_ratio === undefined ? '无数据' : deviationText(store.metrics.deviation_ratio)" >
+          <template #foot><span :class="store.deviationTone === 'error' ? 'g03-err' : ''">{{ store.metrics.std_weight ? `标准 ${formatNumber(store.metrics.std_weight, growthWeightDigits(store.metrics.std_weight))} 千克 · 允许 ±${Math.round(Number(store.metrics.allowed_deviation || 0.1) * 100)}%` : '平台还没有该品种的标准体重' }}<template v-if="store.metrics.comparison_source === 'CURRENT_STANDARD'"> · 按当前标准对比</template></span></template>
         </zw-stat>
         <zw-stat label="日增重" icon="show_chart" :value="store.metrics.daily_gain === undefined || store.metrics.daily_gain === null ? '—' : formatNumber(store.metrics.daily_gain, 2)" unit="千克" :foot="store.metrics.prev_daily_gain ? `上次 ${formatNumber(store.metrics.prev_daily_gain, 2)} 千克` : '首次称重'" />
-        <zw-stat label="累计增重" icon="add_chart" :value="store.metrics.cumulative_gain === undefined || store.metrics.cumulative_gain === null ? '—' : formatNumber(store.metrics.cumulative_gain, 1)" unit="千克" :foot="store.curve?.batch?.entry_avg_weight ? `入栏 ${formatNumber(store.curve.batch.entry_avg_weight, 1)} 千克 · ${store.curve.batch.entry_age_days || 0} 日龄` : '入栏时没有填写平均体重'" />
+        <zw-stat label="累计增重" icon="add_chart" :value="store.metrics.cumulative_gain === undefined || store.metrics.cumulative_gain === null ? '—' : formatNumber(store.metrics.cumulative_gain, growthWeightDigits(store.metrics.cumulative_gain))" unit="千克" :foot="store.curve?.batch?.entry_avg_weight ? `入栏 ${formatNumber(store.curve.batch.entry_avg_weight, growthWeightDigits(store.curve.batch.entry_avg_weight))} 千克 · ${store.curve.batch.entry_age_days || 0} 日龄` : '入栏时没有填写平均体重'" />
       </div>
 
       <zw-notice v-if="store.curve?.std_updated_notice" type="info" class="mb-4">品种标准体重已更新，偏离情况已按新标准重新计算。</zw-notice>
@@ -285,11 +276,11 @@ useFarmReload(async () => {
                 <label v-for="option in store.compareOptions" :key="option.batch_id" class="g03-compare-row" :class="{ dis: !compareDraft.includes(Number(option.batch_id)) && compareDraft.length >= 3 }">
                   <v-checkbox :model-value="compareDraft.includes(Number(option.batch_id))" hide-details density="compact" @update:model-value="toggleCompare(Number(option.batch_id))" />
                   <span class="num">{{ option.batch_no }}</span>
-                  <span class="zw-faint">{{ option.pen_names }} · {{ option.status === 'ENDED' ? '已结束' : '在养' }}<template v-if="option.latest_avg_weight"> · 最近平均 {{ formatNumber(option.latest_avg_weight, 1) }} 千克（{{ option.latest_day_age }} 日龄）</template></span>
+                  <span class="zw-faint">{{ option.pen_names }} · {{ option.status === 'ENDED' ? '已结束' : '在养' }}<template v-if="option.latest_avg_weight"> · 最近平均 {{ formatNumber(option.latest_avg_weight, growthWeightDigits(option.latest_avg_weight)) }} 千克（{{ option.latest_day_age }} 日龄）</template></span>
                 </label>
                 <div class="g03-compare-foot">
                   <span class="zw-faint body-s">已选 {{ compareDraft.length }} 个，最多选 3 个</span>
-                  <v-btn size="small" color="primary" :disabled="!compareDraft.length" @click="applyCompare">确定</v-btn>
+                  <v-btn size="small" color="primary" @click="applyCompare">确定</v-btn>
                 </div>
               </div>
             </v-menu>
@@ -298,7 +289,7 @@ useFarmReload(async () => {
           <div class="g03-legend">
             <span><i class="zw-lg-line" style="--c: var(--chart-1)" />实际</span>
             <span v-if="store.hasStd"><i class="zw-lg-dash" style="--c: var(--chart-ref)" />标准</span>
-            <span v-for="compare in store.curve?.compare_series || []" :key="compare.batch_id"><i class="zw-lg-line" style="--c: var(--chart-2)" />{{ compare.batch_no }}{{ compare.status === 'ENDED' ? '（已结束）' : '' }}</span>
+            <span v-for="compare in visibleComparisons" :key="compare.batch_id"><i class="zw-lg-line" style="--c: var(--chart-2)" />{{ compare.batch_no }}{{ compare.status === 'ENDED' ? '（已结束）' : '' }}</span>
             <span v-if="store.hasStd"><i class="g03-band" />允许偏差 ±{{ Math.round(Number(store.metrics.allowed_deviation || 0.1) * 100) }}%</span>
             <span class="zw-chart-unit">单位：千克</span>
           </div>
@@ -317,16 +308,20 @@ useFarmReload(async () => {
           >
             <template #default="{ g }">
               <path v-if="stdValues.length" :d="bandPath(g as ChartGeom)" style="fill: var(--chart-ref); opacity: 0.14" />
-              <text v-if="currentStd !== null" class="g03-ann" :x="g.x(Number(highlight)) + 8" :y="g.y(currentStd) - 10">标准 {{ formatNumber(currentStd, 1) }}</text>
-              <text v-if="latest !== null && highlight !== undefined" class="g03-ann g03-ann--p" :x="g.x(Number(highlight)) + 8" :y="g.y(Number(latest)) + 18">{{ formatNumber(latest, 1) }}</text>
+              <text v-if="referenceStd !== null && referenceIndex >= 0" class="g03-ann" :x="g.x(referenceIndex) + 8" :y="g.y(referenceStd) - 10">标准 {{ formatNumber(referenceStd, growthWeightDigits(referenceStd)) }}</text>
+              <text v-if="latest !== null && latestIndex !== undefined" class="g03-ann g03-ann--p" :x="g.x(latestIndex) + 8" :y="g.y(Number(latest)) + 18">{{ formatNumber(latest, growthWeightDigits(latest)) }}</text>
             </template>
           </zw-line-chart>
+          <div v-for="notice in compareNotices" :key="notice" class="g03-no-std">{{ notice }}</div>
           <div v-if="!store.hasStd" class="g03-no-std">平台还没有该品种的标准体重，只记录实际体重。</div>
         </zw-card>
 
         <zw-card title="称重记录" :sub="`${formatNumber(store.recordsTotal)} 条`" class="g03-record-card">
           <template #extra><a class="zw-link" @click="openWeigh()">称重登记</a></template>
           <v-skeleton-loader v-if="store.recordsLoading" type="list-item-two-line@3" />
+          <zw-empty v-else-if="store.recordsError" icon="cloud_off" tone="error" title="称重记录加载失败" :desc="store.recordsError">
+            <v-btn variant="outlined" @click="store.loadRecords()">重新加载</v-btn>
+          </zw-empty>
           <div v-else-if="!store.records.length" class="g03-empty-line"><span class="zw-faint">还没有称重记录</span></div>
           <div v-for="row in store.records" :key="row.id" class="g03-rec">
             <span class="zw-ico-tile" :class="row.out_of_range ? 'zw-ico-tile--warning' : 'zw-ico-tile--primary'"><zw-icon name="scale" :size="18" /></span>
@@ -335,7 +330,7 @@ useFarmReload(async () => {
                 <span class="zw-cell-main">{{ monthDay(row.weigh_date) }} · {{ row.day_age }} 日龄</span>
                 <zw-tag v-if="recordTag(row)" :type="recordTag(row)?.type" size="small">{{ recordTag(row)?.text }}</zw-tag>
               </div>
-              <div class="zw-cell-sub">平均 {{ formatNumber(row.avg_weight || 0, 1) }} 千克<template v-if="row.std_weight"> · 标准 {{ formatNumber(row.std_weight, 1) }} 千克</template><template v-if="row.daily_gain"> · 日增重 {{ formatNumber(row.daily_gain, 2) }} 千克</template></div>
+              <div class="zw-cell-sub">平均 {{ formatNumber(row.avg_weight || 0, growthWeightDigits(row.avg_weight)) }} 千克<template v-if="row.std_weight"> · 标准 {{ formatNumber(row.std_weight, growthWeightDigits(row.std_weight)) }} 千克</template><template v-if="row.daily_gain"> · 日增重 {{ formatNumber(row.daily_gain, 2) }} 千克</template></div>
               <div class="g03-rec-foot">
                 <span class="zw-cell-sub">{{ row.mode === 'EACH' ? `逐头 ${row.sample_count || 0} 头` : `抽样 ${row.sample_count || 0} 头` }} · {{ row.recorder_name || '—' }}登记</span>
                 <a v-if="row.action && row.action !== 'NONE'" class="zw-link body-s" @click="handleRecord(row)">{{ row.action === 'EDIT' ? '修改' : '提交修改申请' }}</a>
@@ -362,7 +357,7 @@ useFarmReload(async () => {
           <span class="zw-ico-tile zw-ico-tile--primary"><zw-icon name="scale" :size="18" /></span>
           <div>
             <div class="zw-cell-main"><span class="num">{{ store.form.batch?.batch_no }}</span> · {{ store.form.batch?.pen_names }}</div>
-            <div class="zw-cell-sub">{{ store.form.batch?.breed_name }} · {{ store.form.batch?.day_age }} 日龄 · 存栏 {{ formatNumber(store.form.batch?.current_count || 0) }} 头<template v-if="store.form.last_weigh"> · 上次称重 {{ monthDay(store.form.last_weigh.date) }} · 平均 {{ formatNumber(store.form.last_weigh.avg_weight || 0, 1) }} 千克</template><template v-else> · 首次称重<template v-if="store.form.batch?.entry_avg_weight"> · 入栏平均 {{ formatNumber(store.form.batch.entry_avg_weight, 1) }} 千克</template><template v-else> · 入栏未填平均体重</template></template></div>
+            <div class="zw-cell-sub">{{ store.form.batch?.breed_name }} · {{ store.form.batch?.day_age }} 日龄 · 存栏 {{ formatNumber(store.form.batch?.current_count || 0) }} 头<template v-if="store.form.last_weigh"> · 上次称重 {{ monthDay(store.form.last_weigh.date) }} · 平均 {{ formatNumber(store.form.last_weigh.avg_weight || 0, growthWeightDigits(store.form.last_weigh.avg_weight)) }} 千克</template><template v-else> · 首次称重<template v-if="store.form.batch?.entry_avg_weight"> · 入栏平均 {{ formatNumber(store.form.batch.entry_avg_weight, growthWeightDigits(store.form.batch.entry_avg_weight)) }} 千克</template><template v-else> · 入栏未填平均体重</template></template></div>
           </div>
         </div>
 
@@ -430,7 +425,7 @@ useFarmReload(async () => {
             <a v-if="canManage" class="zw-link ml-3" @click="store.cycleEditing = true; store.cycleInput = Number(store.form.weigh_cycle?.per_month || 2)">修改</a>
           </span>
           <span v-else class="g03-cycle-edit">
-            <v-text-field v-model.number="store.cycleInput" type="number" min="1" max="31" suffix="次 / 月" density="compact" hide-details class="g03-cycle-input" />
+            <v-text-field v-model.number="store.cycleInput" type="number" min="1" max="8" step="1" suffix="次 / 月" density="compact" hide-details class="g03-cycle-input" />
             <v-btn size="small" variant="text" :loading="store.cycleSaving" @click="onCycleSave(true)">恢复建议值</v-btn>
             <v-btn size="small" color="primary" :loading="store.cycleSaving" @click="onCycleSave(false)">保存</v-btn>
             <v-btn size="small" variant="text" @click="store.cycleEditing = false">取消</v-btn>

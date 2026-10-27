@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.List;
+import java.time.LocalDateTime;
 
 /**
  * 模块02 站内消息：全部在事务提交后经 MessageService 写入（模块03 落地前是只写日志的临时实现）。
@@ -137,6 +138,13 @@ public class FarmNotify {
     public void farmDisabled(Farm farm, Collection<Long> receiverUserIds) {
         farmStatus(farm, receiverUserIds, MsgType.FARM_DISABLED, "FARM_DISABLED",
                 farm.getName() + "已停用，数据只能查看");
+    }
+
+    public void ownerCancelledRetained(Farm farm, Collection<Long> receiverUserIds, LocalDateTime cleanupAt) {
+        String title = farm.getName() + "的所有者已注销账号";
+        String content = title + "，养殖场保持停用。数据保留至" + cleanupAt.toLocalDate()
+                + "，期间可按原权限查看和导出，到期后清理。";
+        sendToMembers(farm, receiverUserIds, MsgType.FARM_DISABLED, "OWNER_ACCOUNT_CANCELLED", "F01", title, content);
     }
 
     public void farmEnabled(Farm farm, Collection<Long> receiverUserIds) {

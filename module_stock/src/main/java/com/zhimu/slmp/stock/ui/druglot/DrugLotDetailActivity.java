@@ -156,7 +156,7 @@ public class DrugLotDetailActivity extends BaseActivity {
         header.stockLotTag.setVisibility(tag == null ? View.GONE : View.VISIBLE);
         header.stockLotTag.setStatus(tag, StockTexts.lotTagType(d.lotStatus));
         header.stockLotTag.setTagIcon(StockTexts.lotTagIcon(d.lotStatus));
-        header.stockLotStock.setText(StockQtyFormatter.packText(d.stock));
+        header.stockLotStock.setText(StockQtyFormatter.shortText(d.stock));
         header.stockLotAmount.setText(DrugLotDetailViewModel.amountText(d) + " 元");
         renderInfo();
         renderBar();

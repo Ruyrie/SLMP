@@ -4,6 +4,7 @@ import com.zhimu.server.biz.account.api.AccountBrief;
 import com.zhimu.server.biz.account.api.AccountQueryService;
 import com.zhimu.server.biz.common.api.ChangeRequestService;
 import com.zhimu.server.biz.common.change.ChangeRequestHandlerRegistry;
+import com.zhimu.server.biz.common.change.ChangeRequestHandler;
 import com.zhimu.server.biz.common.convert.ChangeRequestConvert;
 import com.zhimu.server.biz.common.entity.ChangeRequest;
 import com.zhimu.server.biz.common.entity.OperationLog;
@@ -78,7 +79,7 @@ public class CommonFlowFixture {
     private final AtomicLong logId = new AtomicLong(5000);
     private final AtomicInteger requestNoSeq = new AtomicInteger();
 
-    public CommonFlowFixture() {
+    public CommonFlowFixture(ChangeRequestHandler... additionalHandlers) {
         stubChangeRequestMapper();
         stubOperationLogMapper();
         stubAccounts();
@@ -91,7 +92,10 @@ public class CommonFlowFixture {
         recorder = new OperationLogRecorderImpl(operationLogMapper, provider(accountQueryService),
                 provider(ipRegionResolver));
         handler = new TestFeedRecordHandler(recorder);
-        registry = new ChangeRequestHandlerRegistry(List.of(handler));
+        List<ChangeRequestHandler> handlers = new ArrayList<>();
+        handlers.add(handler);
+        handlers.addAll(List.of(additionalHandlers));
+        registry = new ChangeRequestHandlerRegistry(handlers);
         ChangeRequestConvert convert = new ChangeRequestConvert(provider(accountQueryService), provider(farmAccountService));
         applicationService = new ChangeRequestApplicationService(registry, changeRequestMapper, noGenerator, convert,
                 farmMemberCache);

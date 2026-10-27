@@ -72,6 +72,8 @@ public final class SnackbarHelper {
         }
         if (anchor != null && anchor.isShown()) {
             bar.setAnchorView(anchor);
+            // 收款弹层/软键盘关闭时底栏会重新布局，提示必须跟随新的锚点位置。
+            bar.setAnchorViewLayoutListenerEnabled(true);
         }
         bar.show();
         current = new WeakReference<>(bar);

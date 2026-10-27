@@ -1,12 +1,19 @@
 package com.zhimu.server.biz.today.convert;
 
+import com.zhimu.server.biz.farm.entity.FarmInvite;
+import com.zhimu.server.biz.farm.entity.FarmTransfer;
+import com.zhimu.server.biz.farm.mapper.FarmInviteMapper;
+import com.zhimu.server.biz.farm.mapper.FarmTransferMapper;
 import com.zhimu.server.biz.today.entity.Message;
 import com.zhimu.server.biz.today.mapper.TodoMapper;
 import com.zhimu.server.biz.today.vo.MessageBriefVO;
 import com.zhimu.server.biz.today.vo.MessageDetailVO;
 import com.zhimu.server.biz.today.vo.OpenResultVO;
 import com.zhimu.server.common.vo.FarmBriefVO;
+import com.zhimu.server.framework.mybatis.TenantSkip;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,7 +27,9 @@ import static org.mockito.Mockito.when;
 class MessageConvertTest {
 
     private final TodoMapper todoMapper = mock(TodoMapper.class);
-    private final MessageConvert convert = new MessageConvert(todoMapper);
+    private final FarmInviteMapper inviteMapper = mock(FarmInviteMapper.class);
+    private final FarmTransferMapper transferMapper = mock(FarmTransferMapper.class);
+    private final MessageConvert convert = new MessageConvert(todoMapper, inviteMapper, transferMapper);
     private final LocalDate today = LocalDate.of(2026, 10, 19);
     private final LocalDateTime now = LocalDateTime.of(2026, 10, 19, 9, 30);
     private final FarmBriefVO farm = FarmBriefVO.builder().farmId(1001L).name("东山猪场")
@@ -55,6 +64,10 @@ class MessageConvertTest {
         invite.setMsgType("FARM_INVITE");
         invite.setExtraJson("{\"invite_id\":7001,\"role_text\":\"员工\",\"status\":\"PENDING\","
                 + "\"expire_at\":\"2026-10-26 07:40:00\",\"farm_name\":\"红山牛场\"}");
+        when(inviteMapper.selectById(7001L)).thenAnswer(ignored -> {
+            assertThat(TenantSkip.isSkipped()).isTrue();
+            return currentInvite("PENDING", LocalDateTime.of(2026, 10, 26, 7, 40));
+        });
         MessageBriefVO vo = convert.toBrief(invite, FarmBriefVO.builder().farmId(1004L).name("红山牛场").build(),
                 today, now);
 
@@ -66,6 +79,7 @@ class MessageConvertTest {
         assertThat(vo.getAction().getRoleText()).isEqualTo("员工");
         // App 列表副文字：“员工 · 7 天内有效”
         assertThat(vo.getAction().getStatusText()).isEqualTo("7 天内有效");
+        assertThat(TenantSkip.isSkipped()).isFalse();
     }
 
     @Test
@@ -75,11 +89,25 @@ class MessageConvertTest {
         transfer.setMsgType("OWNER_TRANSFER");
         transfer.setExtraJson("{\"status\":\"PENDING\",\"role_text\":\"所有者\","
                 + "\"expire_at\":\"2026-10-19 18:30:00\"}");
+        transfer.setBizId(8001L);
+        FarmTransfer current = new FarmTransfer();
+        current.setId(8001L);
+        current.setFarmId(1001L);
+        current.setToUserId(10001L);
+        current.setStatus("PENDING");
+        current.setExpiresAt(LocalDateTime.of(2026, 10, 19, 18, 30));
+        when(transferMapper.selectById(8001L)).thenReturn(current);
         MessageBriefVO vo = brief(transfer);
 
         assertThat(vo.getAction().getActionType()).isEqualTo("TRANSFER");
         assertThat(vo.getAction().getStatusText()).isEqualTo("待你确认");
         assertThat(vo.getAction().getCanAccept()).isTrue();
+
+        current.setStatus("ACCEPTED");
+        MessageBriefVO handled = brief(transfer);
+        assertThat(handled.getAction().getStatus()).isEqualTo("ACCEPTED");
+        assertThat(handled.getAction().getCanAccept()).isFalse();
+        assertThat(handled.getIconState()).isEqualTo("HANDLED");
     }
 
     @Test
@@ -101,9 +129,56 @@ class MessageConvertTest {
         Message invite = message(504L, LocalDateTime.of(2026, 10, 19, 7, 40), null, null);
         invite.setCategory("MEMBER");
         invite.setMsgType("FARM_INVITE");
+        invite.setBizId(7001L);
         invite.setExtraJson("{\"status\":\"PENDING\",\"expire_at\":\"2026-10-18 07:40:00\"}");
+        when(inviteMapper.selectById(7001L)).thenReturn(currentInvite("PENDING", now.minusDays(1)));
         MessageBriefVO vo = brief(invite);
         assertThat(vo.getAction().getCanAccept()).isFalse();
+        assertThat(vo.getAction().getStatus()).isEqualTo("EXPIRED");
+        assertThat(vo.getIconState()).isEqualTo("HANDLED");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ACCEPTED", "REJECTED", "CANCELED", "EXPIRED"})
+    void currentInviteStateOverridesPendingMessageSnapshot(String status) {
+        Message message = message(504L, now, null, "{\"status\":\"PENDING\"}");
+        message.setMsgType("FARM_INVITE");
+        message.setBizId(7001L);
+        when(inviteMapper.selectById(7001L)).thenReturn(currentInvite(status, now.plusDays(7)));
+
+        MessageBriefVO result = brief(message);
+
+        assertThat(result.getAction().getStatus()).isEqualTo(status);
+        assertThat(result.getAction().getCanAccept()).isFalse();
+        assertThat(result.getIconState()).isEqualTo("HANDLED");
+    }
+
+    @Test
+    void missingOrWrongRecipientInviteCannotAdvertiseAnAcceptAction() {
+        Message message = message(504L, now, null, "{\"status\":\"PENDING\"}");
+        message.setMsgType("FARM_INVITE");
+        message.setBizId(7001L);
+        assertThat(brief(message).getAction().getCanAccept()).isFalse();
+
+        FarmInvite anotherUsersInvite = currentInvite("PENDING", now.plusDays(7));
+        anotherUsersInvite.setInviteeUserId(10991L);
+        when(inviteMapper.selectById(7001L)).thenReturn(anotherUsersInvite);
+        assertThat(brief(message).getAction().getCanAccept()).isFalse();
+
+        anotherUsersInvite.setInviteeUserId(message.getUserId());
+        anotherUsersInvite.setFarmId(10991L);
+        assertThat(brief(message).getAction().getCanAccept()).isFalse();
+    }
+
+    private static FarmInvite currentInvite(String status, LocalDateTime expiresAt) {
+        FarmInvite invite = new FarmInvite();
+        invite.setId(7001L);
+        invite.setFarmId(1001L);
+        invite.setInviteeUserId(10001L);
+        invite.setRole("STAFF");
+        invite.setStatus(status);
+        invite.setExpiresAt(expiresAt);
+        return invite;
     }
 
     @Test

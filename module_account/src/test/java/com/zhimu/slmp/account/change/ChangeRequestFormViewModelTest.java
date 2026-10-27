@@ -62,6 +62,84 @@ public class ChangeRequestFormViewModelTest {
         assertNotNull(vm.getForm().getValue());
         assertTrue(vm.getCanSubmit().getValue());
         assertEquals(2, vm.getForm().getValue().getFields().size());
+        verify(repository, never()).submit(any(), anyString());
+    }
+
+    @Test
+    public void deleteOnlyMedicationFormRequiresSelectionAndReasonButNoNewValue() {
+        String json = "{\"biz_type\":\"MEDICATION_RECORD\",\"biz_id\":5101,\"record_version\":\"2\","
+                + "\"fields\":[],\"delete_allowed\":true,\"void_allowed\":false}";
+        when(repository.getForm("MEDICATION_RECORD", 5101L))
+                .thenReturn(Single.just(TestData.fromJson(json, ChangeRequestFormVO.class)));
+        when(repository.submit(any(), anyString()))
+                .thenReturn(Single.just(TestData.fromJson(TestData.CHANGE_SUBMITTED, ChangeRequestVO.class)));
+        vm = new ChangeRequestFormViewModel(repository);
+        vm.init("MEDICATION_RECORD", 5101L, null);
+        assertTrue(vm.getForm().getValue().isDeleteAllowed());
+        assertNull(vm.selectedField.getValue());
+        vm.selectField(ChangeRequestFormViewModel.DELETE_CODE);
+        assertTrue(vm.isDeleteSelected());
+        vm.submit();
+        assertEquals(ChangeRequestFormViewModel.MSG_REASON_EMPTY, vm.getFieldErrors().getValue().get("reason"));
+        assertNull(vm.getFieldErrors().getValue().get("new_value"));
+        verify(repository, never()).submit(any(), anyString());
+        vm.reason.setValue("登记有误，申请删除后重新登记");
+        vm.submit();
+        ArgumentCaptor<ChangeRequestSubmitRequest> req = ArgumentCaptor.forClass(ChangeRequestSubmitRequest.class);
+        verify(repository).submit(req.capture(), anyString());
+        assertEquals("DELETE", req.getValue().getChangeType());
+        assertNull(req.getValue().getFieldCode());
+        assertNull(req.getValue().getNewValue());
+        assertEquals("2", req.getValue().getRecordVersion());
+    }
+
+    @Test
+    public void disallowedDeleteIsRejectedBeforeNetwork() {
+        vm.selectField(ChangeRequestFormViewModel.DELETE_CODE);
+        vm.reason.setValue("登记有误");
+        vm.submit();
+        assertEquals("这条记录暂不能删除", vm.getFieldErrors().getValue().get("field_code"));
+        verify(repository, never()).submit(any(), anyString());
+    }
+
+    @Test
+    public void selectFieldDisplaysLabelsButSubmitsIdsAndRejectsDisabledOptions() {
+        String json = "{\"biz_type\":\"FEED_RECORD\",\"biz_id\":7001,\"record_version\":\"3\",\"fields\":["
+                + "{\"field_code\":\"executor_id\",\"field_name\":\"执行人\",\"input_type\":\"SELECT\",\"value\":\"11\","
+                + "\"options\":[{\"value\":\"11\",\"label\":\"李明\"},{\"value\":\"12\",\"label\":\"张伟\"},"
+                + "{\"value\":\"13\",\"label\":\"已离职\",\"disabled\":true}]}]}";
+        when(repository.getForm("FEED_RECORD", 7001L)).thenReturn(Single.just(TestData.fromJson(json, ChangeRequestFormVO.class)));
+        when(repository.submit(any(), anyString())).thenReturn(Single.just(TestData.fromJson(TestData.CHANGE_SUBMITTED, ChangeRequestVO.class)));
+        vm.retry();
+        assertEquals("李明", ChangeRequestFormViewModel.displayValue(vm.currentField(), "11"));
+        vm.reason.setValue("执行人登记有误");
+        for (String invalid : Arrays.asList("13", "张伟", "999")) {
+            vm.newValue.setValue(invalid);
+            vm.submit();
+            assertEquals("请选择有效的新值", vm.getFieldErrors().getValue().get("new_value"));
+        }
+        verify(repository, never()).submit(any(), anyString());
+        vm.newValue.setValue("12");
+        vm.submit();
+        ArgumentCaptor<ChangeRequestSubmitRequest> req = ArgumentCaptor.forClass(ChangeRequestSubmitRequest.class);
+        verify(repository).submit(req.capture(), anyString());
+        assertEquals("12", req.getValue().getNewValue());
+    }
+
+    @Test
+    public void staleFieldAndForbiddenVoidAreRejectedBeforeNetwork() {
+        vm.selectField("missing");
+        vm.newValue.setValue("10");
+        vm.reason.setValue("误填");
+        vm.submit();
+        assertEquals(ChangeRequestFormViewModel.MSG_PICK_FIELD, vm.getFieldErrors().getValue().get("field_code"));
+        String noVoid = TestData.FEED_FORM.replace("\"void_allowed\":true", "\"void_allowed\":false");
+        when(repository.getForm("FEED_RECORD", 7001L)).thenReturn(Single.just(TestData.fromJson(noVoid, ChangeRequestFormVO.class)));
+        vm.retry();
+        vm.selectField(ChangeRequestFormViewModel.VOID_CODE);
+        vm.submit();
+        assertEquals("这条记录暂不能作废", vm.getFieldErrors().getValue().get("field_code"));
+        verify(repository, never()).submit(any(), anyString());
     }
 
     @Test

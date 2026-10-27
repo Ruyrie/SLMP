@@ -10,6 +10,7 @@ import {
   type StockFlowItem,
   type StockInbound
 } from '@/api/stock'
+import { scrapInput, scrapQuantityError } from './scrap'
 import StockDocumentDrawer from '@/views/stock/components/StockDocumentDrawer.vue'
 import { useDrugLotStore } from '@/stores/stock/lot'
 import { useFarmReload } from '@/composables/useFarmReload'
@@ -41,6 +42,9 @@ const isStaff = computed(() => farm.role === 'staff')
 const detail = computed(() => store.detail)
 const unit = computed(() => detail.value?.stock?.unit_text || '')
 const stockValue = computed(() => qtyValue(detail.value?.stock))
+function quantityText(value: number | string | null | undefined): string {
+  return Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 3 })
+}
 const flowGroups: Array<{ label: string; value: DrugFlowGroup }> = [
   { label: '全部', value: 'ALL' },
   { label: '入库', value: 'INBOUND' },
@@ -242,53 +246,51 @@ const scrapReasonItems = computed(() => {
   items.push({ title: '破损', value: 'DAMAGED' }, { title: '其他', value: 'OTHER' })
   return items
 })
-const scrapInputUnit = computed<'PACK' | 'MEASURE'>(() => (detail.value?.category === 'VACCINE' ? 'MEASURE' : 'PACK'))
-const scrapUnit = computed(() =>
-  scrapInputUnit.value === 'MEASURE'
-    ? detail.value?.stock?.unit_text || '头份'
-    : detail.value?.stock?.pack_unit || detail.value?.stock?.unit_text || '件'
-)
-const scrapMaxQty = computed(() => {
-  const stock = detail.value?.stock
-  if (!stock) return 0
-  if (scrapInputUnit.value === 'MEASURE') return qtyValue(stock)
-  const packSize = numberValue(stock.pack_size) || 1
-  return qtyValue(stock) / packSize
+const scrapMode = computed(() => scrapInput(detail.value?.stock))
+const scrapInputUnit = computed(() => scrapMode.value.unit)
+const scrapUnit = computed(() => scrapMode.value.text)
+const scrapMaxQty = computed(() => scrapMode.value.max)
+const scrapAmount = computed(() => {
+  if (numberValue(scrapForm.qty) === scrapMaxQty.value) return numberValue(detail.value?.stock_amount)
+  const measured = numberValue(scrapForm.qty) * (scrapInputUnit.value === 'PACK' ? numberValue(detail.value?.stock?.pack_size) : 1)
+  return measured * numberValue(detail.value?.avg_price)
 })
-const scrapUnitPrice = computed(() =>
-  scrapInputUnit.value === 'MEASURE' ? numberValue(detail.value?.avg_price) : numberValue(detail.value?.pack_price)
-)
-const scrapAmount = computed(() => numberValue(scrapForm.qty) * scrapUnitPrice.value)
+let scrapRequest: { fingerprint: string; key: string } | null = null
+watch(() => [scrapForm.qty, scrapForm.reason, scrapForm.remark, scrapForm.date], () => { scrapConfirm.value = false })
 
 function openScrap(): void {
   scrapOpen.value = true
   scrapConfirm.value = false
-  scrapForm.qty = Number(scrapMaxQty.value.toFixed(2))
+  scrapForm.qty = scrapMaxQty.value
   scrapForm.reason = store.isRecall ? 'PLATFORM_RECALL' : store.isExpired ? 'EXPIRED' : ''
   scrapForm.remark = store.isRecall ? detail.value?.recall_reason || '' : ''
   scrapForm.date = todayIso()
   Object.keys(scrapErrors).forEach((key) => delete scrapErrors[key])
 }
 
-function prepareScrap(): void {
+function validateScrap(): boolean {
   Object.keys(scrapErrors).forEach((key) => delete scrapErrors[key])
-  if (!numberValue(scrapForm.qty) || numberValue(scrapForm.qty) <= 0) scrapErrors.qty = '必须大于 0'
-  else if (numberValue(scrapForm.qty) > scrapMaxQty.value + 0.0001) scrapErrors.qty = `超过当前结存 ${formatNumber(scrapMaxQty.value, 2)} ${scrapUnit.value}`
+  const quantityError = scrapQuantityError(numberValue(scrapForm.qty), detail.value?.stock)
+  if (quantityError) scrapErrors.qty = quantityError
+  if (!scrapForm.date) scrapErrors.date = '请选择报废日期'
+  else if (scrapForm.date > todayIso()) scrapErrors.date = '报废日期不能晚于今天'
   if (!scrapForm.reason) scrapErrors.reason = '请选择报废原因'
   if (scrapForm.reason === 'OTHER' && !scrapForm.remark.trim()) scrapErrors.remark = '请写明报废原因'
   if (scrapForm.date && scrapForm.date < (detail.value?.first_inbound?.inbound_date || '')) {
     scrapErrors.date = `报废日期不能早于入库日期 ${formatDate(detail.value?.first_inbound?.inbound_date || '')}`
   }
-  if (Object.keys(scrapErrors).length) return
-  scrapConfirm.value = true
+  return Object.keys(scrapErrors).length === 0
+}
+
+function prepareScrap(): void {
+  scrapConfirm.value = validateScrap()
 }
 
 async function submitScrap(): Promise<void> {
-  if (scrapSubmitting.value) return
+  if (scrapSubmitting.value || !validateScrap()) return
   scrapSubmitting.value = true
   try {
-    await createDrugScrap(
-      {
+    const payload = {
         drug_lot_id: lotId.value,
         input_qty: numberValue(scrapForm.qty),
         input_unit: scrapInputUnit.value,
@@ -296,17 +298,25 @@ async function submitScrap(): Promise<void> {
         remark: scrapForm.remark.trim() || undefined,
         scrap_date: scrapForm.date || undefined,
         stock_version: store.stockVersion
-      },
-      newRequestKey()
-    )
-    const cleared = numberValue(scrapForm.qty) >= scrapMaxQty.value
-    ui.toast(cleared ? `已登记报废，${detail.value?.drug_name || ''} ${detail.value?.lot_no || ''} 结存已清零` : `已登记报废 ${formatNumber(scrapForm.qty, 2)} ${scrapUnit.value}`)
+      }
+    const fingerprint = JSON.stringify(payload)
+    if (scrapRequest?.fingerprint !== fingerprint) scrapRequest = { fingerprint, key: newRequestKey() }
+    const result = await createDrugScrap(payload, scrapRequest.key)
+    const cleared = result.remaining?.value !== undefined && result.remaining.value !== null && Number(result.remaining.value) === 0
+    scrapRequest = null
+    ui.toast(cleared ? `已登记报废，${detail.value?.drug_name || ''} ${detail.value?.lot_no || ''} 结存已清零` : `已登记报废 ${quantityText(scrapForm.qty)} ${scrapUnit.value}`)
     scrapOpen.value = false
     scrapConfirm.value = false
     await store.refresh()
   } catch (error) {
     const err = error as ApiError
-    for (const field of err.fieldErrors || []) scrapErrors[field.field] = field.message
+    for (const field of err.fieldErrors || []) scrapErrors[({ input_qty: 'qty', scrap_date: 'date' } as Record<string, string>)[field.field] || field.field] = field.message
+    scrapConfirm.value = false
+    if (err.code === 40902) {
+      await store.refresh()
+      scrapForm.qty = scrapMaxQty.value
+      scrapErrors.qty = '库存已变化，已刷新结存，请核对后重新确认'
+    }
     ui.toast(err.message || '报废失败，请重试', 'error')
   } finally {
     scrapSubmitting.value = false
@@ -372,7 +382,7 @@ async function submitScrap(): Promise<void> {
       </zw-notice>
 
       <div class="zw-grid-3 mb-4">
-        <zw-stat label="结存" :icon="categoryIcon(detail.category)" :value="formatNumber(detail.stock?.value ?? 0)" :unit="unit" :foot="detail.stock?.pack_unit && detail.stock?.pack_count ? packQtyText(detail.stock) : (store.isNear ? '优先出库 · 先到期先出' : '')" />
+        <zw-stat label="结存" :icon="categoryIcon(detail.category)" :value="quantityText(detail.stock?.value)" :unit="unit" :foot="detail.stock?.pack_unit && detail.stock?.pack_count ? packQtyText(detail.stock) : (store.isNear ? '优先出库 · 先到期先出' : '')" />
         <zw-stat label="库存金额" icon="payments" :value="formatMoney(detail.stock_amount)" unit="元" :foot="detail.pack_price ? `每${detail.stock?.pack_unit || '瓶'} ${formatMoney(detail.pack_price)} 元` : detail.avg_price ? `每${unit} ${formatMoney(detail.avg_price)} 元` : '—'" />
         <zw-stat label="有效期至" icon="event" :value="detail.expire_date || '—'" :foot="store.isRecall ? '已停用，不能出库，只能报废' : store.isExpired ? '已过期，不能出库，只能报废' : daysText(detail.days_to_expire)" />
       </div>
@@ -446,11 +456,11 @@ async function submitScrap(): Promise<void> {
         <zw-tag v-if="statusTag" :type="statusTag.type" :icon="statusTag.icon" size="small">{{ statusTag.text }}</zw-tag>
       </div>
       <div class="zw-form-2">
-        <zw-form-item label="报废数量" required :error="scrapErrors.qty" :hint="`最多 ${formatNumber(scrapMaxQty, 2)} ${scrapUnit}，全部报废后该批号结存清零`">
+        <zw-form-item label="报废数量" required :error="scrapErrors.qty" :hint="`最多 ${quantityText(scrapMaxQty)} ${scrapUnit}，全部报废后该批号结存清零`">
           <v-text-field v-model.number="scrapForm.qty" type="number" min="0" :suffix="scrapUnit" :error="!!scrapErrors.qty" />
         </zw-form-item>
         <zw-form-item label="报废日期" :error="scrapErrors.date">
-          <v-text-field v-model="scrapForm.date" type="date" :min="detail?.first_inbound?.inbound_date" :error="!!scrapErrors.date" />
+          <v-text-field v-model="scrapForm.date" type="date" :min="detail?.first_inbound?.inbound_date" :max="todayIso()" :error="!!scrapErrors.date" />
         </zw-form-item>
       </div>
       <zw-form-item label="报废原因" required :error="scrapErrors.reason" class="mt-3">
@@ -470,7 +480,7 @@ async function submitScrap(): Promise<void> {
             <zw-icon name="delete" :size="20" />
             <span>
               <strong>{{ store.isRecall ? '报废这批疫苗？' : '报废这批物资？' }}</strong>
-              {{ detail?.drug_name }} {{ detail?.lot_no }} {{ numberValue(scrapForm.qty) >= scrapMaxQty ? `共 ${packQtyText(detail?.stock)} 将全部报废` : `中的 ${formatNumber(scrapForm.qty, 2)} ${scrapUnit} 将报废` }}，损失 {{ formatMoney(scrapAmount) }} 元，不计入批次成本。确认后如需修改，要提交修改申请。
+              {{ detail?.drug_name }} {{ detail?.lot_no }} {{ numberValue(scrapForm.qty) >= scrapMaxQty ? `共 ${quantityText(scrapForm.qty)} ${scrapUnit} 将全部报废` : `中的 ${quantityText(scrapForm.qty)} ${scrapUnit} 将报废` }}，损失 {{ formatMoney(scrapAmount) }} 元，不计入批次成本。确认后如需修改，要提交修改申请。
             </span>
           </span>
           <v-btn variant="outlined" @click="scrapConfirm = false">取消</v-btn>

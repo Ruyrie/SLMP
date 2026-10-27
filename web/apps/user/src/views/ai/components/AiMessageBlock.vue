@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { CitationBrief } from '@/api/ai'
 import type { LocalAiMessage } from '@/stores/ai/assistant'
 
@@ -19,15 +19,13 @@ const emit = defineEmits<{
 }>()
 
 interface Segment {
-  type: 'text' | 'strong' | 'cite'
+  type: 'text' | 'cite'
   text?: string
   seq?: number
 }
 
-const NO_BASIS_LEAD = '未找到平台知识依据，仅供参考。'
-
 const images = computed(() => (props.message.images || []).filter((item) => item.url || item.thumb_url))
-const answerText = computed(() => props.message.answer_text || '')
+const answerText = computed(() => (props.message.answer_text || '').replace(/^\s*(?:\*\*)?未找到平台知识依据，仅供参考。(?:\*\*)?\s*/, ''))
 const isThinking = computed(() => props.message.status === 'ANSWERING' && props.streaming && !answerText.value)
 const isStreamingText = computed(() => props.message.status === 'ANSWERING' && props.streaming && !!answerText.value)
 const isAnswered = computed(() => props.message.status === 'ANSWERED')
@@ -57,19 +55,21 @@ const retryable = computed(() => {
 })
 const retryTarget = computed(() => props.message.local_server_id || props.message.id)
 const canRetry = computed(() => retryTarget.value > 0)
+const processingOpen = ref(false)
+const processing = computed(() => props.message.status === 'ANSWERING' && props.streaming)
+const processingSteps = computed(() => props.message.processing_steps || [])
+const showProcessing = computed(() => processingSteps.value.length > 0 || !!props.message.analysis_summary)
+const sourceNote = computed(() => props.message.source_note || (props.message.answer_type === 'NO_BASIS' && !props.message.citations?.length ? '本回答暂无可核验的平台资料引用，请结合实际情况判断。' : ''))
+watch(processing, (active) => { processingOpen.value = active }, { immediate: true })
 
 const paragraphs = computed<Segment[][]>(() => {
   const text = answerText.value.replace(/\r\n/g, '\n').trim()
   if (!text) return []
   const blocks = text.split(/\n{2,}/)
   const result: Segment[][] = []
-  blocks.forEach((block, blockIndex) => {
-    let rest = block
+  blocks.forEach((block) => {
+    const rest = block
     const segments: Segment[] = []
-    if (blockIndex === 0 && props.message.answer_type === 'NO_BASIS' && rest.startsWith(NO_BASIS_LEAD)) {
-      segments.push({ type: 'strong', text: NO_BASIS_LEAD })
-      rest = rest.slice(NO_BASIS_LEAD.length)
-    }
     const pattern = /\[\^(\d+)]/g
     let last = 0
     let match: RegExpExecArray | null
@@ -132,9 +132,21 @@ function onRate(rating: 'USEFUL' | 'USELESS'): void {
     <div class="k01-a">
       <span class="k01-ava" aria-hidden="true"><zw-icon name="auto_awesome" :size="18" fill /></span>
       <div class="k01-a-body">
-        <div v-if="isThinking" class="k01-thinking">
+        <div v-if="showProcessing" class="k01-processing">
+          <button type="button" class="k01-processing-toggle" :aria-expanded="processingOpen" @click="processingOpen = !processingOpen">
+            <zw-icon :name="processingOpen ? 'expand_less' : 'expand_more'" :size="18" />
+            <span>{{ processing ? '正在处理' : (isAnswered ? '处理完成' : '处理过程') }}</span>
+          </button>
+          <div v-if="processingOpen" class="k01-processing-detail">
+            <ol v-if="processingSteps.length">
+              <li v-for="(step, index) in processingSteps" :key="step.stage">{{ isAnswered || index < processingSteps.length - 1 ? step.message.replace(/^正在/, '已') : step.message }}</li>
+            </ol>
+            <p v-if="message.analysis_summary">{{ message.analysis_summary }}</p>
+          </div>
+        </div>
+        <div v-if="isThinking && !showProcessing" class="k01-thinking">
           <span class="k01-dots"><i /><i /><i /></span>
-          <span>正在思考…</span>
+          <span>正在连接 AI 助手…</span>
         </div>
 
         <template v-if="showText">
@@ -142,8 +154,7 @@ function onRate(rating: 'USEFUL' | 'USELESS'): void {
           <div class="k01-answer">
             <p v-for="(block, blockIndex) in paragraphs" :key="blockIndex">
               <template v-for="(segment, segmentIndex) in block" :key="segmentIndex">
-                <b v-if="segment.type === 'strong'">{{ segment.text }}</b>
-                <span v-else-if="segment.type === 'cite'" class="k01-cite-wrap">
+                <span v-if="segment.type === 'cite'" class="k01-cite-wrap">
                   <button
                     type="button"
                     class="k01-cite"
@@ -179,6 +190,7 @@ function onRate(rating: 'USEFUL' | 'USELESS'): void {
         </template>
 
         <template v-if="isAnswered">
+          <div v-if="sourceNote" class="k01-source-note"><span>来源说明</span>{{ sourceNote }}</div>
           <div v-if="message.citations?.length" class="k01-srcs">
             <button
               v-for="citation in message.citations"
@@ -251,6 +263,13 @@ function onRate(rating: 'USEFUL' | 'USELESS'): void {
 </template>
 
 <style scoped>
+.k01-processing { margin: 0 0 16px; color: var(--text-2); font-size: 13px; }
+.k01-processing-toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; color: inherit; }
+.k01-processing-detail { margin: 8px 0 0 9px; padding: 4px 0 4px 14px; border-left: 2px solid var(--line-2); line-height: 1.8; }
+.k01-processing-detail ol { padding-left: 18px; }
+.k01-processing-detail p { margin: 8px 0 0; }
+.k01-source-note { display: flex; gap: 8px; margin: 16px 0 8px; color: var(--text-3); font-size: 12px; line-height: 1.7; }
+.k01-source-note > span { flex-shrink: 0; }
 .k01-round {
   padding-top: 4px;
 }

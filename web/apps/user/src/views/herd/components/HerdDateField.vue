@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useDate } from 'vuetify'
 import { formatDate } from '@zmt/shared'
 import { todayISO } from '@/stores/herd/shared'
 
@@ -18,13 +19,14 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
+const date = useDate()
 const menu = ref(false)
 const display = computed(() => props.modelValue ? formatDate(props.modelValue) : '')
 const maxDate = computed(() => props.max || todayISO())
 
 function onPick(value: unknown): void {
-  if (typeof value !== 'string' || !value) return
-  emit('update:modelValue', value)
+  const selected = value ? date.date(value) : null
+  emit('update:modelValue', selected && date.isValid(selected) ? date.toISO(selected) : '')
   menu.value = false
 }
 </script>

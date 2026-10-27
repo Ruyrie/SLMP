@@ -77,6 +77,10 @@ public class DrugOutboundActivity extends BaseActivity implements PickerHost, Re
         binding = DataBindingUtil.setContentView(this, R.layout.stock_activity_drug_outbound);
         vm = obtainViewModel(StockInjector.factory(), DrugOutboundViewModel.class);
         observeBase(vm);
+        com.zhimu.slmp.stock.ui.refund.ReturnRefundViewModel refund = obtainViewModel(StockInjector.factory(),
+                com.zhimu.slmp.stock.ui.refund.ReturnRefundViewModel.class);
+        observeBase(refund);
+        com.zhimu.slmp.stock.ui.refund.ReturnRefundUi.attach(this, binding.stockRefund, refund, vm.getRecord(), vm::reloadRecord);
         binding.setLifecycleOwner(this);
         binding.setVm(vm);
         allocForm = binding.getRoot().findViewById(R.id.stock_alloc_form);

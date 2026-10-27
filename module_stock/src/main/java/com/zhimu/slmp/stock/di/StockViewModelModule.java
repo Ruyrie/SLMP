@@ -31,6 +31,11 @@ public abstract class StockViewModelModule {
 
     @Binds
     @IntoMap
+    @ViewModelKey(com.zhimu.slmp.stock.ui.refund.ReturnRefundViewModel.class)
+    abstract ViewModel bindRefund(com.zhimu.slmp.stock.ui.refund.ReturnRefundViewModel vm);
+
+    @Binds
+    @IntoMap
     @ViewModelKey(StockRecordViewModel.class)
     abstract ViewModel bindRecord(StockRecordViewModel vm);
 

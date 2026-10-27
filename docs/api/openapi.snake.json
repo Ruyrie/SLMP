@@ -16313,6 +16313,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
           }
         ],
         "responses": {
@@ -21441,6 +21450,9 @@
             "type": "string"
           },
           "name_initial": {
+            "type": "string"
+          },
+          "avatar_url": {
             "type": "string"
           },
           "phone_masked": {
@@ -28180,6 +28192,12 @@
             "format": "int32"
           },
           "avatars": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "avatar_urls": {
             "type": "array",
             "items": {
               "type": "string"
@@ -38082,6 +38100,18 @@
           },
           "receivable_amount": {
             "type": "number"
+          },
+          "withdrawal_batch_count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "withdrawal_release_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "withdrawal_days_left": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -39974,6 +40004,9 @@
           "name_initial": {
             "type": "string"
           },
+          "avatar_url": {
+            "type": "string"
+          },
           "phone_masked": {
             "type": "string"
           }
@@ -40094,6 +40127,9 @@
             "type": "string"
           },
           "name_initial": {
+            "type": "string"
+          },
+          "avatar_url": {
             "type": "string"
           },
           "phone_masked": {
@@ -41191,6 +41227,12 @@
           },
           "no_staff": {
             "type": "boolean"
+          },
+          "source": {
+            "type": "string"
+          },
+          "source_text": {
+            "type": "string"
           },
           "status": {
             "type": "string"
@@ -47240,6 +47282,9 @@
           "name": {
             "type": "string"
           },
+          "avatar_url": {
+            "type": "string"
+          },
           "phone": {
             "type": "string"
           },
@@ -47381,6 +47426,9 @@
             "format": "int64"
           },
           "name": {
+            "type": "string"
+          },
+          "avatar_url": {
             "type": "string"
           },
           "phone": {
@@ -47579,6 +47627,13 @@
       "CategoryDist": {
         "type": "object",
         "properties": {
+          "category_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "category_name": {
+            "type": "string"
+          },
           "species": {
             "type": "string"
           },
@@ -47920,6 +47975,11 @@
           "category_group": {
             "type": "string",
             "pattern": "PIG|POULTRY|CATTLE|SHEEP"
+          },
+          "category_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
           }
         }
       },
@@ -50075,6 +50135,9 @@
             "format": "int64"
           },
           "name": {
+            "type": "string"
+          },
+          "avatar_url": {
             "type": "string"
           },
           "phone": {

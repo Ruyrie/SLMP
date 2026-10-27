@@ -34,6 +34,8 @@ export const useMarketStore = defineStore('financeMarket', {
     dailyStatus: 'loading' as PageStatus,
     dailyError: '',
     batches: [] as SaleOrderBatchOption[],
+    batchStatus: 'loading' as PageStatus,
+    batchError: '',
     batchId: 0,
     advice: null as SaleAdvice | null,
     adviceStatus: 'loading' as AdviceStatus,
@@ -47,7 +49,16 @@ export const useMarketStore = defineStore('financeMarket', {
     historyDetail: null as SaleAdvice | null,
     historyDetailLoading: false,
     pollTimer: 0 as number | undefined,
-    touched: false
+    touched: false,
+    scope: 0,
+    batchRequest: 0,
+    adviceRequest: 0,
+    historyRequest: 0,
+    historyDetailRequest: 0,
+    filterRequest: 0,
+    trendRequest: 0,
+    dailyRequest: 0,
+    pollRequest: 0
   }),
   getters: {
     provinceName(state): string {
@@ -111,19 +122,48 @@ export const useMarketStore = defineStore('financeMarket', {
     }
   },
   actions: {
-    async load(): Promise<void> {
-      await this.loadFilters()
-      if (!this.batches.length) void this.loadBatches()
-      await Promise.all([this.loadTrend(), this.loadDaily()])
-      await this.loadHistory()
-      if (this.batchId) await this.loadAdvice()
+    async load(preferredBatchId?: number): Promise<void> {
+      this.dispose()
+      const scope = this.scope
+      this.batchId = preferredBatchId ?? this.batchId
+      this.batches = []
+      this.advice = null
+      this.adviceError = ''
+      this.adviceStatus = 'loading'
+      this.history = []
+      this.historyTotal = 0
+      this.closeHistory()
+      // 批次、建议和历史独立于行情图表加载，慢接口不阻塞其他区域。
+      await Promise.all([
+        this.loadBatches(),
+        this.loadHistory(),
+        this.loadFilters().then(async () => {
+          if (scope !== this.scope || this.filterStatus !== 'ready') return
+          await Promise.all([this.loadTrend(), this.loadDaily()])
+        })
+      ])
+    },
+
+    stopPoll(): void {
+      window.clearTimeout(this.pollTimer)
+      this.pollTimer = undefined
+      this.pollRequest++
+    },
+
+    dispose(): void {
+      this.scope++
+      this.stopPoll()
+      this.adviceGenerating = false
     },
 
     async loadFilters(): Promise<void> {
+      const scope = this.scope
+      const request = ++this.filterRequest
       this.filterStatus = 'loading'
       this.filterError = ''
       try {
         const filters = await financeApi.marketFilters()
+        if (scope !== this.scope || request !== this.filterRequest) return
         this.filters = filters
         const defaults = filters.defaults || {}
         this.provinceCode =
@@ -136,6 +176,7 @@ export const useMarketStore = defineStore('financeMarket', {
         this.priceType = this.priceType || defaults.priceType || 'SLAUGHTER'
         this.filterStatus = 'ready'
       } catch (e) {
+        if (scope !== this.scope || request !== this.filterRequest) return
         const err = e as ApiError
         this.filterStatus = err.isForbidden ? 'forbidden' : 'error'
         this.filterError = err.message
@@ -143,19 +184,28 @@ export const useMarketStore = defineStore('financeMarket', {
     },
 
     async loadTrend(): Promise<void> {
-      if (!this.provinceCode || !this.categoryId) return
+      const scope = this.scope
+      const request = ++this.trendRequest
+      if (!this.provinceCode || !this.categoryId) {
+        this.trend = null
+        this.trendStatus = 'empty'
+        return
+      }
       this.trendStatus = 'loading'
       this.trendError = ''
       try {
-        this.trend = await financeApi.marketTrend({
+        const trend = await financeApi.marketTrend({
           province_code: this.provinceCode,
           category_id: this.categoryId,
           breed_id: this.breedId || 0,
           price_type: this.priceType,
           range_days: this.rangeDays
         })
-        this.trendStatus = this.trend.empty ? 'empty' : 'ready'
+        if (scope !== this.scope || request !== this.trendRequest) return
+        this.trend = trend
+        this.trendStatus = trend.empty ? 'empty' : 'ready'
       } catch (e) {
+        if (scope !== this.scope || request !== this.trendRequest) return
         const err = e as ApiError
         this.trendStatus = err.isForbidden ? 'forbidden' : 'error'
         this.trendError = err.message
@@ -163,7 +213,14 @@ export const useMarketStore = defineStore('financeMarket', {
     },
 
     async loadDaily(): Promise<void> {
-      if (!this.provinceCode || !this.categoryId) return
+      const scope = this.scope
+      const request = ++this.dailyRequest
+      if (!this.provinceCode || !this.categoryId) {
+        this.daily = []
+        this.dailyTotal = 0
+        this.dailyStatus = 'empty'
+        return
+      }
       this.dailyStatus = this.daily.length ? this.dailyStatus : 'loading'
       this.dailyError = ''
       try {
@@ -176,10 +233,12 @@ export const useMarketStore = defineStore('financeMarket', {
           page: this.dailyPage,
           size: this.dailySize
         })
+        if (scope !== this.scope || request !== this.dailyRequest) return
         this.daily = page.list
         this.dailyTotal = page.total
         this.dailyStatus = page.list.length ? 'ready' : 'empty'
       } catch (e) {
+        if (scope !== this.scope || request !== this.dailyRequest) return
         const err = e as ApiError
         this.dailyStatus = err.isForbidden ? 'forbidden' : 'error'
         this.dailyError = err.message
@@ -187,11 +246,32 @@ export const useMarketStore = defineStore('financeMarket', {
     },
 
     async loadBatches(): Promise<void> {
+      const scope = this.scope
+      const request = ++this.batchRequest
+      this.stopPoll()
+      this.adviceRequest++
+      this.batchStatus = 'loading'
+      this.batchError = ''
+      this.adviceStatus = 'loading'
       try {
-        this.batches = await financeApi.batchOptions()
-        if (!this.batchId && this.batches.length) this.batchId = Number(this.batches[0].batchId || 0)
-      } catch {
+        const batches = await financeApi.batchOptions()
+        if (scope !== this.scope || request !== this.batchRequest) return
+        this.batches = batches.filter((batch) => Number(batch.batchId) > 0)
+        if (!this.batches.some((batch) => Number(batch.batchId) === this.batchId)) {
+          this.batchId = Number(this.batches[0]?.batchId || 0)
+        }
+        this.batchStatus = this.batches.length ? 'ready' : 'empty'
+        await this.loadAdvice()
+      } catch (e) {
+        if (scope !== this.scope || request !== this.batchRequest) return
+        const err = e as ApiError
         this.batches = []
+        this.batchId = 0
+        this.advice = null
+        this.batchStatus = err.isForbidden ? 'forbidden' : 'error'
+        this.batchError = err.message || '在养批次加载失败，请重试'
+        this.adviceStatus = 'error'
+        this.adviceError = this.batchError
       }
     },
 
@@ -239,6 +319,7 @@ export const useMarketStore = defineStore('financeMarket', {
     },
 
     async selectBatch(batchId: number): Promise<void> {
+      if (batchId !== 0 && !this.batches.some((batch) => Number(batch.batchId) === batchId)) return
       if (this.batchId === batchId) return
       this.batchId = batchId
       this.advice = null
@@ -246,44 +327,75 @@ export const useMarketStore = defineStore('financeMarket', {
     },
 
     async loadAdvice(): Promise<void> {
+      const scope = this.scope
+      const request = ++this.adviceRequest
+      const batchId = this.batchId
+      this.stopPoll()
+      this.adviceGenerating = false
       if (!this.batchId) {
-        this.adviceStatus = this.batches.length ? 'loading' : 'empty'
+        this.advice = null
+        this.adviceStatus = 'empty'
         return
       }
       this.adviceStatus = this.advice ? this.adviceStatus : 'loading'
       this.adviceError = ''
       try {
-        const advice = await financeApi.saleAdviceLatest(this.batchId)
+        const advice = await financeApi.saleAdviceLatest(batchId)
+        if (scope !== this.scope || request !== this.adviceRequest || batchId !== this.batchId) return
         this.advice = advice
         this.applyAdviceStatus(advice)
         if (advice.status === 'GENERATING' && advice.id) this.startPoll(Number(advice.id))
+        if (advice.status === 'SUCCESS') void this.loadHistory()
       } catch (e) {
+        if (scope !== this.scope || request !== this.adviceRequest || batchId !== this.batchId) return
         const err = e as ApiError
-        this.adviceStatus = err.code === 42211 || err.code === 40401 ? 'empty' : 'error'
+        this.adviceStatus = err.isForbidden ? 'forbidden' : 'error'
         this.adviceError = err.message
       }
     },
 
     applyAdviceStatus(advice: SaleAdvice): void {
       if (advice.status === 'FAILED') this.adviceStatus = 'unavailable'
-      else if (advice.status === 'GENERATING') this.adviceStatus = 'loading'
-      else this.adviceStatus = 'ready'
+      else if (advice.status === 'GENERATING' && advice.id) this.adviceStatus = 'loading'
+      else if (advice.status === 'SUCCESS') this.adviceStatus = 'ready'
+      else {
+        this.adviceStatus = 'error'
+        this.adviceError = '建议状态异常，请重试'
+      }
     },
 
     startPoll(id: number): void {
-      window.clearTimeout(this.pollTimer)
+      this.stopPoll()
+      const scope = this.scope
+      const request = this.adviceRequest
+      const poll = this.pollRequest
+      const batchId = this.batchId
+      const deadline = Date.now() + 45_000
+      const current = (): boolean => scope === this.scope && request === this.adviceRequest
+        && poll === this.pollRequest && batchId === this.batchId
       let attempts = 0
       const tick = async (): Promise<void> => {
+        if (!current()) return
         attempts += 1
-        if (attempts > 10) return
+        if (attempts > 10 || Date.now() >= deadline) {
+          this.adviceStatus = 'error'
+          this.adviceError = '建议生成时间较长，请稍后重试'
+          this.stopPoll()
+          return
+        }
         try {
           const advice = await financeApi.saleAdviceDetail(id)
+          if (!current()) return
           this.advice = advice
           this.applyAdviceStatus(advice)
           if (advice.status === 'GENERATING') {
             this.pollTimer = window.setTimeout(() => void tick(), 1500)
+          } else {
+            this.stopPoll()
+            if (advice.status === 'SUCCESS') void this.loadHistory()
           }
         } catch {
+          if (!current()) return
           this.pollTimer = window.setTimeout(() => void tick(), 2000)
         }
       }
@@ -291,35 +403,48 @@ export const useMarketStore = defineStore('financeMarket', {
     },
 
     async regenerate(): Promise<void> {
-      if (!this.batchId || this.adviceGenerating) return
+      if (!this.batchId || this.adviceGenerating || this.adviceStatus === 'loading') return
+      const scope = this.scope
+      const request = ++this.adviceRequest
+      const batchId = this.batchId
+      this.stopPoll()
       this.adviceGenerating = true
       this.adviceStatus = 'loading'
       const ui = useUiStore()
       try {
-        const advice = await financeApi.regenerateSaleAdvice(this.batchId)
+        const advice = await financeApi.regenerateSaleAdvice(batchId)
+        if (scope !== this.scope || request !== this.adviceRequest || batchId !== this.batchId) return
         this.advice = advice
         this.applyAdviceStatus(advice)
         if (advice.status === 'GENERATING' && advice.id) this.startPoll(Number(advice.id))
-        ui.toast('已重新生成出栏建议')
+        if (advice.status === 'SUCCESS') {
+          ui.toast('已重新生成出栏建议')
+          void this.loadHistory()
+        } else if (advice.status === 'GENERATING') ui.toast('正在生成出栏建议')
       } catch (e) {
+        if (scope !== this.scope || request !== this.adviceRequest || batchId !== this.batchId) return
         const err = e as ApiError
         this.adviceStatus = 'error'
         this.adviceError = err.message
         ui.toast(err.message || '生成失败，请稍后重试', 'error')
       } finally {
-        this.adviceGenerating = false
+        if (scope === this.scope && request === this.adviceRequest) this.adviceGenerating = false
       }
     },
 
     async loadHistory(): Promise<void> {
+      const scope = this.scope
+      const request = ++this.historyRequest
       this.historyStatus = 'loading'
       this.historyError = ''
       try {
         const page = await financeApi.saleAdviceHistory({ page: 1, size: 20 })
+        if (scope !== this.scope || request !== this.historyRequest) return
         this.history = page.list
         this.historyTotal = page.total
         this.historyStatus = page.list.length ? 'ready' : 'empty'
       } catch (e) {
+        if (scope !== this.scope || request !== this.historyRequest) return
         const err = e as ApiError
         this.historyStatus = err.isForbidden ? 'forbidden' : 'error'
         this.historyError = err.message
@@ -328,21 +453,26 @@ export const useMarketStore = defineStore('financeMarket', {
 
     async openHistory(advice: SaleAdvice): Promise<void> {
       if (!advice.id) return
+      const scope = this.scope
+      const request = ++this.historyDetailRequest
       this.historyOpen = true
       this.historyDetail = advice
       this.historyDetailLoading = true
       try {
-        this.historyDetail = await financeApi.saleAdviceDetail(advice.id)
+        const detail = await financeApi.saleAdviceDetail(advice.id)
+        if (scope === this.scope && request === this.historyDetailRequest) this.historyDetail = detail
       } catch {
         /* 保留列表中的摘要 */
       } finally {
-        this.historyDetailLoading = false
+        if (scope === this.scope && request === this.historyDetailRequest) this.historyDetailLoading = false
       }
     },
 
     closeHistory(): void {
+      this.historyDetailRequest++
       this.historyOpen = false
       this.historyDetail = null
+      this.historyDetailLoading = false
     }
   }
 })

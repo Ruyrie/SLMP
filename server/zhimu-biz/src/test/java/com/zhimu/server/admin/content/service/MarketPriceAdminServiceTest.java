@@ -21,6 +21,8 @@ import com.zhimu.server.common.util.BeijingTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
 import java.math.BigDecimal;
@@ -125,22 +127,70 @@ class MarketPriceAdminServiceTest {
         assertThat(captor.getValue().getPendingFlag()).isTrue();
     }
 
-    @Test
-    void reviewerCannotBeRecorder() {
+    @ParameterizedTest
+    @ValueSource(strings = {"PASS", "RETURN"})
+    void recorderCanReviewOwnPriceAndAuditIsRetained(String decision) {
         MarketPrice price = publishedPrice("110.00");
         price.setId(9L);
         price.setStatus("PENDING_REVIEW");
         price.setVersion(0);
         price.setEnteredBy(2L);
         when(priceMapper.selectById(9L)).thenReturn(price);
+        when(priceMapper.update(any(), any())).thenReturn(1);
 
         ContentRequests.PriceReviewRequest request = new ContentRequests.PriceReviewRequest();
-        request.setResult("PASS");
+        request.setResult(decision);
         request.setReviewNote("核对无误");
         request.setVersion(0);
-        assertThatThrownBy(() -> service.review(9L, request))
-                .isInstanceOfSatisfying(BizException.class,
-                        e -> assertThat(e.getCode()).isEqualTo(ErrorCode.ROLE_FORBIDDEN.getCode()));
+        assertThat(service.review(9L, request)).isNotNull();
+        verify(priceMapper).update(any(), any());
+        verify(operationLogService).writeAdminLog(any(com.zhimu.server.admin.system.api.AdminLogCommand.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PASS", "RETURN"})
+    void recorderCanReviewOwnCorrectionAndReviewerIsRecorded(String decision) {
+        MarketPrice price = publishedPrice("110.00");
+        price.setId(9L);
+        price.setVersion(0);
+        when(priceMapper.selectById(9L)).thenReturn(price);
+        when(priceMapper.update(any(), any())).thenReturn(1);
+        MarketPriceCorrection correction = new MarketPriceCorrection();
+        correction.setId(42L);
+        correction.setPriceId(9L);
+        correction.setStatus("PENDING_REVIEW");
+        correction.setPendingFlag(true);
+        correction.setCorrectedBy(2L);
+        correction.setNewPrice(new BigDecimal("140.00"));
+        correction.setChangeRateAfter(new BigDecimal("0.4"));
+        when(correctionMapper.selectById(42L)).thenReturn(correction);
+        ContentRequests.PriceReviewRequest request = new ContentRequests.PriceReviewRequest();
+        request.setResult(decision);
+        request.setReviewNote("核对原始报价");
+        request.setCorrectionId(42L);
+        request.setVersion(0);
+
+        assertThat(service.review(9L, request)).isNotNull();
+        assertThat(correction.getReviewerId()).isEqualTo(2L);
+        assertThat(correction.getStatus()).isEqualTo("PASS".equals(decision) ? "APPLIED" : "RETURNED");
+        assertThat(correction.getReviewNote()).isEqualTo("核对原始报价");
+        assertThat(correction.getPendingFlag()).isNull();
+        verify(operationLogService).writeAdminLog(any(com.zhimu.server.admin.system.api.AdminLogCommand.class));
+    }
+
+    @Test
+    void listAllowsRecorderToReviewTheirPendingPrice() {
+        when(configMapper.selectList(any())).thenReturn(List.of(config(1L, 101L, 0L, "SLAUGHTER")));
+        MarketPrice price = publishedPrice("100.00");
+        price.setId(9L);
+        price.setPriceDate(LocalDate.of(2026, 10, 19));
+        price.setStatus("PENDING_REVIEW");
+        price.setEnteredBy(2L);
+        when(priceMapper.selectList(any())).thenReturn(List.of(price));
+        when(correctionMapper.selectList(any())).thenReturn(List.of());
+        ContentQueries.MarketPriceQuery query = new ContentQueries.MarketPriceQuery();
+        query.setDate(LocalDate.of(2026, 10, 19));
+        assertThat(service.list(query).getList().getFirst().getCanReview()).isTrue();
     }
 
     @Test

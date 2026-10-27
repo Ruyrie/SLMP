@@ -102,4 +102,24 @@ public final class ChartScale {
         }
         return (int) Math.ceil(count / (double) maxLabels);
     }
+
+    /** 根据实际宽度保留不重叠的日龄标签；包含两端，内部刻度使用整十的自然步长。 */
+    public static int[] dayAgeLabels(int start, int end, float width, float minLabelGap) {
+        if (end <= start) return new int[]{start};
+        int span = end - start;
+        int intervals = Math.max(1, (int) (width / Math.max(1f, minLabelGap)));
+        int step = Math.max(10, niceStep(span, intervals));
+        int minDays = Math.max(1, (int) Math.ceil(span * minLabelGap / Math.max(1f, width)));
+        java.util.List<Integer> labels = new java.util.ArrayList<>();
+        labels.add(start);
+        for (int value = ceilTo(start + 1, step); value < end; value += step) {
+            if (value - labels.get(labels.size() - 1) >= minDays && end - value >= minDays) {
+                labels.add(value);
+            }
+        }
+        labels.add(end);
+        int[] result = new int[labels.size()];
+        for (int i = 0; i < result.length; i++) result[i] = labels.get(i);
+        return result;
+    }
 }

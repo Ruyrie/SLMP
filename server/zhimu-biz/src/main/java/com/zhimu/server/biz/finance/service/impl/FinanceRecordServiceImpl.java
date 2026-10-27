@@ -42,6 +42,8 @@ import com.zhimu.server.common.util.BeijingTime;
 import com.zhimu.server.common.vo.FarmBriefVO;
 import com.zhimu.server.common.vo.UserBriefVO;
 import com.zhimu.server.framework.mybatis.TenantSkip;
+import com.zhimu.server.framework.oplog.OperationLogEntry;
+import com.zhimu.server.framework.oplog.OperationLogRecorder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,6 +85,7 @@ public class FinanceRecordServiceImpl implements FinanceRecordService {
     private final BizMediaService bizMediaService;
     private final BatchQueryService batchQueryService;
     private final FileMapper fileMapper;
+    private final OperationLogRecorder operationLogRecorder;
 
     // ===== E01 经营概览 =====
 
@@ -434,6 +437,7 @@ public class FinanceRecordServiceImpl implements FinanceRecordService {
         }
         support.checkVersion(record.getVersion(), request.getVersion());
         Validated validated = validate(request, record, farmId);
+        Map<String, Object> before = auditSnapshot(record);
         record.setCategoryId(validated.category().getId());
         record.setSubcategoryId(validated.subcategory() == null ? null : validated.subcategory().getId());
         record.setAmount(FinanceSupport.scale2(request.getAmount()));
@@ -450,6 +454,7 @@ public class FinanceRecordServiceImpl implements FinanceRecordService {
             bizMediaService.replace(BizType.FINANCE_RECORD, record.getId(), farmId, validated.fileIds());
         }
         onRecordInCost(record, validated.category());
+        auditChanges(record, "UPDATE", before, auditSnapshot(record));
         return toVo(record, categoryMap(List.of(record), List.of()), subcategoryMap(List.of(record)),
                 batchNos(List.of(record)), Map.of(), false);
     }
@@ -467,6 +472,8 @@ public class FinanceRecordServiceImpl implements FinanceRecordService {
             throw new BizException(ErrorCode.STATE_CHANGED, "这条记录已作废，不能修改");
         }
         support.checkVersion(record.getVersion(), version);
+        Map<String, Object> before = Map.of("status", auditValue("状态", record.getStatus(),
+                FinanceConst.statusText(record.getStatus())));
         record.setStatus(FinanceConst.RECORD_VOID);
         record.setVoidSource("MANUAL");
         record.setVoidedAt(BeijingTime.now());
@@ -476,6 +483,8 @@ public class FinanceRecordServiceImpl implements FinanceRecordService {
             throw new BizException(ErrorCode.VERSION_CONFLICT);
         }
         cancelOrReverseSupplement(record);
+        auditChanges(record, "VOID", before, Map.of("status", auditValue("状态", record.getStatus(),
+                FinanceConst.statusText(record.getStatus()))));
         return toVo(record, categoryMap(List.of(record), List.of()), subcategoryMap(List.of(record)),
                 batchNos(List.of(record)), Map.of(), false);
     }
@@ -522,6 +531,55 @@ public class FinanceRecordServiceImpl implements FinanceRecordService {
 
     // ===== 内部：校验与转换 =====
 
+    private Map<String, Object> auditSnapshot(FinanceRecord record) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        FinanceCategory category = categoryMapper.selectById(record.getCategoryId());
+        ExpenseSubcategory subcategory = record.getSubcategoryId() == null ? null
+                : subcategoryMapper.selectById(record.getSubcategoryId());
+        values.put("category_id", auditValue("分类", record.getCategoryId(), category == null ? null : category.getName()));
+        values.put("subcategory_id", auditValue("支出子类", record.getSubcategoryId(), subcategory == null ? null : subcategory.getName()));
+        values.put("amount", auditValue("金额", FinanceSupport.scale2(record.getAmount()).toPlainString(),
+                FinanceSupport.scale2(record.getAmount()).toPlainString() + " 元"));
+        values.put("record_date", auditValue("日期", record.getRecordDate(), FinanceSupport.format(record.getRecordDate())));
+        values.put("batch_id", auditValue("关联批次", record.getBatchId(), batchNo(record.getBatchId())));
+        values.put("note", auditValue("说明", record.getNote(), record.getNote()));
+        List<Long> files = bizMediaService.listFileIds(BizType.FINANCE_RECORD, record.getId());
+        values.put("file_ids", auditValue("凭证", files, (files == null ? 0 : files.size()) + " 张"));
+        return values;
+    }
+
+    private static Map<String, Object> auditValue(String name, Object value, String display) {
+        Map<String, Object> field = new LinkedHashMap<>();
+        field.put("name", name);
+        field.put("value", value);
+        field.put("display", display == null || display.isBlank() ? "未填写" : display);
+        return field;
+    }
+
+    private void auditChanges(FinanceRecord record, String action, Map<String, Object> before,
+                              Map<String, Object> after) {
+        Map<String, Object> changedBefore = new LinkedHashMap<>();
+        Map<String, Object> changedAfter = new LinkedHashMap<>();
+        for (String field : after.keySet()) {
+            if (!Objects.equals(before.get(field), after.get(field))) {
+                changedBefore.put(field, before.get(field));
+                Object value = after.get(field);
+                if ("file_ids".equals(field) && value instanceof Map<?, ?> files) {
+                    value = auditValue("凭证", files.get("value"), "已更新（" + files.get("display") + "）");
+                }
+                changedAfter.put(field, value);
+            }
+        }
+        if (changedAfter.isEmpty()) {
+            return;
+        }
+        operationLogRecorder.record(OperationLogEntry.builder()
+                .operatorType("USER").operatorId(UserContext.requireUserId())
+                .opType("RECORD_EDIT").opAction(action).bizType(BizType.FINANCE_RECORD.name())
+                .bizId(record.getId()).farmId(record.getFarmId()).targetName("手工收支记录")
+                .before(changedBefore).after(changedAfter).build());
+    }
+
     private record Validated(String type, FinanceCategory category, ExpenseSubcategory subcategory, LocalDate date,
                              Long batchId, List<Long> fileIds) {
     }
@@ -546,6 +604,9 @@ public class FinanceRecordServiceImpl implements FinanceRecordService {
         }
         if (!"ENABLED".equals(category.getStatus())) {
             throw FinanceErrors.field("category_id", "该分类已停用，请重新选择");
+        }
+        if (FinanceConst.SOURCE_DRUG_RETURN.equals(category.getAutoSource())) {
+            throw FinanceErrors.field("category_id", "药苗退货退款由原退货单登记，不能重复手工记账");
         }
         ExpenseSubcategory subcategory = null;
         if (request.getSubcategoryId() != null) {

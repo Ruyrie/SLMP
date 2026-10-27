@@ -25,6 +25,8 @@ import com.zhimu.server.common.vo.PenBriefVO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -38,6 +40,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -153,6 +156,45 @@ class FarmMemberServiceImplTest {
         assertThatThrownBy(() -> service.quit(1001L, 10001L))
                 .isInstanceOf(BizException.class)
                 .extracting("code").isEqualTo(40303);
+        verifyNoInteractions(memberMapper, memberPenMapper, transferMapper, cache, logs, notify);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"STAFF,false,false", "MANAGER,false,false", "STAFF,true,false",
+            "MANAGER,true,false", "STAFF,false,true", "MANAGER,false,true"})
+    void staffAndManagerCanQuitNormalDisabledAndFrozenFarms(String role, boolean disabled,
+                                                           boolean frozen) {
+        Farm currentFarm = farm();
+        currentFarm.setDisabled(disabled);
+        currentFarm.setFrozen(frozen);
+        FarmMember leaving = member(5003L, 10003L, role, 2);
+        when(lookup.findFarmIncludingDeleted(1001L)).thenReturn(currentFarm);
+        when(lookup.findActiveMember(1001L, 10003L)).thenReturn(leaving);
+        when(lookup.memberPens(1001L, 5003L)).thenReturn(List.of(memberPen(2003L)));
+        when(memberMapper.update(any(FarmMember.class), any())).thenReturn(1);
+
+        assertThat(service.quit(1001L, 10003L)).isEqualTo("东山猪场");
+
+        assertThat(leaving.getStatus()).isEqualTo("QUIT");
+        assertThat(leaving.getActiveFlag()).isNull();
+        assertThat(leaving.getLeftAt()).isNotNull();
+        assertThat(leaving.getVersion()).isEqualTo(3);
+        verify(memberPenMapper).delete(any());
+        verify(transferMapper).update(any(), any());
+        verify(cache).evict(1001L, 10003L);
+        verify(logs).record(any());
+        verifyNoInteractions(notify);
+    }
+
+    @Test
+    void nonMemberCannotQuitOrAlterAnotherMembersPermissions() {
+        when(lookup.findActiveMember(1001L, 10991L)).thenReturn(null);
+
+        assertThatThrownBy(() -> service.quit(1001L, 10991L))
+                .isInstanceOf(BizException.class)
+                .extracting("code").isEqualTo(40302);
+
+        verifyNoInteractions(memberMapper, memberPenMapper, transferMapper, cache, logs, notify);
     }
 
     @Test

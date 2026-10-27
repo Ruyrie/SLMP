@@ -5,6 +5,8 @@ import com.zhimu.server.biz.farm.entity.Farm;
 import com.zhimu.server.biz.farm.query.FarmListRow;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
+import java.time.LocalDateTime;
 
 import java.util.List;
 
@@ -20,4 +22,20 @@ public interface FarmMapper extends BaseMapper<Farm> {
      */
     @Select("SELECT * FROM t_farm WHERE id = #{id} LIMIT 1")
     Farm selectIncludingDeleted(@Param("id") Long id);
+
+    @Select("SELECT * FROM t_farm WHERE id = #{farmId} AND owner_user_id = #{userId} AND deleted = 0 FOR UPDATE")
+    Farm lockOwnedForCancellation(@Param("farmId") Long farmId, @Param("userId") Long userId);
+
+    /** 包含旧版本曾提前逻辑删除的场，但只允许已注销且仍持有所有权的账号。 */
+    @Select("SELECT f.* FROM t_farm f JOIN t_user u ON u.id = f.owner_user_id "
+            + "WHERE f.owner_user_id = #{userId} AND u.status = 'CANCELLED' "
+            + "AND f.delete_type = 'ACCOUNT_CANCEL' ORDER BY f.id FOR UPDATE")
+    List<Farm> lockCancelledOwnerFarms(@Param("userId") Long userId);
+
+    /** 兼容旧版提前逻辑删除的记录，不受 MyBatis 逻辑删除过滤影响。 */
+    @Update("UPDATE t_farm SET disabled_at = #{now}, updated_at = #{now}, version = version + 1 "
+            + "WHERE id = #{farmId} AND owner_user_id = #{userId} AND delete_type = 'ACCOUNT_CANCEL' "
+            + "AND disabled = 1 AND disabled_at IS NULL")
+    int initializeMissingRetentionStart(@Param("farmId") Long farmId, @Param("userId") Long userId,
+                                        @Param("now") LocalDateTime now);
 }

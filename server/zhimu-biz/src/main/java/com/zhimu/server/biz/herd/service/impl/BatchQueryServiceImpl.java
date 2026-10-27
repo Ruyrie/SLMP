@@ -36,6 +36,13 @@ public class BatchQueryServiceImpl implements BatchQueryService {
     private final BatchEventMapper eventMapper;
 
     @Override
+    public AccountingBasis accountingBasis(Long batchId) {
+        Batch batch = TenantSkip.call(() -> batchMapper.selectById(batchId));
+        if (batch == null) throw new BizException(ErrorCode.NOT_FOUND);
+        return new AccountingBasis(batch.getIntroUnitPrice(), batch.getEntryAvgWeight(), batch.getEndedAt());
+    }
+
+    @Override
     public int deathCount(Collection<Long> farmIds, LocalDate start, LocalDate end) {
         if (farmIds == null || farmIds.isEmpty() || start == null || end == null) {
             return 0;

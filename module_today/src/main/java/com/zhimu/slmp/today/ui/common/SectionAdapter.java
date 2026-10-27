@@ -21,6 +21,12 @@ public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.VH> {
     @Nullable
     private CharSequence count;
     private boolean visible = true;
+    private android.view.View.OnClickListener onClick;
+
+    public void setOnClickListener(android.view.View.OnClickListener listener) {
+        onClick = listener;
+        if (visible) notifyItemChanged(0);
+    }
 
     public void set(@Nullable CharSequence newTitle, @Nullable CharSequence newCount) {
         boolean changed = !Objects.equals(str(title), str(newTitle)) || !Objects.equals(str(count), str(newCount));
@@ -58,6 +64,10 @@ public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.VH> {
     public void onBindViewHolder(@NonNull VH holder, int position) {
         holder.b.title.setText(title);
         holder.b.count.setText(count);
+        holder.b.getRoot().setOnClickListener(onClick);
+        holder.b.getRoot().setClickable(onClick != null);
+        holder.b.getRoot().setFocusable(onClick != null);
+        holder.b.getRoot().setContentDescription(onClick == null ? null : str(title) + "，" + str(count));
     }
 
     @Override

@@ -42,6 +42,7 @@ public class ChangeRequestFormVO {
     private List<String> linkedRules = new ArrayList<>();
     private String reviewTip;
     private Long pendingRequestId;
+    private boolean deleteAllowed;
     private boolean voidAllowed;
     private String voidNotice;
     @Builder.Default

@@ -259,15 +259,16 @@ public class GrowthCurveViewModel extends BaseListViewModel<Long, WeighRecordIte
         if (m == null) {
             return cards;
         }
-        cards.add(FeedStatCard.of("平均体重", FeedFormat.num1(m.getAvgWeight()), FeedFormat.KG,
+        cards.add(FeedStatCard.of("平均体重", FeedFormat.weightNumber(m.getAvgWeight()), FeedFormat.KG,
                 m.getDayAge() == null ? null : m.getDayAge() + " 日龄"));
-        if (!c.isStdAvailable() || m.getStdWeight() == null) {
+        if (m.getStdWeight() == null) {
             cards.add(FeedStatCard.of("偏离标准", FeedFormat.NO_DATA, null, null));
         } else {
             boolean out = GrowthCalc.outOfRange(m.getDeviationRatio(), m.getAllowedDeviation());
             cards.add(new FeedStatCard("偏离标准", m.getDeviationRatio() == null ? FeedFormat.DASH
                     : FeedFormat.percentNumber(m.getDeviationRatio(), true), m.getDeviationRatio() == null ? null : "%",
-                    "标准 " + FeedFormat.kg1(m.getStdWeight()), 0, false, out));
+                    "标准 " + FeedFormat.weightKg(m.getStdWeight())
+                            + (m.isCurrentStandardComparison() ? FeedFormat.DOT + "按当前标准对比" : ""), 0, false, out));
         }
         String helper;
         if (m.getPrevDailyGain() != null) {
@@ -297,7 +298,9 @@ public class GrowthCurveViewModel extends BaseListViewModel<Long, WeighRecordIte
         }
         if (chart != null) {
             for (GrowthChartModel.Series s : chart.compare) {
-                items.add(new GrowthLegendItem(GrowthLegendItem.COMPARE, s.batchNo));
+                if (!s.points.isEmpty()) {
+                    items.add(new GrowthLegendItem(GrowthLegendItem.COMPARE, s.batchNo));
+                }
             }
         }
         if (std) {
@@ -332,7 +335,6 @@ public class GrowthCurveViewModel extends BaseListViewModel<Long, WeighRecordIte
             return;
         }
         List<Long> limited = new GrowthCurveQuery(ids).compareBatchIds;
-        compareIds.setValue(limited);
         launch(curveSource(id, limited), r -> apply((GrowthCurveVO) r[0], (GrowthChartModel) r[1]));
     }
 
@@ -353,7 +355,8 @@ public class GrowthCurveViewModel extends BaseListViewModel<Long, WeighRecordIte
             c.setCompareSeries(left);
         }
         GrowthChartModel chart = chartModel.getValue();
-        GrowthChartModel next = chart == null ? null : chart.withoutSeries(compareId);
+        GrowthChartModel next = c != null ? GrowthChartModel.from(c)
+                : chart == null ? null : chart.withoutSeries(compareId);
         chartModel.setValue(next);
         if (c != null) {
             legendItems.setValue(legendOf(c, next));

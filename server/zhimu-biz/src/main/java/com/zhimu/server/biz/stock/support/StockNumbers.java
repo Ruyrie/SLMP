@@ -1,6 +1,7 @@
 package com.zhimu.server.biz.stock.support;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.zhimu.server.framework.mybatis.TenantSkip;
 import com.zhimu.server.biz.stock.entity.StockInbound;
 import com.zhimu.server.biz.stock.entity.StockOutbound;
 import com.zhimu.server.biz.stock.entity.Stocktake;
@@ -32,33 +33,42 @@ public class StockNumbers {
     private final StocktakeMapper stocktakeMapper;
 
     public String nextInboundNo(LocalDate date) {
-        String prefix = "RK" + date.format(DAY);
-        StockInbound last = inboundMapper.selectOne(Wrappers.<StockInbound>lambdaQuery()
-                .likeRight(StockInbound::getInboundNo, prefix)
-                .orderByDesc(StockInbound::getInboundNo).last("LIMIT 1"));
-        return allocate(prefix, last == null ? null : last.getInboundNo(),
-                no -> inboundMapper.selectCount(Wrappers.<StockInbound>lambdaQuery()
-                        .eq(StockInbound::getInboundNo, no)));
+        // 单号在数据库全局唯一，分配时必须检查所有养殖场；不返回其他场业务数据。
+        return TenantSkip.call(() -> {
+            String prefix = "RK" + date.format(DAY);
+            StockInbound last = inboundMapper.selectOne(Wrappers.<StockInbound>lambdaQuery()
+                    .likeRight(StockInbound::getInboundNo, prefix)
+                    .orderByDesc(StockInbound::getInboundNo).last("LIMIT 1"));
+            return allocate(prefix, last == null ? null : last.getInboundNo(),
+                    no -> inboundMapper.selectCount(Wrappers.<StockInbound>lambdaQuery()
+                            .eq(StockInbound::getInboundNo, no)));
+        });
     }
 
     public String nextOutboundNo(LocalDate date) {
-        String prefix = "CK" + date.format(DAY);
-        StockOutbound last = outboundMapper.selectOne(Wrappers.<StockOutbound>lambdaQuery()
-                .likeRight(StockOutbound::getOutboundNo, prefix)
-                .orderByDesc(StockOutbound::getOutboundNo).last("LIMIT 1"));
-        return allocate(prefix, last == null ? null : last.getOutboundNo(),
-                no -> outboundMapper.selectCount(Wrappers.<StockOutbound>lambdaQuery()
-                        .eq(StockOutbound::getOutboundNo, no)));
+        // 单号在数据库全局唯一，分配时必须检查所有养殖场；不返回其他场业务数据。
+        return TenantSkip.call(() -> {
+            String prefix = "CK" + date.format(DAY);
+            StockOutbound last = outboundMapper.selectOne(Wrappers.<StockOutbound>lambdaQuery()
+                    .likeRight(StockOutbound::getOutboundNo, prefix)
+                    .orderByDesc(StockOutbound::getOutboundNo).last("LIMIT 1"));
+            return allocate(prefix, last == null ? null : last.getOutboundNo(),
+                    no -> outboundMapper.selectCount(Wrappers.<StockOutbound>lambdaQuery()
+                            .eq(StockOutbound::getOutboundNo, no)));
+        });
     }
 
     public String nextStocktakeNo(LocalDate date) {
-        String prefix = "PD" + date.format(DAY);
-        Stocktake last = stocktakeMapper.selectOne(Wrappers.<Stocktake>lambdaQuery()
-                .likeRight(Stocktake::getStocktakeNo, prefix)
-                .orderByDesc(Stocktake::getStocktakeNo).last("LIMIT 1"));
-        return allocate(prefix, last == null ? null : last.getStocktakeNo(),
-                no -> stocktakeMapper.selectCount(Wrappers.<Stocktake>lambdaQuery()
-                        .eq(Stocktake::getStocktakeNo, no)));
+        // 单号在数据库全局唯一，分配时必须检查所有养殖场；不返回其他场业务数据。
+        return TenantSkip.call(() -> {
+            String prefix = "PD" + date.format(DAY);
+            Stocktake last = stocktakeMapper.selectOne(Wrappers.<Stocktake>lambdaQuery()
+                    .likeRight(Stocktake::getStocktakeNo, prefix)
+                    .orderByDesc(Stocktake::getStocktakeNo).last("LIMIT 1"));
+            return allocate(prefix, last == null ? null : last.getStocktakeNo(),
+                    no -> stocktakeMapper.selectCount(Wrappers.<Stocktake>lambdaQuery()
+                            .eq(Stocktake::getStocktakeNo, no)));
+        });
     }
 
     private static String allocate(String prefix, String maxNo, Function<String, Long> exists) {

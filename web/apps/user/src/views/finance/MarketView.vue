@@ -77,7 +77,7 @@ const adviceTag = computed(() => {
 
 const batchItems = computed(() =>
   store.batches.map((batch) => ({
-    title: `${batch.batchNo} · ${batch.penName}`,
+    title: [batch.batchNo, batch.penName].filter(Boolean).join(' · '),
     value: Number(batch.batchId || 0)
   }))
 )
@@ -85,6 +85,8 @@ const batchItems = computed(() =>
 const selectedBatch = computed(() => store.batches.find((batch) => Number(batch.batchId) === store.batchId))
 
 const batchHint = computed(() => {
+  if (store.batchStatus === 'loading') return '正在加载在养批次…'
+  if (store.batchStatus === 'error' || store.batchStatus === 'forbidden') return '在养批次加载失败，请重试。'
   const batch = selectedBatch.value
   if (!batch) return '当前养殖场没有在养批次，入栏后才能获取出栏建议。'
   return `${batch.breedName || ''}${batch.categoryName || ''} · ${batch.dayAge || 0} 日龄 · 存栏 ${formatNumber(
@@ -126,15 +128,12 @@ function openHistory(advice: Record<string, unknown>): void {
 }
 
 onMounted(() => {
-  const batchId = Number(route.query.batchId || 0)
-  if (batchId) store.batchId = batchId
-  void store.load()
+  const batchId = Number(route.query.batchId || route.query.batch_id || 0)
+  void store.load(batchId)
 })
-onBeforeUnmount(() => window.clearTimeout(store.pollTimer))
+onBeforeUnmount(() => store.dispose())
 useFarmReload(() => {
-  store.batchId = 0
-  store.advice = null
-  void store.load()
+  void store.load(0)
 })
 </script>
 
@@ -323,27 +322,37 @@ useFarmReload(() => {
             <template #extra>
               <a
                 class="zw-link"
-                :class="{ 'e06-disabled': store.adviceGenerating || store.adviceStatus === 'loading' }"
-                @click="!store.adviceGenerating && store.adviceStatus !== 'loading' && store.regenerate()"
+                :class="{ 'e06-disabled': !store.batchId || store.adviceGenerating || store.adviceStatus === 'loading' }"
+                @click="store.batchId && !store.adviceGenerating && store.adviceStatus !== 'loading' && store.regenerate()"
               >重新生成</a>
             </template>
 
             <div class="e06-batch">
               <v-select
-                :model-value="store.batchId"
+                :model-value="store.batchStatus === 'ready' ? store.batchId || null : null"
                 :items="batchItems"
                 item-title="title"
                 item-value="value"
                 density="compact"
                 hide-details
-                :disabled="!store.batches.length"
+                :disabled="!store.batches.length || store.batchStatus === 'loading'"
+                :loading="store.batchStatus === 'loading'"
                 placeholder="选择在栏批次"
                 @update:model-value="store.selectBatch(Number($event || 0))"
               />
               <div class="e06-batch-hint">{{ batchHint }}</div>
             </div>
 
-            <v-skeleton-loader v-if="store.adviceStatus === 'loading'" type="article, list-item-two-line@3" />
+            <div v-if="store.batchStatus === 'error' || store.batchStatus === 'forbidden'" class="e06-ai-fail">
+              <zw-icon name="cloud_off" :size="32" />
+              <div>{{ store.batchError || '在养批次加载失败' }}</div>
+              <v-btn variant="outlined" size="small" prepend-icon="refresh" @click="store.loadBatches()">重新加载批次</v-btn>
+            </div>
+
+            <div v-else-if="store.adviceStatus === 'loading'">
+              <div v-if="store.batchStatus === 'ready'" class="zw-faint body-s">正在获取出栏建议，首次生成可能需要约一分钟。</div>
+              <v-skeleton-loader type="article, list-item-two-line@3" />
+            </div>
 
             <div v-else-if="store.adviceStatus === 'unavailable'" class="e06-ai-fail">
               <zw-icon name="cloud_off" :size="32" />
@@ -351,7 +360,7 @@ useFarmReload(() => {
               <v-btn variant="outlined" size="small" prepend-icon="refresh" @click="store.regenerate()">重新生成</v-btn>
             </div>
 
-            <div v-else-if="store.adviceStatus === 'error'" class="e06-ai-fail">
+            <div v-else-if="store.adviceStatus === 'error' || store.adviceStatus === 'forbidden'" class="e06-ai-fail">
               <zw-icon name="cloud_off" :size="32" />
               <div>{{ store.adviceError || '出栏建议加载失败' }}</div>
               <v-btn variant="outlined" size="small" prepend-icon="refresh" @click="store.loadAdvice()">重试</v-btn>
@@ -359,7 +368,7 @@ useFarmReload(() => {
 
             <div v-else-if="store.adviceStatus === 'empty'" class="e06-ai-fail">
               <zw-icon name="inbox" :size="32" />
-              <div>当前养殖场没有在养批次，入栏后才能获取出栏建议。</div>
+              <div>{{ store.batches.length ? '请选择在养批次获取出栏建议。' : '当前养殖场没有在养批次，入栏后才能获取出栏建议。' }}</div>
             </div>
 
             <template v-else-if="store.advice">
@@ -404,6 +413,9 @@ useFarmReload(() => {
 
           <zw-card title="历史建议" sub="当前养殖场 · 按生成时间倒序" flush class="mt-4">
             <v-skeleton-loader v-if="store.historyStatus === 'loading'" type="list-item-two-line@3" />
+            <zw-empty v-else-if="store.historyStatus === 'error' || store.historyStatus === 'forbidden'" icon="cloud_off" title="历史建议加载失败" :desc="store.historyError">
+              <v-btn variant="outlined" size="small" @click="store.loadHistory()">重试</v-btn>
+            </zw-empty>
             <zw-empty v-else-if="store.historyStatus !== 'ready'" icon="history" title="还没有历史建议" desc="生成出栏建议后会保留在这里。" />
             <div v-else class="e06-history">
               <div v-for="advice in store.history" :key="advice.id" class="e06-history-row" @click="openHistory(advice)">

@@ -38,7 +38,8 @@ public class AvatarServiceImpl implements AvatarService {
         if (fileId == null) {
             throw CommonErrors.fieldError("file_id", "请选择头像文件");
         }
-        FileEntity file = fileMapper.selectById(fileId);
+        User user = requireUser(userId);
+        FileEntity file = fileMapper.selectActiveForUpdate(fileId);
         if (file == null) {
             throw new BizException(ErrorCode.NOT_FOUND);
         }
@@ -51,7 +52,6 @@ public class AvatarServiceImpl implements AvatarService {
         if (!FileKind.IMAGE.name().equals(file.getFileKind())) {
             throw CommonErrors.fieldError("file_id", "头像必须是 JPG 或 PNG 图片");
         }
-        User user = requireUser(userId);
         int updated = userMapper.updateAvatar(userId, fileId, BeijingTime.now());
         if (updated == 0) {
             throw new BizException(ErrorCode.SESSION_INVALID).with("reason", "EXPIRED");
@@ -84,9 +84,13 @@ public class AvatarServiceImpl implements AvatarService {
     }
 
     private User requireUser(Long userId) {
-        User user = userMapper.selectById(userId);
+        User user = userMapper.selectByIdForUpdate(userId);
         if (user == null) {
             throw new BizException(ErrorCode.SESSION_INVALID).with("reason", "EXPIRED");
+        }
+        if (!"NORMAL".equals(user.getStatus())) {
+            throw new BizException(ErrorCode.SESSION_INVALID).with("reason",
+                    "CANCELLED".equals(user.getStatus()) ? "ACCOUNT_CANCELLED" : "EXPIRED");
         }
         return user;
     }

@@ -3,6 +3,8 @@ package com.zhimu.server.biz.ai.convert;
 import com.zhimu.server.biz.ai.entity.Course;
 import com.zhimu.server.biz.ai.entity.CourseMedia;
 import com.zhimu.server.biz.ai.entity.CourseProgress;
+import com.zhimu.server.biz.ai.entity.CourseTopic;
+import com.zhimu.server.biz.ai.support.CourseCoverResolver;
 import com.zhimu.server.biz.ai.support.AiCodes;
 import com.zhimu.server.biz.ai.support.AiText;
 import com.zhimu.server.biz.ai.vo.ContinueWatchingVO;
@@ -12,6 +14,7 @@ import com.zhimu.server.biz.ai.vo.VideoSourceVO;
 import com.zhimu.server.biz.ai.vo.WatchHistoryVO;
 import com.zhimu.server.common.util.BeijingTime;
 import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -21,7 +24,13 @@ import java.util.List;
  * 课堂 VO 组装：课程卡、继续观看、播放信息、观看记录。
  */
 @Component
+@RequiredArgsConstructor
 public class CourseConvert {
+    private final CourseCoverResolver covers;
+
+    public String topicCover(CourseTopic topic) {
+        return covers.resolve(topic);
+    }
 
     public CourseCardVO toCard(Course course, CourseProgress progress) {
         CourseCardVO vo = new CourseCardVO();
@@ -39,7 +48,7 @@ public class CourseConvert {
     private void fillCard(CourseCardVO vo, Course course, CourseProgress progress) {
         vo.setId(course.getId());
         vo.setTitle(course.getTitle());
-        vo.setCoverUrl(course.getCoverUrl());
+        vo.setCoverUrl(covers.resolve(course));
         vo.setDurationSec(course.getDurationSec() == null ? 0 : course.getDurationSec());
         vo.setPublishedAt(BeijingTime.format(course.getPublishedAt()));
         vo.setCategoryName(course.getCategoryName());
@@ -47,9 +56,8 @@ public class CourseConvert {
         int maxPosition = progress == null || progress.getMaxPositionSec() == null ? 0 : progress.getMaxPositionSec();
         vo.setLearnStatus(AiText.learnStatus(completed, maxPosition));
         vo.setPositionSec(progress == null || progress.getPositionSec() == null ? 0 : progress.getPositionSec());
-        vo.setProgressRatio(progress == null
-                ? AiText.progressRatio(false, 0, course.getDurationSec() == null ? 0 : course.getDurationSec())
-                : progress.getProgressRatio());
+        // 展示进度与“看到”的续播位置一致；不改写持久化的最远观看位置。
+        vo.setProgressRatio(AiText.progressRatio(completed, vo.getPositionSec(), vo.getDurationSec()));
         vo.setTopicId(course.getTopicId());
         vo.setTopicName(course.getTopicName());
         vo.setSectionNo(course.getSectionNo());
@@ -59,14 +67,15 @@ public class CourseConvert {
         ContinueWatchingVO vo = new ContinueWatchingVO();
         vo.setCourseId(course.getId());
         vo.setTitle(course.getTitle());
-        vo.setCoverUrl(course.getCoverUrl());
+        vo.setCoverUrl(covers.resolve(course));
         vo.setCategoryName(course.getCategoryName());
         int duration = course.getDurationSec() == null ? 0 : course.getDurationSec();
         int position = progress.getPositionSec() == null ? 0 : progress.getPositionSec();
         vo.setDurationSec(duration);
         vo.setPositionSec(position);
         vo.setRemainingSec(Math.max(duration - position, 0));
-        vo.setProgressRatio(progress.getProgressRatio());
+        vo.setProgressRatio(AiText.progressRatio(progress.getCompleted() != null && progress.getCompleted() == 1,
+                position, duration));
         vo.setTopicName(course.getTopicName());
         vo.setSectionNo(course.getSectionNo());
         return vo;
@@ -80,7 +89,7 @@ public class CourseConvert {
         vo.setDurationSec(course.getDurationSec() == null ? 0 : course.getDurationSec());
         vo.setSourceLabel(course.getSourceLabel());
         vo.setUpdatedAt(BeijingTime.format(course.getUpdatedAt()));
-        vo.setCoverUrl(course.getCoverUrl());
+        vo.setCoverUrl(covers.resolve(course));
         vo.setShareUrl(course.getShareUrl());
         vo.setKnowledgeId(course.getKnowledgeId());
         vo.setSectionNo(course.getSectionNo());

@@ -4,6 +4,10 @@
 
     <application>
 
+        <activity
+            android:name=".ui.trace.BatchTraceActivity"
+            android:exported="false" />
+
         <!-- L03 存栏总览 -->
         <activity
             android:name=".ui.stock.StockOverviewActivity"

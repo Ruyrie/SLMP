@@ -19,6 +19,7 @@ import com.zhimu.slmp.common.model.vo.AccountUserVO;
 import com.zhimu.slmp.common.model.vo.AuthTokenVO;
 import com.zhimu.slmp.common.model.vo.RecoveryInfoVO;
 import com.zhimu.slmp.common.service.IPushService;
+import com.zhimu.slmp.common.service.ITodoService;
 import com.zhimu.slmp.common.service.ServiceHub;
 import com.zhimu.slmp.network.RxResult;
 import com.zhimu.slmp.network.auth.TokenProvider;
@@ -52,6 +53,7 @@ public class SessionManager implements TokenProvider {
     private final AppDatabase database;
     private final Gson gson;
     private final Provider<SessionApi> sessionApi;
+    private final AccountDataCleaner accountDataCleaner;
 
     private final MutableLiveData<AccountUserVO> user;
     private final MutableLiveData<Boolean> loginState;
@@ -62,21 +64,28 @@ public class SessionManager implements TokenProvider {
     private volatile String refreshToken;
     @Nullable
     private volatile RecoveryInfoVO recoveryInfo;
+    @Nullable
+    private volatile AccountUserVO currentUser;
+    /** Retained in memory after ordinary clear, so a successful A20 can finish cleaning the same account. */
+    private long sessionOwnerId;
     private final Object refreshLock = new Object();
 
     @Inject
     public SessionManager(@NonNull SessionStore store, @NonNull FarmContext farmContext,
                           @NonNull AppDatabase database, @NonNull Gson gson,
-                          @NonNull Provider<SessionApi> sessionApi) {
+                          @NonNull Provider<SessionApi> sessionApi, @NonNull AccountDataCleaner accountDataCleaner) {
         this.store = store;
         this.farmContext = farmContext;
         this.database = database;
         this.gson = gson;
         this.sessionApi = sessionApi;
+        this.accountDataCleaner = accountDataCleaner;
         this.accessToken = store.getAccessToken();
         this.refreshToken = store.getRefreshToken();
         // 可能在非主线程首次创建，用构造方法赋初值
-        this.user = new MutableLiveData<>(parseUser(store.getUserJson()));
+        this.currentUser = parseUser(store.getUserJson());
+        this.sessionOwnerId = currentUser == null ? 0 : currentUser.getUserId();
+        this.user = new MutableLiveData<>(currentUser);
         this.loginState = new MutableLiveData<>(refreshToken != null);
     }
 
@@ -89,7 +98,7 @@ public class SessionManager implements TokenProvider {
 
     @Nullable
     public AccountUserVO currentUser() {
-        return user.getValue();
+        return currentUser;
     }
 
     /** 是否已登录（本机保存有刷新令牌） */
@@ -121,29 +130,64 @@ public class SessionManager implements TokenProvider {
 
     /** 保存登录结果：令牌加密写入 zmt_session，user 写入 user_json */
     public void saveToken(@NonNull AuthTokenVO token) {
-        accessToken = token.getAccessToken();
-        if (token.getRefreshToken() != null) {
-            refreshToken = token.getRefreshToken();
+        synchronized (refreshLock) {
+            accessToken = token.getAccessToken();
+            if (token.getRefreshToken() != null) {
+                refreshToken = token.getRefreshToken();
+            }
+            store.saveTokens(token.getAccessToken(), token.getRefreshToken());
+            if (token.getUser() != null) {
+                updateUser(token.getUser());
+            }
+            if (token.getRecoveryInfo() != null) {
+                recoveryInfo = token.getRecoveryInfo();
+            }
+            publish(loginState, refreshToken != null);
         }
-        store.saveTokens(token.getAccessToken(), token.getRefreshToken());
-        if (token.getUser() != null) {
-            updateUser(token.getUser());
-        }
-        if (token.getRecoveryInfo() != null) {
-            recoveryInfo = token.getRecoveryInfo();
-        }
-        publish(loginState, refreshToken != null);
     }
 
     public void updateUser(@NonNull AccountUserVO newUser) {
-        store.saveUserJson(gson.toJson(newUser));
-        publish(user, newUser);
+        synchronized (refreshLock) {
+            currentUser = newUser;
+            sessionOwnerId = newUser.getUserId();
+            store.saveUserJson(gson.toJson(newUser));
+            publish(user, newUser);
+        }
     }
 
     /** 用户主动退出：清除本机登录态（调用方先调 API-A07，失败不阻断） */
     public void logout() {
         // 主动退出时，调用方已在 API-A07 之前（令牌仍有效）调用 IPushService.unbindCurrent，这里不再重复解绑
         clearInternal(false);
+    }
+
+    /**
+     * A20 已成功：清本机推送与个人数据，不再向已失效令牌的接口请求解绑。
+     * 与保存新会话互斥，旧账号的迟到成功回调不能清除新账号。
+     * 调用方在 IO 线程等待清理结束后才打开登录页。
+     */
+    public boolean clearAfterAccountCancellation(long expectedUserId) {
+        synchronized (refreshLock) {
+            if (expectedUserId <= 0 || sessionOwnerId != expectedUserId) return false;
+            IPushService push = ServiceHub.get(IPushService.class);
+            if (push != null) {
+                try { push.clearLocalBinding(); }
+                catch (RuntimeException e) { Log.w(TAG, "清理本机推送失败", e); }
+            }
+            clearInternal(false, false);
+            ITodoService todo = ServiceHub.get(ITodoService.class);
+            if (todo != null) {
+                try { todo.clearSessionState(); }
+                catch (RuntimeException e) { Log.w(TAG, "清理消息会话缓存失败", e); }
+            }
+            try { accountDataCleaner.stopPendingWork(); }
+            catch (RuntimeException e) { Log.w(TAG, "停止账号后台任务失败", e); }
+            try { database.clearAllTables(); }
+            catch (RuntimeException e) { Log.w(TAG, "清理账号草稿与上传记录失败", e); }
+            try { accountDataCleaner.clear(); }
+            catch (RuntimeException e) { Log.w(TAG, "清理账号个人缓存失败", e); }
+            return true;
+        }
     }
 
     /** 登录失效：清除本机登录态并发出“需要重新登录”事件，reason 为 40104 的 data.reason */
@@ -156,6 +200,12 @@ public class SessionManager implements TokenProvider {
     }
 
     private void clearInternal(boolean unbindPush) {
+        synchronized (refreshLock) {
+            clearInternal(unbindPush, true);
+        }
+    }
+
+    private void clearInternal(boolean unbindPush, boolean scheduleDatabaseClear) {
         IPushService push = unbindPush ? ServiceHub.get(IPushService.class) : null;
         if (push != null) {
             try {
@@ -167,9 +217,18 @@ public class SessionManager implements TokenProvider {
         accessToken = null;
         refreshToken = null;
         recoveryInfo = null;
+        currentUser = null;
         store.clear();
         farmContext.clear();
-        Schedulers.io().scheduleDirect(database::clearAllTables);
+        if (scheduleDatabaseClear) {
+            long clearedOwnerId = sessionOwnerId;
+            Schedulers.io().scheduleDirect(() -> {
+                synchronized (refreshLock) {
+                    // A queued clear from the old session must not erase a newly logged-in user's drafts.
+                    if (sessionOwnerId == clearedOwnerId && !isLoggedIn()) database.clearAllTables();
+                }
+            });
+        }
         publish(user, null);
         publish(loginState, false);
     }

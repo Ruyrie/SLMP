@@ -52,6 +52,7 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
     private SingleViewAdapter headerAdapter;
     private final SectionAdapter daySection = new SectionAdapter();
     private final SectionAdapter overdueSection = new SectionAdapter();
+    private final SectionAdapter overdueMore = new SectionAdapter();
     private final ListStateAdapter listStateAdapter = new ListStateAdapter();
     private TodoPagingAdapter dayAdapter;
     private DayTimelineAdapter timelineAdapter;
@@ -103,6 +104,10 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
         timelineAdapter = new DayTimelineAdapter(this);
         weekAdapter = new WeekGroupAdapter(this, vm::expandDay);
         overdueAdapter = new TodoListAdapter(this, false);
+        overdueSection.setOnClickListener(v -> vm.toggleOverdue());
+        overdueMore.set(getString(R.string.today_view_all), "›");
+        overdueMore.setVisible(false);
+        overdueMore.setOnClickListener(v -> vm.onAllOverdueClick());
         listStateAdapter.setOnActionClickListener(v -> vm.retry());
         concat = new ConcatAdapter(headerAdapter);
         binding.list.setItemAnimator(null);
@@ -111,6 +116,11 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
         dayAdapter.addLoadStateListener(states -> onLoadStates(states, dayAdapter.getItemCount()));
         timelineAdapter.addLoadStateListener(states -> onLoadStates(states, timelineAdapter.getItemCount()));
         observe();
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        if (vm != null) vm.onPageResumed();
     }
 
     private void bindHeader() {
@@ -162,11 +172,10 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
                 getString(R.string.today_calendar_count, valueOr(vm.getDayTotal().getValue()))));
         vm.getDayTotal().observe(this, total -> daySection.set(vm.getDayHeader().getValue(),
                 getString(R.string.today_calendar_count, valueOr(total))));
-        vm.getOverdueTotal().observe(this, total -> {
-            overdueSection.set(getString(R.string.today_calendar_overdue_title, valueOr(total)), null);
-            overdueSection.setVisible(valueOr(total) > 0);
-        });
-        vm.getOverdueItems().observe(this, overdueAdapter::submitList);
+        vm.getOverdueTotal().observe(this, total -> renderOverdue());
+        vm.getOverdueItems().observe(this, items -> renderOverdue());
+        vm.getOverdueExpanded().observe(this, expanded -> renderOverdue());
+        vm.getOverdueError().observe(this, error -> renderOverdue());
         vm.getWeekGroups().observe(this, weekAdapter::submitGroups);
         vm.getShowFarmTag().observe(this, show -> {
             boolean s = Boolean.TRUE.equals(show);
@@ -180,6 +189,18 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
         vm.getListState().observe(this, this::renderListState);
         vm.getNavEvent().observe(this, this::open);
         vm.getScrollToDay().observe(this, this::scrollToDay);
+    }
+
+    private void renderOverdue() {
+        int total = valueOr(vm.getOverdueTotal().getValue());
+        boolean expanded = Boolean.TRUE.equals(vm.getOverdueExpanded().getValue());
+        String error = vm.getOverdueError().getValue();
+        overdueSection.set(error == null ? getString(R.string.today_calendar_overdue_title, total) : error,
+                getString(expanded ? R.string.today_collapse : R.string.today_expand));
+        overdueSection.setVisible(total > 0 || error != null);
+        overdueAdapter.submitList(expanded ? vm.getOverdueItems().getValue() : java.util.Collections.emptyList());
+        overdueAdapter.setShowFarmTag(CalendarViewModel.SCOPE_ALL.equals(vm.getScope().getValue()));
+        overdueMore.setVisible(expanded && total > 5);
     }
 
     private static int valueOr(@Nullable Integer v) {
@@ -207,11 +228,12 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
                 concat.addAdapter(weekAdapter);
                 break;
             case DAY:
-                concat.addAdapter(overdueSection);
-                concat.addAdapter(overdueAdapter);
                 concat.addAdapter(daySection);
                 concat.addAdapter(listStateAdapter);
                 concat.addAdapter(timelineAdapter);
+                concat.addAdapter(overdueSection);
+                concat.addAdapter(overdueAdapter);
+                concat.addAdapter(overdueMore);
                 break;
             case MONTH:
             default:

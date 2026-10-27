@@ -39,6 +39,8 @@ class SelfBredBatchServiceImplTest {
     @Mock private BatchPenMapper batchPenMapper;
     @Mock private PenMapper penMapper;
 
+    @Mock private org.springframework.beans.factory.ObjectProvider<BatchService> batchService;
+    @Mock private BatchService batchWriter;
     private SelfBredBatchServiceImpl service;
 
     @BeforeAll
@@ -50,12 +52,29 @@ class SelfBredBatchServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new SelfBredBatchServiceImpl(batchMapper, batchPenMapper, penMapper);
+        service = new SelfBredBatchServiceImpl(batchMapper, batchPenMapper, penMapper, batchService);
         when(batchMapper.selectByIdIncludingDeleted(3052L)).thenReturn(batch());
         when(batchMapper.update(any(), any())).thenReturn(1);
         when(batchPenMapper.addStock(anyLong(), anyLong(), anyInt(), any(), any())).thenReturn(1);
         when(batchPenMapper.deduct(anyLong(), anyLong(), anyInt(), any(), any())).thenReturn(1);
         when(penMapper.addStock(anyLong(), anyInt(), any())).thenReturn(1);
+    }
+
+    @Test
+    void createsZeroDaySelfBredBatchThroughNormalStockWriterAndAssociatesSource() {
+        when(batchService.getObject()).thenReturn(batchWriter);
+        var result=new com.zhimu.server.biz.herd.vo.BatchEntryResultVO();
+        result.setBatchId(3501L);result.setBatchNo("ZM2610-080");
+        when(batchWriter.create(any(),eq("self-bred:FARROWING:8401"))).thenReturn(result);
+        var created=service.create(2002L,1101L,40,LocalDate.of(2026,10,27),false,"FARROWING",8401L);
+        assertThat(created.batchId()).isEqualTo(3501L);
+        var payload=org.mockito.ArgumentCaptor.forClass(com.zhimu.server.biz.herd.request.BatchCreateRequest.class);
+        verify(batchWriter).create(payload.capture(),eq("self-bred:FARROWING:8401"));
+        assertThat(payload.getValue().getSource()).isEqualTo("SELF_BRED");
+        assertThat(payload.getValue().getEntryCount()).isEqualTo(40);
+        assertThat(payload.getValue().getEntryAgeDays()).isZero();
+        assertThat(payload.getValue().getEntryDate()).isEqualTo(LocalDate.of(2026,10,27));
+        verify(batchMapper).update(eq(null),any());
     }
 
     @Test

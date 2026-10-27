@@ -55,6 +55,23 @@ class AiStreamTextProcessorTest {
         assertThat(processor.getAnswerType()).isEqualTo(AiCodes.ANSWER_OFF_TOPIC);
     }
 
+    @Test
+    void stripsLegacySourceLeadEvenWhenItArrivesAcrossChunks() {
+        AiStreamTextProcessor processor = new AiStreamTextProcessor(List.of());
+        String text = processor.feed("[[NO_BASIS]]\n**未找到平台")
+                + processor.feed("知识依据，仅供参考。**\n\n先检查饮水。") + processor.flush();
+        assertThat(text).isEqualTo("先检查饮水。");
+        assertThat(processor.getCitations()).isEmpty();
+    }
+
+    @Test
+    void keepsShortUntaggedAnswersAndProcessesCitationsAtEndOfStream() {
+        AiStreamTextProcessor processor = new AiStreamTextProcessor(List.of(hit(8101L, "p3")));
+        String text = processor.feed("先检查饮水[^P1]。") + processor.flush();
+        assertThat(text).isEqualTo("先检查饮水[^1]。");
+        assertThat(processor.getCitations()).hasSize(1);
+    }
+
     private static RetrievalHit hit(Long knowledgeId, String paraKey) {
         AiKnowledge knowledge = new AiKnowledge();
         knowledge.setId(knowledgeId);

@@ -28,12 +28,15 @@ interface WeighRowForm {
   weight: number | null
 }
 
+let requestSequence = 0
+
 export const useWeighStore = defineStore('feedingWeigh', {
   state: () => ({
     status: 'loading' as PageStatus,
     error: '',
     batchOptions: [] as WeighBatchOption[],
     batchOptionsLoading: false,
+    batchOptionsRequestId: 0,
     batchId: 0,
     curve: null as GrowthCurve | null,
     curveLoading: false,
@@ -42,6 +45,11 @@ export const useWeighStore = defineStore('feedingWeigh', {
     recordsTotal: 0,
     query: { page: 1, size: 20 },
     recordsLoading: false,
+    recordsError: '',
+    loadRequestId: 0,
+    curveRequestId: 0,
+    recordsRequestId: 0,
+    compareRequestId: 0,
     compareOptions: [] as WeighCompareOption[],
     compareIds: [] as number[],
     compareMenu: false,
@@ -103,7 +111,7 @@ export const useWeighStore = defineStore('feedingWeigh', {
         batch.breed_name,
         batch.day_age !== undefined && batch.day_age !== null ? `${batch.day_age} 日龄` : '',
         batch.current_count ? `存栏 ${batch.current_count} 头` : '',
-        batch.entry_date ? `${formatShort(batch.entry_date)}${batch.entry_age_days ? ` 以 ${batch.entry_age_days} 日龄入栏` : ''}${entry ? `，平均 ${Number(entry).toFixed(1)} 千克` : ''}` : ''
+        batch.entry_date ? `${formatShort(batch.entry_date)}${batch.entry_age_days ? ` 以 ${batch.entry_age_days} 日龄入栏` : ''}${entry ? `，平均 ${Number(entry).toFixed(Math.abs(Number(entry)) < 1 ? 2 : 1)} 千克` : ''}` : ''
       ].filter(Boolean).join(' · ')
     },
     metrics(): NonNullable<GrowthCurve['metrics']> {
@@ -229,10 +237,13 @@ export const useWeighStore = defineStore('feedingWeigh', {
   actions: {
     async load(force = false): Promise<void> {
       if (this.loaded && !force) return
+      const requestId = this.loadRequestId = ++requestSequence
       this.status = 'loading'
       this.error = ''
+      this.loaded = false
       try {
-        if (!this.batchOptions.length) await this.loadBatchOptions()
+        if (!this.batchOptions.length && !await this.loadBatchOptions()) return
+        if (requestId !== this.loadRequestId) return
         if (!this.batchId && this.batchOptions.length) {
           const withRecords = this.batchOptions
             .filter((item) => item.last_avg_weight !== null && item.last_avg_weight !== undefined)
@@ -243,23 +254,31 @@ export const useWeighStore = defineStore('feedingWeigh', {
           this.status = 'empty'
           return
         }
-        await Promise.all([this.loadCurve(), this.loadRecords(), this.loadCompareOptions()])
+        const [curveReady] = await Promise.all([this.loadCurve(), this.loadRecords(), this.loadCompareOptions()])
+        if (requestId !== this.loadRequestId || !curveReady) return
         this.loaded = true
         this.status = this.curve ? 'ready' : 'empty'
       } catch (error) {
+        if (requestId !== this.loadRequestId) return
         this.status = statusForError(error)
         this.error = errorText(error, '生长曲线加载失败，请稍后重新加载')
       }
     },
-    async loadBatchOptions(): Promise<void> {
+    async loadBatchOptions(): Promise<boolean> {
+      const requestId = this.batchOptionsRequestId = ++requestSequence
       this.batchOptionsLoading = true
       try {
-        this.batchOptions = await feedingApi.weighBatchOptions()
+        const options = await feedingApi.weighBatchOptions()
+        if (requestId !== this.batchOptionsRequestId) return false
+        this.batchOptions = options
+        return true
       } catch (error) {
+        if (requestId !== this.batchOptionsRequestId) return false
         this.status = statusForError(error)
         this.error = errorText(error, '称重批次加载失败')
+        return false
       } finally {
-        this.batchOptionsLoading = false
+        if (requestId === this.batchOptionsRequestId) this.batchOptionsLoading = false
       }
     },
     async setBatch(batchId: number): Promise<void> {
@@ -269,48 +288,74 @@ export const useWeighStore = defineStore('feedingWeigh', {
       this.curve = null
       this.records = []
       this.query.page = 1
+      const requestId = this.loadRequestId = ++requestSequence
       this.status = 'loading'
+      this.loaded = false
+      this.error = ''
       try {
-        await Promise.all([this.loadCurve(), this.loadRecords(), this.loadCompareOptions()])
+        const [curveReady] = await Promise.all([this.loadCurve(), this.loadRecords(), this.loadCompareOptions()])
+        if (requestId !== this.loadRequestId || !curveReady) return
+        this.loaded = true
         this.status = this.curve ? 'ready' : 'empty'
       } catch (error) {
+        if (requestId !== this.loadRequestId) return
         this.status = statusForError(error)
         this.error = errorText(error, '生长曲线加载失败')
       }
     },
-    async loadCurve(): Promise<void> {
-      if (!this.batchId) return
+    async loadCurve(): Promise<boolean> {
+      if (!this.batchId) return false
+      const batchId = this.batchId
+      const requestId = this.curveRequestId = ++requestSequence
       this.curveLoading = true
       this.curveError = ''
       try {
-        this.curve = await feedingApi.growthCurve(this.batchId, this.compareIds)
+        const curve = await feedingApi.growthCurve(batchId, [...this.compareIds])
+        if (requestId !== this.curveRequestId || batchId !== this.batchId) return false
+        this.curve = curve
+        this.status = 'ready'
+        return true
       } catch (error) {
+        if (requestId !== this.curveRequestId || batchId !== this.batchId) return false
         this.curve = null
         this.curveError = errorText(error, '生长曲线加载失败')
+        this.error = this.curveError
+        this.status = statusForError(error)
+        this.loaded = false
+        return false
       } finally {
-        this.curveLoading = false
+        if (requestId === this.curveRequestId) this.curveLoading = false
       }
     },
     async loadRecords(): Promise<void> {
       if (!this.batchId) return
+      const batchId = this.batchId
+      const requestId = this.recordsRequestId = ++requestSequence
       this.recordsLoading = true
+      this.recordsError = ''
       try {
-        const data = await feedingApi.weighRecords(this.batchId, this.query.page, this.query.size)
+        const data = await feedingApi.weighRecords(batchId, this.query.page, this.query.size)
+        if (requestId !== this.recordsRequestId || batchId !== this.batchId) return
         this.records = data.list || []
         this.recordsTotal = Number(data.total || 0)
-      } catch {
+      } catch (error) {
+        if (requestId !== this.recordsRequestId || batchId !== this.batchId) return
         this.records = []
         this.recordsTotal = 0
+        this.recordsError = errorText(error, '称重记录加载失败')
       } finally {
-        this.recordsLoading = false
+        if (requestId === this.recordsRequestId) this.recordsLoading = false
       }
     },
     async loadCompareOptions(): Promise<void> {
       if (!this.batchId) return
+      const batchId = this.batchId
+      const requestId = this.compareRequestId = ++requestSequence
       try {
-        this.compareOptions = await feedingApi.compareOptions(this.batchId)
+        const options = await feedingApi.compareOptions(batchId)
+        if (requestId === this.compareRequestId && batchId === this.batchId) this.compareOptions = options
       } catch {
-        this.compareOptions = []
+        if (requestId === this.compareRequestId && batchId === this.batchId) this.compareOptions = []
       }
     },
     async setPage(page: number): Promise<void> {
@@ -492,8 +537,8 @@ export const useWeighStore = defineStore('feedingWeigh', {
     async saveCycle(reset = false): Promise<void> {
       if (this.cycleSaving || !this.batchId) return
       this.cycleError = ''
-      if (!reset && (this.cycleInput < 1 || this.cycleInput > 31)) {
-        this.cycleError = '称重周期需为 1–31 次/月'
+      if (!reset && (!Number.isInteger(this.cycleInput) || this.cycleInput < 1 || this.cycleInput > 8)) {
+        this.cycleError = '称重周期需为 1–8 次/月'
         return
       }
       this.cycleSaving = true

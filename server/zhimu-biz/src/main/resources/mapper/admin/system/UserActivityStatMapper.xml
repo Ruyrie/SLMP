@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhimu.server.admin.system.mapper.UserActivityStatMapper">
+    <insert id="touch">
+        INSERT INTO t_user_active_day(stat_date,user_id,farm_id,op_count,record_count,created_at,updated_at)
+        VALUES(#{date},#{userId},#{farmId},1,0,#{now},#{now})
+        ON DUPLICATE KEY UPDATE op_count=op_count+1,updated_at=VALUES(updated_at)
+    </insert>
+    <!-- 历史只恢复日志能确认的活跃：不以管理员登录或模拟曲线补数。 -->
+    <insert id="backfillActivity">
+        INSERT INTO t_user_active_day(stat_date,user_id,farm_id,op_count,record_count,created_at,updated_at)
+        SELECT stat_date,user_id,farm_id,MAX(ops),0,NOW(),NOW() FROM (
+            SELECT DATE(created_at) stat_date,user_id,0 farm_id,COUNT(*) ops
+            FROM t_login_log
+            WHERE result='SUCCESS' AND user_id &gt; 0 AND created_at &gt;= #{start}
+                AND created_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY)
+            GROUP BY DATE(created_at),user_id
+            UNION ALL
+            SELECT DATE(created_at),operator_id,COALESCE(farm_id,0),COUNT(*)
+            FROM t_operation_log
+            WHERE operator_type='USER' AND result='SUCCESS' AND operator_id &gt; 0
+                AND created_at &gt;= #{start} AND created_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY)
+            GROUP BY DATE(created_at),operator_id,COALESCE(farm_id,0)
+        ) logs GROUP BY stat_date,user_id,farm_id
+        ON DUPLICATE KEY UPDATE op_count=GREATEST(op_count,VALUES(op_count)),updated_at=NOW()
+    </insert>
+    <update id="resetProduction">
+        UPDATE t_user_active_day SET record_count=0 WHERE stat_date BETWEEN #{start} AND #{end}
+    </update>
+    <!-- 登记次数按登记时间计算，保留后来作废的登记事实；自动衍生流水不重复计数。 -->
+    <insert id="aggregateProduction">
+        INSERT INTO t_user_active_day(stat_date,user_id,farm_id,op_count,record_count,created_at,updated_at)
+        SELECT DATE(registered_at),user_id,farm_id,COUNT(DISTINCT record_key),COUNT(DISTINCT record_key),NOW(),NOW()
+        FROM (
+            SELECT created_at registered_at,created_by user_id,farm_id,CONCAT('EVENT:',id) record_key FROM t_batch_event
+            WHERE created_by &gt; 0 AND farm_id &gt; 0 AND created_at &gt;= #{start} AND created_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND source_biz_type IS NULL
+            UNION ALL
+            SELECT created_at registered_at,created_by user_id,farm_id,CONCAT('FEED:',id) record_key FROM t_feed_record
+            WHERE created_by &gt; 0 AND farm_id &gt; 0 AND created_at &gt;= #{start} AND created_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND 1=1
+            UNION ALL
+            SELECT created_at registered_at,created_by user_id,farm_id,CONCAT('WEIGH:',id) record_key FROM t_weigh_record
+            WHERE created_by &gt; 0 AND farm_id &gt; 0 AND created_at &gt;= #{start} AND created_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND 1=1
+            UNION ALL
+            SELECT registered_at registered_at,registrant_id user_id,farm_id,CONCAT('INSPECT:',id) record_key FROM t_inspection
+            WHERE registrant_id &gt; 0 AND farm_id &gt; 0 AND registered_at &gt;= #{start} AND registered_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND registered_at IS NOT NULL
+            UNION ALL
+            SELECT created_at registered_at,created_by user_id,farm_id,CONCAT('IMMUNE:',id) record_key FROM t_immune_record
+            WHERE created_by &gt; 0 AND farm_id &gt; 0 AND created_at &gt;= #{start} AND created_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND 1=1
+            UNION ALL
+            SELECT created_at registered_at,created_by user_id,farm_id,CONCAT('MEDICATION:',COALESCE(NULLIF(group_no,''),CAST(id AS CHAR))) record_key FROM t_medication_record
+            WHERE created_by &gt; 0 AND farm_id &gt; 0 AND created_at &gt;= #{start} AND created_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND 1=1
+            UNION ALL
+            SELECT created_at registered_at,created_by user_id,farm_id,CONCAT('DISINFECT:',id) record_key FROM t_disinfect_record
+            WHERE created_by &gt; 0 AND farm_id &gt; 0 AND created_at &gt;= #{start} AND created_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND 1=1
+            UNION ALL
+            SELECT created_at registered_at,created_by user_id,farm_id,CONCAT('MATING:',id) record_key FROM t_mating_record
+            WHERE created_by &gt; 0 AND farm_id &gt; 0 AND created_at &gt;= #{start} AND created_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND 1=1
+            UNION ALL
+            SELECT created_at registered_at,created_by user_id,farm_id,CONCAT('PREGNANCY:',id) record_key FROM t_pregnancy_check
+            WHERE created_by &gt; 0 AND farm_id &gt; 0 AND created_at &gt;= #{start} AND created_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND 1=1
+            UNION ALL
+            SELECT created_at registered_at,created_by user_id,farm_id,CONCAT('FARROWING:',id) record_key FROM t_farrowing_record
+            WHERE created_by &gt; 0 AND farm_id &gt; 0 AND created_at &gt;= #{start} AND created_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND 1=1
+            UNION ALL
+            SELECT created_at registered_at,created_by user_id,farm_id,CONCAT('WEANING:',id) record_key FROM t_weaning_record
+            WHERE created_by &gt; 0 AND farm_id &gt; 0 AND created_at &gt;= #{start} AND created_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND 1=1
+            UNION ALL
+            SELECT created_at registered_at,created_by user_id,farm_id,CONCAT('INCUBATION:',id) record_key FROM t_incubation
+            WHERE created_by &gt; 0 AND farm_id &gt; 0 AND created_at &gt;= #{start} AND created_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND 1=1
+            UNION ALL
+            SELECT candle_at registered_at,candle_by user_id,farm_id,CONCAT('CANDLE:',id) record_key FROM t_incubation
+            WHERE candle_by &gt; 0 AND farm_id &gt; 0 AND candle_at &gt;= #{start} AND candle_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND candle_at IS NOT NULL
+            UNION ALL
+            SELECT hatch_at registered_at,hatch_by user_id,farm_id,CONCAT('HATCH:',id) record_key FROM t_incubation
+            WHERE hatch_by &gt; 0 AND farm_id &gt; 0 AND hatch_at &gt;= #{start} AND hatch_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND hatch_at IS NOT NULL
+            UNION ALL
+            SELECT created_at registered_at,created_by user_id,farm_id,CONCAT('SALE:',id) record_key FROM t_sale_order
+            WHERE created_by &gt; 0 AND farm_id &gt; 0 AND created_at &gt;= #{start} AND created_at &lt; DATE_ADD(#{end},INTERVAL 1 DAY) AND 1=1
+        ) records GROUP BY DATE(registered_at),user_id,farm_id
+        ON DUPLICATE KEY UPDATE record_count=VALUES(record_count),
+            op_count=GREATEST(op_count,VALUES(op_count)),updated_at=NOW()
+    </insert>
+    <insert id="aggregatePlatformDay">
+        INSERT INTO t_platform_daily_stat(stat_date,active_user_count,new_user_count,
+            production_record_count,active_farm_count,created_at,updated_at)
+        SELECT #{date},COUNT(DISTINCT CASE WHEN op_count &gt; 0 THEN user_id END),
+            (SELECT COUNT(*) FROM t_user WHERE created_at &gt;= #{date}
+                AND created_at &lt; DATE_ADD(#{date},INTERVAL 1 DAY) AND status &lt;&gt; 'CANCELLED'),
+            COALESCE(SUM(record_count),0),
+            COUNT(DISTINCT CASE WHEN record_count &gt; 0 AND farm_id &gt; 0 THEN farm_id END),NOW(),NOW()
+        FROM t_user_active_day WHERE stat_date=#{date}
+        ON DUPLICATE KEY UPDATE active_user_count=VALUES(active_user_count),new_user_count=VALUES(new_user_count),
+            production_record_count=VALUES(production_record_count),active_farm_count=VALUES(active_farm_count),updated_at=NOW()
+    </insert>
+</mapper>

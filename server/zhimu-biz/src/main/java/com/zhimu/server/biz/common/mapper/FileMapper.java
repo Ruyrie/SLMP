@@ -12,6 +12,9 @@ import java.time.LocalDateTime;
  */
 public interface FileMapper extends BaseMapper<FileEntity> {
 
+    @org.apache.ibatis.annotations.Select("SELECT * FROM t_file WHERE id=#{id} AND deleted=0 FOR UPDATE")
+    FileEntity selectActiveForUpdate(@Param("id") Long id);
+
     @Update("UPDATE t_file SET bound = #{bound}, updated_at = #{now} WHERE id = #{id} AND deleted = 0")
     int updateBound(@Param("id") Long id, @Param("bound") int bound, @Param("now") LocalDateTime now);
 }

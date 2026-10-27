@@ -14,8 +14,8 @@ import java.util.Map;
 
 /**
  * 模块10 出栏单写入模块04 存栏的适配器。
- * 创建出栏单调用 sale、作废调用 restoreSale；数量调整暂未映射到模块04 的幂等扣减命令，
- * 返回 -1 由调用方按批次存栏兜底，避免重复扣减。
+ * 创建出栏单调用 sale、作废调用 restoreSale；数量调整先恢复原扣减，
+ * 再按审核后的完整栏舍分配重新出栏，由调用方事务保证原子性。
  */
 @Component
 @Primary
@@ -23,6 +23,7 @@ import java.util.Map;
 public class BatchSaleAdapter implements BatchSalePort {
 
     private final BatchStockCommandService batchStockCommandService;
+    private final com.zhimu.server.biz.finance.mapper.SaleOrderMapper orderMapper;
 
     @Override
     public List<PenStock> penStocks(Long batchId) {
@@ -67,7 +68,23 @@ public class BatchSaleAdapter implements BatchSalePort {
     @Override
     public int adjustSale(Long farmId, Long batchId, LocalDate saleDate, Map<Long, Integer> penQuantities,
                           Long saleOrderId) {
-        // 模块04 的扣减命令按（业务类型、业务 ID、批次）幂等，不能直接用 delta 再扣一次
-        return -1;
+        var order = com.zhimu.server.framework.mybatis.TenantSkip.call(() -> orderMapper.selectById(saleOrderId));
+        if (order == null || !java.util.Objects.equals(farmId, order.getFarmId())
+                || !java.util.Objects.equals(batchId, order.getBatchId())) {
+            throw new com.zhimu.server.common.error.BizException(com.zhimu.server.common.error.ErrorCode.NOT_FOUND);
+        }
+        var allocations = FinanceSupport.parse(order.getPenAllocations(),
+                com.zhimu.server.biz.finance.vo.SaleOrderVos.PenAllocation[].class);
+        Map<Long, Integer> corrected = new java.util.LinkedHashMap<>();
+        if (allocations != null) for (var allocation : allocations) {
+            if (allocation.getQuantity() != null && allocation.getQuantity() > 0)
+                corrected.merge(allocation.getPenId(), allocation.getQuantity(), Integer::sum);
+        }
+        if (corrected.values().stream().mapToInt(Integer::intValue).sum() != order.getQuantity()) {
+            throw new com.zhimu.server.common.error.BizException(com.zhimu.server.common.error.ErrorCode.STATE_CHANGED,
+                    "栏舍出栏数量与总数不一致，请核对后重新审核");
+        }
+        batchStockCommandService.restoreSale(BizType.SALE_ORDER, saleOrderId);
+        return saleOut(farmId, batchId, saleDate, corrected, saleOrderId);
     }
 }

@@ -910,7 +910,7 @@ function statusTagText(item: DrugLotItem): { type: string; icon: string; text: s
       <template v-else>
         <zw-seg :model-value="outboundType" :items="[{ label: '领用', value: 'USE' }, { label: '退货', value: 'RETURN' }]" @update:model-value="onOutboundType" />
         <zw-notice :type="outboundType === 'RETURN' ? 'info' : 'info'" class="mt-3">
-          {{ outboundType === 'RETURN' ? '退货不计入批次成本，也不会自动记账。收到退款时，请在收支记账中记一笔收入。' : '领用不会生成接种、用药或消毒记录，也不计算休药期。用于免疫、治疗和计划消毒的，请在免疫计划、用药与休药、消毒管理中登记，系统会自动扣减库存。' }}
+          {{ outboundType === 'RETURN' ? '退货不计入批次成本。实际收到退款后，请在退货单详情登记退款，系统会自动生成关联收入，请勿重复手工记账。' : '领用不会生成接种、用药或消毒记录，也不计算休药期。用于免疫、治疗和计划消毒的，请在免疫计划、用药与休药、消毒管理中登记，系统会自动扣减库存。' }}
         </zw-notice>
         <div class="zw-form-2 mt-4">
           <zw-form-item label="药品" required :error="outboundErrors.drug_id">

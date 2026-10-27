@@ -68,14 +68,15 @@ class JPushClientTest {
         JsonNode android = body.get("notification").get("android");
         assertThat(android.get("title").asString()).isEqualTo("东山猪场 · 3 号育肥舍早餐投喂已逾期");
         assertThat(android.get("alert").asString()).isEqualTo("请尽快完成投喂登记");
-        assertThat(android.get("channel_id").asString()).isEqualTo("zm_todo");
+        assertThat(android.get("channel_id").asString()).isEqualTo("zm_todo_v2");
+        assertThat(android.get("display_foreground").asString()).isEqualTo("1");
         assertThat(android.get("intent").get("url").asString())
                 .isEqualTo("intent:#Intent;action=com.zhimu.slmp.action.PUSH_OPEN;end");
         JsonNode extras = android.get("extras");
         assertThat(extras.get("route").asString()).isEqualTo("T04");
         assertThat(extras.get("farm_id").asLong()).isEqualTo(1001L);
         assertThat(extras.get("message_id").asLong()).isEqualTo(501L);
-        assertThat(extras.get("channel").asString()).isEqualTo("zm_todo");
+        assertThat(extras.get("channel").asString()).isEqualTo("zm_todo_v2");
         assertThat(body.get("options").get("time_to_live").asLong()).isEqualTo(86400);
         assertThat(body.get("options").get("apns_production").asBoolean()).isFalse();
     }

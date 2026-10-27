@@ -150,6 +150,8 @@ public class AssistantFragment extends BaseFragment {
         super.onHiddenChanged(hidden);
         if (hidden && chat != null) {
             chat.onLeave();
+        } else if (!hidden && AiExtras.MODE_COURSE.equals(mode) && course != null) {
+            course.refreshVisible();
         }
     }
 

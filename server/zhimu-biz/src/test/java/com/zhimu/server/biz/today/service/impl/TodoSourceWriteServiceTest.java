@@ -60,7 +60,7 @@ class TodoSourceWriteServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new TodoServiceImpl(todoMapper, handleLogMapper, todoScope, todoConvert, farmQueryService);
+        service = new TodoServiceImpl(todoMapper, org.mockito.Mockito.mock(com.zhimu.server.biz.stock.support.StockWarningReconciler.class), handleLogMapper, todoScope, todoConvert, farmQueryService, org.mockito.Mockito.mock(com.zhimu.server.biz.feeding.api.FeedTaskReconciliationService.class));
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-19T01:30:00Z"), ZONE));
     }
 

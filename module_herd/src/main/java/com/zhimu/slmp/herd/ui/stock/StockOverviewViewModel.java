@@ -1,7 +1,5 @@
 package com.zhimu.slmp.herd.ui.stock;
 
-import android.app.Activity;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -318,9 +316,8 @@ public class StockOverviewViewModel extends BaseViewModel {
      * （“已新增 6 号育肥舍”+“去分配”）。
      */
     public void onChildResult(int code, @Nullable String text) {
-        if (code == Activity.RESULT_OK) {
-            loadSummary();
-            rebuildCurrent();
-        }
+        // 登记后继续查看批次档案再返回，最外层页面可能收到 RESULT_CANCELED。
+        // 返回存栏总览时重新读取当前数据，不能依赖中间页面逐层透传结果码。
+        refresh();
     }
 }

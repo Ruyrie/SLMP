@@ -31,6 +31,7 @@ import com.zhimu.server.biz.herd.service.BatchService;
 import com.zhimu.server.biz.health.service.MedicationService;
 import com.zhimu.server.biz.herd.support.BatchAccess;
 import com.zhimu.server.biz.herd.support.BatchNoGenerator;
+import com.zhimu.server.biz.herd.support.BatchQrLinks;
 import com.zhimu.server.biz.herd.support.HerdErrors;
 import com.zhimu.server.biz.herd.support.HerdSupport;
 import com.zhimu.server.biz.herd.support.QrCodes;
@@ -106,6 +107,7 @@ public class BatchServiceImpl implements BatchService {
     private final ObjectProvider<BatchTimelineProvider> timelineProviders;
     private final MedicationService medicationService;
     private final com.zhimu.server.biz.common.api.ChangeRequestService changeRequestService;
+    private final BatchQrLinks qrLinks;
     @Override
     public PageVO<BatchListItemVO> list(BatchListQuery query) {
         FarmContext.FarmMember member = support.context();
@@ -167,11 +169,12 @@ public class BatchServiceImpl implements BatchService {
         }
         Batch batch;
         if (qrContent != null) {
-            String token = QrCodes.parseToken(qrContent);
+            String token = qrLinks.parseToken(qrContent);
             if (token == null) {
                 return lookupResult(BatchLookupVO.NOT_BATCH_QR, "没有识别到批次二维码，请对准批次标签重试");
             }
             batch = TenantSkip.call(() -> batchMapper.selectByQrTokenIncludingDeleted(token));
+            if (batch != null && !token.equals(batch.getQrToken())) batch = null;
         } else {
             String normalized = batchNo.toUpperCase();
             if (!BATCH_NO.matcher(normalized).matches()) {
@@ -188,10 +191,12 @@ public class BatchServiceImpl implements BatchService {
         Long userId = com.zhimu.server.common.context.UserContext.requireUserId();
         FarmContext.FarmMember target = memberCache.get(batch.getFarmId(), userId);
         if (target == null || target.farmStatus() == FarmStatus.PENDING || target.farmStatus() == FarmStatus.REJECTED) {
+            if (qrContent != null && Boolean.TRUE.equals(batch.getTraceEnabled())) return publicTrace(batch);
             return lookupResult(BatchLookupVO.NO_PERMISSION,
                     "你没有这个批次的查看权限。这个批次不属于你加入的养殖场，或不在你负责的栏舍内。");
         }
         if (!support.visibleToStaff(batch, target)) {
+            if (qrContent != null && Boolean.TRUE.equals(batch.getTraceEnabled())) return publicTrace(batch);
             return lookupResult(BatchLookupVO.NO_PERMISSION,
                     "你没有这个批次的查看权限。这个批次不属于你加入的养殖场，或不在你负责的栏舍内。");
         }
@@ -208,6 +213,16 @@ public class BatchServiceImpl implements BatchService {
             vo.setMessage("已切换到" + target.farmName());
         }
         return vo;
+    }
+
+    private BatchLookupVO publicTrace(Batch batch) {
+        var farm = farmLookup.findFarm(batch.getFarmId());
+        if (farm == null || !"APPROVED".equals(farm.getAuditStatus()) || Boolean.TRUE.equals(farm.getDisabled())
+                || Boolean.TRUE.equals(farm.getDeleted()) || Boolean.TRUE.equals(farm.getFrozen()))
+            return lookupResult(BatchLookupVO.NOT_FOUND, "该批次暂未开放公开溯源");
+        BatchLookupVO result = lookupResult(BatchLookupVO.PUBLIC_TRACE, "查看公开溯源");
+        result.setTraceToken(batch.getQrToken());
+        return result;
     }
 
     @Override
@@ -234,7 +249,8 @@ public class BatchServiceImpl implements BatchService {
         vo.setSource(batch.getSource());
         vo.setStatus(batch.getStatus());
         vo.setEntryDate(BeijingTime.format(batch.getEntryDate()));
-        vo.setQrContent(QrCodes.content(batch.getQrToken()));
+        vo.setQrContent(qrLinks.content(batch.getQrToken()));
+        vo.setTraceEnabled(!Boolean.FALSE.equals(batch.getTraceEnabled()));
         vo.setSourceRecordType(batch.getSourceRecordType());
         vo.setEndType(batch.getEndType());
         vo.setEndDate(BeijingTime.format(batch.getEndDate()));
@@ -562,7 +578,7 @@ public class BatchServiceImpl implements BatchService {
         vo.setBatchId(batch.getId());
         vo.setPenId(pen.getId());
         vo.setBatchNo(batch.getBatchNo());
-        vo.setQrContent(QrCodes.content(batch.getQrToken()));
+        vo.setQrContent(qrLinks.content(batch.getQrToken()));
         vo.setFarmName(member.farmName());
         vo.setPenName(pen.getPenName());
         vo.setBreedName(support.breedName(breed.id()));
@@ -1043,7 +1059,7 @@ public class BatchServiceImpl implements BatchService {
 
     private void ensurePenCategory(Pen pen, Long categoryId, Long excludeBatchId) {
         for (Batch other : support.activeBatches(pen.getFarmId())) {
-            if (other.getId().equals(excludeBatchId) || !other.getCategoryId().equals(categoryId)) {
+            if (other.getId().equals(excludeBatchId) || other.getCategoryId().equals(categoryId)) {
                 continue;
             }
             boolean inPen = support.positivePensOfBatch(other.getId()).stream()
@@ -1383,7 +1399,7 @@ public class BatchServiceImpl implements BatchService {
             vo.setBatchId(batch.getId());
             vo.setPenId(event.getPenId());
             vo.setBatchNo(batch.getBatchNo());
-            vo.setQrContent(QrCodes.content(batch.getQrToken()));
+            vo.setQrContent(qrLinks.content(batch.getQrToken()));
             vo.setFarmName(farmNameOf(farmId));
             vo.setPenName(pen == null ? null : pen.getPenName());
             vo.setBreedName(support.breedName(batch.getBreedId()));

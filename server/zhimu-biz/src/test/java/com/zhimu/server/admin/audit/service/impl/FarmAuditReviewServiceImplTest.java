@@ -9,6 +9,8 @@ import com.zhimu.server.admin.base.api.BaseDataQueryService;
 import com.zhimu.server.admin.system.api.OperationLogService;
 import com.zhimu.server.biz.account.entity.User;
 import com.zhimu.server.biz.common.service.impl.FileVoAssembler;
+import com.zhimu.server.biz.common.entity.FileEntity;
+import com.zhimu.server.common.vo.FileVO;
 import com.zhimu.server.biz.farm.api.FarmAuditAdminService;
 import com.zhimu.server.biz.farm.entity.Farm;
 import com.zhimu.server.biz.farm.entity.FarmAudit;
@@ -20,6 +22,8 @@ import com.zhimu.server.common.util.BeijingTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -45,8 +49,9 @@ class FarmAuditReviewServiceImplTest {
     private final AuditAdminQueryMapper queryMapper = mock(AuditAdminQueryMapper.class);
     private final FarmAuditAdminService auditAdminService = mock(FarmAuditAdminService.class);
     private final BaseDataQueryService baseData = mock(BaseDataQueryService.class);
+    private final FileVoAssembler fileVoAssembler = mock(FileVoAssembler.class);
     private final FarmAuditReviewServiceImpl service = new FarmAuditReviewServiceImpl(queryMapper,
-            auditAdminService, baseData, mock(FileVoAssembler.class), mock(FarmNotify.class),
+            auditAdminService, baseData, fileVoAssembler, mock(FarmNotify.class),
             mock(OperationLogService.class));
 
     @BeforeEach
@@ -135,5 +140,42 @@ class FarmAuditReviewServiceImplTest {
         request.setVersion(1);
         assertThatThrownBy(() -> service.approve(3002L, request))
                 .isInstanceOfSatisfying(BizException.class, e -> assertThat(e.getCode()).isEqualTo(40004));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"qualificationFileIds", "qualification_file_ids"})
+    void 新旧快照图片均按提交顺序展示并正确标记沿用和重拍(String key) {
+        FarmAudit before = new FarmAudit();
+        before.setId(3001L);
+        before.setFarmId(1003L);
+        before.setSubmitNo(1);
+        before.setStatus("REJECTED");
+        before.setSnapshotJson("{\"name\":\"北湾牛场\",\"" + key + "\":[10,11]}");
+        before.setReshootFileIds("[10]");
+        FarmAudit current = new FarmAudit();
+        current.setId(3002L);
+        current.setFarmId(1003L);
+        current.setSubmitNo(2);
+        current.setStatus("PENDING");
+        current.setSnapshotJson("{\"name\":\"北湾牛场\",\"" + key + "\":[11,12]}");
+        Farm farm = new Farm();
+        farm.setId(1003L);
+        when(queryMapper.selectFarmAudit(3002L)).thenReturn(current);
+        when(queryMapper.selectFarmIncludingDeleted(1003L)).thenReturn(farm);
+        when(queryMapper.selectFarmAuditsOfFarm(1003L)).thenReturn(List.of(current, before));
+        FileEntity kept = new FileEntity();
+        kept.setId(11L);
+        FileEntity reshot = new FileEntity();
+        reshot.setId(12L);
+        when(queryMapper.selectFiles(List.of(11L, 12L))).thenReturn(List.of(reshot, kept));
+        when(fileVoAssembler.toFileVo(kept)).thenReturn(FileVO.builder().url("/kept.png").build());
+        when(fileVoAssembler.toFileVo(reshot)).thenReturn(FileVO.builder().url("/reshot.png").build());
+
+        var images = service.detail(3002L).getImages();
+
+        assertThat(images).extracting("fileId").containsExactly(11L, 12L);
+        assertThat(images).extracting("url").containsExactly("/kept.png", "/reshot.png");
+        assertThat(images).extracting("sameAsLast").containsExactly(true, false);
+        assertThat(images).extracting("reshoot").containsExactly(false, true);
     }
 }

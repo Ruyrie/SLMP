@@ -105,6 +105,10 @@ public final class PlayerController {
             }
             if (state == Player.STATE_ENDED) {
                 ended = true;
+                if (player != null) {
+                    callback.onTick(Math.max(0, player.getCurrentPosition()),
+                            player.getBufferedPosition(), false, player.getPlaybackParameters().speed);
+                }
                 callback.onState(PlayerState.ENDED);
                 setControlsShown(true);
             } else if (state == Player.STATE_READY && player != null && !player.getPlayWhenReady()) {
@@ -245,6 +249,19 @@ public final class PlayerController {
         if (player != null) {
             apply(cmd);
         }
+    }
+
+    /** Forget an old/withdrawn source before a fresh permission/source lookup. */
+    public void clearPlayback() {
+        lastCommand = null;
+        if (player != null) {
+            player.stop();
+            player.clearMediaItems();
+        }
+    }
+
+    public boolean playWhenReady() {
+        return player != null ? player.getPlayWhenReady() : lastCommand != null && lastCommand.isPlayWhenReady();
     }
 
     private void apply(@NonNull PlayCommand cmd) {

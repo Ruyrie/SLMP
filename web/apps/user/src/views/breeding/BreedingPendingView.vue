@@ -355,7 +355,7 @@ const today = todayISO()
                     <td>
                       <span :class="dueBadgeClass(row.item.daysToDue)" :title="`距预产 ${row.item.daysToDue} 天`">
                         <template v-if="row.item.daysToDue === 0">今天</template>
-                        <template v-else><b class="num">{{ dueBadgeText(row.item.daysToDue) }}</b><i>天</i></template>
+                        <template v-else><b class="num">{{ dueBadgeText(row.item.daysToDue) }}</b><i>{{ Number(row.item.daysToDue) < 0 ? '天逾期' : '天' }}</i></template>
                       </span>
                     </td>
                     <td><span class="zw-cell-main num">{{ row.item.earTag }}</span></td>
@@ -548,13 +548,13 @@ const today = todayISO()
             <zw-desc-item label="入栏栏舍">
               <v-select
                 v-model="store.farrowForm.targetPenId"
-                :items="store.pens.filter((pen) => !pen.disabled).map((pen) => ({ title: `${pen.pen_name} · 在栏 ${pen.stock_count || 0} · 容量 ${pen.capacity || 0}`, value: Number(pen.pen_id) }))"
+                :items="store.farrowPens.map((pen) => ({ title: `${pen.pen_name} · 在栏 ${pen.stock_count || 0} · 容量 ${pen.capacity || 0}`, value: Number(pen.pen_id) }))"
                 density="compact"
                 hide-details
                 :error="!!fieldError(store.farrowErrors, 'target_pen_id')"
               />
             </zw-desc-item>
-            <zw-desc-item label="品种">{{ store.farrowContext?.offspringBreed?.breedName || '按后代品种规则推导' }}</zw-desc-item>
+            <zw-desc-item label="品种">{{ store.farrowContext?.offspringBreed?.breedName || '加载后代品种中' }}</zw-desc-item>
             <zw-desc-item label="入栏数量"><span class="num">{{ formatNumber(store.farrowForm.liveBorn || 0) }} 头</span>（按活仔数）</zw-desc-item>
             <zw-desc-item label="入栏日龄 · 来源">0 日龄 · 自繁</zw-desc-item>
             <zw-desc-item label="批次号" :span="2"><span class="zw-faint">提交后由系统生成</span></zw-desc-item>
@@ -562,18 +562,20 @@ const today = todayISO()
         </div>
       </div>
 
+      <div v-if="store.farrowForm.transferToBatch && !store.farrowContextLoading && !store.farrowPens.length" class="b02-sum-err">没有与后代品类匹配的启用栏舍，请先新增或启用对应栏舍。</div>
+      <div v-if="store.farrowErrors.target_pen_id || store.farrowErrors.offspring_breed_id" class="b02-sum-err">{{ store.farrowErrors.target_pen_id || store.farrowErrors.offspring_breed_id }}</div>
       <zw-notice v-if="store.farrowCapacityInfo && store.farrowCapacityInfo.overCount > 0" type="warning" class="mt-4">
         <b>入栏后超过栏舍容量。</b>{{ store.farrowCapacityInfo.penName }}容量 {{ formatNumber(store.farrowCapacityInfo.capacity) }} 头，现有 {{ formatNumber(store.farrowCapacityInfo.currentCount) }} 头，入栏后共 {{ formatNumber(store.farrowCapacityInfo.afterCount) }} 头，超出 {{ formatNumber(store.farrowCapacityInfo.overCount) }} 头。
       </zw-notice>
       <v-checkbox v-if="store.farrowCapacityInfo && store.farrowCapacityInfo.overCount > 0" v-model="store.farrowForm.capacityConfirmed" label="我已确认，仍要入栏" density="compact" hide-details class="mt-2" />
       <div v-if="store.farrowErrors.capacity" class="b02-sum-err"><zw-icon name="error" :size="16" fill />{{ store.farrowErrors.capacity }}</div>
 
-      <zw-notice v-if="store.selectedFarrowAnimal" type="info" class="mt-4">登记后 {{ store.selectedFarrowAnimal.earTag }} 转为哺乳，预产期待办自动完成。</zw-notice>
+      <zw-notice v-if="store.selectedFarrowAnimal" type="info" class="mt-4">登记后 {{ store.selectedFarrowAnimal.earTag }} 转为{{ store.farrowForm.liveBorn === 0 ? '空怀' : '哺乳' }}，预产期待办自动完成。</zw-notice>
       <div v-if="store.farrowErrors.transfer_to_batch" class="b02-sum-err"><zw-icon name="error" :size="16" fill />{{ store.farrowErrors.transfer_to_batch }}</div>
       <template #foot>
         <span class="zw-foot-note">带 * 为必填</span>
         <v-btn variant="outlined" @click="closeDrawer">取消</v-btn>
-        <v-btn color="primary" :loading="store.farrowSubmitting" @click="store.submitFarrowing()">登记产仔</v-btn>
+        <v-btn color="primary" :loading="store.farrowSubmitting" :disabled="store.farrowContextLoading" @click="store.submitFarrowing()">登记产仔</v-btn>
       </template>
     </zw-drawer>
 

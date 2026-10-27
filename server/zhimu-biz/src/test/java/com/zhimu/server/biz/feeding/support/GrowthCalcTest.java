@@ -24,6 +24,13 @@ class GrowthCalcTest {
     }
 
     @Test
+    void poultryInterpolationKeepsSubKilogramPrecision() {
+        List<WeighVO.StdPoint> points = List.of(point(1, 0.04), point(7, 0.16));
+        assertThat(GrowthCalc.interpolate(points, 1)).isEqualByComparingTo("0.04");
+        assertThat(GrowthCalc.interpolate(points, 2)).isEqualByComparingTo("0.06");
+    }
+
+    @Test
     void growthResultUsesToleranceStrictly() {
         assertThat(GrowthCalc.growthResult(new BigDecimal("-0.1254"), new BigDecimal("0.1000"))).isEqualTo("SLOW");
         assertThat(GrowthCalc.growthResult(new BigDecimal("0.1254"), new BigDecimal("0.1000"))).isEqualTo("FAST");

@@ -42,6 +42,8 @@ export interface StockActions {
   can_request_change?: boolean | null
   can_scrap?: boolean | null
   can_out?: boolean | null
+  can_refund?: boolean | null
+  can_edit_refund?: boolean | null
 }
 
 export type PageStatus = 'loading' | 'ready' | 'empty' | 'filtered_empty' | 'error' | 'forbidden'
@@ -251,6 +253,15 @@ export interface StockOutbound {
   unit_price?: number
   amount?: number
   allocations?: CostAllocationRow[]
+  refund_status?: 'UNREFUNDED' | 'REFUNDED' | null
+  refund_amount?: number | null
+  refund_date?: string | null
+  refund_remark?: string | null
+  refund_registered_at?: string | null
+  refund_registered_by?: UserBrief | null
+  finance_record_id?: number | null
+  refund_block_reason?: string | null
+  refund_edit_deadline?: string | null
   actions?: StockActions
   created_by?: UserBrief
   created_at?: string
@@ -468,6 +479,22 @@ export function createFeedOtherOut(payload: FeedOtherOutPayload, key: string): P
 
 export function fetchStockOutbound(outboundId: number): Promise<StockOutbound> {
   return http().get<StockOutbound>(`/stock-outbounds/${outboundId}`)
+}
+
+export interface StockRefundPayload {
+  amount: number
+  refund_date: string
+  remark?: string
+  version: number
+}
+
+/** 仅登记已到账退款；服务端原子创建关联收入，不重复扣库存。 */
+export function registerStockRefund(outboundId: number, payload: StockRefundPayload, key: string): Promise<StockOutbound> {
+  return http().post<StockOutbound>(`/stock-outbounds/${outboundId}/refund`, payload, idempotency(key))
+}
+
+export function updateStockRefund(outboundId: number, payload: StockRefundPayload, key: string): Promise<StockOutbound> {
+  return http().put<StockOutbound>(`/stock-outbounds/${outboundId}/refund`, payload, idempotency(key))
 }
 
 /* ---------------- M24–M27 兽药与疫苗 ---------------- */

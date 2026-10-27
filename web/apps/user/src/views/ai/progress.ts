@@ -81,7 +81,8 @@ export class CourseProgressReporter {
 
   ended(position: number, duration: number): void {
     if (!this.active) return
-    this.lastPosition = duration > 0 ? duration : Math.max(0, position)
+    this.lastPosition = Math.max(0, position)
+    if (duration > 0) this.lastPosition = Math.min(this.lastPosition, duration)
     this.send('END', this.lastPosition, this.takeWatched())
     this.active = false
   }
@@ -124,7 +125,7 @@ export class CourseProgressReporter {
     return {
       play_token: this.token,
       event,
-      position_sec: Math.max(0, Math.round(position)),
+      position_sec: Math.max(0, Math.floor(position)),
       watched_sec: watched,
       quality: this.quality,
       entry_type: this.entryType,

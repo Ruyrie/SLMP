@@ -30,6 +30,11 @@ public abstract class TodayViewModelModule {
 
     @Binds
     @IntoMap
+    @ViewModelKey(com.zhimu.slmp.today.ui.collection.TodoCollectionViewModel.class)
+    abstract ViewModel bindCollection(com.zhimu.slmp.today.ui.collection.TodoCollectionViewModel vm);
+
+    @Binds
+    @IntoMap
     @ViewModelKey(CalendarViewModel.class)
     abstract ViewModel bindCalendar(CalendarViewModel vm);
 

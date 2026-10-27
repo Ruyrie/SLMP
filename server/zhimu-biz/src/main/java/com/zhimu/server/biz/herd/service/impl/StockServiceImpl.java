@@ -139,7 +139,8 @@ public class StockServiceImpl implements StockService {
             reminders.add(item);
         }
         vo.setTodayTodoCount(todoSummary.todayTodoCount());
-        vo.setWarningCount(todoSummary.warnings().size() + abnormalCount);
+        // 与未解除预警列表使用同一口径；巡检概况和休药提示属于生产提醒，不能额外累加。
+        vo.setWarningCount(todoSummary.warnings().size());
         // 生产提醒总数 = 休药中批次 + 预警项（03/07）
         vo.setReminderTotal(reminders.size());
         vo.setReminders(reminders);

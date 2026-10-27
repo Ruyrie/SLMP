@@ -31,6 +31,7 @@ public class ReceiptFormDelegate {
     public static final String F_AMOUNT = "amount";
     public static final String F_DATE = "receipt_date";
     public static final String F_METHOD = "payment_method";
+    public static final String F_SUBMIT = "_submit";
 
     /** 面板对应的出栏单 */
     public static final class Target {
@@ -71,7 +72,7 @@ public class ReceiptFormDelegate {
     private final MutableLiveData<Map<String, String>> errors = new MutableLiveData<>(Collections.emptyMap());
     private final MutableLiveData<Boolean> submitting = new MutableLiveData<>(false);
     private final MutableLiveData<Target> target = new MutableLiveData<>();
-    /** 打开面板（金额框聚焦）/ 关闭面板 */
+    /** 打开 / 关闭面板；仅宿主 Activity 消费，面板不能再竞争同一个单次事件。 */
     private final SingleLiveEvent<Boolean> showSheet = new SingleLiveEvent<>();
     private final FinanceIdemKeeper idem = new FinanceIdemKeeper("receipt");
 
@@ -218,6 +219,11 @@ public class ReceiptFormDelegate {
 
     public void setErrors(@NonNull Map<String, String> map) {
         errors.setValue(new LinkedHashMap<>(map));
+    }
+
+    /** 弹层仍打开时在表单内显示提交失败，避免 Activity 的 Snackbar 被弹层遮挡。 */
+    public void setSubmissionError(@NonNull String message) {
+        setErrors(Collections.singletonMap(F_SUBMIT, message));
     }
 
     /** 成功或 40903 后关闭面板 */

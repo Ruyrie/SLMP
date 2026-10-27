@@ -26,6 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.subjects.SingleSubject;
 
 /**
  * L07 扫码结果分发：OK、SWITCH_FARM（先切换养殖场）、NO_PERMISSION、NOT_BATCH_QR、输入批次号的 NOT_FOUND 与本地格式校验、
@@ -98,6 +99,38 @@ public class BatchScanViewModelTest {
     }
 
     @Test
+    public void publicQr_opensOnlyPublicTraceWithoutSwitchingFarm() {
+        when(repo.lookupByQr(QR)).thenReturn(Single.just(lookup(
+                "{'result':'PUBLIC_TRACE','trace_token':'publicQr123','message':'查看公开溯源'}")));
+        vm.onQrDecoded(QR);
+        assertEquals("publicQr123", vm.getOpenPublicTraceEvent().getValue());
+        assertNull(vm.getOpenArchiveEvent().getValue());
+        assertNull(vm.getNoPermissionEvent().getValue());
+        assertNull(vm.getSwitchedFromFarmId());
+        verify(farmService, never()).switchTo(org.mockito.ArgumentMatchers.anyLong());
+    }
+
+    @Test
+    public void publicResultFromManualNumber_doesNotGrantPublicAccess() {
+        when(repo.lookupByNo("ZM2610-031")).thenReturn(Single.just(lookup(
+                "{'result':'PUBLIC_TRACE','trace_token':'publicQr123'}")));
+        vm.onBatchNoChanged("ZM2610-031");
+        vm.submitBatchNo();
+        assertNull(vm.getOpenPublicTraceEvent().getValue());
+        assertNull(vm.getOpenArchiveEvent().getValue());
+        verify(farmService, never()).switchTo(org.mockito.ArgumentMatchers.anyLong());
+    }
+
+    @Test
+    public void publicResultWithoutToken_doesNotOpenAnEmptyTracePage() {
+        when(repo.lookupByQr(QR)).thenReturn(Single.just(lookup("{'result':'PUBLIC_TRACE'}")));
+        vm.onQrDecoded(QR);
+        assertNull(vm.getOpenPublicTraceEvent().getValue());
+        assertNull(vm.getOpenArchiveEvent().getValue());
+        assertEquals(BatchScanViewModel.MSG_NOT_BATCH_QR, vm.getMessage().getValue().getText());
+    }
+
+    @Test
     public void notBatchQr_showsSnackbarMessage() {
         when(repo.lookupByQr(anyString())).thenReturn(Single.just(lookup(
                 "{'result':'NOT_BATCH_QR','message':'没有识别到批次二维码，请对准批次标签重试'}")));
@@ -141,5 +174,60 @@ public class BatchScanViewModelTest {
 
         assertEquals(BatchNoValidator.MSG_INVALID, vm.getBatchNoError().getValue());
         verify(repo, never()).lookupByNo(anyString());
+    }
+
+    @Test
+    public void longUnrelatedQr_doesNotSendOversizedLookup() {
+        vm.onQrDecoded("x".repeat(201));
+
+        verify(repo, never()).lookupByQr(anyString());
+        assertEquals(BatchScanViewModel.MSG_NOT_BATCH_QR, vm.getMessage().getValue().getText());
+        assertFalse(vm.getLookupLoading().getValue());
+    }
+
+    @Test
+    public void pendingScan_ignoresAnotherResultAndManualSubmit() {
+        SingleSubject<BatchLookupVO> pending = SingleSubject.create();
+        when(repo.lookupByQr(QR)).thenReturn(pending);
+
+        vm.onQrDecoded(QR);
+        vm.onQrDecoded("another-content");
+        vm.onBatchNoChanged("ZM2610-031");
+        vm.submitBatchNo();
+
+        verify(repo, times(1)).lookupByQr(anyString());
+        verify(repo, never()).lookupByNo(anyString());
+        assertEquals(Boolean.TRUE, vm.getLookupLoading().getValue());
+        pending.onSuccess(lookup("{'result':'OK','batch_id':3001,'farm_id':1001}"));
+        assertEquals(Long.valueOf(3001L), vm.getOpenArchiveEvent().getValue().getBatchId());
+        assertFalse(vm.getLookupLoading().getValue());
+    }
+
+    @Test
+    public void failedFarmSwitch_doesNotOpenArchiveWithTheWrongFarm() {
+        when(repo.lookupByQr(QR)).thenReturn(Single.just(lookup(
+                "{'result':'SWITCH_FARM','batch_id':3201,'farm_id':1002,'farm_name':'西岭鸡场'}")));
+        when(farmService.switchTo(1002L)).thenReturn(Single.error(new java.io.IOException("offline")));
+
+        vm.onQrDecoded(QR);
+
+        assertNull(vm.getOpenArchiveEvent().getValue());
+        assertNull(vm.getSwitchedFromFarmId());
+        assertFalse(vm.getLookupLoading().getValue());
+        assertFalse(vm.getAnalyzing().getValue());
+    }
+
+    @Test
+    public void inputWithoutPermission_neverOpensOrSwitchesFarm() {
+        when(repo.lookupByNo("ZM2610-031")).thenReturn(Single.just(lookup(
+                "{'result':'NO_PERMISSION','message':'你没有这个批次的查看权限。'}")));
+        vm.onBatchNoChanged("ZM2610-031");
+
+        vm.submitBatchNo();
+
+        assertEquals("你没有这个批次的查看权限。", vm.getNoPermissionEvent().getValue());
+        assertNull(vm.getOpenArchiveEvent().getValue());
+        verify(farmService, never()).switchTo(org.mockito.ArgumentMatchers.anyLong());
+        assertFalse(vm.getLookupLoading().getValue());
     }
 }

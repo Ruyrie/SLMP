@@ -10,6 +10,7 @@ import {
   type ChangeRequestVO
 } from '@/api/change'
 import { useUiStore } from '@/stores/ui'
+import { useFarmStore } from '@/stores/farm'
 
 export type ChangePageStatus =
   | 'loading'
@@ -20,6 +21,7 @@ export type ChangePageStatus =
   | 'forbidden'
 
 export const VOID_FIELD = '__VOID__'
+export const DELETE_FIELD = '__DELETE__'
 
 interface FieldErrors {
   [key: string]: string
@@ -61,6 +63,13 @@ function sameValue(input: string, original?: string): boolean {
   return input === original.trim()
 }
 
+export function displayChangeField(field: ChangeRequestFormField | null | undefined): string {
+  if (field?.input_type === 'SELECT') {
+    return field.options?.find((option) => String(option.value) === String(field.value))?.label || '原选项已不可用'
+  }
+  return field?.value || '—'
+}
+
 export const useChangeRequestStore = defineStore('changeRequest', {
   state: () => ({
     query: {
@@ -97,7 +106,10 @@ export const useChangeRequestStore = defineStore('changeRequest', {
     createBizType: '',
     createBizId: 0,
     pendingWarning: false,
-    idemKey: ''
+    idemKey: '',
+    submittedPayload: '',
+    detailSequence: 0,
+    formSequence: 0
   }),
   getters: {
     hasFilters(state): boolean {
@@ -109,11 +121,14 @@ export const useChangeRequestStore = defineStore('changeRequest', {
       )
     },
     currentField(state): ChangeRequestFormField | null {
-      if (!state.form || state.selectedField === VOID_FIELD) return null
+      if (!state.form || state.selectedField === VOID_FIELD || state.selectedField === DELETE_FIELD) return null
       return (state.form.fields || []).find((field) => field.field_code === state.selectedField) || null
     },
     voidSelected(state): boolean {
       return state.selectedField === VOID_FIELD
+    },
+    deleteSelected(state): boolean {
+      return state.selectedField === DELETE_FIELD
     },
     currentRecalcTags(state): string[] {
       if (!state.form) return []
@@ -196,27 +211,33 @@ export const useChangeRequestStore = defineStore('changeRequest', {
       }
     },
     async openDetail(id: number): Promise<void> {
+      const sequence = ++this.detailSequence
       this.detailOpen = true
       this.detailLoading = true
       this.detail = null
       this.detailForm = null
       try {
         const detail = await getChangeRequestDetail(id)
+        if (sequence !== this.detailSequence) return
         this.detail = detail
         try {
-          this.detailForm = await getChangeRequestForm(detail.biz_type, detail.biz_id)
+          const form = await getChangeRequestForm(detail.biz_type, detail.biz_id)
+          if (sequence === this.detailSequence) this.detailForm = form
         } catch {
-          this.detailForm = null
+          if (sequence === this.detailSequence) this.detailForm = null
         }
       } catch (e) {
+        if (sequence !== this.detailSequence) return
         const err = e as ApiError
         useUiStore().toast(err.message || '修改申请加载失败，请稍后重试', 'error')
         this.detailOpen = false
       } finally {
-        this.detailLoading = false
+        if (sequence === this.detailSequence) this.detailLoading = false
       }
     },
     closeDetail(): void {
+      this.detailSequence++
+      this.detailLoading = false
       this.detailOpen = false
       this.detail = null
       this.detailForm = null
@@ -242,38 +263,50 @@ export const useChangeRequestStore = defineStore('changeRequest', {
     },
     async openResubmit(id: number): Promise<void> {
       this.resetSubmit()
+      const sequence = ++this.formSequence
       this.submitOpen = true
       this.formLoading = true
       try {
         const detail = await getChangeRequestDetail(id)
+        if (sequence !== this.formSequence) return
+        if (detail.status !== 'REJECTED') throw new Error('只有已驳回的申请可以重新提交')
+        const farm = useFarmStore()
+        if (farm.currentFarmId !== detail.farm_id) await farm.switchTo(detail.farm_id)
+        if (farm.currentFarmId !== detail.farm_id) throw new Error('养殖场正在切换，请稍后重新打开申请')
+        if (sequence !== this.formSequence) return
         this.sourceDetail = detail
         this.resubmitOfId = id
         const form = await getChangeRequestForm(detail.biz_type, detail.biz_id)
+        if (sequence !== this.formSequence) return
         this.applyForm(form, true)
-        this.selectedField = detail.change_type === 'VOID' ? VOID_FIELD : detail.field_code || ''
+        this.selectedField = detail.change_type === 'VOID' ? VOID_FIELD : detail.change_type === 'DELETE' ? DELETE_FIELD : detail.field_code || ''
         this.newValue = detail.after_value || ''
         this.reason = detail.reason || ''
         this.dirty = true
       } catch (e) {
+        if (sequence !== this.formSequence) return
         const err = e as ApiError
         this.submitOpen = false
         useUiStore().toast(err.message || '重新提交失败，请稍后重试', 'error')
       } finally {
-        this.formLoading = false
+        if (sequence === this.formSequence) this.formLoading = false
       }
     },
     async loadForm(bizType: string, bizId: number): Promise<void> {
+      const sequence = ++this.formSequence
       this.formLoading = true
       this.formError = ''
       try {
         const form = await getChangeRequestForm(bizType, bizId)
+        if (sequence !== this.formSequence) return
         this.applyForm(form, false)
       } catch (e) {
+        if (sequence !== this.formSequence) return
         const err = e as ApiError
         this.formError = err.message || '表单加载失败，请稍后重试'
         useUiStore().toast(this.formError, 'error')
       } finally {
-        this.formLoading = false
+        if (sequence === this.formSequence) this.formLoading = false
       }
     },
     applyForm(form: ChangeRequestFormVO, resubmit: boolean): void {
@@ -282,7 +315,7 @@ export const useChangeRequestStore = defineStore('changeRequest', {
       this.fieldErrors = {}
       const fields = form.fields || []
       if (!resubmit) {
-        this.selectedField = fields.length === 1 && !form.void_allowed ? fields[0].field_code : ''
+        this.selectedField = fields.length === 1 && !form.void_allowed && !form.delete_allowed ? fields[0].field_code : ''
         this.newValue = ''
         this.reason = ''
         this.dirty = false
@@ -311,12 +344,17 @@ export const useChangeRequestStore = defineStore('changeRequest', {
     validate(): FieldErrors {
       const errors: FieldErrors = {}
       if (!this.selectedField) errors.field_code = MSG_PICK_FIELD
-      if (this.selectedField && this.selectedField !== VOID_FIELD) {
+      else if (this.selectedField === VOID_FIELD && !this.form?.void_allowed) errors.field_code = '这条记录暂不能作废'
+      else if (this.selectedField === DELETE_FIELD && !this.form?.delete_allowed) errors.field_code = '这条记录暂不能删除'
+      else if (this.selectedField !== VOID_FIELD && this.selectedField !== DELETE_FIELD && !this.currentField) errors.field_code = MSG_PICK_FIELD
+      if (this.selectedField && this.selectedField !== VOID_FIELD && this.selectedField !== DELETE_FIELD) {
         const field = this.currentField
         const value = this.newValue.trim()
         if (!value) errors.new_value = MSG_NEW_VALUE_EMPTY
         else if (field) {
           if (sameValue(value, field.value)) errors.new_value = MSG_SAME_VALUE
+          if (field.input_type === 'SELECT' && !(field.options || []).some((option) =>
+            !option.disabled && String(option.value) === value)) errors.new_value = '请选择有效的新值'
           if (field.input_type === 'NUMBER') {
             const number = Number(value)
             const unit = field.value_unit ? ` ${field.value_unit}` : ''
@@ -345,20 +383,24 @@ export const useChangeRequestStore = defineStore('changeRequest', {
       this.fieldErrors = errors
       if (Object.keys(errors).length) return null
       const isVoid = this.selectedField === VOID_FIELD
-      if (!this.idemKey) this.idemKey = newIdemKey()
+      const isDelete = this.selectedField === DELETE_FIELD
+      const payload = {
+        biz_type: this.form.biz_type || '',
+        biz_id: Number(this.form.biz_id || 0),
+        change_type: isVoid ? 'VOID' as const : isDelete ? 'DELETE' as const : 'UPDATE' as const,
+        field_code: isVoid || isDelete ? null : this.selectedField,
+        new_value: isVoid || isDelete ? null : this.newValue.trim(),
+        record_version: this.form.record_version || '',
+        reason: this.reason.trim(),
+        resubmit_of_id: this.resubmitOfId || null
+      }
+      const fingerprint = JSON.stringify(payload)
+      if (!this.idemKey || this.submittedPayload !== fingerprint) this.idemKey = newIdemKey()
+      this.submittedPayload = fingerprint
       this.submitting = true
       try {
         const result = await submitChangeRequest(
-          {
-            biz_type: this.form.biz_type || '',
-            biz_id: Number(this.form.biz_id || 0),
-            change_type: isVoid ? 'VOID' : 'UPDATE',
-            field_code: isVoid ? null : this.selectedField,
-            new_value: isVoid ? null : this.newValue.trim(),
-            record_version: this.form.record_version || '',
-            reason: this.reason.trim(),
-            resubmit_of_id: this.resubmitOfId || null
-          },
+          payload,
           this.idemKey
         )
         this.submitting = false
@@ -438,6 +480,7 @@ export const useChangeRequestStore = defineStore('changeRequest', {
       this.resetSubmit()
     },
     resetSubmit(): void {
+      this.formSequence++
       this.form = null
       this.formLoading = false
       this.formError = ''
@@ -453,6 +496,7 @@ export const useChangeRequestStore = defineStore('changeRequest', {
       this.createBizId = 0
       this.pendingWarning = false
       this.idemKey = ''
+      this.submittedPayload = ''
     }
   }
 })

@@ -40,6 +40,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -328,8 +329,9 @@ public class PenServiceImpl implements PenService {
         pen.setVersion(0);
         pen.setUpdatedBy(member.userId());
         penMapper.insert(pen);
-        logPen("CREATE", pen, null, Map.of("pen_code", code, "pen_name", validated.name(),
-                "capacity", request.getCapacity()));
+        Map<String, Object> created = penSnapshot(pen);
+        created.put("pen_code", logField("栏舍编号", code));
+        logPen("CREATE", pen, null, created);
         return toDetail(pen, member);
     }
 
@@ -341,8 +343,13 @@ public class PenServiceImpl implements PenService {
         requireVersion(pen.getVersion(), request.getVersion());
         Validated validated = validate(request.getPenName(), request.getPenType(), request.getCategoryId(),
                 request.getCapacity());
-        Map<String, Object> before = Map.of("pen_name", pen.getPenName(), "pen_type", pen.getPenType(),
-                "capacity", pen.getCapacity());
+        if (Objects.equals(pen.getPenName(), validated.name())
+                && Objects.equals(pen.getPenType(), validated.penType())
+                && Objects.equals(pen.getCategoryId(), request.getCategoryId())
+                && Objects.equals(pen.getCapacity(), request.getCapacity())) {
+            return toDetail(pen, member);
+        }
+        Map<String, Object> before = penSnapshot(pen);
         pen.setPenName(validated.name());
         pen.setPenType(validated.penType());
         pen.setCategoryId(request.getCategoryId());
@@ -351,7 +358,7 @@ public class PenServiceImpl implements PenService {
         if (penMapper.updateById(pen) == 0) {
             throw HerdErrors.versionConflict();
         }
-        logPen("UPDATE", pen, before, Map.of("pen_name", validated.name(), "capacity", request.getCapacity()));
+        logPen("UPDATE", pen, before, penSnapshot(pen));
         return toDetail(pen, member);
     }
 
@@ -375,7 +382,8 @@ public class PenServiceImpl implements PenService {
         if (penMapper.updateById(pen) == 0) {
             throw HerdErrors.versionConflict();
         }
-        logPen("DISABLE", pen, Map.of("status", "ENABLED"), Map.of("status", "DISABLED"));
+        logPen("DISABLE", pen, Map.of("status", logField("栏舍状态", "启用")),
+                Map.of("status", logField("栏舍状态", "停用")));
         return toDetail(pen, member);
     }
 
@@ -395,7 +403,8 @@ public class PenServiceImpl implements PenService {
         if (penMapper.updateById(pen) == 0) {
             throw HerdErrors.versionConflict();
         }
-        logPen("ENABLE", pen, Map.of("status", "DISABLED"), Map.of("status", "ENABLED"));
+        logPen("ENABLE", pen, Map.of("status", logField("栏舍状态", "停用")),
+                Map.of("status", logField("栏舍状态", "启用")));
         return toDetail(pen, member);
     }
 
@@ -449,6 +458,26 @@ public class PenServiceImpl implements PenService {
         if (requested == null || !requested.equals(current)) {
             throw HerdErrors.versionConflict();
         }
+    }
+
+    /** 对称记录可编辑字段；显示文字随操作保存，避免后续字典变更改写历史。 */
+    private Map<String, Object> penSnapshot(Pen pen) {
+        CategoryInfo category = support.category(pen.getCategoryId());
+        String unit = category == null ? null : category.countUnitText();
+        Map<String, Object> snapshot = new LinkedHashMap<>();
+        snapshot.put("pen_name", logField("栏舍名称", pen.getPenName()));
+        snapshot.put("pen_type", logField("栏舍类型", support.penTypeText(pen.getPenType())));
+        snapshot.put("category_id", logField("适用品类", category == null ? "未知品类" : category.name()));
+        snapshot.put("capacity", logField("容量", pen.getCapacity() == null ? null
+                : pen.getCapacity() + (unit == null || unit.isBlank() ? "" : " " + unit)));
+        return snapshot;
+    }
+
+    private static Map<String, Object> logField(String name, String display) {
+        Map<String, Object> field = new LinkedHashMap<>();
+        field.put("name", name);
+        field.put("display", display);
+        return field;
     }
 
     private void logPen(String action, Pen pen, Object before, Object after) {

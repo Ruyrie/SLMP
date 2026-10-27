@@ -26,6 +26,8 @@ import com.zhimu.slmp.common.databinding.CommonChangeItemFooterBinding;
 import com.zhimu.slmp.common.router.Router;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.common.model.vo.ChangeRequestVO;
+import com.zhimu.slmp.common.model.vo.ChangeRequestFormVO;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Map;
 
@@ -42,6 +44,7 @@ public class MyChangeRequestsActivity extends BaseActivity {
     private ChangeRequestAdapter adapter;
     private FooterAdapter footer;
     private boolean sawLoading;
+    private boolean resumed;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -74,6 +77,7 @@ public class MyChangeRequestsActivity extends BaseActivity {
         });
         vm.getTabCounts().observe(this, this::renderCounts);
         vm.getOpenRecord().observe(this, this::openRecord);
+        vm.getOriginalRecord().observe(this, this::showOriginalRecord);
         vm.getOpenResubmit().observe(this, id -> {
             Bundle extras = new Bundle();
             extras.putLong(RouterPath.EXTRA_REQUEST_ID, id);
@@ -168,17 +172,45 @@ public class MyChangeRequestsActivity extends BaseActivity {
         }
     }
 
-    /** 进入原记录：有批次时打开 L06 批次档案（各记录类型的详情页路由待各模块约定） */
+    /** 按记录类型进入原单据。 */
     private void openRecord(@NonNull ChangeRequestVO item) {
-        Bundle extras = new Bundle();
-        if (item.getBatchId() != null) {
-            extras.putLong(RouterPath.EXTRA_BATCH_ID, item.getBatchId());
-            Router.open(this, RouterPath.L06, extras);
-        } else {
-            extras.putString(RouterPath.EXTRA_BIZ_TYPE, item.getBizType());
-            extras.putLong(RouterPath.EXTRA_BIZ_ID, item.getBizId());
-            Router.openPage(this, null, extras);
+        String action = ChangeRecordRoute.action(item);
+        if (action == null) {
+            vm.loadOriginalRecord(item);
+            return;
         }
+        Bundle extras = new Bundle();
+        for (Map.Entry<String, Object> entry : ChangeRecordRoute.arguments(item).entrySet()) {
+            if (entry.getValue() instanceof Number) {
+                extras.putLong(entry.getKey(), ((Number) entry.getValue()).longValue());
+            } else if (entry.getValue() instanceof String) {
+                extras.putString(entry.getKey(), (String) entry.getValue());
+            }
+        }
+        Router.open(this, action, extras);
+    }
+
+    private void showOriginalRecord(@NonNull ChangeRequestFormVO form) {
+        StringBuilder content = new StringBuilder();
+        java.util.Set<String> labels = new java.util.HashSet<>();
+        if (form.getRecordSubtitle() != null) content.append(form.getRecordSubtitle()).append("\n\n");
+        for (ChangeRequestFormVO.CardItem row : form.getRecordCard()) {
+            if (row.getLabel() == null) continue;
+            labels.add(row.getLabel());
+            content.append(row.getLabel()).append("：").append(row.getValue() == null ? "—" : row.getValue()).append('\n');
+        }
+        for (ChangeRequestFormVO.Field field : form.getFields()) {
+            if (field.getFieldName() == null || !labels.add(field.getFieldName())) continue;
+            content.append(field.getFieldName()).append("：")
+                    .append(ChangeRequestFormViewModel.displayValue(field, field.getValue()));
+            if (field.getValueUnit() != null) content.append(' ').append(field.getValueUnit());
+            content.append('\n');
+        }
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(form.getRecordTitle() == null ? "原记录" : form.getRecordTitle())
+                .setMessage(content.toString().trim())
+                .setPositiveButton("关闭", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 
     @Override
@@ -192,9 +224,10 @@ public class MyChangeRequestsActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         // 从 U01 重新提交返回后刷新
-        if (adapter.getItemCount() > 0) {
+        if (resumed) {
             adapter.refresh();
         }
+        resumed = true;
     }
 
     /** 列表底部：加载中 / 已显示全部 N 条 / 加载失败，点按重试 */

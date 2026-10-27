@@ -97,7 +97,6 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/base_space_4"
                             android:lineSpacingExtra="4sp"
-                            android:text="@{vm.notice.content}"
                             android:textAppearance="@style/TextAppearance.Zmt.BodyLarge"
                             android:textColor="?attr/colorOnSurface"
                             android:textIsSelectable="true"

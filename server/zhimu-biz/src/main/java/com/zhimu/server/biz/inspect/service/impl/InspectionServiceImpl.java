@@ -405,6 +405,7 @@ public class InspectionServiceImpl implements InspectionService {
         inspection.setIsBackfill(false);
         applyLocation(inspection, request.getLocation());
         applySubmission(inspection, submission, member);
+        inspection.setRemark(blankToNull(request.getRemark()));
         inspection.setVersion(existing == null ? 0 : existing.getVersion());
         inspection.setDeleted(false);
         inspection.setUpdatedBy(member.userId());
@@ -563,6 +564,7 @@ public class InspectionServiceImpl implements InspectionService {
         inspection.setIsBackfill(true);
         applyLocation(inspection, request.getLocation());
         applySubmission(inspection, submission, member);
+        inspection.setRemark(blankToNull(request.getRemark()));
         inspection.setVersion(existing == null ? 0 : existing.getVersion());
         inspection.setDeleted(false);
         inspection.setUpdatedBy(member.userId());

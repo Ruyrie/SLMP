@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
-import { ApiError, dayjs } from '@zmt/shared'
+import { ApiError, appConfig, dayjs, type FileVO } from '@zmt/shared'
 import { useMessagesStore } from '@/stores/today/messages'
 import { useFarmStore } from '@/stores/farm'
 import { useRole } from '@/composables/useRole'
@@ -24,6 +24,7 @@ import {
   useTodayLinks
 } from './todo'
 import ReminderDrawer from './components/ReminderDrawer.vue'
+import NoticeContent from './components/NoticeContent.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -59,6 +60,7 @@ const rejecting = ref(false)
 const undoOpen = ref(false)
 const deletedId = ref<number | null>(null)
 let undoTimer = 0
+let refreshTimer = 0
 
 const ownerTypes = [
   { title: '全部类型', value: '' },
@@ -112,12 +114,9 @@ const detailTag = computed(() => (detail.value ? messageTag(detail.value) : null
 const detailTarget = computed(() => (detail.value ? messageTarget(detail.value) : null))
 const detailTodoStatus = computed(() => (todoDetail.value ? statusTag(todoDetail.value) : null))
 
-const noticeParagraphs = computed(() => {
-  const content = detail.value ? payloadStr(detail.value, 'content') : ''
-  return content
-    .split(/\r?\n+/)
-    .map((part) => part.trim())
-    .filter(Boolean)
+const noticeImage = computed<Partial<FileVO> | null>(() => {
+  const image = detail.value?.payload?.image
+  return image && typeof image === 'object' ? image as Partial<FileVO> : null
 })
 
 const WEEK_LABELS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
@@ -303,12 +302,22 @@ function completeText(): string {
 }
 
 onMounted(async () => {
+  refreshTimer = window.setInterval(refreshVisible, appConfig.pollInterval)
+  document.addEventListener('visibilitychange', refreshVisible)
   await store.fetchList(true)
   const id = Number(route.query.id)
   if (Number.isFinite(id) && id > 0) await store.openFromPush(id)
 })
 
-onBeforeUnmount(() => window.clearTimeout(undoTimer))
+function refreshVisible(): void {
+  if (document.visibilityState === 'visible') void store.refreshVisible()
+}
+
+onBeforeUnmount(() => {
+  window.clearTimeout(undoTimer)
+  window.clearInterval(refreshTimer)
+  document.removeEventListener('visibilitychange', refreshVisible)
+})
 </script>
 
 <template>
@@ -532,10 +541,7 @@ onBeforeUnmount(() => window.clearTimeout(undoTimer))
             <div v-if="payloadArr(detail, 'target_farm_names').length" class="t04-notice-meta">
               发送给：{{ payloadArr(detail, 'target_farm_names').join('、') }}
             </div>
-            <div v-if="noticeParagraphs.length" class="t04-body">
-              <p v-for="(paragraph, index) in noticeParagraphs" :key="index">{{ paragraph }}</p>
-            </div>
-            <zw-empty v-else icon="campaign" title="通知内容为空" desc="这条通知没有正文内容。" />
+            <NoticeContent :content="payloadStr(detail, 'content')" :image="noticeImage" @refresh="retryDetail" />
           </template>
 
           <template v-else-if="detail.category === 'TODO'">

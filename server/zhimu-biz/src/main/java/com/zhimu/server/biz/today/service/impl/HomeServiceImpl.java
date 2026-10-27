@@ -54,10 +54,12 @@ public class HomeServiceImpl implements HomeService {
     private final FarmQueryService farmQueryService;
     private final AccountQueryService accountQueryService;
     private final TodoMapper todoMapper;
+    private final com.zhimu.server.biz.stock.support.StockWarningReconciler stockWarnings;
     private final MessageMapper messageMapper;
     private final TodoScope todoScope;
     private final TodoLinks todoLinks;
     private final List<HomeMetricProvider> metricProviders;
+    private final com.zhimu.server.biz.feeding.api.FeedTaskReconciliationService feedTaskReconciliation;
 
     @Override
     public HomeVO getHome(Long userId) {
@@ -85,6 +87,8 @@ public class HomeServiceImpl implements HomeService {
             return vo;
         }
 
+        stockWarnings.reconcileFarm(member.farmId());
+        feedTaskReconciliation.reconcileFarm(member.farmId());
         List<Todo> pending = pendingOfFarm(member.farmId());
         List<Todo> visiblePending = new ArrayList<>();
         for (Todo todo : pending) {
@@ -206,10 +210,10 @@ public class HomeServiceImpl implements HomeService {
             if (todo.getPenName() != null) {
                 penNames.add(todo.getPenName());
             }
-            if (isTodayList(todo, today, now)) {
+            if (TodoStatus.PENDING.name().equals(todo.getStatus()) && isDueOn(todo, today)) {
                 todayCount++;
             }
-            if (isOverdue(todo, now)) {
+            if (TodoStatus.PENDING.name().equals(todo.getStatus()) && isDateOverdue(todo, today)) {
                 overdueCount++;
                 if (overdueFirst == null) {
                     overdueFirst = todo.getTitle();
@@ -379,7 +383,7 @@ public class HomeServiceImpl implements HomeService {
                 .eq(Todo::getStatus, TodoStatus.PENDING.name()));
     }
 
-    /** 本场全部未删除待办（含已完成），业主首页“今日应办”与今日列表口径一致。 */
+    /** 本场未删除待办；指标在聚合时只计入 PENDING，历史记录不删除。 */
     private List<Todo> todosOfFarm(Long farmId) {
         return todoMapper.selectList(Wrappers.<Todo>lambdaQuery()
                 .eq(Todo::getFarmId, farmId));

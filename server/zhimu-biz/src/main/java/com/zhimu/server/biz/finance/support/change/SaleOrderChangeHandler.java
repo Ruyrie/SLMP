@@ -20,6 +20,7 @@ import com.zhimu.server.biz.finance.mapper.FinanceRecordMapper;
 import com.zhimu.server.biz.finance.mapper.SaleOrderMapper;
 import com.zhimu.server.biz.finance.mapper.SaleReceiptMapper;
 import com.zhimu.server.biz.finance.support.FinanceConst;
+import com.zhimu.server.biz.finance.service.BatchSettlementService;
 import com.zhimu.server.biz.finance.support.FinanceErrors;
 import com.zhimu.server.biz.finance.support.FinanceSupport;
 import com.zhimu.server.biz.finance.vo.SaleOrderVos;
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,6 +77,7 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
     private final BatchSalePort batchSalePort;
     private final AccountQueryService accountQueryService;
     private final OperationLogRecorder operationLogRecorder;
+    private final BatchSettlementService batchSettlementService;
 
     @Override
     public Set<BizType> supportedBizTypes() {
@@ -134,8 +137,8 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
                 List.of(new ChangeCardItem("销售金额", amountText(order.getSaleAmount()) + " 元"),
                         new ChangeCardItem("已收", amountText(order.getReceivedAmount()) + " 元")),
                 fields,
-                List.of("修改单价或数量会重新计算销售金额、未收金额和批次盈亏"),
-                "这张出栏单已有收款，修改数量、单价或作废需要管理员审核，审核期间原单照常有效。",
+                List.of("修改单价或数量会重新计算销售金额、未收金额和批次盈亏；若低于已收金额，同步纠正收款和对应收入记录"),
+                "这张出栏单已有收款，修改需要管理员审核。审核后若销售金额低于已收金额，将同步纠正收款和对应收入记录，保留修改留痕。审核期间原单照常有效。",
                 false, true,
                 "审核通过后出栏单作废，已收款生成的收入同步作废",
                 VOID_RECALC_TAGS);
@@ -177,7 +180,7 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
             }
             BigDecimal newAmount = saleAmount(order.getPricingMethod(), order.getTotalWeight(), price,
                     order.getQuantity());
-            ensureNotBelowReceived(newAmount, received);
+            validateSaleAmount(newAmount, received);
             String normalized = priceText(price);
             return ChangeValidation.of(fieldCode, field.fieldName(), field.valueUnit(),
                     field.value(), ChangeRequestJson.display(field.value(), field.valueUnit()),
@@ -193,7 +196,7 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
             }
             BigDecimal newAmount = saleAmount(order.getPricingMethod(), change.totalWeight(),
                     order.getUnitPrice(), change.quantity());
-            ensureNotBelowReceived(newAmount, received);
+            validateSaleAmount(newAmount, received);
             // App E08 的数量是 JSON（含 total_weight）时原样保存，审核回写才能沿用 App 填写的总重
             String text = newValue == null ? "" : newValue.trim();
             String normalized = text.startsWith("{") ? text : String.valueOf(change.quantity());
@@ -225,7 +228,7 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
                         "不能超过 " + max + " 头（原出栏 " + order.getQuantity() + " 头加批次当前存栏 "
                                 + currentStock(order.getBatchId()) + " 头）");
             }
-            ensureNotBelowReceived(saleAmount(order.getPricingMethod(), change.totalWeight(),
+            validateSaleAmount(saleAmount(order.getPricingMethod(), change.totalWeight(),
                     order.getUnitPrice(), change.quantity()), received);
         } else if (FIELD_UNIT_PRICE.equals(request.getFieldCode())) {
             String raw = ChangeRequestJson.afterValue(request.getAfterJson(), FIELD_UNIT_PRICE);
@@ -233,12 +236,13 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
             if (price == null || price.signum() <= 0) {
                 throw FinanceErrors.field("new_value", "单价必须大于 0");
             }
-            ensureNotBelowReceived(saleAmount(order.getPricingMethod(), order.getTotalWeight(), price,
+            validateSaleAmount(saleAmount(order.getPricingMethod(), order.getTotalWeight(), price,
                     order.getQuantity()), received);
         }
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public ChangeApplyResult apply(ChangeRequest request, ChangeRecord record, Long adminId) {
         SaleOrder order = load(record.bizId());
         if (order == null) {
@@ -259,12 +263,11 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
                 order.setUnitPrice(FinanceSupport.scale2(price));
                 order.setSaleAmount(saleAmount(order.getPricingMethod(), order.getTotalWeight(), price,
                         order.getQuantity()));
-                order.setUnpaidAmount(FinanceSupport.scale2(
-                        order.getSaleAmount().subtract(FinanceSupport.nz(order.getReceivedAmount()))
-                                .max(BigDecimal.ZERO)));
+                correctReceipts(order, adminId, before, after);
+                refreshPayment(order);
                 order.setContentVersion((order.getContentVersion() == null ? 0 : order.getContentVersion()) + 1);
                 order.setUpdatedBy(adminId);
-                orderMapper.updateById(order);
+                if (orderMapper.updateById(order) == 0) throw new BizException(ErrorCode.VERSION_CONFLICT);
                 before.put(FIELD_UNIT_PRICE, Map.of("name", "单价",
                         "display", priceText(oldPrice) + " 元/千克"));
                 before.put("sale_amount", Map.of("name", "销售金额", "display", amountText(oldAmount) + " 元"));
@@ -285,12 +288,11 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
                         RoundingMode.HALF_UP));
                 order.setSaleAmount(saleAmount(order.getPricingMethod(), change.totalWeight(),
                         order.getUnitPrice(), change.quantity()));
-                order.setUnpaidAmount(FinanceSupport.scale2(
-                        order.getSaleAmount().subtract(FinanceSupport.nz(order.getReceivedAmount()))
-                                .max(BigDecimal.ZERO)));
+                correctReceipts(order, adminId, before, after);
+                refreshPayment(order);
                 order.setContentVersion((order.getContentVersion() == null ? 0 : order.getContentVersion()) + 1);
                 order.setUpdatedBy(adminId);
-                orderMapper.updateById(order);
+                if (orderMapper.updateById(order) == 0) throw new BizException(ErrorCode.VERSION_CONFLICT);
                 Map<Long, Integer> delta = new LinkedHashMap<>();
                 delta.put(primaryPen(order, allocations), change.quantity() - oldQuantity);
                 batchSalePort.adjustSale(order.getFarmId(), order.getBatchId(), order.getSaleDate(), delta,
@@ -308,9 +310,10 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
         } else {
             throw new BizException(ErrorCode.STATE_NOT_ALLOWED, "出栏单只能申请作废，不能删除");
         }
+        batchSettlementService.recalculateForSale(order.getFarmId(), order.getBatchId());
         record(request, record, changeType, before, after);
         return new ChangeApplyResult(changeType == ChangeType.VOID ? 4 : 3,
-                changeType == ChangeType.VOID ? "已作废出栏单并重新计算批次盈亏" : "已重新计算销售金额和批次盈亏");
+                changeType == ChangeType.VOID ? "已作废出栏单并重新计算批次盈亏" : "已同步纠正销售金额、收款与收入记录，并重新计算批次盈亏");
     }
 
     @Override
@@ -332,6 +335,61 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
         }
         order.setPendingChangeRequestId(null);
         orderMapper.updateById(order);
+    }
+
+    /** 按审批后的销售额冲减最近登记的收款，保留原始金额的审核留痕。 */
+    private void correctReceipts(SaleOrder order, Long adminId, Map<String, Object> before, Map<String, Object> after) {
+        BigDecimal original = FinanceSupport.nz(order.getReceivedAmount());
+        BigDecimal excess = original.subtract(order.getSaleAmount());
+        if (excess.signum() <= 0) return;
+        List<SaleReceipt> receipts = new ArrayList<>(TenantSkip.call(() -> receiptMapper.selectNormalByOrderId(order.getId())));
+        receipts.sort(java.util.Comparator.comparing(SaleReceipt::getId).reversed());
+        BigDecimal actual = receipts.stream().map(SaleReceipt::getAmount).map(FinanceSupport::nz)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (actual.compareTo(original) != 0) throw new BizException(ErrorCode.STATE_CHANGED, "收款记录已变化，请刷新后重新审核");
+        int count = receipts.size();
+        for (SaleReceipt receipt : receipts) {
+            if (excess.signum() <= 0) break;
+            BigDecimal oldAmount = FinanceSupport.nz(receipt.getAmount());
+            BigDecimal reduction = oldAmount.min(excess);
+            BigDecimal corrected = oldAmount.subtract(reduction);
+            FinanceRecord income = TenantSkip.call(() -> financeRecordMapper.selectById(receipt.getFinanceRecordId()));
+            if (income == null || !Objects.equals(income.getFarmId(), order.getFarmId())) {
+                throw new BizException(ErrorCode.STATE_CHANGED, "对应收入记录不存在，无法同步纠正收款");
+            }
+            if (corrected.signum() == 0) {
+                receipt.setStatus("VOID"); receipt.setVoidedAt(BeijingTime.now());
+                income.setStatus(FinanceConst.RECORD_VOID); income.setVoidSource("CHANGE_REQUEST");
+                income.setVoidedAt(BeijingTime.now()); income.setVoidedBy(adminId);
+                count--;
+            } else {
+                receipt.setAmount(FinanceSupport.scale2(corrected));
+                income.setAmount(FinanceSupport.scale2(corrected));
+            }
+            income.setUpdatedBy(adminId);
+            if (TenantSkip.call(() -> receiptMapper.updateById(receipt)) == 0
+                    || TenantSkip.call(() -> financeRecordMapper.updateById(income)) == 0) {
+                throw new BizException(ErrorCode.VERSION_CONFLICT);
+            }
+            String field = "receipt_" + receipt.getId();
+            before.put(field, Map.of("name", "收款及收入 #" + receipt.getId(), "display", amountText(oldAmount) + " 元"));
+            after.put(field, Map.of("name", "收款及收入 #" + receipt.getId(), "display", corrected.signum() == 0 ? "已作废" : amountText(corrected) + " 元"));
+            excess = excess.subtract(reduction);
+        }
+        order.setReceivedAmount(order.getSaleAmount());
+        order.setReceiptCount(count);
+        before.put("received_amount", Map.of("name", "已收金额", "display", amountText(original) + " 元"));
+        after.put("received_amount", Map.of("name", "已收金额", "display", amountText(order.getReceivedAmount()) + " 元"));
+    }
+
+    private void refreshPayment(SaleOrder order) {
+        BigDecimal received = FinanceSupport.nz(order.getReceivedAmount());
+        BigDecimal unpaid = order.getSaleAmount().subtract(received).max(BigDecimal.ZERO);
+        order.setUnpaidAmount(FinanceSupport.scale2(unpaid));
+        order.setPaymentStatus(unpaid.signum() == 0 ? FinanceConst.PAY_PAID
+                : received.signum() > 0 ? FinanceConst.PAY_PARTIAL : FinanceConst.PAY_UNPAID);
+        if (unpaid.signum() > 0) order.setPaidOffDate(null);
+        else if (order.getPaidOffDate() == null) order.setPaidOffDate(BeijingTime.today());
     }
 
     private void voidOrder(SaleOrder order, ChangeRequest request, Long adminId) {
@@ -395,9 +453,9 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
         return allocations.isEmpty() ? null : allocations.get(0).getPenId();
     }
 
-    private void ensureNotBelowReceived(BigDecimal amount, BigDecimal received) {
-        if (amount.compareTo(received) < 0) {
-            throw FinanceErrors.field("new_value", "修改后销售金额不能低于已收 " + money(received) + " 元");
+    private void validateSaleAmount(BigDecimal amount, BigDecimal received) {
+        if (amount.signum() <= 0 || amount.compareTo(new BigDecimal("9999999999")) > 0) {
+            throw FinanceErrors.field("new_value", "销售金额须大于 0 且不能超过 9,999,999,999 元");
         }
     }
 
@@ -442,6 +500,9 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
         }
         if (totalWeight.signum() <= 0) {
             throw FinanceErrors.field("new_value", "总重必须大于 0");
+        }
+        if (totalWeight.compareTo(new BigDecimal("99999999.99")) > 0 || totalWeight.stripTrailingZeros().scale() > 2) {
+            throw FinanceErrors.field("new_value", "总重不能超过 99,999,999.99 千克，最多保留 2 位小数");
         }
         return new QuantityChange(quantity, totalWeight);
     }

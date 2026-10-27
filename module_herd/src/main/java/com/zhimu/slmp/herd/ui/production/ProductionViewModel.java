@@ -36,8 +36,6 @@ public class ProductionViewModel extends BaseViewModel {
     public static final String METRIC_WARNING = "WARNING";
     /** T03 日视图（RouterPath.EXTRA_MODE，与模块03 CalendarMode.DAY 一致） */
     public static final String T03_MODE_DAY = "DAY";
-    /** T03 待办类别：预警类（RouterPath.EXTRA_CATEGORY，TODO_CATEGORY） */
-    public static final String T03_CATEGORY_WARNING = "WARNING";
     /** 功能入口“批次档案”：打开 L03 的批次视图 */
     public static final String ENTRY_BATCH_ARCHIVE = "L03_BATCH";
 
@@ -47,6 +45,7 @@ public class ProductionViewModel extends BaseViewModel {
     private final LiveData<String> dateText;
     private final LiveData<String> stockText;
     private final LiveData<Integer> todoCount;
+    private final LiveData<Integer> warningCount;
     private final LiveData<Integer> reminderCount;
     private final LiveData<List<ProductionReminderItemVO>> reminders;
     private final LiveData<Boolean> showNoPenNotice;
@@ -66,6 +65,7 @@ public class ProductionViewModel extends BaseViewModel {
         stockText = Transformations.map(overview, o -> o == null ? "" : HerdFormat.qty(o.getStockTotal(),
                 o.getUnitText()));
         todoCount = Transformations.map(overview, o -> o == null ? 0 : o.getTodayTodoCount());
+        warningCount = Transformations.map(overview, o -> o == null ? 0 : o.getWarningCount());
         reminderCount = Transformations.map(overview, o -> o == null ? 0 : o.getReminderTotal());
         reminders = Transformations.map(overview, o -> o == null || isAuditPending(o)
                 ? Collections.emptyList() : o.getReminders());
@@ -101,6 +101,10 @@ public class ProductionViewModel extends BaseViewModel {
 
     public LiveData<Integer> getReminderCount() {
         return reminderCount;
+    }
+
+    public LiveData<Integer> getWarningCount() {
+        return warningCount;
     }
 
     public LiveData<List<ProductionReminderItemVO>> getReminders() {
@@ -171,7 +175,7 @@ public class ProductionViewModel extends BaseViewModel {
         onMetricClick(METRIC_WARNING);
     }
 
-    /** 指标卡：存栏 → L03；今日待办 → T03（今天）；预警 → T03 预警筛选 */
+    /** 指标卡：存栏 → L03；今日待办 → T03（今天）；预警 → T09 全部未解除预警 */
     public void onMetricClick(@NonNull String metric) {
         ProductionOverviewVO o = overview.getValue();
         String today = o != null ? o.getToday() : DateFormatter.todayString();
@@ -184,10 +188,7 @@ public class ProductionViewModel extends BaseViewModel {
                         .put(RouterPath.EXTRA_MODE, T03_MODE_DAY));
                 break;
             case METRIC_WARNING:
-                // 与 T01 一致进入 T03 日视图；预警卡另带待办类别 WARNING（TODO_CATEGORY）
-                navEvent.setValue(NavTarget.of(RouterPath.T03).put(RouterPath.EXTRA_DATE, today)
-                        .put(RouterPath.EXTRA_MODE, T03_MODE_DAY)
-                        .put(RouterPath.EXTRA_CATEGORY, T03_CATEGORY_WARNING));
+                navEvent.setValue(NavTarget.of(RouterPath.T09).put("filter", "WARNING"));
                 break;
             default:
                 break;
@@ -208,11 +209,6 @@ public class ProductionViewModel extends BaseViewModel {
         if (t != null) {
             navEvent.setValue(t);
         }
-    }
-
-    /** FAB“登记” → T02 快捷登记面板 */
-    public void onFabClick() {
-        navEvent.setValue(NavTarget.of(RouterPath.T02));
     }
 
     /** 未审核 Notice“查看审核结果” → F03 */

@@ -16,6 +16,11 @@
     <string name="ai_chat_hint_images">描述这些照片里的问题…</string>
     <string name="ai_chat_disclaimer">由 AI 生成，仅供参考</string>
     <string name="ai_chat_thinking">正在思考…</string>
+    <string name="ai_chat_process_title">处理过程</string>
+    <string name="ai_chat_analysis_title">分析摘要</string>
+    <string name="ai_chat_process_expand">%1$s · 展开</string>
+    <string name="ai_chat_process_collapse">%1$s · 收起</string>
+    <string name="ai_chat_source_note">来源说明：%1$s</string>
     <string name="ai_chat_regenerate">重新生成</string>
     <string name="ai_chat_retry">重试</string>
     <string name="ai_chat_back_bottom">回到底部</string>

@@ -7,11 +7,11 @@ package com.zhimu.server.integration.push;
 public final class PushChannels {
 
     /** 待办提醒 */
-    public static final String TODO = "zm_todo";
+    public static final String TODO = "zm_todo_v2";
     /** 紧急提醒 */
     public static final String URGENT = "zm_urgent";
     /** 审核与系统 */
-    public static final String SYSTEM = "zm_system";
+    public static final String SYSTEM = "zm_system_v2";
 
     private PushChannels() {
     }

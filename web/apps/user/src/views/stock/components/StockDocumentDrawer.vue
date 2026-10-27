@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { formatMoney, formatNumber } from '@zmt/shared'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { formatMoney, formatNumber, today } from '@zmt/shared'
 import {
   fetchStockInbound,
   fetchStockLoss,
@@ -11,9 +12,12 @@ import {
   type StockOutbound
 } from '@/api/stock'
 import { allocationText, datetimeText, flowQty, moneyText, packQtyText } from '@/views/stock/stock'
+import { useStockRefundStore, stockDocumentScope } from '@/stores/stock/refund'
+import { useUiStore } from '@/stores/ui'
+import { useFarmStore } from '@/stores/farm'
 
 /**
- * 出入库流水 → 只读单据详情。
+ * 出入库流水 → 单据详情；退货单支持登记与当日更正实际到账退款。
  * 入库、出库、报废分别走 API-M09 / M21 / M19；接种、用药、消毒等自动扣减产生的流水没有
  * 独立单据接口，回退为“列表行 + 流水详情”，不补造服务端没有的字段。
  */
@@ -31,6 +35,8 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
+  'refund-saved': [value: StockOutbound]
+  'view-finance-record': [id: number]
 }>()
 
 type DocKind = 'INBOUND' | 'OUTBOUND' | 'LOSS' | 'FLOW'
@@ -52,7 +58,13 @@ const outbound = ref<StockOutbound | null>(null)
 const loss = ref<StockLoss | null>(null)
 const loading = ref(false)
 const error = ref('')
+const refund = useStockRefundStore()
+const router = useRouter()
+const ui = useUiStore()
+const farm = useFarmStore()
 let loadSeq = 0
+const canManageRefund = computed(() => !props.staff && farm.role !== 'staff' && isReturn.value
+  && outbound.value?.material_type === 'DRUG')
 
 const docKind = computed<DocKind>(() => {
   const type = props.flow?.biz_type
@@ -75,7 +87,7 @@ const subTitle = computed(() => {
     return [inbound.value?.inbound_no || fallbackId, '只读'].filter(Boolean).join(' · ')
   }
   if (docKind.value === 'OUTBOUND') {
-    return [outbound.value?.outbound_no || fallbackId, '只读'].filter(Boolean).join(' · ')
+    return [outbound.value?.outbound_no || fallbackId, isReturn.value ? '' : '只读'].filter(Boolean).join(' · ')
   }
   if (docKind.value === 'LOSS') {
     return [loss.value?.loss_type_text || '报废单', loss.value?.loss_id ? `#${loss.value.loss_id}` : fallbackId, '只读']
@@ -119,6 +131,7 @@ function priceText(value?: number | null, unit?: string | null): string {
 async function load(): Promise<void> {
   const flow = props.flow
   const seq = ++loadSeq
+  const scope = stockDocumentScope()
   inbound.value = null
   outbound.value = null
   loss.value = null
@@ -132,33 +145,59 @@ async function load(): Promise<void> {
   try {
     if (docKind.value === 'INBOUND') {
       const data = await fetchStockInbound(bizId)
-      if (seq === loadSeq) inbound.value = data
+      if (seq === loadSeq && scope === stockDocumentScope()) inbound.value = data
     } else if (docKind.value === 'OUTBOUND') {
       const data = await fetchStockOutbound(bizId)
-      if (seq === loadSeq) outbound.value = data
+      if (seq === loadSeq && scope === stockDocumentScope()) outbound.value = data
     } else if (docKind.value === 'LOSS') {
       const data = await fetchStockLoss(bizId)
-      if (seq === loadSeq) loss.value = data
+      if (seq === loadSeq && scope === stockDocumentScope()) loss.value = data
     }
   } catch (e) {
-    if (seq === loadSeq) error.value = (e as { message?: string }).message || '单据详情加载失败'
+    if (seq === loadSeq && scope === stockDocumentScope()) error.value = (e as { message?: string }).message || '单据详情加载失败'
   } finally {
-    if (seq === loadSeq) loading.value = false
+    if (seq === loadSeq && scope === stockDocumentScope()) loading.value = false
   }
 }
 
-watch(
-  () => props.modelValue,
-  (open) => {
-    if (open) void load()
-  }
-)
-watch(
-  () => props.flow?.flow_id,
-  () => {
-    if (props.modelValue) void load()
-  }
-)
+function clearDocument(): void {
+  ++loadSeq
+  inbound.value = outbound.value = loss.value = null
+  loading.value = false
+  error.value = ''
+  refund.close()
+}
+
+async function submitRefund(): Promise<void> {
+  const seq = loadSeq
+  const scope = stockDocumentScope()
+  const mode = refund.mode
+  const result = await refund.submit()
+  if (!result || seq !== loadSeq || scope !== stockDocumentScope() || !props.modelValue) return
+  outbound.value = result
+  emit('refund-saved', result)
+  ui.toast(mode === 'edit' ? '退款已更正，关联收入已同步更新' : '退款已登记，已自动生成关联收入')
+}
+
+function openFinanceRecord(): void {
+  const id = outbound.value?.finance_record_id
+  if (!id || !canManageRefund.value) return
+  emit('update:modelValue', false)
+  emit('view-finance-record', id)
+  void router.push({ name: 'WU-E02', query: { recordId: String(id), date: outbound.value?.refund_date || '', detail: '1' } })
+}
+
+watch(() => [props.modelValue, props.flow?.flow_id, props.flow?.biz_id, props.flow?.biz_type, props.staff], () => {
+  clearDocument()
+  if (props.modelValue) void load()
+}, { immediate: true })
+
+watch(stockDocumentScope, () => {
+  clearDocument()
+  if (props.modelValue) emit('update:modelValue', false)
+}, { flush: 'sync' })
+
+onBeforeUnmount(clearDocument)
 </script>
 
 <template>
@@ -245,6 +284,27 @@ watch(
         <zw-desc-item label="登记时间">{{ datetimeText(outbound.created_at) }}</zw-desc-item>
       </zw-desc>
 
+      <div v-if="canManageRefund" class="stock-doc-section">
+        <div class="stock-doc-section-title">退款到账</div>
+        <template v-if="outbound.refund_status === 'REFUNDED'">
+          <zw-tag type="success" size="small" icon="check_circle">已登记退款</zw-tag>
+          <zw-desc :cols="2" bordered :label-width="88" class="mt-3">
+            <zw-desc-item label="到账金额">{{ moneyText(outbound.refund_amount) }}</zw-desc-item>
+            <zw-desc-item label="到账日期">{{ outbound.refund_date || '—' }}</zw-desc-item>
+            <zw-desc-item label="登记人">{{ outbound.refund_registered_by?.name || '—' }}</zw-desc-item>
+            <zw-desc-item label="登记时间">{{ datetimeText(outbound.refund_registered_at || undefined) }}</zw-desc-item>
+            <zw-desc-item label="说明" :span="2">{{ outbound.refund_remark || '—' }}</zw-desc-item>
+          </zw-desc>
+          <v-btn v-if="outbound.finance_record_id" variant="text" prepend-icon="receipt_long" class="mt-2" @click="openFinanceRecord">查看关联收支流水</v-btn>
+          <zw-notice type="info" class="stock-doc-notice">
+            已自动生成关联收入，请勿重复手工记账。退款仅支持登记当天更正；退货单数量和作废操作已锁定。
+          </zw-notice>
+        </template>
+        <zw-notice v-else type="info">
+          {{ outbound.refund_block_reason || '尚未登记退款。实际到账后请登记退款，系统会自动生成关联收入，请勿重复手工记账。' }}
+        </zw-notice>
+      </div>
+
       <div v-if="!staff && outbound.allocations?.length" class="stock-doc-section">
         <div class="stock-doc-section-title">成本分摊</div>
         <div v-for="row in outbound.allocations" :key="row.batch_id" class="stock-doc-alloc">
@@ -330,8 +390,24 @@ watch(
 
     <template #foot>
       <v-btn variant="outlined" @click="emit('update:modelValue', false)">关闭</v-btn>
+      <v-btn v-if="canManageRefund && outbound?.actions?.can_refund" color="primary" prepend-icon="payments" @click="refund.begin(outbound)">登记退款</v-btn>
+      <v-btn v-if="canManageRefund && outbound?.actions?.can_edit_refund" color="primary" prepend-icon="edit" @click="refund.begin(outbound, 'edit')">更正退款</v-btn>
     </template>
   </zw-drawer>
+
+  <zw-dialog :model-value="refund.open" :title="refund.mode === 'edit' ? '更正退款' : '登记退款'" width="480" :persistent="refund.submitting" @update:model-value="!$event && !refund.submitting && refund.close()">
+    <zw-notice type="info" class="mb-4">
+      {{ refund.mode === 'edit' ? '更正将同步更新原关联收入，不新增收支流水。' : '确认退款已实际到账，且此前未手工登记这笔收入。保存后自动生成关联收入。' }}
+    </zw-notice>
+    <zw-notice v-if="refund.error" type="warning" class="mb-4">{{ refund.error }}</zw-notice>
+    <v-text-field v-model="refund.amount" class="mb-4" label="实际到账金额（元）" inputmode="decimal" :disabled="refund.fieldsLocked" :error-messages="refund.errors.amount" placeholder="请输入实际收到的金额" />
+    <v-text-field v-model="refund.date" class="mb-4" label="到账日期" type="date" :min="outbound?.out_date" :max="today()" :disabled="refund.fieldsLocked" :error-messages="refund.errors.refund_date" />
+    <v-textarea v-model="refund.remark" label="说明（选填）" rows="3" maxlength="200" counter="200" :disabled="refund.fieldsLocked" :error-messages="refund.errors.remark" />
+    <template #actions>
+      <v-btn variant="outlined" :disabled="refund.submitting" @click="refund.close()">取消</v-btn>
+      <v-btn color="primary" :loading="refund.submitting" @click="submitRefund">{{ refund.submitting ? '正在提交' : refund.uncertain ? '重试原提交' : refund.mode === 'edit' ? '确认更正' : '确认到账并登记' }}</v-btn>
+    </template>
+  </zw-dialog>
 </template>
 
 <style scoped>

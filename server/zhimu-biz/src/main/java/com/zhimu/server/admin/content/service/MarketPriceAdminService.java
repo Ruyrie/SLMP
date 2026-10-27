@@ -525,9 +525,6 @@ public class MarketPriceAdminService {
         if (request.getCorrectionId() != null) {
             return reviewCorrection(price, request.getCorrectionId(), result, note, adminId, now);
         }
-        if (adminId.equals(price.getEnteredBy())) {
-            throw ContentErrors.forbidden("复核人不能是录入人");
-        }
         String status = "PASS".equals(result) ? "PUBLISHED" : "RETURNED";
         int rows = priceMapper.update(null, Wrappers.<MarketPrice>lambdaUpdate()
                 .eq(MarketPrice::getId, id)
@@ -559,9 +556,6 @@ public class MarketPriceAdminService {
         if (correction == null || !"PENDING_REVIEW".equals(correction.getStatus())
                 || !price.getId().equals(correction.getPriceId())) {
             throw ContentErrors.stateChanged("这条更正已处理，列表已刷新");
-        }
-        if (adminId.equals(correction.getCorrectedBy())) {
-            throw ContentErrors.forbidden("复核人不能是录入人");
         }
         if ("PASS".equals(result)) {
             int version = price.getVersion() == null ? 0 : price.getVersion();
@@ -861,8 +855,7 @@ public class MarketPriceAdminService {
                 && row.getChangeRate().abs().compareTo(MarketPriceCalculator.REVIEW_THRESHOLD) > 0);
         row.setIsPrevCorrected(isPrevCorrected(config, price));
         if ("PENDING_REVIEW".equals(row.getRowStatus())) {
-            Long reviewerSource = pendingCorrection ? pending.getCorrectedBy() : price.getEnteredBy();
-            row.setCanReview(adminId != null && !adminId.equals(reviewerSource));
+            row.setCanReview(adminId != null);
         }
         row.setCanCorrect("PUBLISHED".equals(row.getRowStatus()) && !pendingCorrection);
         if ("UNPUBLISHED".equals(row.getRowStatus()) && date.isBefore(BeijingTime.today())) {

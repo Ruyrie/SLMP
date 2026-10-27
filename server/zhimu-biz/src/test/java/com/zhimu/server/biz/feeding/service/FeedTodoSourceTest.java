@@ -63,7 +63,7 @@ class FeedTodoSourceTest {
 
     @BeforeEach
     void setUp() {
-        source = new FeedTodoSource(taskMapper, lookup, feedStockPort, todoWriter);
+        source = new FeedTodoSource(taskMapper, lookup, feedStockPort, todoWriter, org.mockito.Mockito.mock(com.zhimu.server.biz.feeding.api.FeedTaskReconciliationService.class));
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-18T16:05:00Z"), ZONE));
         when(lookup.pens(anyCollection())).thenReturn(Map.of(2003L,
                 new PenInfo(2003L, 1001L, "P3", "3 号育肥舍", "FATTENING", "育肥舍", 300, "ENABLED")));

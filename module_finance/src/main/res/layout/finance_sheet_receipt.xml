@@ -85,6 +85,16 @@
             app:noticeIcon="@drawable/ic_receipt_long"
             app:noticeText="@string/finance_receipt_notice" />
 
+        <TextView
+            android:id="@+id/finance_receipt_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_3"
+            android:accessibilityLiveRegion="polite"
+            android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
+            android:textColor="?attr/colorError"
+            android:visibility="gone" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

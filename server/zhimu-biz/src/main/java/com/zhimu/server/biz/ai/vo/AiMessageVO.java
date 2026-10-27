@@ -26,6 +26,9 @@ public class AiMessageVO {
     /** NORMAL / NO_BASIS / OFF_TOPIC / BANNED_DRUG / EPIDEMIC */
     private String answerType;
     private String answerText;
+    /** 仅概括已完成的公开处理步骤，不含模型内部推理。 */
+    private String analysisSummary;
+    private String sourceNote;
     private List<CitationBriefVO> citations = new ArrayList<>();
     /** USEFUL / USELESS */
     private String rating;

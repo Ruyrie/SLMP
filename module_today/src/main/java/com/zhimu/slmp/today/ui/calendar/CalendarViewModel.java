@@ -94,6 +94,8 @@ public class CalendarViewModel extends BaseViewModel {
     private final MutableLiveData<PagingData<TodoItemVO>> dayPaging = new MutableLiveData<>();
     private final MutableLiveData<List<WeekGroup>> weekGroups = new MutableLiveData<>(Collections.emptyList());
     private final MutableLiveData<List<TodoItemVO>> overdueItems = new MutableLiveData<>(Collections.emptyList());
+    private final MutableLiveData<Boolean> overdueExpanded = new MutableLiveData<>(false);
+    private final MutableLiveData<String> overdueError = new MutableLiveData<>();
     private final MutableLiveData<Integer> overdueTotal = new MutableLiveData<>(0);
     private final MutableLiveData<Boolean> showScope = new MutableLiveData<>(false);
     private final MutableLiveData<String> farmName = new MutableLiveData<>("");
@@ -110,6 +112,7 @@ public class CalendarViewModel extends BaseViewModel {
     private String category;
     private boolean staff;
     private boolean initialized;
+    private long loadedFarmId = -1;
 
     /** 当前日期列表的查询条件（变化时重建分页） */
     private final BehaviorProcessor<DayKey> dayKey = BehaviorProcessor.create();
@@ -145,6 +148,30 @@ public class CalendarViewModel extends BaseViewModel {
     }
 
     // ===================== 对外 LiveData =====================
+
+    public void onPageResumed() {
+        if (initialized && loadedFarmId != farmContext.farmIdOrZero()) {
+            initialized = false;
+            overdueExpanded.setValue(false);
+            overdueItems.setValue(Collections.emptyList());
+            overdueTotal.setValue(0);
+            overdueError.setValue(null);
+            init(null, category, currentMode().name());
+        }
+    }
+
+    public LiveData<Boolean> getOverdueExpanded() { return overdueExpanded; }
+    public LiveData<String> getOverdueError() { return overdueError; }
+    public void toggleOverdue() {
+        overdueExpanded.setValue(!Boolean.TRUE.equals(overdueExpanded.getValue()));
+        if (Boolean.TRUE.equals(overdueExpanded.getValue())) loadOverdue();
+    }
+    public void onAllOverdueClick() {
+        java.util.Map<String, String> params = new java.util.HashMap<>();
+        params.put("filter", TodoRepository.FILTER_OVERDUE);
+        if (scopeParam() != null) params.put("scope", scopeParam());
+        navEvent.setValue(new NavTarget("T09", params, null));
+    }
 
     public LiveData<CalendarMode> getMode() {
         return mode;
@@ -250,6 +277,7 @@ public class CalendarViewModel extends BaseViewModel {
         }
         initialized = true;
         this.category = category;
+        loadedFarmId = farmContext.farmIdOrZero();
         FarmContextVO ctx = farmContext.current();
         staff = farmContext.isStaff();
         farmName.setValue(ctx == null || ctx.getName() == null ? "" : ctx.getName());
@@ -313,6 +341,7 @@ public class CalendarViewModel extends BaseViewModel {
         if (newMode == mode.getValue()) {
             return;
         }
+        overdueExpanded.setValue(false);
         mode.setValue(newMode);
         showFarmTag.setValue(newMode != CalendarMode.DAY);
         prefs.setCalendarMode(newMode.name());
@@ -324,6 +353,8 @@ public class CalendarViewModel extends BaseViewModel {
         if (staff || newScope.equals(scope.getValue())) {
             return;
         }
+        overdueExpanded.setValue(false);
+        overdueItems.setValue(Collections.emptyList());
         scope.setValue(newScope);
         prefs.setCalendarScope(newScope);
         getSavedState().set(STATE_SCOPE, newScope);
@@ -387,6 +418,7 @@ public class CalendarViewModel extends BaseViewModel {
     }
 
     private void setSelected(@NonNull LocalDate date) {
+        if (!date.equals(selectedDate.getValue())) overdueExpanded.setValue(false);
         selectedDate.setValue(date);
         getSavedState().set(STATE_DATE, DateFormatter.toDateString(date));
         updateTexts();
@@ -505,14 +537,16 @@ public class CalendarViewModel extends BaseViewModel {
     private void loadOverdue() {
         if (currentMode() != CalendarMode.DAY || !currentSelected().equals(currentToday())) {
             overdueRequest.set(Disposable.disposed());
+            overdueError.setValue(null);
             overdueItems.setValue(Collections.emptyList());
             overdueTotal.setValue(0);
             return;
         }
-        overdueRequest.set(launch(todoRepository.getOverdue(scopeParam(), 1, TodoRepository.EXPAND_SIZE), page -> {
+        overdueRequest.set(launch(todoRepository.getOverdue(scopeParam(), 1, 5), page -> {
+            overdueError.setValue(null);
             overdueItems.setValue(page.getList());
             overdueTotal.setValue(page.getTotal());
-        }, e -> Log.i(TAG, "已逾期组加载失败：" + e.getMessage())));
+        }, e -> overdueError.setValue("逾期待办加载失败，点击重试")));
     }
 
     /** 周视图“展开其余 N 项”（API-T04，size 100）；已展开时收起为前 5 项 */

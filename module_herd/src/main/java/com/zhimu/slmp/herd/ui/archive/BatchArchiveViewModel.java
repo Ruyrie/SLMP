@@ -53,8 +53,10 @@ public class BatchArchiveViewModel extends BaseViewModel {
     public static final int MENU_DEATH = 2;
     public static final int MENU_CHANGE_REQUEST = 3;
     public static final int MENU_DELETE = 4;
+    public static final int MENU_EDIT_ENTRY = 5;
     public static final int MENU_RECORD_EDIT = 11;
     public static final int MENU_RECORD_REQUEST = 12;
+    public static final int MENU_RECORD_VIEW_SALE = 13;
     /** Snackbar“切回东山猪场”的 actionId */
     public static final String ACTION_SWITCH_BACK = "herd_switch_back";
     static final String KEY_SWITCH_SHOWN = "herd_switch_shown";
@@ -300,7 +302,9 @@ public class BatchArchiveViewModel extends BaseViewModel {
     /** EDIT“修改记录”；CHANGE_REQUEST“提交修改申请 需审核”；NONE 不弹 */
     public void onRecordLongClick(@NonNull TimelineItemVO item) {
         List<MenuItemSpec> items = new ArrayList<>();
-        if (TimelineItemVO.ACTION_EDIT.equals(item.getAction())) {
+        if (TimelineItemVO.TYPE_SALE.equals(item.getRecordType()) && item.getBizId() > 0) {
+            items.add(MenuItemSpec.normal(MENU_RECORD_VIEW_SALE, "查看出栏单", R.drawable.ic_edit_note));
+        } else if (TimelineItemVO.ACTION_EDIT.equals(item.getAction())) {
             items.add(MenuItemSpec.normal(MENU_RECORD_EDIT, "修改记录", R.drawable.ic_edit));
         } else if (TimelineItemVO.ACTION_CHANGE_REQUEST.equals(item.getAction())) {
             items.add(MenuItemSpec.review(MENU_RECORD_REQUEST, "提交修改申请", R.drawable.ic_edit_note));
@@ -313,12 +317,32 @@ public class BatchArchiveViewModel extends BaseViewModel {
     /** 入栏 → L08（batch_id、entry_event_id），转栏 → L10、死淘 → L11（event_id）；申请 → U01 */
     public void onRecordMenuSelected(@NonNull TimelineItemVO item, int menuId) {
         String type = item.getRecordType();
+        if (item.getBizId() <= 0) {
+            return;
+        }
+        if (TimelineItemVO.TYPE_SALE.equals(type)) {
+            // 已收款与未收款的编辑规则不同，交由出栏详情的 actions 决定。
+            if (menuId == MENU_RECORD_VIEW_SALE || menuId == MENU_RECORD_REQUEST || menuId == MENU_RECORD_EDIT) {
+                navEvent.setValue(NavTarget.of(RouterPath.E07)
+                        .put(RouterPath.EXTRA_SALE_ORDER_ID, item.getBizId()).forResult());
+            }
+            return;
+        }
         if (menuId == MENU_RECORD_REQUEST) {
+            if (!TimelineItemVO.ACTION_CHANGE_REQUEST.equals(item.getAction())) {
+                return;
+            }
             String bizType = TimelineItemVO.TYPE_ENTRY.equals(type) ? HerdExtras.BIZ_BATCH_ENTRY
                     : TimelineItemVO.TYPE_TRANSFER.equals(type) ? HerdExtras.BIZ_BATCH_TRANSFER
-                    : HerdExtras.BIZ_BATCH_DEATH;
+                    : TimelineItemVO.TYPE_DEATH.equals(type) ? HerdExtras.BIZ_BATCH_DEATH : null;
+            if (bizType == null) {
+                return;
+            }
             navEvent.setValue(NavTarget.of(RouterPath.U01).put(RouterPath.EXTRA_BIZ_TYPE, bizType)
                     .put(RouterPath.EXTRA_BIZ_ID, item.getBizId()).forResult());
+            return;
+        }
+        if (menuId != MENU_RECORD_EDIT || !TimelineItemVO.ACTION_EDIT.equals(item.getAction())) {
             return;
         }
         if (TimelineItemVO.TYPE_ENTRY.equals(type)) {
@@ -349,7 +373,9 @@ public class BatchArchiveViewModel extends BaseViewModel {
         if (a.isCanRegisterDeath()) {
             items.add(MenuItemSpec.normal(MENU_DEATH, "登记死淘", R.drawable.ic_heart_minus));
         }
-        if (a.isCanSubmitChangeRequest()) {
+        if (a.isCanEditEntry()) {
+            items.add(MenuItemSpec.normal(MENU_EDIT_ENTRY, "修改入栏记录", R.drawable.ic_edit));
+        } else if (a.isCanSubmitChangeRequest()) {
             items.add(MenuItemSpec.review(MENU_CHANGE_REQUEST, "提交修改申请", R.drawable.ic_edit_note));
         }
         if (a.isCanDelete()) {
@@ -369,6 +395,12 @@ public class BatchArchiveViewModel extends BaseViewModel {
                 break;
             case MENU_DEATH:
                 onFabClick();
+                break;
+            case MENU_EDIT_ENTRY:
+                if (d.getActions() != null && d.getActions().isCanEditEntry() && d.getEntryEventId() > 0) {
+                    navEvent.setValue(NavTarget.of(RouterPath.L08).put(RouterPath.EXTRA_BATCH_ID, batchId)
+                            .put(RouterPath.EXTRA_ENTRY_EVENT_ID, d.getEntryEventId()).forResult());
+                }
                 break;
             case MENU_CHANGE_REQUEST:
                 navEvent.setValue(NavTarget.of(RouterPath.U01).put(RouterPath.EXTRA_BIZ_TYPE, HerdExtras.BIZ_BATCH_ENTRY)

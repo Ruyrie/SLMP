@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { ChangeRequestVO } from '@/api/change'
-import { useChangeRequestStore, VOID_FIELD } from '@/stores/common/changeRequest'
+import { getChangeRequestForm, type ChangeRequestFormVO, type ChangeRequestVO } from '@/api/change'
+import { displayChangeField as displayField, useChangeRequestStore, VOID_FIELD, DELETE_FIELD } from '@/stores/common/changeRequest'
 import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
 import { formatMonthDayTime } from '@/views/account/accountForm'
@@ -12,6 +12,19 @@ const router = useRouter()
 const store = useChangeRequestStore()
 const farm = useFarmStore()
 const ui = useUiStore()
+const originalOpen = ref(false)
+const originalLoading = ref(false)
+const originalForm = ref<ChangeRequestFormVO | null>(null)
+const originalError = ref('')
+const originalRows = computed(() => {
+  const rows = [...(originalForm.value?.record_card || [])]
+  for (const field of originalForm.value?.fields || []) {
+    if (!rows.some((row) => row.label === field.field_name)) {
+      rows.push({ label: field.field_name, value: [displayField(field), field.value_unit].filter(Boolean).join(' ') })
+    }
+  }
+  return rows
+})
 
 const BIZ_TYPES = [
   { title: '入栏记录', value: 'BATCH_ENTRY' },
@@ -163,8 +176,8 @@ const compareRows = computed(() => {
   const d = detail.value
   if (!d) return []
   const rows: Array<{ label: string; before: string; after: string }> = []
-  if (d.change_type === 'VOID') {
-    rows.push({ label: '记录状态', before: '有效', after: '已作废' })
+  if (d.change_type === 'VOID' || d.change_type === 'DELETE') {
+    rows.push({ label: '记录状态', before: '有效', after: d.change_type === 'DELETE' ? '已删除' : '已作废' })
   }
   for (const item of store.detailForm?.record_card || []) {
     if (!item.label) continue
@@ -210,6 +223,9 @@ const fieldOptions = computed(() => {
   }))
   if (store.form?.void_allowed) {
     list.push({ title: '作废这条记录', value: VOID_FIELD })
+  }
+  if (store.form?.delete_allowed) {
+    list.push({ title: '删除这条记录', value: DELETE_FIELD })
   }
   return list
 })
@@ -374,33 +390,6 @@ function originalRoute(
   item: ChangeRequestVO
 ): { name: string; params?: Record<string, string | number>; query?: Record<string, string> } | null {
   switch (item.biz_type) {
-    case 'BATCH_ENTRY':
-    case 'BATCH_TRANSFER':
-    case 'BATCH_DEATH':
-      return item.batch_id
-        ? { name: 'WU-L04', params: { batchId: item.batch_id } }
-        : { name: 'WU-L03' }
-    case 'FARROWING':
-    case 'INCUBATION':
-    case 'BREEDING_EXIT':
-      return { name: 'WU-B01' }
-    case 'FEED_RECORD':
-      return { name: 'WU-G02' }
-    case 'WEIGH_RECORD':
-      return { name: 'WU-G03' }
-    case 'INSPECTION':
-      return { name: 'WU-I02' }
-    case 'IMMUNE_RECORD':
-      return { name: 'WU-D01' }
-    case 'MEDICATION_RECORD':
-      return { name: 'WU-D02' }
-    case 'DISINFECT_RECORD':
-      return { name: 'WU-D03' }
-    case 'INBOUND':
-    case 'OUTBOUND':
-    case 'STOCKTAKE':
-    case 'LOSS':
-      return { name: 'WU-M01' }
     case 'SALE_ORDER':
       return { name: 'WU-E04', params: { id: item.biz_id } }
     default:
@@ -412,13 +401,10 @@ async function viewOriginalRecord(): Promise<void> {
   const item = store.detail
   if (!item) return
   const target = originalRoute(item)
-  if (!target) {
-    ui.toast('原记录页面暂不可用', 'info')
-    return
-  }
   if (item.farm_id && farm.currentFarmId !== item.farm_id) {
     try {
       await farm.switchTo(item.farm_id)
+      if (farm.currentFarmId !== item.farm_id) throw new Error('养殖场正在切换')
       const targetFarm = farm.farms.find((f) => f.farm_id === item.farm_id)
       ui.toast(`已切换到${targetFarm?.name || item.farm_name || '原养殖场'}`)
     } catch {
@@ -427,7 +413,22 @@ async function viewOriginalRecord(): Promise<void> {
     }
   }
   store.closeDetail()
-  await router.push(target)
+  if (target) {
+    await router.push(target)
+    return
+  }
+  // 无独立详情路由的记录，按原业务 ID 展示当前记录；不要跳到未定位的模块列表。
+  originalOpen.value = true
+  originalLoading.value = true
+  originalForm.value = null
+  originalError.value = ''
+  try {
+    originalForm.value = await getChangeRequestForm(item.biz_type, item.biz_id)
+  } catch (error) {
+    originalError.value = (error as Error).message || '原记录加载失败，请稍后重试'
+  } finally {
+    originalLoading.value = false
+  }
 }
 </script>
 
@@ -549,7 +550,7 @@ async function viewOriginalRecord(): Promise<void> {
                 <div class="u01-min">
                   <div class="zw-cell-main">
                     {{ item.biz_type_text || BIZ_TYPE_LABELS[item.biz_type] || '修改申请' }} ·
-                    {{ item.change_type === 'VOID' ? '作废' : item.field_name || '修改' }}
+                    {{ item.change_type === 'VOID' ? '作废' : item.change_type === 'DELETE' ? '删除' : item.field_name || '修改' }}
                   </div>
                   <div class="zw-cell-sub" :class="{ num: item.biz_type === 'SALE_ORDER' }">
                     {{ item.record_locator }}
@@ -561,11 +562,11 @@ async function viewOriginalRecord(): Promise<void> {
               <zw-tag type="farm">{{ item.farm_name || '—' }}</zw-tag>
             </template>
             <template #item.change="{ item }">
-              <span v-if="item.change_type === 'VOID'" class="u01-chg">
-                <zw-tag type="error" icon="block" size="small">作废</zw-tag>
+              <span v-if="item.change_type === 'VOID' || item.change_type === 'DELETE'" class="u01-chg">
+                <zw-tag type="error" icon="block" size="small">{{ item.change_type === 'DELETE' ? '删除' : '作废' }}</zw-tag>
                 <del class="num">有效</del>
                 <zw-icon name="arrow_forward" :size="16" />
-                <b class="num">已作废</b>
+                <b class="num">{{ item.change_type === 'DELETE' ? '已删除' : '已作废' }}</b>
               </span>
               <span v-else class="u01-chg">
                 <del class="num">{{ item.before_display || '—' }}</del>
@@ -657,6 +658,13 @@ async function viewOriginalRecord(): Promise<void> {
     </zw-card>
 
     <!-- 修改前后对比 -->
+    <zw-drawer v-model="originalOpen" :title="originalForm?.record_title || '原记录'" :sub="originalForm?.record_subtitle" width="640">
+      <v-skeleton-loader v-if="originalLoading" type="list-item-two-line@4" />
+      <zw-notice v-else-if="originalError" type="error" icon="error">{{ originalError }}</zw-notice>
+      <zw-desc v-else :cols="1" bordered :label-width="120">
+        <zw-desc-item v-for="(row, index) in originalRows" :key="index" :label="row.label || '记录信息'">{{ row.value || '—' }}</zw-desc-item>
+      </zw-desc>
+    </zw-drawer>
     <zw-drawer
       :model-value="store.detailOpen"
       :title="detailTitle"
@@ -791,10 +799,10 @@ async function viewOriginalRecord(): Promise<void> {
             />
           </zw-form-item>
 
-          <div v-if="!store.voidSelected" class="u01-val">
+          <div v-if="!store.voidSelected && !store.deleteSelected" class="u01-val">
             <zw-form-item label="原值">
               <div class="zw-readonly u01-ro">
-                <del class="num">{{ store.currentField?.value || '—' }}</del>
+                <del class="num">{{ displayField(store.currentField) }}</del>
                 <span class="u01-unit">{{ store.currentField?.value_unit }}</span>
               </div>
             </zw-form-item>
@@ -803,7 +811,7 @@ async function viewOriginalRecord(): Promise<void> {
               <v-select
                 v-if="store.currentField?.input_type === 'SELECT'"
                 :model-value="store.newValue"
-                :items="store.currentField?.options || []"
+                :items="(store.currentField?.options || []).filter((option) => !option.disabled)"
                 item-title="label"
                 item-value="value"
                 :error="!!store.fieldErrors.new_value"
@@ -828,6 +836,11 @@ async function viewOriginalRecord(): Promise<void> {
 
           <zw-notice v-if="store.voidSelected" type="warning" icon="block">
             {{ store.form.void_notice || '审核通过后这条记录作废，相关库存和统计会重新计算。' }}
+          </zw-notice>
+          <zw-notice v-if="store.deleteSelected" type="warning" icon="delete_outline">
+            {{ store.form.biz_type === 'MEDICATION_RECORD'
+              ? '审核通过后删除这条用药记录，回滚对应药品库存并重新计算休药期与可出栏日期。如需更正用药信息，请在审核完成后重新登记。'
+              : '审核通过后删除这条记录并重新计算相关数据。审核期间原记录保持不变。' }}
           </zw-notice>
 
           <zw-form-item label="修改原因" required :error="store.fieldErrors.reason">

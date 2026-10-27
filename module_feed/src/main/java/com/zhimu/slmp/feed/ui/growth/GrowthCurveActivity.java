@@ -103,6 +103,10 @@ public class GrowthCurveActivity extends BaseActivity {
         vm.getChartModel().observe(this, m -> {
             TipPopup.dismiss();
             header.feedGrowthChart.setData(m);
+            String notice = m == null ? "" : m.comparisonNotice();
+            header.feedGrowthCompareNotice.setText(notice);
+            header.feedGrowthCompareNotice.setVisibility(notice.isEmpty() ? View.GONE : View.VISIBLE);
+            renderCompareChips();
         });
         vm.getLegendItems().observe(this, this::renderLegend);
         vm.getCompareIds().observe(this, ids -> renderCompareChips());
@@ -259,7 +263,7 @@ public class GrowthCurveActivity extends BaseActivity {
             for (GrowthChartModel.Series s : chart.compare) {
                 Chip chip = (Chip) getLayoutInflater().inflate(R.layout.feed_item_compare_chip,
                         header.feedGrowthCompareChips, false);
-                chip.setText(s.batchNo);
+                chip.setText(s.batchNo + (s.points.isEmpty() ? "（暂无数据）" : ""));
                 chip.setCloseIconContentDescription("移除对比批次 " + s.batchNo);
                 long id = s.batchId;
                 chip.setOnCloseIconClickListener(v -> vm.removeCompare(id));

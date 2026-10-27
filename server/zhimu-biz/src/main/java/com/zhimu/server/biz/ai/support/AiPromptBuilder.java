@@ -29,7 +29,7 @@ public class AiPromptBuilder {
             if (text != null && !text.isBlank()) {
                 builder.message(com.zhimu.server.integration.ai.AiMessage.user(text));
             }
-            String answer = message.getAnswerText();
+            String answer = AiText.answerBody(message.getAnswerText());
             if (answer != null && !answer.isBlank()) {
                 builder.message(com.zhimu.server.integration.ai.AiMessage.assistant(
                         answer.length() > 1000 ? answer.substring(0, 1000) : answer));
@@ -54,8 +54,8 @@ public class AiPromptBuilder {
                 .append("可在类型标记后追加主题标记 [[TOPIC:MEDICATION]]、[[TOPIC:FEEDING]]、[[TOPIC:DISEASE]]、")
                 .append("[[TOPIC:IMMUNE]]、[[TOPIC:DISINFECT]]、[[TOPIC:OTHER]] 之一。\n")
                 .append("问题与养殖无关时类型为 OFF_TOPIC，正文固定为“").append(AiCodes.OFF_TOPIC_ANSWER)
-                .append("”。没有足够平台资料时类型为 NO_BASIS，并在正文首句前加上“")
-                .append(AiCodes.NO_BASIS_LEAD).append("”。疑似重大动物疫病时类型为 EPIDEMIC。\n")
+                .append("”。没有足够平台资料时类型为 NO_BASIS，直接给出有帮助的回答，说明具体不确定之处；")
+                .append("资料来源说明由界面单独展示，不要在正文添加固定的来源不足声明。疑似重大动物疫病时类型为 EPIDEMIC。\n")
                 .append("引用下方资料时在句末写 [^P1]、[^P2] 这样的标记，序号必须是资料中给出的编号；")
                 .append("不要编造资料编号，不要引用没有给出的资料。\n")
                 .append("不要输出手机号、姓名、单价、成本、金额等个人信息或经营敏感信息。\n")
@@ -73,6 +73,15 @@ public class AiPromptBuilder {
                     .append("日龄 ").append(batch.getDayAge()).append(" 天，")
                     .append("存栏 ").append(batch.getCurrentCount()).append(batch.getCountUnitText()).append("。")
                     .append("回答中的日龄、存栏要与该批次一致；没有给出的生产数据不要推测。\n");
+            if (batch.getLatestAvgWeight() != null) {
+                sb.append("最近一次称重平均体重：").append(batch.getLatestAvgWeight().toPlainString()).append(" 千克");
+                if (batch.getLatestWeighDate() != null) {
+                    sb.append("（称重日期：").append(batch.getLatestWeighDate()).append("）");
+                }
+                sb.append("；这是历史实测体重，不代表今天的实时体重。\n");
+            } else {
+                sb.append("该批次暂无可用的称重记录，不要推测体重。\n");
+            }
         }
         if (courseTitle != null && !courseTitle.isBlank()) {
             sb.append("课程背景：用户正在观看养殖课堂《").append(courseTitle).append("》，可结合课程内容回答。\n");

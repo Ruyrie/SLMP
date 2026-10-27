@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
-import { formatDate, formatMoney, formatNumber, formatPercent, today } from '@zmt/shared'
+import { formatDate, formatMoney, formatNumber, formatPercent } from '@zmt/shared'
 import { useWorkbenchStore } from '@/stores/today/workbench'
 import { useFarmReload } from '@/composables/useFarmReload'
 import { useNoticeStore } from '@/stores/notice'
@@ -21,8 +21,11 @@ const {
   todos,
   reminders,
   total,
-  tabCounts,
-  query,
+  overdueExpanded,
+  overdueTodos,
+  overdueCount,
+  overdueStatus,
+  overdueError,
   todoStatus,
   todoError,
   pens,
@@ -32,8 +35,13 @@ const {
 const drawerOpen = ref(false)
 const activeTodoId = ref<number | null>(null)
 
-onMounted(() => store.fetchAll())
-useFarmReload(() => store.fetchAll())
+function enterHome(): Promise<void> {
+  drawerOpen.value = false
+  activeTodoId.value = null
+  return store.enterHome()
+}
+onMounted(enterHome)
+useFarmReload(enterHome)
 
 const owner = computed(() => home.value?.owner_metrics || null)
 const title = computed(() => {
@@ -67,7 +75,7 @@ const stockFoot = computed(
       owner.value?.pen_occupancy_rate ?? 0
     )}`
 )
-const todoFoot = computed(() => `其中已逾期 ${formatNumber(owner.value?.overdue_count ?? 0)} 项`)
+const todoFoot = computed(() => `另有历史逾期 ${formatNumber(owner.value?.overdue_count ?? 0)} 项`)
 const warningFoot = computed(() => {
   const names = owner.value?.warning_names || []
   return names.length ? names.join('、') : '没有未解除的预警'
@@ -77,13 +85,6 @@ const receivableFoot = computed(() => {
   if (!count) return '没有逾期的待收款'
   return `${formatNumber(count)} 笔已逾期 ${formatNumber(owner.value?.receivable_max_overdue_days ?? 0)} 天`
 })
-
-const filterItems = computed(() => [
-  { label: '全部', value: 'ALL' },
-  { label: '已逾期', value: 'OVERDUE', count: tabCounts.value.OVERDUE ?? 0 },
-  { label: '作业', value: 'WORK' },
-  { label: '经营与预警', value: 'BIZ_WARN' }
-])
 
 const headers: any[] = [
   { title: '待办', key: 'title', sortable: false },
@@ -110,25 +111,13 @@ function penRatio(pen: PenOptionVO): number {
 }
 
 function emptyTitle(): string {
-  return todoStatus.value === 'filtered_empty' ? '没有符合筛选条件的待办' : '今天没有待办，也没有逾期事项。'
+  return todoStatus.value === 'filtered_empty' ? '没有符合筛选条件的待办' : '今天没有未完成待办。'
 }
 
 function emptyDesc(): string {
   return todoStatus.value === 'filtered_empty'
     ? '换一个筛选条件，或回到全部待办。'
     : '新的提醒会自动出现在这里。需要登记作业时，点顶部“登记”。'
-}
-
-function onFilterValue(value: string | number): void {
-  store.setFilter(String(value))
-}
-
-function onPage(page: number): void {
-  store.setPage(page)
-}
-
-function onSize(size: number): void {
-  store.setSize(size)
 }
 
 function openTodo(item: TodoItemVO): void {
@@ -146,15 +135,8 @@ function onAction(item: TodoItemVO): void {
   else void goRegister(todoActionLink(item))
 }
 
-function goCalendarToday(): void {
-  void router.push({ name: 'WU-T03', query: { date: today() } })
-}
-
-function askAi(): void {
-  void router.push({
-    name: 'WU-K01',
-    query: home.value?.ai_hint ? { q: home.value.ai_hint, new: '1' } : { new: '1' }
-  })
+function goTodos(filter: 'ALL' | 'WARNING' = 'ALL'): void {
+  void router.push({ name: 'WU-T09', query: { filter } })
 }
 
 function onChanged(): void {
@@ -216,7 +198,7 @@ function onChanged(): void {
             :value="statTodo"
             unit="项"
             :foot="todoFoot"
-            @click="goCalendarToday"
+            @click="goTodos('ALL')"
           />
           <zw-stat
             class="wb-stat-link"
@@ -226,7 +208,7 @@ function onChanged(): void {
             unit="项"
             :foot="warningFoot"
             tone="warning"
-            @click="goCalendarToday"
+            @click="goTodos('WARNING')"
           />
           <zw-stat
             class="wb-stat-link"
@@ -239,20 +221,10 @@ function onChanged(): void {
           />
         </div>
 
-        <zw-notice type="ai" icon="auto_awesome" class="mb-4 wb-ai">
-          问问 AI 养殖助手<template v-if="home.ai_hint"> · {{ home.ai_hint }}</template>
-          <template #action><a @click="askAi">去提问</a></template>
-        </zw-notice>
-
         <div class="wb-main">
-          <zw-card title="今天和已逾期" :sub="`${total} 项`" flush class="wb-todo">
+          <zw-card title="今日待办" :sub="`${total} 项`" flush class="wb-todo">
             <template #extra>
-              <zw-seg
-                size="small"
-                :model-value="query.filter"
-                :items="filterItems"
-                @update:model-value="onFilterValue"
-              />
+              <a class="zw-link" @click="goTodos('ALL')">查看全部</a>
             </template>
 
             <zw-empty
@@ -264,7 +236,9 @@ function onChanged(): void {
               <v-btn color="primary" @click="router.push({ name: 'WU-L02', query: { action: 'create' } })">新增栏舍</v-btn>
             </zw-empty>
 
-            <v-skeleton-loader v-else-if="todoStatus === 'loading'" type="table-row@5" />
+            <v-skeleton-loader v-else-if="todoStatus === 'loading'" type="table-row@3" />
+
+            <zw-empty v-else-if="todoStatus === 'forbidden'" icon="lock" title="无权查看待办" :desc="todoError" />
 
             <zw-empty
               v-else-if="todoStatus === 'error'"
@@ -289,6 +263,7 @@ function onChanged(): void {
               <v-data-table
                 :headers="headers"
                 :items="todos"
+                :items-per-page="-1"
                 hide-default-footer
                 density="comfortable"
                 @click:row="onRow"
@@ -314,19 +289,35 @@ function onChanged(): void {
               </v-data-table>
               <div class="zw-table-foot zw-table-foot--in">
                 <span class="zw-faint body-s">已完成的待办在养殖日历中查看</span>
-                <zw-pager
-                  :total="total"
-                  :page="query.page"
-                  :size="query.size"
-                  @update:page="onPage"
-                  @update:size="onSize"
-                />
+                <a v-if="total > 3" class="zw-link" @click="goTodos('ALL')">查看全部 {{ total }} 项</a>
               </div>
             </template>
+
+            <div v-if="overdueCount > 0 || overdueExpanded" class="wb-overdue">
+              <v-btn block variant="text" class="wb-overdue-toggle" :aria-expanded="overdueExpanded" aria-controls="home-overdue"
+                :append-icon="overdueExpanded ? 'expand_less' : 'expand_more'" @click="store.toggleOverdue()">
+                已逾期 · {{ overdueCount }} 项 · {{ overdueExpanded ? '收起' : '展开查看' }}
+              </v-btn>
+              <div v-if="overdueExpanded" id="home-overdue">
+                <v-skeleton-loader v-if="overdueStatus === 'loading'" type="table-row@3" />
+                <zw-empty v-else-if="overdueStatus === 'error' || overdueStatus === 'forbidden'" icon="cloud_off" title="逾期待办加载失败" :desc="overdueError">
+                  <v-btn variant="outlined" @click="store.fetchOverdue()">重新加载</v-btn>
+                </zw-empty>
+                <zw-empty v-else-if="!overdueTodos.length" icon="task_alt" title="没有未完成的逾期事项" />
+                <template v-else>
+                  <div v-for="item in overdueTodos" :key="item.todo_id" class="wb-overdue-row">
+                    <v-btn variant="text" class="wb-overdue-title" :title="item.title" @click="openTodo(item)">{{ item.title }}</v-btn>
+                    <a class="zw-link" @click="onAction(item)">{{ actionLabel(item) }}</a>
+                  </div>
+                  <div class="zw-table-foot zw-table-foot--in"><a class="zw-link" @click="goTodos('ALL')">到每日待办查看全部逾期</a></div>
+                </template>
+              </div>
+            </div>
           </zw-card>
 
           <div class="wb-side zw-stack">
             <zw-card v-if="reminders.length" title="生产提醒">
+              <template #extra><a class="zw-link" @click="goTodos('WARNING')">全部预警</a></template>
               <div class="zw-stack wb-reminders">
                 <zw-notice
                   v-for="item in reminders"
@@ -403,7 +394,8 @@ function onChanged(): void {
 .wb-remind {
   cursor: pointer;
 }
-.wb-ai {
-  align-items: center;
-}
+.wb-overdue { border-top: 1px solid var(--line-1); padding: 8px 12px; }
+.wb-overdue-row { display: flex; align-items: center; gap: 12px; padding: 4px 0; }
+.wb-overdue-title { flex: 1; min-width: 0; justify-content: flex-start; }
+.wb-overdue-title :deep(.v-btn__content) { overflow: hidden; text-overflow: ellipsis; display: block; }
 </style>

@@ -1,7 +1,9 @@
 package com.zhimu.server.biz.feeding.service;
 
 import com.zhimu.server.admin.base.api.StdQueryService;
+import com.zhimu.server.admin.base.vo.BreedStandardsVO;
 import com.zhimu.server.biz.feeding.entity.BatchGrowth;
+import com.zhimu.server.biz.feeding.entity.WeighRecord;
 import com.zhimu.server.biz.feeding.mapper.BatchGrowthMapper;
 import com.zhimu.server.biz.feeding.mapper.WeighRecordItemMapper;
 import com.zhimu.server.biz.feeding.mapper.WeighRecordMapper;
@@ -25,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Clock;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -38,6 +41,8 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 
 /** 称重周期修改口径（G23）与员工 40303。 */
 @ExtendWith(MockitoExtension.class)
@@ -128,6 +133,99 @@ class WeighServiceTest {
                 .isInstanceOf(BizException.class)
                 .extracting("code")
                 .isEqualTo(40303);
+    }
+
+    @Test
+    void curveComparesMissingSnapshotAtWeighingAgeWithoutChangingHistory() {
+        WeighRecord record = weigh(3330L, 3001L, "2026-10-19", 96, "60.00");
+        stubCurve(record, currentStandards(90, "62.0", 100, "73.0"));
+
+        WeighVO.Curve curve = service.curve(3001L, null);
+
+        assertThat(curve.getMetrics().getStdWeight()).isEqualByComparingTo("68.6");
+        assertThat(curve.getMetrics().getDeviationRatio()).isEqualByComparingTo("-0.1254");
+        assertThat(curve.getMetrics().getAllowedDeviation()).isEqualByComparingTo("0.10");
+        assertThat(curve.getMetrics().getComparisonSource()).isEqualTo("CURRENT_STANDARD");
+        assertThat(curve.getActualPoints().get(0).getStdWeight()).isEqualByComparingTo("68.6");
+        assertThat(record.getStdWeight()).isNull();
+        assertThat(record.getDeviationRatio()).isNull();
+        verify(recordMapper, never()).updateById(any(WeighRecord.class));
+        verify(growthMapper, never()).updateById(any(BatchGrowth.class));
+    }
+
+    @Test
+    void curveKeepsExistingSnapshotWhenCurrentStandardDiffers() {
+        WeighRecord record = weigh(3330L, 3001L, "2026-10-19", 96, "60.00");
+        record.setStdWeight(new BigDecimal("65.00"));
+        record.setDeviationRatio(new BigDecimal("-0.0769"));
+        record.setAllowedDeviation(new BigDecimal("0.20"));
+        stubCurve(record, currentStandards(90, "62.0", 100, "73.0"));
+
+        WeighVO.Metrics metrics = service.curve(3001L, null).getMetrics();
+
+        assertThat(metrics.getStdWeight()).isEqualByComparingTo("65.00");
+        assertThat(metrics.getDeviationRatio()).isEqualByComparingTo("-0.0769");
+        assertThat(metrics.getAllowedDeviation()).isEqualByComparingTo("0.20");
+        assertThat(metrics.getComparisonSource()).isEqualTo("RECORDED");
+    }
+
+    @Test
+    void missingSnapshotWithoutCurrentStandardStaysUnavailable() {
+        stubCurve(weigh(3330L, 3001L, "2026-10-19", 96, "60.00"), null);
+
+        WeighVO.Curve curve = service.curve(3001L, null);
+
+        assertThat(curve.getStdAvailable()).isFalse();
+        assertThat(curve.getMetrics().getStdWeight()).isNull();
+        assertThat(curve.getMetrics().getDeviationRatio()).isNull();
+        assertThat(curve.getMetrics().getComparisonSource()).isNull();
+    }
+
+    @Test
+    void missingSnapshotOutsideCurrentStandardAgeRangeIsNotExtrapolated() {
+        stubCurve(weigh(3330L, 3001L, "2026-10-19", 96, "60.00"), currentStandards(100, "73.0", 110, "84.0"));
+
+        WeighVO.Metrics metrics = service.curve(3001L, null).getMetrics();
+
+        assertThat(metrics.getStdWeight()).isNull();
+        assertThat(metrics.getDeviationRatio()).isNull();
+        assertThat(metrics.getComparisonSource()).isNull();
+    }
+
+    @Test
+    void recordedSnapshotRemainsAvailableWithoutCurrentStandard() {
+        WeighRecord record = weigh(3330L, 3001L, "2026-10-19", 96, "60.00");
+        record.setStdWeight(new BigDecimal("65.00"));
+        record.setDeviationRatio(new BigDecimal("-0.0769"));
+        stubCurve(record, null);
+
+        WeighVO.Metrics metrics = service.curve(3001L, null).getMetrics();
+
+        assertThat(metrics.getStdWeight()).isEqualByComparingTo("65.00");
+        assertThat(metrics.getDeviationRatio()).isEqualByComparingTo("-0.0769");
+        assertThat(metrics.getComparisonSource()).isEqualTo("RECORDED");
+    }
+
+    private void stubCurve(WeighRecord record, BreedStandardsVO standards) {
+        when(lookup.requireOwnedBatch(3001L)).thenReturn(batch());
+        when(recordMapper.selectList(any())).thenReturn(List.of(record));
+        when(growthMapper.selectOne(any())).thenReturn(growth());
+        when(stdQueryService.standards(1101L, null)).thenReturn(standards);
+    }
+
+    private static BreedStandardsVO currentStandards(int firstDay, String firstWeight, int lastDay, String lastWeight) {
+        BreedStandardsVO result = new BreedStandardsVO();
+        BreedStandardsVO.WeightStandardVO weight = new BreedStandardsVO.WeightStandardVO();
+        weight.setToleranceRate(new BigDecimal("0.10"));
+        BreedStandardsVO.WeightPointVO first = new BreedStandardsVO.WeightPointVO();
+        first.setDayAge(firstDay);
+        first.setStdWeight(new BigDecimal(firstWeight));
+        BreedStandardsVO.WeightPointVO last = new BreedStandardsVO.WeightPointVO();
+        last.setDayAge(lastDay);
+        last.setStdWeight(new BigDecimal(lastWeight));
+        weight.setPoints(List.of(first, last));
+        result.setWeight(weight);
+        return result;
     }
 
     private static BatchInfo batch() {

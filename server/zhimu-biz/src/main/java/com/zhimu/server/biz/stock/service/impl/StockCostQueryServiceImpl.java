@@ -1,6 +1,8 @@
 package com.zhimu.server.biz.stock.service.impl;
 
 import com.zhimu.server.biz.stock.api.BatchCost;
+import com.zhimu.server.biz.stock.entity.BatchMaterialCost;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.zhimu.server.biz.stock.api.StockCostQueryService;
 import com.zhimu.server.biz.stock.mapper.BatchMaterialCostMapper;
 import com.zhimu.server.biz.stock.query.CostTypeSum;
@@ -35,6 +37,19 @@ public class StockCostQueryServiceImpl implements StockCostQueryService {
     private static final BigDecimal ZERO = BigDecimal.ZERO.setScale(StockQty.AMOUNT_SCALE);
 
     private final BatchMaterialCostMapper costMapper;
+
+    @Override
+    public BigDecimal feedKg(Long farmId, Long batchId) {
+        Long scope = farmId != null ? farmId : FarmContext.farmId();
+        if (scope == null || batchId == null) return ZERO;
+        return TenantSkip.call(() -> costMapper.selectList(Wrappers.<BatchMaterialCost>lambdaQuery()
+                        .eq(BatchMaterialCost::getFarmId, scope)
+                        .eq(BatchMaterialCost::getBatchId, batchId)
+                        .eq(BatchMaterialCost::getCostType, COST_FEED)
+                        .eq(BatchMaterialCost::getStatus, "NORMAL")))
+                .stream().map(row -> row.getQty() == null ? BigDecimal.ZERO : row.getQty())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 
     @Override
     @Transactional(readOnly = true)

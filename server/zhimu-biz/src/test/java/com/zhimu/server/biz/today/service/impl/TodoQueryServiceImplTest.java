@@ -60,6 +60,7 @@ class TodoQueryServiceImplTest {
     @Mock private TodoScope todoScope;
     @Mock private TodoConvert todoConvert;
     @Mock private FarmQueryService farmQueryService;
+    @Mock private com.zhimu.server.biz.stock.support.StockWarningReconciler stockWarnings;
 
     private TodoServiceImpl service;
     private FarmContext.FarmMember owner;
@@ -68,7 +69,7 @@ class TodoQueryServiceImplTest {
     void setUp() {
         TodayTableInfo.ensure();
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-19T01:30:00Z"), ZoneId.of("Asia/Shanghai")));
-        service = new TodoServiceImpl(todoMapper, handleLogMapper, todoScope, todoConvert, farmQueryService);
+        service = new TodoServiceImpl(todoMapper, stockWarnings, handleLogMapper, todoScope, todoConvert, farmQueryService, org.mockito.Mockito.mock(com.zhimu.server.biz.feeding.api.FeedTaskReconciliationService.class));
         owner = new FarmContext.FarmMember(1001L, "东山猪场", 10001L, 5001L, FarmRole.OWNER, Set.of(),
                 FarmStatus.NORMAL);
         FarmContext.set(owner);
@@ -104,6 +105,31 @@ class TodoQueryServiceImplTest {
     }
 
     @Test
+    void productionCountReconcilesStockBeforeReadingAndMatchesWarningCollection() {
+        var summary = service.productionSummary();
+        var order = org.mockito.Mockito.inOrder(stockWarnings, todoMapper);
+        order.verify(stockWarnings).reconcileFarm(1001L);
+        order.verify(todoMapper).selectList(any());
+        TodayTodoQuery query = new TodayTodoQuery();
+        query.setFilter("WARNING");
+        assertThat(summary.warnings()).hasSize((int) service.today(query, 10001L).getTotal());
+    }
+
+    @Test
+    void warningCollectionIncludesOldAndUndatedWarningsButExcludesWorkAndResolved() {
+        Todo old = todo(1L, "FEED_LOW_STOCK", "WARNING", "PENDING", LocalDate.of(2026, 9, 1), null, null, "old");
+        Todo undated = todo(2L, "DRUG_LOW_STOCK", "WARNING", "PENDING", null, null, null, "undated");
+        Todo resolved = todo(3L, "DRUG_LOW_STOCK", "WARNING", "DONE", LocalDate.of(2026, 10, 19), null, null, "resolved");
+        Todo work = todo(4L, "FEEDING", "WORK", "PENDING", LocalDate.of(2026, 10, 19), null, null, "work");
+        when(todoMapper.selectList(any())).thenReturn(List.of(old, undated, resolved, work));
+        TodayTodoQuery query = new TodayTodoQuery();
+        query.setFilter("WARNING");
+        TodoPageVO result = service.today(query, 10001L);
+        assertThat(result.getList()).extracting(TodoItemVO::getTodoId).containsExactlyInAnyOrder(1L, 2L);
+        assertThat(result.getTotal()).isEqualTo(2);
+    }
+
+    @Test
     void todayReturnsTabCountsAndOrder() {
         TodayTodoQuery query = new TodayTodoQuery();
         query.setFilter("ALL");
@@ -133,6 +159,29 @@ class TodoQueryServiceImplTest {
                 .isInstanceOf(BizException.class)
                 .extracting(e -> ((BizException) e).getCode())
                 .isEqualTo(40001);
+    }
+
+    @Test
+    void homeCombinesOpenTodayAndHistoricalOverdueButDoesNotMixCompletedOrIgnored() {
+        Todo pending = todo(1L, "FEEDING", "WORK", "PENDING", LocalDate.of(2026, 10, 19), null, null, "今日未投喂");
+        Todo overdue = todo(2L, "FEEDING", "WORK", "PENDING", LocalDate.of(2026, 10, 18), null,
+                LocalDateTime.of(2026, 10, 19, 0, 0), "昨日未投喂");
+        Todo done = todo(3L, "FEEDING", "WORK", "DONE", LocalDate.of(2026, 10, 19), null, null, "今日已投喂");
+        Todo ignored = todo(4L, "FEEDING", "WORK", "IGNORED", LocalDate.of(2026, 10, 19), null, null, "已取消任务");
+        when(todoMapper.selectList(any())).thenReturn(List.of(pending, overdue, done, ignored));
+        TodayTodoQuery query = new TodayTodoQuery();
+        query.setFilter("HOME");
+        TodoPageVO home = service.today(query, 10001L);
+        assertThat(home.getList()).extracting(TodoItemVO::getTodoId).containsExactlyInAnyOrder(1L, 2L);
+        assertThat(home.getTotal()).isEqualTo(2);
+        assertThat(home.getTabCounts()).containsEntry("ALL", 1).containsEntry("OVERDUE", 1);
+        query.setFilter("ALL");
+        assertThat(service.today(query, 10001L).getList()).extracting(TodoItemVO::getTodoId).containsExactly(1L);
+        query.setFilter("OVERDUE");
+        assertThat(service.today(query, 10001L).getList()).extracting(TodoItemVO::getTodoId).containsExactly(2L);
+        pending.setStatus("DONE");
+        query.setFilter("HOME");
+        assertThat(service.today(query, 10001L).getList()).extracting(TodoItemVO::getTodoId).containsExactly(2L);
     }
 
     @Test
@@ -198,7 +247,7 @@ class TodoQueryServiceImplTest {
         todo.setTimeType(dueTime == null ? "ALL_DAY" : "AT_TIME");
         todo.setDueTime(dueTime);
         todo.setOverdueAt(overdueAt);
-        todo.setSortTime(overdueAt == null ? dueDate.atStartOfDay() : overdueAt);
+        todo.setSortTime(overdueAt == null ? (dueDate == null ? null : dueDate.atStartOfDay()) : overdueAt);
         todo.setPenId(2003L);
         todo.setPenName("3 号育肥舍");
         todo.setVersion(1);

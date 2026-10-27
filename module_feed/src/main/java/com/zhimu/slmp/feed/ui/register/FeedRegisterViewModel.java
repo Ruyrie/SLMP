@@ -332,9 +332,13 @@ public class FeedRegisterViewModel extends BaseViewModel {
         return redirectToday;
     }
 
-    /** 员工：服务端不返回执行人选项 */
+    /** 以接口中的当前成员角色为准，兼容旧接口给员工返回空选项列表。 */
     public boolean isStaffView() {
         FeedTaskFormVO f = formCtx.getValue();
+        String role = f != null && f.getCurrentUser() != null ? f.getCurrentUser().getRole() : null;
+        if (role == null) role = farmContext.role();
+        if ("STAFF".equals(role)) return true;
+        if ("OWNER".equals(role) || "MANAGER".equals(role)) return false;
         if (f != null) {
             return f.getExecutorOptions() == null;
         }
@@ -404,13 +408,18 @@ public class FeedRegisterViewModel extends BaseViewModel {
         canRequestChange.setValue(false);
         readonlyNotice.setValue(null);
         List<UserBriefVO> executors = f.getExecutorOptions();
-        executorVisible.setValue(executors != null);
-        executorOptions.setValue(executors == null ? Collections.emptyList() : executors);
+        boolean staff = isStaffView();
+        executorVisible.setValue(!staff);
+        executorOptions.setValue(staff || executors == null ? Collections.emptyList() : executors);
         selectedFeed.setValue(matchFeed(f.getFeedOptions(), f.getDefaultFeed()));
-        if (executors != null) {
+        if (staff) {
+            selectedExecutor.setValue(f.getCurrentUser());
+        } else if (executors != null) {
             UserBriefVO def = f.getDefaultExecutor() != null ? matchUser(executors, f.getDefaultExecutor().getUserId())
                     : null;
             selectedExecutor.setValue(def);
+        } else {
+            selectedExecutor.setValue(null);
         }
         mode.setValue(FeedRegisterMode.CREATE);
         if (!f.isCanRegister()) {
@@ -643,7 +652,7 @@ public class FeedRegisterViewModel extends BaseViewModel {
                 : f != null ? f.getCurrentUser() : r == null ? null : r.getRecorder();
         String me = current == null ? "" : FeedFormat.orEmpty(current.getName());
         if (staff) {
-            proxyHint.setValue("登记人：" + me);
+            proxyHint.setValue("实际执行人：" + me + "（本人）");
         } else {
             UserBriefVO exec = selectedExecutor.getValue();
             boolean proxy = exec != null && current != null && exec.getUserId() != current.getUserId();

@@ -777,6 +777,14 @@ public class AiChatViewModel extends BaseViewModel {
 
     // ===== 流式处理 =====
 
+    public void toggleProcess(long roundId) {
+        ChatRound r = find(roundId);
+        if (r == null || r.processText().isEmpty()) return;
+        r.processExpanded = !r.processExpanded;
+        r.touch();
+        rebuild();
+    }
+
     private void beginRound(@NonNull ChatRound r) {
         streamRound = r;
         metaReceived = false;
@@ -784,6 +792,9 @@ public class AiChatViewModel extends BaseViewModel {
         r.buffer.clear();
         r.statusText = null;
         r.pendingCitations.clear();
+        r.progressMessages.clear();
+        r.analysisSummary = "";
+        r.processExpanded = true;
         r.touch();
         streamPhase.setValue(StreamPhase.WAITING);
         streamingMessageId.setValue(r.localId);
@@ -810,6 +821,18 @@ public class AiChatViewModel extends BaseViewModel {
             return;
         }
         switch (e.getType()) {
+            case PROGRESS:
+                if (e.getProgress() != null && !e.getProgress().getMessage().trim().isEmpty()) {
+                    r.progressMessages.put(e.getProgress().getStage(), e.getProgress().getMessage());
+                    r.touch();
+                    rebuild();
+                }
+                break;
+            case ANALYSIS_SUMMARY:
+                r.analysisSummary = e.getText();
+                r.touch();
+                rebuild();
+                break;
             case META:
                 onMeta(r, e.getMeta());
                 break;
@@ -887,6 +910,7 @@ public class AiChatViewModel extends BaseViewModel {
         }
         r.apply(m);
         r.phase = ChatRound.Phase.ANSWERED;
+        r.processExpanded = false;
         String type = done.getAnswerType() != null ? done.getAnswerType() : m.getAnswerType();
         if (AiCodes.ANSWER_EPIDEMIC.equals(type)) {
             showEpidemicBanner.setValue(true);
@@ -1303,7 +1327,7 @@ public class AiChatViewModel extends BaseViewModel {
                 prevAsked = r.askedAt;
             }
             list.add(questionItem(r));
-            list.add(answerItem(r));
+            list.add(answerItem(r).withProcess(r.processText(), r.processExpanded));
         }
         addTips(list, rounds.size());
         if (invalidBatchTip != null) {

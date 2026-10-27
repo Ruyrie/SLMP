@@ -99,6 +99,7 @@ class OutboundChangeHandlerTest {
         outbound.setCreatedBy(10001L);
         outbound.setCreatedAt(LocalDateTime.of(2026, 10, 16, 9, 0));
         when(outboundMapper.selectById(6501L)).thenReturn(outbound);
+        when(outboundMapper.selectForUpdate(6501L, 1001L)).thenReturn(outbound);
 
         feed = new Feed();
         feed.setId(5102L);
@@ -134,6 +135,27 @@ class OutboundChangeHandlerTest {
     void supportsOutboundAndInventoryModule() {
         assertThat(handler.supportedBizTypes()).containsExactly(BizType.OUTBOUND);
         assertThat(handler.sourceModule()).isEqualTo(SourceModule.INVENTORY);
+    }
+
+    @Test
+    void refundedOutboundBlocksFormSubmissionAndEveryApprovalTypeBeforeInventoryMutation() {
+        outbound.setFinanceRecordId(88001L);
+        outbound.setRefundRegisteredAt(BeijingTime.now());
+        ChangeRecord record = handler.loadRecord(BizType.OUTBOUND, 6501L);
+        assertThatThrownBy(() -> handler.describeForm(record)).isInstanceOf(BizException.class)
+                .hasMessageContaining("已登记退款");
+        for (ChangeType type : java.util.List.of(ChangeType.UPDATE, ChangeType.DELETE, ChangeType.VOID)) {
+            assertThatThrownBy(() -> handler.validateChange(record, null, type, "input_qty", "40"))
+                    .isInstanceOf(BizException.class).hasMessageContaining("已登记退款");
+            ChangeRequest request = new ChangeRequest();
+            request.setChangeType(type.name());
+            assertThatThrownBy(() -> handler.validateForApprove(request, record))
+                    .isInstanceOf(BizException.class).hasMessageContaining("已登记退款");
+            assertThatThrownBy(() -> handler.apply(request, record, 1L))
+                    .isInstanceOf(BizException.class).hasMessageContaining("已登记退款");
+        }
+        org.mockito.Mockito.verifyNoInteractions(ledger, flowWriter, allocator);
+        org.mockito.Mockito.verify(outboundMapper, org.mockito.Mockito.never()).updateById(any(StockOutbound.class));
     }
 
     @Test

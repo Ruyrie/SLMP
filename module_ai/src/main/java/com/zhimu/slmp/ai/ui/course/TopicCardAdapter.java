@@ -33,7 +33,11 @@ public class TopicCardAdapter extends ListAdapter<TopicVO, TopicCardAdapter.Hold
 
             @Override
             public boolean areContentsTheSame(@NonNull TopicVO a, @NonNull TopicVO b) {
-                return a.getLearnedCount() == b.getLearnedCount() && Objects.equals(a.getName(), b.getName());
+                return Objects.equals(a.getName(), b.getName())
+                        && Objects.equals(a.getCoverUrl(), b.getCoverUrl())
+                        && a.getCourseCount() == b.getCourseCount()
+                        && a.getTotalDurationSec() == b.getTotalDurationSec()
+                        && a.getLearnedCount() == b.getLearnedCount();
             }
         });
         this.onClick = onClick;

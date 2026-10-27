@@ -1,9 +1,16 @@
 import { defineStore } from 'pinia'
 import type { BatchListItem, CategoryStock, PenStockItem, ProductionOverview, StockSummary } from '@/api/herd'
 import { herdApi } from '@/api/herd'
+import { useFarmStore } from '@/stores/farm'
+import { useAuthStore } from '@/stores/auth'
 import { errorText, statusForError, type PageStatus } from './shared'
 
 type OverviewTab = 'pen' | 'category' | 'batch'
+
+function currentFarmScope(): string {
+  const farm = useFarmStore()
+  return `${useAuthStore().user?.user_id || 0}:${farm.currentFarmId}:${farm.revision}:${farm.role}`
+}
 
 export const useStockOverviewStore = defineStore('herdStockOverview', {
   state: () => ({
@@ -22,6 +29,7 @@ export const useStockOverviewStore = defineStore('herdStockOverview', {
     page: 1,
     size: 20,
     loaded: false,
+    farmScope: '',
     requestId: 0
   }),
   getters: {
@@ -128,9 +136,15 @@ export const useStockOverviewStore = defineStore('herdStockOverview', {
   },
   actions: {
     async load(force = false): Promise<void> {
+      const scope = currentFarmScope()
+      if (this.farmScope !== scope) {
+        this.reset()
+        this.farmScope = scope
+      }
       if (this.loaded && !force) return
       const requestId = ++this.requestId
-      this.status = this.pens.length ? this.status : 'loading'
+      this.status = 'loading'
+      this.loaded = false
       this.error = ''
       try {
         const [overview, summary, pensPage, categories, batchesPage] = await Promise.all([
@@ -140,7 +154,7 @@ export const useStockOverviewStore = defineStore('herdStockOverview', {
           herdApi.stockCategories(),
           herdApi.batches({ page: 1, size: 200, status: 'ACTIVE', sort: 'ENTRY_DATE' })
         ])
-        if (requestId !== this.requestId) return
+        if (requestId !== this.requestId || scope !== currentFarmScope()) return
         this.overview = overview
         this.summary = summary
         this.pens = pensPage.list || []
@@ -149,7 +163,7 @@ export const useStockOverviewStore = defineStore('herdStockOverview', {
         this.loaded = true
         this.status = this.pens.length || this.batches.length ? 'ready' : 'empty'
       } catch (error) {
-        if (requestId !== this.requestId) return
+        if (requestId !== this.requestId || scope !== currentFarmScope()) return
         this.status = statusForError(error)
         this.error = errorText(error, '存栏加载失败，请稍后重新加载')
       }
@@ -191,7 +205,9 @@ export const useStockOverviewStore = defineStore('herdStockOverview', {
       return !!categoryId && this.expandedCategories.includes(categoryId)
     },
     reset(): void {
+      const nextRequestId = this.requestId + 1
       this.$reset()
+      this.requestId = nextRequestId
     }
   }
 })

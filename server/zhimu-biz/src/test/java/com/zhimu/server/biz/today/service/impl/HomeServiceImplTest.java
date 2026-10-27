@@ -59,8 +59,8 @@ class HomeServiceImplTest {
     void setUp() {
         TodayTableInfo.ensure();
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-19T01:30:00Z"), ZoneId.of("Asia/Shanghai")));
-        service = new HomeServiceImpl(farmQueryService, accountQueryService, todoMapper, messageMapper,
-                todoScope, todoLinks, List.of());
+        service = new HomeServiceImpl(farmQueryService, accountQueryService, todoMapper, org.mockito.Mockito.mock(com.zhimu.server.biz.stock.support.StockWarningReconciler.class), messageMapper,
+                todoScope, todoLinks, List.of(), org.mockito.Mockito.mock(com.zhimu.server.biz.feeding.api.FeedTaskReconciliationService.class));
         FarmContext.set(new FarmContext.FarmMember(1001L, "东山猪场", 10001L, 5001L, FarmRole.OWNER,
                 Set.of(), FarmStatus.NORMAL));
         when(farmQueryService.listFarmsOfUser(10001L)).thenReturn(List.of(
@@ -98,7 +98,7 @@ class HomeServiceImplTest {
 
         var metrics = home.getOwnerMetrics();
         assertThat(metrics).isNotNull();
-        assertThat(metrics.getTodayTodoCount()).isEqualTo(3);
+        assertThat(metrics.getTodayTodoCount()).isEqualTo(2);
         assertThat(metrics.getOverdueCount()).isEqualTo(1);
         assertThat(metrics.getWarningCount()).isEqualTo(1);
         assertThat(metrics.getWarningNames()).containsExactly("育肥全价料库存不足");
@@ -111,6 +111,19 @@ class HomeServiceImplTest {
         assertThat(metrics.getCountUnit()).isEqualTo("HEAD");
         assertThat(metrics.getCountUnitText()).isEqualTo("头");
         assertThat(home.getAiHint()).contains("已逾期");
+    }
+
+    @Test
+    void completedAndIgnoredTodayItemsDoNotContributeToPendingCount() {
+        Todo pending = warning();
+        Todo completed = doneFeeding();
+        Todo ignored = overdueFeeding();
+        ignored.setStatus("IGNORED");
+        when(todoMapper.selectList(any())).thenReturn(List.of(pending, completed, ignored));
+        assertThat(service.getHome(10001L).getOwnerMetrics().getTodayTodoCount()).isEqualTo(1);
+
+        pending.setStatus("DONE");
+        assertThat(service.getHome(10001L).getOwnerMetrics().getTodayTodoCount()).isZero();
     }
 
     @Test
@@ -144,8 +157,8 @@ class HomeServiceImplTest {
                         return java.util.Map.of(2003L, 6);
                     }
                 };
-        HomeServiceImpl withProvider = new HomeServiceImpl(farmQueryService, accountQueryService, todoMapper,
-                messageMapper, todoScope, todoLinks, List.of(provider));
+        HomeServiceImpl withProvider = new HomeServiceImpl(farmQueryService, accountQueryService, todoMapper, org.mockito.Mockito.mock(com.zhimu.server.biz.stock.support.StockWarningReconciler.class),
+                messageMapper, todoScope, todoLinks, List.of(provider), org.mockito.Mockito.mock(com.zhimu.server.biz.feeding.api.FeedTaskReconciliationService.class));
 
         HomeVO home = withProvider.getHome(10003L);
 

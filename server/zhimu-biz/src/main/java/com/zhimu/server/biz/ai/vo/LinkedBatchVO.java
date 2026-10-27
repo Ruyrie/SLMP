@@ -2,6 +2,9 @@ package com.zhimu.server.biz.ai.vo;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 /**
  * 可关联 / 已关联的在栏批次（API-K02、K05）。
  */
@@ -18,4 +21,6 @@ public class LinkedBatchVO {
     private int dayAge;
     private int currentCount;
     private String countUnitText;
+    private BigDecimal latestAvgWeight;
+    private LocalDate latestWeighDate;
 }

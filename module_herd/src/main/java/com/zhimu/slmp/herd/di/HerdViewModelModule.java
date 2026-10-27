@@ -13,6 +13,7 @@ import com.zhimu.slmp.herd.ui.pendetail.PenDetailViewModel;
 import com.zhimu.slmp.herd.ui.penedit.PenEditViewModel;
 import com.zhimu.slmp.herd.ui.production.ProductionViewModel;
 import com.zhimu.slmp.herd.ui.scan.BatchScanViewModel;
+import com.zhimu.slmp.herd.ui.trace.BatchTraceViewModel;
 import com.zhimu.slmp.herd.ui.stock.StockOverviewViewModel;
 import com.zhimu.slmp.herd.ui.transfer.BatchTransferViewModel;
 
@@ -60,6 +61,11 @@ public abstract class HerdViewModelModule {
     @IntoMap
     @ViewModelKey(BatchScanViewModel.class)
     abstract ViewModel bindBatchScan(BatchScanViewModel vm);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(BatchTraceViewModel.class)
+    abstract ViewModel bindBatchTrace(BatchTraceViewModel vm);
 
     @Binds
     @IntoMap

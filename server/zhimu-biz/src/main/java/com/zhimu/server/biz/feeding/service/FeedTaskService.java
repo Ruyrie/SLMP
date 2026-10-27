@@ -54,6 +54,7 @@ public class FeedTaskService {
     private final FeedPlanMealMapper mealMapper;
     private final FeedRecordMapper recordMapper;
     private final FeedLookup lookup;
+    private final com.zhimu.server.biz.feeding.api.FeedTaskReconciliationService reconciliation;
 
     /**
      * 手动补生成当前养殖场今天任务（所有者/场长）：为在养批次生成当天全部餐次，已存在则跳过。
@@ -397,6 +398,7 @@ public class FeedTaskService {
     }
 
     public List<FeedTask> todayTasks(FarmContext.FarmMember context) {
+        reconciliation.reconcileFarm(context.farmId());
         List<FeedTask> tasks = taskMapper.selectList(Wrappers.<FeedTask>lambdaQuery()
                 .eq(FeedTask::getFarmId, context.farmId())
                 .eq(FeedTask::getTaskDate, BeijingTime.today())

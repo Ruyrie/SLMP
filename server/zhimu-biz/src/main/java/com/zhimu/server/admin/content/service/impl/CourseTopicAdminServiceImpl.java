@@ -239,7 +239,7 @@ public class CourseTopicAdminServiceImpl implements CourseTopicAdminService {
         vo.setCategoryName(topic.getCategoryName());
         vo.setIntro(topic.getIntro());
         vo.setCoverFileId(topic.getCoverFileId());
-        vo.setCoverUrl(topic.getCoverUrl());
+        vo.setCoverUrl(media.coverUrl(topic));
         vo.setStatus(topic.getStatus());
         vo.setStatusText(ContentTexts.contentStatus(topic.getStatus()));
         vo.setOffReason(topic.getOffReason());

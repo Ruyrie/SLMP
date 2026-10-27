@@ -119,7 +119,9 @@ public class StockLossServiceImpl implements StockLossService {
             throw StockErrors.stockChanged(packText(lot, drug));
         }
         LocalDateHolder date = scrapDate(request, lot);
-        BigDecimal qty = StockQty.qty(request.getInputQty());
+        String inputUnit = StringUtils.hasText(request.getInputUnit())
+                ? request.getInputUnit().trim().toUpperCase(java.util.Locale.ROOT) : StockCodes.INPUT_MEASURE;
+        BigDecimal qty = scrapQuantity(request.getInputQty(), inputUnit, drug);
         StockLedger.Move move = ledger.outLot(lot, qty, StockCodes.unitText(drug.getUnit()));
 
         StockLoss loss = new StockLoss();
@@ -128,7 +130,7 @@ public class StockLossServiceImpl implements StockLossService {
         loss.setDrugId(drug.getId());
         loss.setDrugLotId(lot.getId());
         loss.setInputQty(request.getInputQty());
-        loss.setInputUnit(StockCodes.INPUT_MEASURE);
+        loss.setInputUnit(inputUnit);
         loss.setQty(qty);
         loss.setReason(request.getReason());
         loss.setRemark(trimToNull(request.getRemark()));
@@ -224,6 +226,29 @@ public class StockLossServiceImpl implements StockLossService {
         return flowWriter.record(flow);
     }
 
+    private static BigDecimal scrapQuantity(BigDecimal input, String unit, Drug drug) {
+        if (input == null || input.signum() <= 0) {
+            throw StockErrors.field("input_qty", "数量必须大于 0");
+        }
+        BigDecimal qty = input;
+        if (StockCodes.INPUT_PACK.equals(unit)) {
+            if (!StringUtils.hasText(drug.getPackUnit()) || drug.getPackSize() == null
+                    || drug.getPackSize().signum() <= 0) {
+                throw StockErrors.field("input_unit", "该药品未设置包装，不能按包装录入");
+            }
+            qty = input.multiply(drug.getPackSize());
+        } else if (!StockCodes.INPUT_MEASURE.equals(unit)) {
+            throw StockErrors.field("input_unit", "录入单位只能是 MEASURE 或 PACK");
+        }
+        if (qty.stripTrailingZeros().scale() > StockQty.QTY_SCALE) {
+            throw StockErrors.field("input_qty", "换算后的数量最多保留 3 位小数");
+        }
+        if (StockCodes.UNIT_DOSE.equals(drug.getUnit()) && qty.stripTrailingZeros().scale() > 0) {
+            throw StockErrors.field("input_qty", "头份必须是整数");
+        }
+        return StockQty.qty(qty);
+    }
+
     private record LocalDateHolder(java.time.LocalDate value) {
     }
 
@@ -242,7 +267,8 @@ public class StockLossServiceImpl implements StockLossService {
 
     private static String packText(DrugLot lot, Drug drug) {
         BigDecimal qty = StockQty.zeroIfNull(lot.getStockQty());
-        if (drug.getPackUnit() != null && drug.getPackSize() != null && drug.getPackSize().signum() > 0) {
+        if (drug.getPackUnit() != null && drug.getPackSize() != null && drug.getPackSize().signum() > 0
+                && qty.remainder(drug.getPackSize()).signum() == 0) {
             int count = qty.divide(drug.getPackSize(), 0, java.math.RoundingMode.DOWN).intValue();
             return count + " " + drug.getPackUnit();
         }
