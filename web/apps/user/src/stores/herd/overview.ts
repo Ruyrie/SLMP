@@ -94,7 +94,11 @@ export const useStockOverviewStore = defineStore('herdStockOverview', {
     pageTotal(): number {
       return this.tab === 'pen' ? this.filteredPens.length : this.filteredBatches.length
     },
-    /** 服务端已排好序：休药中 → 未处理异常上报 → 其余预警 → 今日巡检汇总；侧栏只放前 3 条。 */
+    /** 服务端已排好序：休药中 → 未处理异常上报 → 其余预警 → 今日巡检汇总。 */
+    allReminders(state): ProductionReminder[] {
+      return state.overview?.reminders || []
+    },
+    /** 侧栏默认只放前 3 条，点“查看全部”在原处展开 */
     reminders(state): ProductionReminder[] {
       return (state.overview?.reminders || []).slice(0, 3)
     },

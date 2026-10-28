@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { formatNumber, formatPercent } from '@zmt/shared'
 import type { DataTableHeader } from 'vuetify'
@@ -15,6 +15,9 @@ const store = useStockOverviewStore()
 const router = useRouter()
 const ui = useUiStore()
 const { isStaff } = useRole()
+/** 生产提醒侧栏是否展开全部（“查看全部”在原处展开，不跳转到待办） */
+const remindersExpanded = ref(false)
+const shownReminders = computed(() => (remindersExpanded.value ? store.allReminders : store.reminders))
 
 const desc = computed(() => {
   const farm = store.farmLabel || '当前养殖场'
@@ -386,7 +389,7 @@ function penActionText(pen: { is_breeding_pen?: boolean }): string {
         <div class="l01-aside">
           <zw-card v-if="store.reminders.length" title="生产提醒" :sub="`${store.reminderTotal} 条`">
             <div
-              v-for="(item, index) in store.reminders"
+              v-for="(item, index) in shownReminders"
               :key="`${item.reminder_type}-${index}`"
               class="l01-warn"
               :class="{ 'l01-warn--click': reminderClickable(item) }"
@@ -401,8 +404,8 @@ function penActionText(pen: { is_breeding_pen?: boolean }): string {
                 <div class="zw-cell-sub">{{ item.subtitle }}</div>
               </div>
             </div>
-            <button v-if="store.reminderTotal > store.reminders.length" class="l01-more" type="button" @click="router.push({ name: 'WU-T01' })">
-              查看全部 {{ store.reminderTotal }} 条提醒
+            <button v-if="store.allReminders.length > store.reminders.length" class="l01-more" type="button" @click="remindersExpanded = !remindersExpanded">
+              {{ remindersExpanded ? '收起' : `查看全部 ${store.reminderTotal} 条提醒` }}
             </button>
           </zw-card>
 
@@ -411,7 +414,7 @@ function penActionText(pen: { is_breeding_pen?: boolean }): string {
               :size="120"
               :thickness="16"
               :value="formatNumber(store.summary?.total_stock || 0)"
-              title="总存栏（头）"
+:title="`总存栏（${store.unit}）`"
               :items="(store.summary?.categories || []).map((item) => ({
                 label: item.category_name || '品类',
                 value: Number(item.stock || 0),
