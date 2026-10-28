@@ -8,7 +8,8 @@ import { useFarmReload } from '@/composables/useFarmReload'
 import { useRole } from '@/composables/useRole'
 import { monthDay, occupancyPercent } from '@/stores/herd/shared'
 import { useUiStore } from '@/stores/ui'
-import { resolveLinkTarget } from '@/views/today/todo'
+import type { ProductionReminder } from '@/api/herd'
+import { reminderIcon, reminderTarget } from './reminder'
 
 const store = useStockOverviewStore()
 const router = useRouter()
@@ -100,41 +101,13 @@ function openEntry(): void {
   void router.push({ name: 'WU-L05', query: { action: 'create', tab: 'entry' } })
 }
 
-function reminderIcon(type?: string): string {
-  if (type?.includes('WITHDRAWAL')) return 'medication'
-  if (type?.includes('FEED')) return 'inventory_2'
-  return 'notifications'
+function reminderClickable(item: ProductionReminder): boolean {
+  return !!reminderTarget(item)
 }
 
-/**
- * 生产提醒的去向是 App 页面编号：休药 D05、饲料不足 M01、兽药不足 M05、临期 / 过期 M06、
- * 巡检异常 I04（App 的巡检历史，Web 落到今日巡检，异常栏舍在那里转上报）。
- * 与待办共用 resolveLinkTarget，批次参数改成目标页读取的 batchId。
- */
-function reminderClickable(item: { batch_id?: number; route?: string }): boolean {
-  const route = item.route || ''
-  if (route === 'L04' || route === 'L06') return !!item.batch_id
-  return ['I04', 'I01', 'D02'].includes(route) || !!resolveLinkTarget({ route, params: {} })
-}
-
-function openReminder(item: { batch_id?: number; route?: string; todo_id?: number }): void {
-  const route = item.route || ''
-  if ((route === 'L04' || route === 'L06') && item.batch_id) {
-    openBatch(item.batch_id)
-    return
-  }
-  if (route === 'I04' || route === 'I01') {
-    void router.push({ name: 'WU-I01' })
-    return
-  }
-  if (route === 'D02') {
-    void router.push({ name: 'WU-D02', query: item.batch_id ? { batchId: String(item.batch_id) } : undefined })
-    return
-  }
-  const params: Record<string, string> = {}
-  if (item.batch_id) params.batch_id = String(item.batch_id)
-  if (item.todo_id) params.todo_id = String(item.todo_id)
-  const target = resolveLinkTarget({ route, params })
+/** 去向规则见 reminder.ts；未处理异常上报（I06 + report_id）进诊断详情。 */
+function openReminder(item: ProductionReminder): void {
+  const target = reminderTarget(item)
   if (target) void router.push({ name: target.name, params: target.params, query: target.query })
   else ui.toast('这条提醒暂时不能在网页端打开', 'info')
 }

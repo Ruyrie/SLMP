@@ -2,8 +2,18 @@ import type { FileVO, PageVO, Schema } from '@zmt/shared'
 import { http } from '@/api/client'
 
 /** 模块04 栏舍与存栏接口。响应字段保持服务端 snake_case。 */
-export type ProductionOverview = Schema<'ProductionOverviewVO'>
-export type ProductionReminder = NonNullable<ProductionOverview['reminders']>[number]
+/**
+ * 生产提醒：未处理异常上报（reminder_type=ABNORMAL_REPORT，route=I06）带 report_id，进诊断详情。
+ * 生成类型还没有这个字段，先在这里补上；老服务端不返回时为 undefined。
+ */
+export type ProductionReminder = Schema<'ProductionReminderItemVO'> & { report_id?: number }
+/** 生产概览补在养批次数、启用栏舍数、有在养批次的栏舍数；老服务端没有这些字段时为 undefined。 */
+export type ProductionOverview = Omit<Schema<'ProductionOverviewVO'>, 'reminders'> & {
+  active_batch_count?: number
+  pen_count?: number
+  occupied_pen_count?: number
+  reminders?: ProductionReminder[]
+}
 export type StockSummary = Schema<'StockSummaryVO'>
 export type PenStockItem = Schema<'PenStockItemVO'>
 export type CategoryStock = Schema<'CategoryStockVO'>
