@@ -109,6 +109,11 @@ public class AiChatFragment extends BaseFragment {
                 vm.loadSession(id);
             } else if (data.getBooleanExtra(RouterPath.EXTRA_NEW_SESSION, false)) {
                 vm.newSession(null, null);
+            } else {
+                long[] deleted = data.getLongArrayExtra(com.zhimu.slmp.ai.AiExtras.RESULT_DELETED_SESSION_IDS);
+                if (deleted != null) {
+                    vm.onSessionsDeleted(deleted);
+                }
             }
         });
     }

@@ -236,11 +236,13 @@ public class AnimalArchiveActivity extends BaseActivity implements PregCheckHost
             b.add(R.id.breed_menu_edit_record, getString(R.string.breed_record_edit), com.zhimu.slmp.base.R.drawable.ic_edit);
             any = true;
         }
+        // 产仔记录生成了仔猪批次就能查看，与能否申请修改无关
+        if (BreedCodes.BIZ_FARROWING.equals(r.getRecordType()) && r.getBatchId() != null) {
+            b.add(R.id.breed_menu_view_batch, getString(R.string.breed_record_view_batch),
+                    com.zhimu.slmp.base.R.drawable.ic_folder_open);
+            any = true;
+        }
         if (r.isCanRequestChange()) {
-            if (BreedCodes.BIZ_FARROWING.equals(r.getRecordType()) && r.getBatchId() != null) {
-                b.add(R.id.breed_menu_view_batch, getString(R.string.breed_record_view_batch),
-                        com.zhimu.slmp.base.R.drawable.ic_folder_open);
-            }
             if (r.getChangeState() != null && r.getChangeState().getPendingRequestId() != null) {
                 b.add(new MoreMenuHelper.Item(R.id.breed_menu_pending, getString(R.string.breed_record_pending),
                         com.zhimu.slmp.base.R.drawable.ic_pending_actions, null, null, false, false));

@@ -62,6 +62,7 @@ public class MedicationArchiveActivity extends BaseActivity {
     private static final int MENU_VIEW_REQUEST = 3;
     private static final int MENU_LOG = 4;
     private static final int MENU_DELETE = 5;
+    private static final int MENU_NOTIFY = 6;
 
     private HealthActivityMedicationArchiveBinding binding;
     private HealthViewMedicationHeaderBinding header;
@@ -262,6 +263,11 @@ public class MedicationArchiveActivity extends BaseActivity {
             menu.addReview(MENU_CHANGE, getString(R.string.health_submit_change_request),
                     com.zhimu.slmp.base.R.drawable.ic_edit_note);
         }
+        // 员工：非当天的本人记录不能修改，服务端给 NOTIFY，“通知场长”处理（API-D27）
+        if (actions.contains(HealthExtras.ACTION_NOTIFY)) {
+            menu.add(MENU_NOTIFY, getString(R.string.health_notify_manager),
+                    com.zhimu.slmp.base.R.drawable.ic_notifications);
+        }
         if (actions.contains(HealthExtras.ACTION_VIEW_LOG)) {
             menu.add(MENU_LOG, getString(R.string.health_view_log), com.zhimu.slmp.base.R.drawable.ic_history);
         }
@@ -281,6 +287,9 @@ public class MedicationArchiveActivity extends BaseActivity {
                     break;
                 case MENU_LOG:
                     vm.onRecordAction(r, HealthExtras.ACTION_VIEW_LOG);
+                    break;
+                case MENU_NOTIFY:
+                    vm.onRecordAction(r, HealthExtras.ACTION_NOTIFY);
                     break;
                 default:
                     vm.onRecordAction(r, HealthExtras.ACTION_DELETE);

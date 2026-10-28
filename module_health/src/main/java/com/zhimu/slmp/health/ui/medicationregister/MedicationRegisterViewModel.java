@@ -152,6 +152,9 @@ public class MedicationRegisterViewModel extends BaseViewModel {
     private Long presetReportId;
     @Nullable
     private Long presetDiagnosisId;
+    /** I07“转为用药记录”带入的用药原因（诊断结论），新建时预填 */
+    @Nullable
+    private String presetReason;
     @Nullable
     private String draftKey;
     @Nullable
@@ -198,6 +201,8 @@ public class MedicationRegisterViewModel extends BaseViewModel {
         todoId = asLong(handle.get(RouterPath.EXTRA_TODO_ID));
         presetReportId = asLong(handle.get(RouterPath.EXTRA_REPORT_ID));
         presetDiagnosisId = asLong(handle.get(RouterPath.EXTRA_DIAGNOSIS_ID));
+        Object presetReasonArg = handle.get(RouterPath.EXTRA_REASON);
+        presetReason = presetReasonArg instanceof String ? (String) presetReasonArg : null;
         init(asLong(handle.get(RouterPath.EXTRA_BATCH_ID)), asLong(handle.get(RouterPath.EXTRA_PEN_ID)),
                 asLong(handle.get(RouterPath.EXTRA_RECORD_ID)));
     }
@@ -340,6 +345,10 @@ public class MedicationRegisterViewModel extends BaseViewModel {
                 selectPen(presetPen);
             } else if (t.size() == 1) {
                 selectTarget(t.get(0));
+            }
+            String r = reason.getValue();
+            if (presetReason != null && !presetReason.trim().isEmpty() && (r == null || r.isEmpty())) {
+                reason.setValue(presetReason.trim());
             }
             initialSnapshot = snapshot();
             checkDraft();

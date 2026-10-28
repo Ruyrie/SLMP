@@ -19,6 +19,7 @@ import com.zhimu.slmp.ai.model.vo.AiSessionItemVO;
 import com.zhimu.slmp.ai.util.AiText;
 import com.zhimu.slmp.base.widget.GroupPosition;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -30,8 +31,16 @@ public class AiSessionPagingAdapter extends PagingDataAdapter<SessionRow, Recycl
     private static final int TYPE_ITEM = 1;
 
     private final Consumer<AiSessionItemVO> onClick;
+    /** 长按：弹出“重命名 / 删除”菜单（锚点为卡片） */
+    @Nullable
+    private final BiConsumer<View, AiSessionItemVO> onLongClick;
 
     public AiSessionPagingAdapter(@NonNull Consumer<AiSessionItemVO> onClick) {
+        this(onClick, null);
+    }
+
+    public AiSessionPagingAdapter(@NonNull Consumer<AiSessionItemVO> onClick,
+                                  @Nullable BiConsumer<View, AiSessionItemVO> onLongClick) {
         super(new DiffUtil.ItemCallback<SessionRow>() {
             @Override
             public boolean areItemsTheSame(@NonNull SessionRow a, @NonNull SessionRow b) {
@@ -44,6 +53,7 @@ public class AiSessionPagingAdapter extends PagingDataAdapter<SessionRow, Recycl
             }
         });
         this.onClick = onClick;
+        this.onLongClick = onLongClick;
     }
 
     @Override
@@ -92,6 +102,12 @@ public class AiSessionPagingAdapter extends PagingDataAdapter<SessionRow, Recycl
         lp.bottomMargin = last ? 0 : Math.round(2 * h.itemView.getResources().getDisplayMetrics().density);
         h.b.aiSessionCard.setLayoutParams(lp);
         h.b.aiSessionCard.setOnClickListener(v -> onClick.accept(s));
+        if (onLongClick != null) {
+            h.b.aiSessionCard.setOnLongClickListener(v -> {
+                onLongClick.accept(v, s);
+                return true;
+            });
+        }
     }
 
     @Nullable

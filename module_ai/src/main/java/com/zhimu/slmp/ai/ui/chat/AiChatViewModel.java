@@ -495,6 +495,20 @@ public class AiChatViewModel extends BaseViewModel {
         }
     }
 
+    /** K02 删除了会话：当前正在看的会话被删时回到新对话 */
+    public void onSessionsDeleted(@NonNull long[] ids) {
+        Long current = sessionId.getValue();
+        if (current == null) {
+            return;
+        }
+        for (long id : ids) {
+            if (id == current) {
+                newSession(null, null);
+                return;
+            }
+        }
+    }
+
     public void clearCourseContext() {
         contextCourse.setValue(null);
     }

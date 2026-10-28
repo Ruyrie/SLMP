@@ -24,6 +24,7 @@ import com.zhimu.slmp.health.data.HealthSharedRepository;
 import com.zhimu.slmp.health.data.ImmuneRepository;
 import com.zhimu.slmp.health.model.request.ImmuneRecordCreateRequest;
 import com.zhimu.slmp.health.model.request.ImmuneRecordUpdateRequest;
+import com.zhimu.slmp.health.model.request.NotifyManagerRequest;
 import com.zhimu.slmp.health.model.vo.DrugLotOptionVO;
 import com.zhimu.slmp.health.model.vo.DrugLotOptionsVO;
 import com.zhimu.slmp.health.model.vo.ImmunePlanOptionVO;
@@ -883,7 +884,10 @@ public class ImmuneRegisterViewModel extends BaseViewModel {
         planId.setValue(r.getPlanId());
     }
 
-    /** 查看状态底部操作：EDIT“修改记录”、CHANGE_REQUEST“提交修改申请”（需审核，U01）、VIEW_REQUEST“查看修改申请”（U02） */
+    /**
+     * 查看状态底部操作：EDIT“修改记录”、CHANGE_REQUEST“提交修改申请”（需审核，U01）、VIEW_REQUEST“查看修改申请”（U02）、
+     * NOTIFY“通知场长”（员工，非当天的本人记录）
+     */
     public void onViewAction(@NonNull String action) {
         ImmuneRecordVO r = record.getValue();
         if (r == null) {
@@ -899,9 +903,19 @@ public class ImmuneRegisterViewModel extends BaseViewModel {
             case HealthExtras.ACTION_VIEW_REQUEST:
                 openRequest.setValue(r.getChangeState() == null ? null : r.getChangeState().getPendingRequestId());
                 break;
+            case HealthExtras.ACTION_NOTIFY:
+                notifyManager(r.getId());
+                break;
             default:
                 break;
         }
+    }
+
+    /** 员工“通知场长”（action = UPDATE）：“已通知刘芳”；10 分钟内重复返回 42901 提示 */
+    void notifyManager(long recordId) {
+        launch(repository.notifyManager(recordId, new NotifyManagerRequest("UPDATE")), names -> showMessage(
+                "已通知" + (names == null || names.isEmpty() ? "场长" : String.join("、", names))),
+                e -> showMessage(e.getMessage()));
     }
 
     /** 进入修改：按记录回填，取该疫苗的批号选项与执行人 */

@@ -73,7 +73,7 @@ public interface FinanceApi {
 
     /** API-E03 收支流水 */
     @GET("api/v1/finance-records")
-    Single<ApiResponse<FinanceRecordPageVO>> listRecords(@Query("month") String month,
+    Single<ApiResponse<FinanceRecordPageVO>> listRecords(@Nullable @Query("month") String month,
                                                          @Query("type") String type,
                                                          @Nullable @Query("category_ids") String categoryIds,
                                                          @Nullable @Query("batch_id") Long batchId,

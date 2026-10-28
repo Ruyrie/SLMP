@@ -82,6 +82,14 @@
     <string name="ai_session_no_result">没有找到相关会话，换个关键词试试</string>
     <string name="ai_session_error_title">历史会话加载失败</string>
     <string name="ai_session_keyword_too_long">搜索内容不能超过 50 字</string>
+    <string name="ai_session_menu_rename">重命名</string>
+    <string name="ai_session_menu_delete">删除</string>
+    <string name="ai_session_rename_title">重命名会话</string>
+    <string name="ai_session_rename_label">会话标题</string>
+    <string name="ai_session_rename_helper">最多 40 字</string>
+    <string name="ai_session_rename_ok">保存</string>
+    <string name="ai_session_delete_title">删除这条会话？</string>
+    <string name="ai_session_delete_message">删除后会话和其中的问答都不再显示，不能恢复。</string>
 
     <!-- K03 -->
     <string name="ai_knowledge_title">知识原文</string>

@@ -405,8 +405,24 @@ public class SaleOrderEditViewModel extends FinanceViewModel {
         idem.clear();
     }
 
+    /** “去入栏”打开 L08；返回后重拉批次选项（{@link #reloadBatchOptions()}） */
     public void openEntry() {
-        open(NavTarget.of(RouterPath.L08));
+        open(NavTarget.of(RouterPath.L08).forResult());
+    }
+
+    /** 从 L08 返回：重新取 API-E16 批次选项，已选批次保持不变 */
+    public void reloadBatchOptions() {
+        if (saleOrderId > 0) {
+            return;
+        }
+        launch(repository.getBatchOptions(), list -> {
+            batchOptions.setValue(list);
+            noBatches.setValue(list.isEmpty());
+            if (selectedBatch.getValue() == null && list.size() == 1) {
+                selectBatch(list.get(0).getBatchId());
+            }
+        }, e -> {
+        });
     }
 
     // ===== 计算 =====

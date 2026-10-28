@@ -30,9 +30,6 @@ import com.zhimu.slmp.common.router.RouterPath;
  */
 public class TopicDetailViewModel extends BaseViewModel {
 
-    /** 网页版专题地址（WU-K03；TopicDetailVO 没有 share_url，待确认正式域名） */
-    public static final String WEB_TOPIC_URL = "https://web.zhimutong.example.com/course/topics/";
-
     private final CourseRepository repository;
     private final MutableLiveData<TopicDetailVO> topic = new MutableLiveData<>(null);
     private final MutableLiveData<String> progressText = new MutableLiveData<>(null);
@@ -125,10 +122,13 @@ public class TopicDetailViewModel extends BaseViewModel {
         openPlay.setValue(new PlayArgs(c.getId(), AiCodes.ENTRY_TOPIC));
     }
 
+    /** 分享：标题 + 服务端给的网页地址 share_url；没有地址时只分享标题 */
     public void share() {
         TopicDetailVO t = topic.getValue();
         if (t != null) {
-            shareText.setValue(t.getName() + "\n" + WEB_TOPIC_URL + t.getId());
+            String url = t.getShareUrl();
+            String name = t.getName() == null ? "" : t.getName();
+            shareText.setValue(url == null || url.trim().isEmpty() ? name : name + "\n" + url.trim());
         }
     }
 

@@ -234,7 +234,9 @@ public class KnowledgeDetailViewModel extends BaseViewModel {
     public void share() {
         KnowledgeDetailVO vo = detail.getValue();
         if (vo != null) {
-            shareText.setValue(vo.getTitle() + (vo.getShareUrl() == null ? "" : "\n" + vo.getShareUrl()));
+            String url = vo.getShareUrl();
+            String title = vo.getTitle() == null ? "" : vo.getTitle();
+            shareText.setValue(url == null || url.trim().isEmpty() ? title : title + "\n" + url.trim());
         }
     }
 

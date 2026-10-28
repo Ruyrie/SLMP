@@ -33,6 +33,7 @@ import com.zhimu.slmp.stock.model.vo.StockFlowItemVO;
 import com.zhimu.slmp.stock.ui.common.StockNav;
 import com.zhimu.slmp.stock.ui.common.StockUi;
 import com.zhimu.slmp.stock.ui.flow.StockFlowListActivity;
+import com.zhimu.slmp.stock.util.FlowRouter;
 import com.zhimu.slmp.stock.util.StockQtyFormatter;
 import com.zhimu.slmp.stock.util.StockTexts;
 
@@ -220,7 +221,13 @@ public class FeedStockActivity extends BaseActivity {
         for (StockFlowItemVO f : list) {
             StockItemRowBinding row = StockUi.inflateRow(binding.stockFlowList);
             bindFlow(row, f, false);
-            row.stockRowCard.setOnClickListener(v -> vm.onFlowClick(f));
+            if (FlowRouter.route(f) != null) {
+                row.stockRowCard.setOnClickListener(v -> vm.onFlowClick(f));
+            } else {
+                // 没有跳转目标：去掉点击态
+                row.stockRowCard.setClickable(false);
+                row.stockRowCard.setFocusable(false);
+            }
             binding.stockFlowList.addView(row.getRoot());
         }
     }

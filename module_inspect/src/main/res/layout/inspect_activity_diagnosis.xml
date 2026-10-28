@@ -32,6 +32,11 @@
             app:stateNoPermissionTitle="@string/inspect_diag_no_permission"
             app:stateSkeletonLayout="@layout/base_skeleton_detail">
 
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/inspect_refresh"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
             <androidx.core.widget.NestedScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -278,12 +283,24 @@
                             android:background="@drawable/inspect_bg_skeleton_bar" />
 
                         <TextView
+                            android:id="@+id/inspect_ai_diagnosing_hint"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/base_space_4"
                             android:text="@string/inspect_diag_diagnosing_hint"
                             android:textAppearance="@style/TextAppearance.Zmt.BodySmall"
                             android:textColor="?attr/colorOnTertiaryContainer" />
+
+                        <!-- 首轮轮询结束仍在诊断：提示并给出“刷新” -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/inspect_ai_refresh"
+                            style="@style/Widget.Zmt.Button.Text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/base_space_1"
+                            android:text="@string/inspect_diag_refresh"
+                            android:visibility="gone"
+                            app:icon="@drawable/ic_refresh" />
                     </LinearLayout>
 
                     <!-- AI 诊断结果卡 -->
@@ -445,6 +462,7 @@
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
             </androidx.core.widget.NestedScrollView>
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
         </com.zhimu.slmp.base.widget.StateLayout>
 
         <com.zhimu.slmp.base.widget.BottomActionBar

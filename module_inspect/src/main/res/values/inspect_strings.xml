@@ -119,6 +119,8 @@
     <string name="inspect_diag_major">重大动物疫病</string>
     <string name="inspect_diag_diagnosing">AI 正在诊断</string>
     <string name="inspect_diag_diagnosing_hint">你可以先离开本页，诊断完成后会通知你。</string>
+    <string name="inspect_diag_slow_hint">诊断时间比平时长，仍在自动查询结果。也可以下拉或点“刷新”立即查看。</string>
+    <string name="inspect_diag_refresh">刷新</string>
     <string name="inspect_diag_handle">登记处理结果</string>
     <string name="inspect_diag_modify_handle">修改处理结果</string>
     <string name="inspect_diag_rediagnose">重新诊断</string>

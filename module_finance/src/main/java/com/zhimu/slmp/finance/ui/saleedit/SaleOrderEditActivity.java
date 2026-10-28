@@ -11,6 +11,8 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResult;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.material.textfield.TextInputEditText;
@@ -209,6 +211,12 @@ public class SaleOrderEditActivity extends FinancePageActivity {
         if (show) {
             binding.financeRuleNotice.setText(vm.ruleNotice());
         }
+    }
+
+    /** “去入栏”（L08）返回：重拉批次选项 */
+    @Override
+    protected void onChildResult(@NonNull ActivityResult result) {
+        vm.reloadBatchOptions();
     }
 
     private void renderPrefill(@Nullable SalePrefillVO p) {

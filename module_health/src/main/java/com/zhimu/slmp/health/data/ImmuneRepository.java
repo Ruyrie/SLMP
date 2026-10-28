@@ -10,6 +10,7 @@ import com.zhimu.slmp.health.model.request.ImmunePlanPostponeRequest;
 import com.zhimu.slmp.health.model.request.ImmunePlanUpdateRequest;
 import com.zhimu.slmp.health.model.request.ImmuneRecordCreateRequest;
 import com.zhimu.slmp.health.model.request.ImmuneRecordUpdateRequest;
+import com.zhimu.slmp.health.model.request.NotifyManagerRequest;
 import com.zhimu.slmp.health.model.request.VersionRequest;
 import com.zhimu.slmp.health.model.vo.HealthRequestStatusVO;
 import com.zhimu.slmp.health.model.vo.ImmunePlanOptionVO;
@@ -119,6 +120,12 @@ public class ImmuneRepository {
     @NonNull
     public Single<ImmuneRecordVO> updateRecord(long recordId, @NonNull ImmuneRecordUpdateRequest body) {
         return api.updateRecord(recordId, body).compose(RxResult.unwrap());
+    }
+
+    /** 员工通知场长（POST immune-records/{id}/notify-manager）：返回被通知人姓名 */
+    @NonNull
+    public Single<List<String>> notifyManager(long recordId, @NonNull NotifyManagerRequest body) {
+        return api.notifyManager(recordId, body).compose(RxResult.unwrap()).map(vo -> vo.getNotifiedNames());
     }
 
     /** API-D41：超时后按幂等键确认是否已保存 */

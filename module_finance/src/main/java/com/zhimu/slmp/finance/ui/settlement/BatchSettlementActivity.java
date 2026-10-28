@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import androidx.activity.result.ActivityResult;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
@@ -98,6 +100,12 @@ public class BatchSettlementActivity extends FinancePageActivity {
                 REQ_CONFIRM, Boolean.TRUE.equals(c)));
         vm.getDismissConfirmDialog().observe(this, b -> ConfirmDialogFragment.dismiss(getSupportFragmentManager(),
                 REQ_CONFIRM));
+    }
+
+    /** 关联收支（E04）、出栏单（E07）返回：重新取核算 */
+    @Override
+    protected void onChildResult(@NonNull ActivityResult result) {
+        vm.onChildResult();
     }
 
     private void render(@Nullable BatchSettlementVO s) {

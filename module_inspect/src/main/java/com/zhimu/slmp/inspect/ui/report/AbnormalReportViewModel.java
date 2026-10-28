@@ -64,6 +64,8 @@ public class AbnormalReportViewModel extends BaseViewModel {
     public static final int MIN_DESCRIPTION = 10;
     public static final int MAX_DESCRIPTION = 500;
     public static final String MSG_SUBMITTED = "已提交上报，正在诊断";
+    /** 症状加载失败时 Snackbar 操作“重试” */
+    public static final String ACTION_RETRY_SYMPTOMS = "inspect_report_retry_symptoms";
 
     private final AbnormalReportRepository repository;
     private final DirectDiagnosisRepository direct;
@@ -103,6 +105,9 @@ public class AbnormalReportViewModel extends BaseViewModel {
     private Long inspectionId;
     @Nullable
     private Long argPenId;
+    /** 入口带入的批次（AI 页“疫病上报”传 batch_id）：表单返回后预选该批次所在栏舍与批次 */
+    @Nullable
+    private Long argBatchId;
     private boolean waitingUpload;
     private boolean finished;
     @Nullable
@@ -128,6 +133,7 @@ public class AbnormalReportViewModel extends BaseViewModel {
         keeper = new ClientRequestKeeper(handle, "report_client_request_id");
         inspectionId = Args.getLong(handle, RouterPath.EXTRA_INSPECTION_ID);
         argPenId = Args.getLong(handle, RouterPath.EXTRA_PEN_ID);
+        argBatchId = Args.getLong(handle, RouterPath.EXTRA_BATCH_ID);
         init();
     }
 
@@ -146,9 +152,12 @@ public class AbnormalReportViewModel extends BaseViewModel {
         sourceText.setValue(ReportFormVO.SOURCE_INSPECTION.equals(ctx.getSource()) ? ctx.getSourceText() : null);
         ReportFormVO.ReportPrefill prefill = ctx.getPrefill();
         Long pen = prefill != null && prefill.getPenId() != null ? prefill.getPenId() : argPenId;
+        if (pen == null && argBatchId != null) {
+            pen = penOfBatch(ctx, argBatchId);
+        }
         if (penId.getValue() == null && pen != null && ctx.findPen(pen) != null) {
             selectPen(pen);
-            Long batch = prefill == null ? null : prefill.getBatchId();
+            Long batch = prefill != null && prefill.getBatchId() != null ? prefill.getBatchId() : argBatchId;
             if (batch != null && batchId.getValue() == null) {
                 selectBatch(batch);
             }
@@ -172,6 +181,19 @@ public class AbnormalReportViewModel extends BaseViewModel {
         if (initialSnapshot == null) {
             initialSnapshot = snapshot();
         }
+    }
+
+    /** 在表单栏舍中找批次所在的栏舍 */
+    @Nullable
+    private static Long penOfBatch(@NonNull ReportFormVO ctx, long batch) {
+        for (ReportFormVO.ReportPen p : ctx.getPens()) {
+            for (ReportFormVO.ReportBatch b : p.getBatches()) {
+                if (b.getBatchId() == batch) {
+                    return p.getPenId();
+                }
+            }
+        }
+        return null;
     }
 
     // ===== 对外 =====
@@ -272,23 +294,46 @@ public class AbnormalReportViewModel extends BaseViewModel {
         sickHelper.setValue("不能超过批次当前存栏 " + batch.getStockCount() + " 头");
         validateSick();
         if (changed) {
-            launch(repository.getSymptoms(id), s -> {
-                symptoms.setValue(s == null ? Collections.emptyList() : s);
-                // 换品类后不存在的症状去掉
-                Set<Long> keep = new LinkedHashSet<>();
-                Set<Long> cur = symptomIds.getValue() == null ? Collections.emptySet() : symptomIds.getValue();
-                if (s != null) {
-                    for (SymptomVO v : s) {
-                        if (cur.contains(v.getSymptomId())) {
-                            keep.add(v.getSymptomId());
-                        }
+            loadSymptoms(id);
+        }
+    }
+
+    /** 重新取当前批次的症状（Snackbar“重试”） */
+    public void retrySymptoms() {
+        Long id = batchId.getValue();
+        if (id != null) {
+            loadSymptoms(id);
+        }
+    }
+
+    private void loadSymptoms(long id) {
+        launch(repository.getSymptoms(id), s -> {
+            if (!Objects.equals(batchId.getValue(), id)) {
+                return;
+            }
+            symptoms.setValue(s == null ? Collections.emptyList() : s);
+            // 换品类后不存在的症状去掉
+            Set<Long> keep = new LinkedHashSet<>();
+            Set<Long> cur = symptomIds.getValue() == null ? Collections.emptySet() : symptomIds.getValue();
+            if (s != null) {
+                for (SymptomVO v : s) {
+                    if (cur.contains(v.getSymptomId())) {
+                        keep.add(v.getSymptomId());
                     }
                 }
-                symptomIds.setValue(keep);
-                updateSymptomCount();
-            }, e -> {
-            });
-        }
+            }
+            symptomIds.setValue(keep);
+            updateSymptomCount();
+        }, e -> {
+            if (!Objects.equals(batchId.getValue(), id)) {
+                return;
+            }
+            if (ErrorCodes.isAuthHandled(e.getCode())) {
+                return;
+            }
+            showMessage(UiMessage.withAction("症状列表加载失败，" + e.getMessage(), "重试",
+                    ACTION_RETRY_SYMPTOMS));
+        });
     }
 
     public void toggleSymptom(long id) {
