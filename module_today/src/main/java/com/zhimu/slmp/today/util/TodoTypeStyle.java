@@ -28,7 +28,7 @@ public final class TodoTypeStyle {
     private TodoTypeStyle() {
     }
 
-    /** 13 种 TODO_TYPE 的图标 */
+    /** 14 种 TODO_TYPE 的图标 */
     @DrawableRes
     public static int iconOf(@Nullable String todoType) {
         if (todoType == null) {
@@ -58,6 +58,8 @@ public final class TodoTypeStyle {
                 return R.drawable.ic_medication;
             case "RECEIVABLE":
                 return R.drawable.ic_payments;
+            case "ABNORMAL_REPORT":
+                return R.drawable.ic_report;
             default:
                 return R.drawable.ic_task_alt;
         }
