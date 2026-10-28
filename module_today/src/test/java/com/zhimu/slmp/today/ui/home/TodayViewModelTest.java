@@ -84,10 +84,29 @@ public class TodayViewModelTest {
         assertEquals("10月19日 周一 · 你是本场所有者", vm.getRoleLine().getValue());
         assertTrue(vm.getManagerView().getValue());
         assertEquals(870, vm.getOwnerMetrics().getValue().getStockCount());
-        org.junit.Assert.assertNull(vm.getAiHint().getValue());
+        // 服务端给所有者返回 ai_hint：显示 AI 推荐横幅，点击进入 K01 并带上推荐问题
+        assertEquals("3 号育肥舍有猪腹泻，先怎么处理？", vm.getAiHint().getValue());
         assertEquals(12, vm.getQuickItems().getValue().size());
         assertFalse(vm.getFarmBlocked().getValue());
         verify(todoService).setUnread(3);
+
+        vm.onAiBannerClick();
+        assertEquals("K01", vm.getNavEvent().getValue().getRoute());
+        assertEquals("3 号育肥舍有猪腹泻，先怎么处理？", vm.getNavEvent().getValue().param(TodayViewModel.EXTRA_QUESTION));
+
+        vm.onCalendarClick();
+        assertEquals("T03", vm.getNavEvent().getValue().getRoute());
+        assertEquals("2026-10-19", vm.getNavEvent().getValue().param(com.zhimu.slmp.common.router.RouterPath.EXTRA_DATE));
+    }
+
+    @Test
+    public void staffHome_hidesAiBanner() {
+        when(homeRepository.getHome()).thenReturn(Single.just(TestData.parse(
+                TestData.STAFF_HOME.replace("'has_pen':true", "'has_pen':true,'ai_hint':'不该显示'"), HomeVO.class)));
+
+        vm.onFarmSwitched(TestData.farm1001());
+
+        org.junit.Assert.assertNull(vm.getAiHint().getValue());
     }
 
     @Test

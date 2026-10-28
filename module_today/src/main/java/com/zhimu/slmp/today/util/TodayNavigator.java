@@ -8,11 +8,15 @@ import android.os.Bundle;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
 
 import com.zhimu.slmp.base.event.GlobalEvents;
 import com.zhimu.slmp.common.router.Router;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.common.router.RouterTable;
+import com.zhimu.slmp.common.service.IFarmContextService;
+import com.zhimu.slmp.common.service.ServiceHub;
+import com.zhimu.slmp.common.service.TabRegistry;
 
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -46,6 +50,9 @@ public final class TodayNavigator {
             }
             return true;
         }
+        if ("F01".equals(target.getRoute())) {
+            return openFarmSwitcher(context);
+        }
         String action = actionOf(context, target.getRoute());
         if (action == null) {
             GlobalEvents.postMessage(Router.MSG_NOT_READY);
@@ -59,6 +66,28 @@ public final class TodayNavigator {
                 ? Router.openForResult(context, launcher, action, extras)
                 : Router.open(context, action, extras);
         return opened;
+    }
+
+    /**
+     * F01 切换养殖场是底部面板，没有独立页面：壳工程中回到 MAIN（“今日”标签）并弹出面板；
+     * 单独运行（没有 MAIN）时在当前页弹出。
+     */
+    static boolean openFarmSwitcher(@NonNull Context context) {
+        if (Router.canOpen(context, RouterPath.MAIN)) {
+            Bundle extras = new Bundle();
+            extras.putString(RouterPath.EXTRA_MAIN_TAB, TabRegistry.TODAY);
+            extras.putBoolean(RouterPath.EXTRA_OPEN_FARM_SWITCHER, true);
+            context.startActivity(Router.intent(context, RouterPath.MAIN, extras)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
+            return true;
+        }
+        IFarmContextService farm = ServiceHub.get(IFarmContextService.class);
+        if (farm != null && context instanceof FragmentActivity) {
+            farm.showSwitcher((FragmentActivity) context, false, false);
+            return true;
+        }
+        GlobalEvents.postMessage(Router.MSG_NOT_READY);
+        return false;
     }
 
     /** T01 是主页的“今日”标签：壳工程中打开 MAIN，单独运行时打开调试宿主页 */

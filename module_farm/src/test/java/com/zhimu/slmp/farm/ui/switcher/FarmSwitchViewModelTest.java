@@ -78,6 +78,16 @@ public class FarmSwitchViewModelTest {
     }
 
     @Test
+    public void clickFarmThatCannotSwitch_showsReason() {
+        vm.onFarmClick(TestData.item(1004, "南坡羊场", "NORMAL", false, false));
+
+        assertEquals("南坡羊场暂时不能切换", vm.getMessage().getValue().getText());
+        verify(contextService, never()).switchTo(anyLong());
+        assertEquals("北湾牛场审核中，暂不能切换",
+                FarmSwitchViewModel.cannotSwitchText(TestData.item(1003, "北湾牛场", "PENDING", false, false)));
+    }
+
+    @Test
     public void clickRejectedFarm_opensAudit() {
         vm.onFarmClick(TestData.item(1003, "北湾牛场", "REJECTED", false, false));
 

@@ -42,7 +42,12 @@ public class RecordInvalidViewModel extends BaseViewModel {
 
     @Override
     protected void onSavedStateAttached(@NonNull SavedStateHandle handle) {
-        init(handle.get(RouterPath.EXTRA_PAGE_TITLE), handle.get(NavTarget.RecordInvalidKeys.DELETED_TITLE),
+        String deletedTitle = handle.get(NavTarget.RecordInvalidKeys.DELETED_TITLE);
+        if (Texts.isEmpty(deletedTitle)) {
+            // 业务页面只带了错误提示（RouterPath.EXTRA_MESSAGE）时用它作标题
+            deletedTitle = handle.get(RouterPath.EXTRA_MESSAGE);
+        }
+        init(handle.get(RouterPath.EXTRA_PAGE_TITLE), deletedTitle,
                 handle.get(NavTarget.RecordInvalidKeys.DELETED_DESC), handle.get(RouterPath.EXTRA_MESSAGE_ID));
     }
 

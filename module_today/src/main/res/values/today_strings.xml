@@ -24,6 +24,8 @@
     <string name="today_home_ai_with_hint">问问 AI 养殖助手 · %1$s</string>
     <string name="today_home_section_todos">今日待办 · %1$d 项</string>
     <string name="today_home_calendar">日历</string>
+    <string name="today_home_calendar_cd">打开养殖日历</string>
+    <string name="today_home_ai_action">去问问</string>
     <string name="today_home_section_my_pens">我负责的栏舍</string>
     <string name="today_home_no_my_pen">你还没有负责的栏舍。请联系所有者或场长分配栏舍。</string>
     <string name="today_home_empty_title">今天暂无待办</string>
@@ -75,6 +77,12 @@
     <string name="today_calendar_legend_overdue">有已逾期</string>
     <string name="today_calendar_legend_closed">已完成或已忽略</string>
     <string name="today_calendar_count">%1$d 项</string>
+    <string name="today_calendar_pending_count">待处理 %1$d 项</string>
+    <string name="today_calendar_pending_none">没有待处理</string>
+    <string name="today_calendar_closed_title">已完成 / 已忽略 · %1$d 项</string>
+    <string name="today_calendar_loading">加载中…</string>
+    <string name="today_calendar_more_failed">没能加载更多待办</string>
+    <string name="today_calendar_closed_failed">已完成的待办加载失败</string>
     <string name="today_calendar_overdue_title">已逾期 · %1$d 项</string>
     <string name="today_calendar_expand">展开其余 %1$d 项</string>
     <string name="today_calendar_collapse">收起</string>

@@ -76,6 +76,12 @@ public class ListStateAdapter extends RecyclerView.Adapter<ListStateAdapter.VH> 
             return new State(ERROR, com.zhimu.slmp.base.R.drawable.ic_cloud_off, title, desc, retry);
         }
 
+        /** 列表末尾的轻量失败行（加载更多失败）：一行说明 + “重试”按钮，不显示大图标 */
+        @NonNull
+        public static State retry(@NonNull CharSequence desc, @NonNull CharSequence action) {
+            return new State(ERROR, 0, null, desc, action);
+        }
+
         @NonNull
         public static State note(@NonNull CharSequence text) {
             return new State(NOTE, 0, null, text, null);

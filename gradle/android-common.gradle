@@ -2,6 +2,32 @@
 // 由 gradle/lib-component.gradle、gradle/biz-component.gradle 与 app/build.gradle 在应用插件之后引入。
 def props = rootProject.ext.localProps
 
+// Release 必填项：服务端地址与高德 Release Key（包名、签名与 debug 不同，不能复用 amap.key）。
+// 缺少时 release 构建直接报错中止，不回落到示例地址或空 Key；debug 构建不受影响。
+def releaseBaseUrl = props.getProperty('zmt.baseUrl', '').trim()
+def releaseAmapKey = props.getProperty('amap.releaseKey', '').trim()
+def releaseConfigErrors = []
+if (releaseBaseUrl.isEmpty()) {
+    releaseConfigErrors << 'zmt.baseUrl（服务端地址，末尾带 /）'
+} else if (!releaseBaseUrl.endsWith('/')) {
+    releaseConfigErrors << 'zmt.baseUrl 末尾必须带 /'
+}
+if (releaseAmapKey.isEmpty()) {
+    releaseConfigErrors << 'amap.releaseKey（高德 Release Key）'
+}
+def checkReleaseConfig = tasks.register('checkReleaseConfig') {
+    group = 'verification'
+    description = '检查 release 构建所需的 local.properties 配置'
+    def errors = new ArrayList<String>(releaseConfigErrors)
+    doLast {
+        if (!errors.isEmpty()) {
+            throw new GradleException('Release 构建缺少或配置错误（local.properties）：' + errors.join('；'))
+        }
+    }
+}
+// 每个组件的 release 变体开始构建前先检查（preReleaseBuild 由 AGP 在评估后创建）
+tasks.matching { it.name == 'preReleaseBuild' }.configureEach { dependsOn checkReleaseConfig }
+
 android {
     compileSdk {
         version = release(36) {
@@ -37,9 +63,11 @@ android {
 
     buildTypes {
         release {
-            // 高德 Key 绑定包名和签名 SHA1，Release 不复用 Debug Key
-            buildConfigField "String", "AMAP_KEY", "\"${props.getProperty('amap.releaseKey', '')}\""
-            manifestPlaceholders.put('AMAP_KEY', props.getProperty('amap.releaseKey', ''))
+            // 服务端地址：release 不使用示例地址（缺少时 checkReleaseConfig 中止构建）
+            buildConfigField "String", "BASE_URL", "\"${releaseBaseUrl}\""
+            // 高德 Key 绑定包名和签名 SHA1，Release 不复用 Debug Key（缺少时 checkReleaseConfig 中止构建）
+            buildConfigField "String", "AMAP_KEY", "\"${releaseAmapKey}\""
+            manifestPlaceholders.put('AMAP_KEY', releaseAmapKey)
             // release 包名 com.zhimu.slmp 需在极光另建应用；未填写时不初始化推送
             buildConfigField "String", "JPUSH_APPKEY", "\"${props.getProperty('jpush.releaseAppKey', '')}\""
             manifestPlaceholders.put('JPUSH_APPKEY', props.getProperty('jpush.releaseAppKey', ''))

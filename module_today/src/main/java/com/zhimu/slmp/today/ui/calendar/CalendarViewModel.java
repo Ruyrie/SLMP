@@ -20,6 +20,7 @@ import com.zhimu.slmp.base.util.DateFormatter;
 import com.zhimu.slmp.common.farm.FarmContext;
 import com.zhimu.slmp.common.model.vo.FarmContextVO;
 import com.zhimu.slmp.common.router.RouterPath;
+import com.zhimu.slmp.network.model.PageVO;
 import com.zhimu.slmp.today.data.HomeRepository;
 import com.zhimu.slmp.today.data.TodayPrefs;
 import com.zhimu.slmp.today.data.TodoRepository;
@@ -62,6 +63,9 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
  * 日：API-T03（7 天）+ API-T04 时间轴，查看今天时另加 API-T06 已逾期组；</li>
  * <li>“今天”以 T01 的 server_time 与 API-T03 的 is_today 为准，不用手机时间；</li>
  * <li>上一组请求经 SerialDisposable 取消，避免旧结果覆盖新视图；视图与范围记在 zmt_settings 与 SavedStateHandle。</li>
+ * <li>日列表（月、日视图）与周视图每天都分两段：上段“待处理 N 项”（API-T04 status=UNFINISHED 分页），
+ * 下段“已完成 / 已忽略 · M 项”默认收起，点开后才按 status=CLOSED 加载；M 取 tab_counts.CLOSED，为 0 时不显示。
+ * 标题数量只算待处理 N（与首页“今日待办”口径一致）；完成或忽略后两段一起刷新。</li>
  * </ul>
  */
 public class CalendarViewModel extends BaseViewModel {
@@ -75,6 +79,8 @@ public class CalendarViewModel extends BaseViewModel {
     private static final String STATE_MODE = "today_calendar_mode";
     private static final String STATE_SCOPE = "today_calendar_scope";
     private static final String STATE_DATE = "today_calendar_date";
+    static final String ALL_DONE_TODAY = "今天的待办都处理完了";
+    static final String ALL_DONE_DAY = "这天的待办都处理完了";
 
     private final TodoRepository todoRepository;
     private final HomeRepository homeRepository;
@@ -92,6 +98,11 @@ public class CalendarViewModel extends BaseViewModel {
     private final MutableLiveData<String> dayHeader = new MutableLiveData<>("");
     private final MutableLiveData<Integer> dayTotal = new MutableLiveData<>(0);
     private final MutableLiveData<PagingData<TodoItemVO>> dayPaging = new MutableLiveData<>();
+    /** 当天已完成 + 已忽略条数（M） */
+    private final MutableLiveData<Integer> closedTotal = new MutableLiveData<>(0);
+    /** “已完成 / 已忽略”是否展开（默认收起，换日期、视图、范围时收起） */
+    private final MutableLiveData<Boolean> closedExpanded = new MutableLiveData<>(false);
+    private final MutableLiveData<PagingData<TodoItemVO>> closedPaging = new MutableLiveData<>();
     private final MutableLiveData<List<WeekGroup>> weekGroups = new MutableLiveData<>(Collections.emptyList());
     private final MutableLiveData<List<TodoItemVO>> overdueItems = new MutableLiveData<>(Collections.emptyList());
     private final MutableLiveData<Boolean> overdueExpanded = new MutableLiveData<>(false);
@@ -116,6 +127,8 @@ public class CalendarViewModel extends BaseViewModel {
 
     /** 当前日期列表的查询条件（变化时重建分页） */
     private final BehaviorProcessor<DayKey> dayKey = BehaviorProcessor.create();
+    /** 已关闭段的查询条件；收起时为 DayKey.NONE（不请求） */
+    private final BehaviorProcessor<DayKey> closedKey = BehaviorProcessor.createDefault(DayKey.NONE);
     @Nullable
     private Disposable pagingDisposable;
     private final SerialDisposable gridRequest = new SerialDisposable();
@@ -153,6 +166,8 @@ public class CalendarViewModel extends BaseViewModel {
         if (initialized && loadedFarmId != farmContext.farmIdOrZero()) {
             initialized = false;
             overdueExpanded.setValue(false);
+            collapseClosed();
+            closedTotal.setValue(0);
             overdueItems.setValue(Collections.emptyList());
             overdueTotal.setValue(0);
             overdueError.setValue(null);
@@ -210,10 +225,39 @@ public class CalendarViewModel extends BaseViewModel {
         return dayTotal;
     }
 
-    /** 选中日期的分页（首次读取时开始分页） */
+    /** 选中日期“待处理”段的分页（首次读取时开始分页） */
     public LiveData<PagingData<TodoItemVO>> getDayPaging() {
         startPaging();
         return dayPaging;
+    }
+
+    /** 选中日期“已完成 / 已忽略”段的分页（展开后才加载，收起时为空） */
+    public LiveData<PagingData<TodoItemVO>> getClosedPaging() {
+        startPaging();
+        return closedPaging;
+    }
+
+    public LiveData<Integer> getClosedTotal() {
+        return closedTotal;
+    }
+
+    public LiveData<Boolean> getClosedExpanded() {
+        return closedExpanded;
+    }
+
+    /** 点“已完成 / 已忽略 · M 项”：展开时按 status=CLOSED 加载，收起时清空 */
+    public void toggleClosed() {
+        boolean expand = !Boolean.TRUE.equals(closedExpanded.getValue());
+        closedExpanded.setValue(expand);
+        DayKey k = dayKey.getValue();
+        closedKey.onNext(expand && k != null ? k : DayKey.NONE);
+    }
+
+    private void collapseClosed() {
+        closedExpanded.setValue(false);
+        if (!DayKey.NONE.equals(closedKey.getValue())) {
+            closedKey.onNext(DayKey.NONE);
+        }
     }
 
     public LiveData<List<WeekGroup>> getWeekGroups() {
@@ -342,6 +386,7 @@ public class CalendarViewModel extends BaseViewModel {
             return;
         }
         overdueExpanded.setValue(false);
+        collapseClosed();
         mode.setValue(newMode);
         showFarmTag.setValue(newMode != CalendarMode.DAY);
         prefs.setCalendarMode(newMode.name());
@@ -355,6 +400,7 @@ public class CalendarViewModel extends BaseViewModel {
         }
         overdueExpanded.setValue(false);
         overdueItems.setValue(Collections.emptyList());
+        collapseClosed();
         scope.setValue(newScope);
         prefs.setCalendarScope(newScope);
         getSavedState().set(STATE_SCOPE, newScope);
@@ -418,7 +464,10 @@ public class CalendarViewModel extends BaseViewModel {
     }
 
     private void setSelected(@NonNull LocalDate date) {
-        if (!date.equals(selectedDate.getValue())) overdueExpanded.setValue(false);
+        if (!date.equals(selectedDate.getValue())) {
+            overdueExpanded.setValue(false);
+            collapseClosed();
+        }
         selectedDate.setValue(date);
         getSavedState().set(STATE_DATE, DateFormatter.toDateString(date));
         updateTexts();
@@ -508,7 +557,14 @@ public class CalendarViewModel extends BaseViewModel {
         }
         listState.setValue(UiState.loading());
         nonce++;
-        dayKey.onNext(new DayKey(DateFormatter.toDateString(currentSelected()), scopeParam(), category, nonce));
+        DayKey old = dayKey.getValue();
+        DayKey key = new DayKey(DateFormatter.toDateString(currentSelected()), scopeParam(), category, nonce);
+        if (old == null || !old.sameQuery(key)) {
+            // 换了日期或范围：已关闭数量等新结果到达后再显示；同一天刷新时保留，避免折叠头闪烁
+            closedTotal.setValue(0);
+        }
+        dayKey.onNext(key);
+        closedKey.onNext(Boolean.TRUE.equals(closedExpanded.getValue()) ? key : DayKey.NONE);
     }
 
     private void loadWeek(@NonNull LocalDate weekStart) {
@@ -526,8 +582,17 @@ public class CalendarViewModel extends BaseViewModel {
                 continue;
             }
             List<TodoItemVO> items = d.getItems() == null ? Collections.emptyList() : d.getItems();
+            // 待处理段只放未完成项；已完成 / 已忽略在下方折叠段中按需加载
+            List<TodoItemVO> open = new ArrayList<>();
+            for (TodoItemVO item : items) {
+                if (!TodoTypeStyle.isClosed(item)) {
+                    open.add(item);
+                }
+            }
+            int closed = Math.max(0, Math.min(d.getClosedCount(), d.getTotal()));
+            int pending = d.getTotal() - closed;
             groups.add(new WeekGroup(date, CalendarRange.dayHeader(date, d.isToday() || date.equals(currentToday())),
-                    d.getTotal(), items, false, false));
+                    pending, open, false, false, closed, Collections.emptyList(), false, false));
         }
         weekGroups.setValue(Collections.unmodifiableList(groups));
         listState.setValue(groups.isEmpty() ? UiState.empty(null, null) : UiState.content());
@@ -549,7 +614,7 @@ public class CalendarViewModel extends BaseViewModel {
         }, e -> overdueError.setValue("逾期待办加载失败，点击重试")));
     }
 
-    /** 周视图“展开其余 N 项”（API-T04，size 100）；已展开时收起为前 5 项 */
+    /** 周视图“展开其余 N 项”（API-T04 status=UNFINISHED，size 100）；已展开时收起为前 5 项 */
     public void expandDay(@NonNull LocalDate date) {
         List<WeekGroup> groups = weekGroups.getValue();
         if (groups == null) {
@@ -570,7 +635,7 @@ public class CalendarViewModel extends BaseViewModel {
         }
         replaceGroup(index, g.withExpanding(true));
         launch(todoRepository.getDayTodos(DateFormatter.toDateString(date), scopeParam(), category,
-                        TodoRepository.EXPAND_SIZE),
+                        TodoRepository.STATUS_UNFINISHED, TodoRepository.EXPAND_SIZE),
                 page -> {
                     List<WeekGroup> now = weekGroups.getValue();
                     int i = now == null ? -1 : indexOf(now, date);
@@ -582,6 +647,40 @@ public class CalendarViewModel extends BaseViewModel {
                     int i = now == null ? -1 : indexOf(now, date);
                     if (i >= 0) {
                         replaceGroup(i, now.get(i).withExpanding(false));
+                    }
+                    handleError(e);
+                });
+    }
+
+    /** 周视图某天“已完成 / 已忽略 · M 项”：展开时加载（API-T04 status=CLOSED，size 100），已展开时收起 */
+    public void toggleClosedDay(@NonNull LocalDate date) {
+        List<WeekGroup> groups = weekGroups.getValue();
+        int index = groups == null ? -1 : indexOf(groups, date);
+        if (index < 0) {
+            return;
+        }
+        WeekGroup g = groups.get(index);
+        if (g.isClosedExpanded()) {
+            replaceGroup(index, g.withClosed(Collections.emptyList(), false));
+            return;
+        }
+        if (g.isClosedLoading()) {
+            return;
+        }
+        replaceGroup(index, g.withClosedLoading(true));
+        launch(todoRepository.getDayTodos(DateFormatter.toDateString(date), scopeParam(), category,
+                        TodoRepository.STATUS_CLOSED, TodoRepository.EXPAND_SIZE),
+                page -> {
+                    List<WeekGroup> now = weekGroups.getValue();
+                    int i = now == null ? -1 : indexOf(now, date);
+                    if (i >= 0) {
+                        replaceGroup(i, now.get(i).withClosed(page.getList(), true));
+                    }
+                }, e -> {
+                    List<WeekGroup> now = weekGroups.getValue();
+                    int i = now == null ? -1 : indexOf(now, date);
+                    if (i >= 0) {
+                        replaceGroup(i, now.get(i).withClosedLoading(false));
                     }
                     handleError(e);
                 });
@@ -608,14 +707,54 @@ public class CalendarViewModel extends BaseViewModel {
             return;
         }
         Flowable<PagingData<TodoItemVO>> flow = dayKey.distinctUntilChanged()
-                .switchMap(key -> todoRepository.dayPager(key.date, key.scope, key.category, TodoRepository.STATUS_ALL,
-                        page -> {
-                            dayTotal.postValue(page.getTotal());
-                            listState.postValue(page.getList().isEmpty() ? UiState.empty(null, null) : UiState.content());
-                        }));
+                .switchMap(key -> todoRepository.dayPager(key.date, key.scope, key.category,
+                        TodoRepository.STATUS_UNFINISHED, page -> onOpenFirstPage(key, page)));
         pagingDisposable = PagingRx.cachedIn(flow, ViewModelKt.getViewModelScope(this))
                 .subscribe(dayPaging::postValue, t -> Log.w(TAG, "当日分页失败", t));
         disposables.add(pagingDisposable);
+        Flowable<PagingData<TodoItemVO>> closedFlow = closedKey.distinctUntilChanged()
+                .switchMap(key -> key.isNone() ? Flowable.just(PagingData.<TodoItemVO>empty())
+                        : todoRepository.dayPager(key.date, key.scope, key.category, TodoRepository.STATUS_CLOSED, null));
+        disposables.add(PagingRx.cachedIn(closedFlow, ViewModelKt.getViewModelScope(this))
+                .subscribe(closedPaging::postValue, t -> Log.w(TAG, "已关闭分页失败", t)));
+    }
+
+    /**
+     * “待处理”段第 1 页（io 线程）：标题数量 N = 本段 total；M 取 tab_counts.CLOSED，服务端没返回时用 API-T03 的 closed_count。
+     * 待处理为空但有已关闭项时显示“今天的待办都处理完了”；M 为 0 时收起已关闭段。
+     */
+    @VisibleForTesting
+    void onOpenFirstPage(@NonNull DayKey key, @NonNull PageVO<TodoItemVO> page) {
+        int closed = Math.max(0, TodoRepository.tabCount(page, TodoRepository.TAB_CLOSED, gridClosedCount(key.date)));
+        dayTotal.postValue(page.getTotal());
+        closedTotal.postValue(closed);
+        if (closed == 0) {
+            AndroidSchedulers.mainThread().scheduleDirect(this::collapseClosedIfEmpty);
+        }
+        if (!page.getList().isEmpty()) {
+            listState.postValue(UiState.content());
+        } else if (closed > 0) {
+            LocalDate d = DateFormatter.parseDate(key.date);
+            listState.postValue(UiState.empty(d != null && d.equals(currentToday()) ? ALL_DONE_TODAY : ALL_DONE_DAY,
+                    null));
+        } else {
+            listState.postValue(UiState.empty(null, null));
+        }
+    }
+
+    /** 当天已没有已关闭项时收起该段（主线程） */
+    private void collapseClosedIfEmpty() {
+        Integer m = closedTotal.getValue();
+        if ((m == null || m == 0) && Boolean.TRUE.equals(closedExpanded.getValue())) {
+            collapseClosed();
+        }
+    }
+
+    private int gridClosedCount(@NonNull String date) {
+        Map<LocalDate, CalendarDayVO> grid = gridDays.getValue();
+        LocalDate d = DateFormatter.parseDate(date);
+        CalendarDayVO day = grid == null || d == null ? null : grid.get(d);
+        return day == null ? 0 : day.getClosedCount();
     }
 
     /** 列表区加载失败（页面在分页首屏失败时也调用） */
@@ -695,6 +834,9 @@ public class CalendarViewModel extends BaseViewModel {
 
     /** 当日列表查询条件 */
     static final class DayKey {
+        /** 不请求（已关闭段收起时） */
+        static final DayKey NONE = new DayKey("", null, null, -1);
+
         final String date;
         @Nullable
         final String scope;
@@ -707,6 +849,16 @@ public class CalendarViewModel extends BaseViewModel {
             this.scope = scope;
             this.category = category;
             this.nonce = nonce;
+        }
+
+        boolean isNone() {
+            return date.isEmpty();
+        }
+
+        /** 日期、范围、类别相同（不比较刷新序号） */
+        boolean sameQuery(@NonNull DayKey k) {
+            return date.equals(k.date) && java.util.Objects.equals(scope, k.scope)
+                    && java.util.Objects.equals(category, k.category);
         }
 
         @Override

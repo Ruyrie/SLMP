@@ -74,13 +74,18 @@ public class NetworkModule {
         return b.build();
     }
 
-    /** 上传客户端：写入超时 120 秒，日志只打请求头（避免输出文件内容） */
+    /**
+     * 上传客户端：写入、读取超时都是 120 秒（大图上传后服务端还要转存 MinIO 再响应，30 秒读超时会误报失败），
+     * 日志只打请求头（避免输出文件内容）
+     */
     @Provides
     @Singleton
     @Named(UPLOAD)
     static OkHttpClient provideUploadClient(OkHttpClient base, TokenProvider tokenProvider,
                                             ClientContextProvider contextProvider, MockRouter mockRouter) {
-        OkHttpClient.Builder b = base.newBuilder().writeTimeout(120, TimeUnit.SECONDS);
+        OkHttpClient.Builder b = base.newBuilder()
+                .writeTimeout(120, TimeUnit.SECONDS)
+                .readTimeout(120, TimeUnit.SECONDS);
         b.interceptors().clear();
         addInterceptors(b, tokenProvider, contextProvider, mockRouter, HttpLoggingInterceptor.Level.HEADERS);
         return b.build();

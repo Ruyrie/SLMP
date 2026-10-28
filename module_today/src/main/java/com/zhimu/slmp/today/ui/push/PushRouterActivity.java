@@ -68,7 +68,9 @@ public class PushRouterActivity extends BaseActivity {
             finish();
             return;
         }
-        String action = TodayNavigator.actionOf(this, target.getRoute());
+        // F01 切换养殖场是底部面板：回到 MAIN 并弹出面板
+        boolean farmSwitcher = "F01".equals(target.getRoute()) && Router.canOpen(this, RouterPath.MAIN);
+        String action = farmSwitcher ? RouterPath.MAIN : TodayNavigator.actionOf(this, target.getRoute());
         if (action == null || !Router.canOpen(this, action)) {
             GlobalEvents.postMessage(Router.MSG_NOT_READY);
             finish();
@@ -76,6 +78,10 @@ public class PushRouterActivity extends BaseActivity {
         }
         Intent intent = new Intent(action).setPackage(getPackageName())
                 .putExtras(TodayNavigator.toBundle(target.getParams()));
+        if (farmSwitcher) {
+            intent.putExtra(RouterPath.EXTRA_MAIN_TAB, com.zhimu.slmp.common.service.TabRegistry.TODAY)
+                    .putExtra(RouterPath.EXTRA_OPEN_FARM_SWITCHER, true);
+        }
         boolean toMain = RouterPath.MAIN.equals(action);
         if (isTaskRoot() && !toMain && Router.canOpen(this, RouterPath.MAIN)) {
             Intent main = new Intent(RouterPath.MAIN).setPackage(getPackageName());

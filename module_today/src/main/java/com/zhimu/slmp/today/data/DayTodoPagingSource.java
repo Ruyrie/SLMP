@@ -11,7 +11,8 @@ import com.zhimu.slmp.today.model.vo.TodoItemVO;
 import io.reactivex.rxjava3.functions.Consumer;
 
 /**
- * 日历某天待办分页（API-T04）：月视图当日列表与日视图时间轴；第 1 页到达时回调 total（含已完成和已忽略）。
+ * 日历某天待办分页（API-T04）：月视图当日列表与日视图时间轴，按 status 分“待处理”“已完成 / 已忽略”两段；
+ * 第 1 页到达时回调（total 为本段条数，tab_counts 为两段总数）。
  */
 public class DayTodoPagingSource extends PagedSource<TodoItemVO> {
 

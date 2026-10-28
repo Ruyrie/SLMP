@@ -33,6 +33,9 @@ public class FarmSwitchViewModel extends BaseViewModel {
 
     static final String MSG_FROZEN = "%s已被平台冻结，暂时不能使用。原因见消息中心。";
     static final String MSG_NOT_MEMBER = "你已不是%s的成员";
+    static final String MSG_CANNOT_SWITCH_PENDING = "%s审核中，暂不能切换";
+    static final String MSG_CANNOT_SWITCH_REJECTED = "%s未通过审核，暂不能切换";
+    static final String MSG_CANNOT_SWITCH = "%s暂时不能切换";
 
     private final FarmRepository repository;
     private final FarmContextServiceImpl contextService;
@@ -116,6 +119,7 @@ public class FarmSwitchViewModel extends BaseViewModel {
             return;
         }
         if (!item.isCanSwitch()) {
+            showMessage(cannotSwitchText(item));
             return;
         }
         switchingFarmId.setValue(item.getFarmId());
@@ -167,6 +171,23 @@ public class FarmSwitchViewModel extends BaseViewModel {
 
     public void onCreateClick() {
         openCreate.call();
+    }
+
+    /** 服务端标记不能切换时按状态提示（待审核、已驳回一般先进入审核结果页，这里兜底） */
+    @NonNull
+    static String cannotSwitchText(@NonNull FarmListItemVO item) {
+        String status = item.getStatus();
+        String name = nameOf(item.getName());
+        if (FarmContextVO.STATUS_PENDING.equals(status)) {
+            return String.format(MSG_CANNOT_SWITCH_PENDING, name);
+        }
+        if (FarmContextVO.STATUS_REJECTED.equals(status)) {
+            return String.format(MSG_CANNOT_SWITCH_REJECTED, name);
+        }
+        if (FarmContextVO.STATUS_FROZEN.equals(status)) {
+            return frozenText(item.getName());
+        }
+        return String.format(MSG_CANNOT_SWITCH, name);
     }
 
     @NonNull

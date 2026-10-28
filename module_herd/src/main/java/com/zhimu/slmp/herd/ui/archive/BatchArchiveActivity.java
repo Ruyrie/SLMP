@@ -204,8 +204,13 @@ public class BatchArchiveActivity extends BaseActivity {
     private void onUiState(@Nullable UiState state) {
         if (state != null && state.is(UiState.Status.ERROR)
                 && state.getErrorCode() == com.zhimu.slmp.base.error.ErrorCodes.RECORD_DELETED) {
+            // T08 读取 page_title、deleted_title、deleted_desc
             Bundle extras = new Bundle();
-            extras.putString(RouterPath.EXTRA_MESSAGE, state.getMessage());
+            extras.putString(RouterPath.EXTRA_PAGE_TITLE, getString(R.string.herd_archive_page_title));
+            String message = state.getMessage();
+            extras.putString(RouterPath.EXTRA_DELETED_TITLE, message == null || message.trim().isEmpty()
+                    ? getString(R.string.herd_archive_deleted_title) : message);
+            extras.putString(RouterPath.EXTRA_DELETED_DESC, getString(R.string.herd_archive_deleted_desc));
             if (Router.open(this, RouterPath.T08, extras)) {
                 finish();
                 return;

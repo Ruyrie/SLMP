@@ -60,7 +60,10 @@ public interface TodayApi {
                                                         @Nullable @Query("scope") String scope,
                                                         @Nullable @Query("category") String category);
 
-    /** API-T04 某天待办列表 */
+    /**
+     * API-T04 某天待办列表。status：UNFINISHED（未完成，排在前）/ CLOSED（已完成 + 已忽略）/ ALL；
+     * tab_counts 固定返回 UNFINISHED、CLOSED 两项总数。
+     */
     @GET("api/v1/todos")
     Single<ApiResponse<PageVO<TodoItemVO>>> getDayTodos(@Query("date") String date,
                                                         @Nullable @Query("scope") String scope,

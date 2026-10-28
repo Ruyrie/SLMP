@@ -88,6 +88,9 @@ public class MineFragment extends BaseFragment {
 
         ClickThrottle.setOnClickListener(binding.accountMineProfile, v -> vm.openEditName());
         ClickThrottle.setOnClickListener(binding.accountMineFarms, v -> vm.onEntryClick(MineViewModel.ENTRY_FARMS));
+        ClickThrottle.setOnClickListener(binding.accountMineFarmInfo,
+                v -> vm.onEntryClick(MineViewModel.ENTRY_FARM_INFO));
+        ClickThrottle.setOnClickListener(binding.accountMineMembers, v -> vm.onEntryClick(MineViewModel.ENTRY_MEMBERS));
         ClickThrottle.setOnClickListener(binding.accountMineChangeRequests,
                 v -> vm.onEntryClick(MineViewModel.ENTRY_CHANGE_REQUESTS));
         ClickThrottle.setOnClickListener(binding.accountMineReminder, v -> vm.onEntryClick(MineViewModel.ENTRY_REMINDER));
@@ -214,6 +217,15 @@ public class MineFragment extends BaseFragment {
                     Router.open(requireContext(), RouterPath.F01);
                 }
                 break;
+            case MineViewModel.ENTRY_FARM_INFO:
+            case MineViewModel.ENTRY_MEMBERS: {
+                // F05 中可转让所有权（F10），F07 中可邀请成员（F08）；返回后刷新本页
+                Bundle extras = new Bundle();
+                extras.putLong(RouterPath.EXTRA_FARM_ID, vm.currentFarmId());
+                Router.openForResult(requireContext(), refreshLauncher,
+                        MineViewModel.ENTRY_FARM_INFO.equals(entry) ? RouterPath.F05 : RouterPath.F07, extras);
+                break;
+            }
             case MineViewModel.ENTRY_CHANGE_REQUESTS:
                 Router.openForResult(requireContext(), refreshLauncher, RouterPath.U02, null);
                 break;

@@ -126,8 +126,12 @@ public class PenDetailActivity extends BaseActivity {
                 row.setAvatarName(u.getName());
                 row.setTitle(u.getName());
                 row.setSubtitle(getString(R.string.herd_pen_staff_sub));
-                row.setShowChevron(true);
-                ClickThrottle.setOnClickListener(row, v -> vm.onStaffClick(u));
+                // 有 member_id 才能打开 F09 成员详情
+                boolean openable = PenDetailViewModel.canOpenStaff(u);
+                row.setShowChevron(openable);
+                if (openable) {
+                    ClickThrottle.setOnClickListener(row, v -> vm.onStaffClick(u));
+                }
                 binding.herdStaffList.addView(row);
             }
         }
