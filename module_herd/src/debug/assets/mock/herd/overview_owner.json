@@ -10,7 +10,10 @@
     "stock_total": 870,
     "today_todo_count": 6,
     "warning_count": 1,
-    "reminder_total": 2,
+    "reminder_total": 3,
+    "active_batch_count": 4,
+    "pen_count": 7,
+    "occupied_pen_count": 4,
     "reminders": [
       {
         "reminder_type": "WITHDRAWAL",
@@ -21,6 +24,17 @@
         "batch_id": 3001,
         "todo_id": null,
         "route": "D05"
+      },
+      {
+        "reminder_type": "ABNORMAL_REPORT",
+        "is_warning": true,
+        "title": "3 号育肥舍异常上报待处理",
+        "subtitle": "12 头腹泻、呕吐 · 李明 09:20 上报",
+        "tag_text": "待处理",
+        "batch_id": 3001,
+        "todo_id": 7201,
+        "report_id": 6001,
+        "route": "I06"
       },
       {
         "reminder_type": "FEED_LOW_STOCK",

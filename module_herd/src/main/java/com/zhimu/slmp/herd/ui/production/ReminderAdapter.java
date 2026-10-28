@@ -29,6 +29,9 @@ public class ReminderAdapter extends ListAdapter<ProductionReminderItemVO, Remin
             @Override
             public boolean areItemsTheSame(@NonNull ProductionReminderItemVO a, @NonNull ProductionReminderItemVO b) {
                 return Objects.equals(a.getReminderType(), b.getReminderType())
+                        && Objects.equals(a.getReportId(), b.getReportId())
+                        && Objects.equals(a.getBatchId(), b.getBatchId())
+                        && Objects.equals(a.getTodoId(), b.getTodoId())
                         && Objects.equals(a.getTitle(), b.getTitle());
             }
 
@@ -57,7 +60,7 @@ public class ReminderAdapter extends ListAdapter<ProductionReminderItemVO, Remin
         if ("URGENT_DIAGNOSIS".equals(t)) {
             return R.drawable.ic_emergency;
         }
-        if ("INSPECT_ABNORMAL".equals(t)) {
+        if (ProductionReminderItemVO.TYPE_ABNORMAL_REPORT.equals(t) || "INSPECT_ABNORMAL".equals(t)) {
             return R.drawable.ic_report;
         }
         return R.drawable.ic_warning;

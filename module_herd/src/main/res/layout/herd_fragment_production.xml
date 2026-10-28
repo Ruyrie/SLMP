@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- L01 生产页（所有者、场长）：一级页顶部栏 + 今日生产概况 + 生产提醒 + 生产 / 防疫 / 物资入口 -->
+<!-- L01 生产页：一级页顶部栏 + 今日生产概况（存栏 / 在养批次 / 生产提醒）+ 生产提醒列表 + 生产 / 防疫 / 物资入口 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -90,6 +90,7 @@
                                         android:textColor="?attr/colorOnSurfaceVariant" />
                                 </LinearLayout>
 
+                                <!-- 三张卡等高：在养批次卡多一行“栏舍占用 a/b”副标题时，另两张同步拉高 -->
                                 <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
@@ -99,27 +100,27 @@
                                     <com.zhimu.slmp.base.widget.StatCardView
                                         android:id="@+id/herd_card_stock"
                                         android:layout_width="0dp"
-                                        android:layout_height="wrap_content"
+                                        android:layout_height="match_parent"
                                         android:layout_weight="143"
                                         app:statEmphasis="true"
                                         app:statIcon="@drawable/ic_fence"
                                         app:statLabel="@string/herd_production_stock" />
 
                                     <com.zhimu.slmp.base.widget.StatCardView
-                                        android:id="@+id/herd_card_todo"
+                                        android:id="@+id/herd_card_batch"
                                         android:layout_width="0dp"
-                                        android:layout_height="wrap_content"
+                                        android:layout_height="match_parent"
                                         android:layout_marginStart="@dimen/base_space_2"
                                         android:layout_weight="111"
-                                        app:statLabel="@string/herd_production_todo" />
+                                        app:statLabel="@string/herd_production_batch" />
 
                                     <com.zhimu.slmp.base.widget.StatCardView
-                                        android:id="@+id/herd_card_warning"
+                                        android:id="@+id/herd_card_reminder"
                                         android:layout_width="0dp"
-                                        android:layout_height="wrap_content"
+                                        android:layout_height="match_parent"
                                         android:layout_marginStart="@dimen/base_space_2"
                                         android:layout_weight="110"
-                                        app:statLabel="@string/herd_production_warning" />
+                                        app:statLabel="@string/herd_production_reminder" />
                                 </LinearLayout>
 
                                 <com.zhimu.slmp.base.widget.NoticeView
@@ -138,17 +139,6 @@
                                     android:layout_marginTop="@dimen/base_space_2"
                                     android:nestedScrollingEnabled="false"
                                     android:overScrollMode="never" />
-
-                                <TextView
-                                    android:id="@+id/herd_reminders_all"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="48dp"
-                                    android:background="?attr/selectableItemBackground"
-                                    android:gravity="center_vertical"
-                                    android:paddingStart="@dimen/base_space_4"
-                                    android:textAppearance="@style/TextAppearance.Zmt.LabelLarge"
-                                    android:textColor="?attr/colorPrimary"
-                                    android:visibility="gone" />
 
                                 <LinearLayout
                                     android:id="@+id/herd_entry_groups"

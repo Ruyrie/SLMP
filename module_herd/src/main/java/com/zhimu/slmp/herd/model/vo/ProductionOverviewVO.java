@@ -7,6 +7,7 @@ import java.util.List;
 
 /**
  * API-L01 生产页概况（L01）。养殖场未通过审核时只返回 farm_id、farm_name、farm_status 与 today。
+ * 三张指标卡：存栏、在养批次（副标题栏舍占用）、生产提醒；today_todo_count、warning_count 仅为老版本 App 保留，新 App 不再使用。
  */
 public class ProductionOverviewVO {
 
@@ -19,6 +20,12 @@ public class ProductionOverviewVO {
     private int todayTodoCount;
     private int warningCount;
     private int reminderTotal;
+    /** 在养批次数（员工按可见栏舍）；老服务端没有该字段时为 null */
+    private Integer activeBatchCount;
+    /** 启用的栏舍数（员工按可见栏舍）；老服务端没有该字段时为 null */
+    private Integer penCount;
+    /** 有在养批次的栏舍数；老服务端没有该字段时为 null */
+    private Integer occupiedPenCount;
     private String unit;
     private String unitText;
     private List<ProductionReminderItemVO> reminders;
@@ -50,17 +57,34 @@ public class ProductionOverviewVO {
         return stockTotal;
     }
 
+    /** 老版本 App 兼容字段，生产页不再使用 */
     public int getTodayTodoCount() {
         return todayTodoCount;
     }
 
+    /** 老版本 App 兼容字段，生产页不再使用 */
     public int getWarningCount() {
         return warningCount;
     }
 
-    /** 生产提醒总数 = 休药中批次 + 预警项（L01“预警”卡，待定事项 2） */
+    /** 生产提醒条数 = reminders 条数（L01“生产提醒 N 项”卡） */
     public int getReminderTotal() {
         return reminderTotal;
+    }
+
+    @Nullable
+    public Integer getActiveBatchCount() {
+        return activeBatchCount;
+    }
+
+    @Nullable
+    public Integer getPenCount() {
+        return penCount;
+    }
+
+    @Nullable
+    public Integer getOccupiedPenCount() {
+        return occupiedPenCount;
     }
 
     public String getUnit() {
