@@ -7,6 +7,7 @@ import com.zhimu.slmp.health.model.request.ImmunePlanPostponeRequest;
 import com.zhimu.slmp.health.model.request.ImmunePlanUpdateRequest;
 import com.zhimu.slmp.health.model.request.ImmuneRecordCreateRequest;
 import com.zhimu.slmp.health.model.request.ImmuneRecordUpdateRequest;
+import com.zhimu.slmp.health.model.request.NotifyManagerRequest;
 import com.zhimu.slmp.health.model.request.VersionRequest;
 import com.zhimu.slmp.health.model.vo.HealthRequestStatusVO;
 import com.zhimu.slmp.health.model.vo.ImmunePlanOptionVO;
@@ -14,6 +15,7 @@ import com.zhimu.slmp.health.model.vo.ImmunePlanOverviewVO;
 import com.zhimu.slmp.health.model.vo.ImmunePlanVO;
 import com.zhimu.slmp.health.model.vo.ImmuneRecordVO;
 import com.zhimu.slmp.health.model.vo.ImmuneRegisterFormVO;
+import com.zhimu.slmp.health.model.vo.NotifyResultVO;
 import com.zhimu.slmp.health.model.vo.VaccineOptionVO;
 import com.zhimu.slmp.network.Headers;
 import com.zhimu.slmp.network.model.ApiResponse;
@@ -102,6 +104,10 @@ public interface ImmuneApi {
     /** API-D16 修改接种记录 */
     @PUT("api/v1/immune-records/{id}")
     Single<ApiResponse<ImmuneRecordVO>> updateRecord(@Path("id") long recordId, @Body ImmuneRecordUpdateRequest body);
+
+    /** 员工通知场长处理接种记录（与 API-D27 用药记录一致） */
+    @POST("api/v1/immune-records/{id}/notify-manager")
+    Single<ApiResponse<NotifyResultVO>> notifyManager(@Path("id") long recordId, @Body NotifyManagerRequest body);
 
     /** API-D41 按请求编号查询登记结果；record_type：IMMUNE_RECORD / MEDICATION_RECORD / DISINFECT_RECORD */
     @GET("api/v1/health-records/by-request/{client_request_id}")

@@ -258,6 +258,11 @@ public class ImmuneRegisterActivity extends BaseActivity {
                 primaryAction = HealthExtras.ACTION_CHANGE_REQUEST;
                 binding.healthActionBar.setPrimary(getString(R.string.health_change_request_review),
                         com.zhimu.slmp.base.R.drawable.ic_edit_note);
+            } else if (actions.contains(HealthExtras.ACTION_NOTIFY)) {
+                // 员工：非当天的本人记录不能修改，通知场长处理
+                primaryAction = HealthExtras.ACTION_NOTIFY;
+                binding.healthActionBar.setPrimary(getString(R.string.health_notify_manager),
+                        com.zhimu.slmp.base.R.drawable.ic_notifications);
             } else {
                 primaryAction = "";
             }
