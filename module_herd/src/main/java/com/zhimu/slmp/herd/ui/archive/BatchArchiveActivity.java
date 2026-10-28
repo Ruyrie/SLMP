@@ -11,6 +11,8 @@ import android.widget.TextView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.paging.CombinedLoadStates;
+import androidx.paging.ItemSnapshotList;
 import androidx.paging.LoadState;
 import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -40,6 +42,7 @@ import com.zhimu.slmp.herd.ui.common.HerdNav;
 import com.zhimu.slmp.herd.ui.common.MenuItemSpec;
 import com.zhimu.slmp.herd.ui.common.SingleViewAdapter;
 
+import java.util.List;
 import java.util.Objects;
 
 import kotlin.Unit;
@@ -114,6 +117,7 @@ public class BatchArchiveActivity extends BaseActivity {
             footer.setLoadState(states.getAppend());
             header.herdTimelineEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
             header.herdTimelineEmpty.setText(emptyText(vm.getTimelineType().getValue()));
+            locateFocusRecord(states);
             return Unit.INSTANCE;
         });
         ConcatAdapter concat = new ConcatAdapter(new SingleViewAdapter(header.getRoot()), timeline, footer);
@@ -237,10 +241,49 @@ public class BatchArchiveActivity extends BaseActivity {
             chip.setChecked(Objects.equals(f[0], vm.getTimelineType().getValue()));
             chip.setOnClickListener(v -> {
                 if (!Objects.equals(f[0], vm.getTimelineType().getValue())) {
-                    vm.setTimelineType(f[0]);
+                    vm.onFilterSelected(f[0]);
                 }
             });
             header.herdFilterChips.addView(chip);
+        }
+    }
+
+    /** 带 record_id 进入时最多再翻几页去找那条饲喂记录（每页 20 条） */
+    private static final int FOCUS_MAX_PAGES = 10;
+    private int focusPagesRequested;
+
+    /**
+     * 从库存流水（饲喂出库）进入：在“投喂”时间线中找到 record_id 对应的记录，展开并滚动到它；
+     * 已加载的页里没有时继续往下翻（最多 FOCUS_MAX_PAGES 页），翻完仍没有就停在“投喂”筛选。
+     */
+    private void locateFocusRecord(@NonNull CombinedLoadStates states) {
+        if (vm.getFocusRecordId() == null || !(states.getRefresh() instanceof LoadState.NotLoading)) {
+            return;
+        }
+        ItemSnapshotList<TimelineItemVO> snapshot = timeline.snapshot();
+        List<TimelineItemVO> items = snapshot.getItems();
+        for (int i = 0; i < items.size(); i++) {
+            TimelineItemVO item = items.get(i);
+            if (vm.isFocusRecord(item)) {
+                vm.onFocusFound(item);
+                // 列表第 0 项是档案头部
+                int position = 1 + snapshot.getPlaceholdersBefore() + i;
+                binding.herdList.post(() -> {
+                    RecyclerView.LayoutManager lm = binding.herdList.getLayoutManager();
+                    if (lm instanceof LinearLayoutManager) {
+                        ((LinearLayoutManager) lm).scrollToPositionWithOffset(position, 0);
+                    }
+                });
+                return;
+            }
+        }
+        LoadState append = states.getAppend();
+        if (append.getEndOfPaginationReached() || append instanceof LoadState.Error
+                || focusPagesRequested >= FOCUS_MAX_PAGES) {
+            vm.clearFocus();
+        } else if (append instanceof LoadState.NotLoading && timeline.getItemCount() > 0) {
+            focusPagesRequested++;
+            timeline.loadMore();
         }
     }
 

@@ -41,6 +41,27 @@ public class BatchArchiveViewModelTest {
         ((MutableLiveData<BatchDetailVO>) vm.getDetail()).setValue(row);
     }
 
+    @Test public void feedRecordFromStockFlowIsFoundAndExpandedOnce() {
+        vm.focusOn(41L);
+        TimelineItemVO weigh = TestRules.parse("{'id':901,'biz_id':41,'record_type':'WEIGH'}", TimelineItemVO.class);
+        TimelineItemVO feed = TestRules.parse("{'id':902,'biz_id':41,'record_type':'FEED','expandable':true}",
+                TimelineItemVO.class);
+        assertFalse(vm.isFocusRecord(weigh));
+        assertTrue(vm.isFocusRecord(feed));
+
+        vm.onFocusFound(feed);
+
+        assertNull(vm.getFocusRecordId());
+        assertTrue(vm.getExpandedIds().getValue().contains(902L));
+        assertFalse(vm.isFocusRecord(feed));
+    }
+
+    @Test public void choosingAnotherFilterStopsLocating() {
+        vm.focusOn(41L);
+        vm.clearFocus();
+        assertNull(vm.getFocusRecordId());
+    }
+
     @Test public void freshEntryOffersDirectEditInsteadOfAnUnsupportedApprovalForm() {
         detail(true);
         vm.onMoreClick();

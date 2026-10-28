@@ -60,6 +60,8 @@ public class BatchArchiveViewModel extends BaseViewModel {
     /** Snackbar“切回东山猪场”的 actionId */
     public static final String ACTION_SWITCH_BACK = "herd_switch_back";
     static final String KEY_SWITCH_SHOWN = "herd_switch_shown";
+    /** 已按 record_id 定位过（重建页面时不再定位） */
+    static final String KEY_FOCUS_DONE = "herd_focus_done";
 
     /** 长按记录的菜单 */
     public static final class RecordMenu {
@@ -101,6 +103,9 @@ public class BatchArchiveViewModel extends BaseViewModel {
     private String fromFarmName;
     @Nullable
     private Disposable timelineDisposable;
+    /** 从库存流水（饲喂出库）进入时要定位的饲喂记录 id（RouterPath.EXTRA_RECORD_ID），定位完成或放弃后清空 */
+    @Nullable
+    private Long focusRecordId;
 
     @Inject
     public BatchArchiveViewModel(@NonNull BatchRepository repository, @NonNull FarmContext farmContext) {
@@ -155,8 +160,14 @@ public class BatchArchiveViewModel extends BaseViewModel {
         fromFarmName = handle.get(RouterPath.EXTRA_FROM_FARM_NAME);
         String cross = handle.get(RouterPath.EXTRA_CROSS_FARM_NAME);
         crossFarmName.setValue(cross);
+        Object record = handle.get(RouterPath.EXTRA_RECORD_ID);
+        long recordId = record instanceof Number ? ((Number) record).longValue() : 0L;
+        if (recordId > 0 && !Boolean.TRUE.equals(handle.get(KEY_FOCUS_DONE))) {
+            focusOn(recordId);
+        }
         load();
-        setTimelineType(null);
+        // 带 record_id 时直接切到“投喂”筛选，页面再在时间线中找到该条并展开
+        setTimelineType(focusRecordId != null ? TimelineItemVO.TYPE_FEED : null);
         if (fromFarmId != null && fromFarmName != null && !Boolean.TRUE.equals(handle.get(KEY_SWITCH_SHOWN))) {
             handle.set(KEY_SWITCH_SHOWN, true);
             FarmContextVO c = farmContext.current();
@@ -277,6 +288,49 @@ public class BatchArchiveViewModel extends BaseViewModel {
                 .subscribe(timelinePaging::setValue, t -> {
                 });
         disposables.add(timelineDisposable);
+    }
+
+    /** 筛选 Chip：用户自己换筛选后不再定位 */
+    public void onFilterSelected(@Nullable String type) {
+        clearFocus();
+        setTimelineType(type);
+    }
+
+    // ===== 定位饲喂记录（库存流水 FEED_RECORD → L06） =====
+
+    void focusOn(long recordId) {
+        focusRecordId = recordId;
+    }
+
+    /** 还在等待定位的饲喂记录 id，没有时为 null */
+    @Nullable
+    public Long getFocusRecordId() {
+        return focusRecordId;
+    }
+
+    /** 是否为要定位的那条饲喂记录（record_type=FEED 且 biz_id 为饲喂记录 id） */
+    public boolean isFocusRecord(@Nullable TimelineItemVO item) {
+        return item != null && focusRecordId != null && TimelineItemVO.TYPE_FEED.equals(item.getRecordType())
+                && item.getBizId() == focusRecordId;
+    }
+
+    /** 找到了：展开该条（饲喂记录展开即显示明细），只定位一次 */
+    public void onFocusFound(@NonNull TimelineItemVO item) {
+        clearFocus();
+        if (item.isExpandable()) {
+            Set<Long> ids = new HashSet<>(Objects.requireNonNull(expandedIds.getValue()));
+            ids.add(item.getId());
+            expandedIds.setValue(ids);
+        }
+    }
+
+    /** 不再定位（找到、翻完仍没有、用户换了筛选） */
+    public void clearFocus() {
+        if (focusRecordId == null) {
+            return;
+        }
+        focusRecordId = null;
+        getSavedState().set(KEY_FOCUS_DONE, true);
     }
 
     // ===== 时间线 =====
