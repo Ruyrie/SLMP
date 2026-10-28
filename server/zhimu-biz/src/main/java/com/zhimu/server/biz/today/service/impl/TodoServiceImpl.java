@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.today.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.zhimu.server.biz.farm.api.FarmQueryService;
 import com.zhimu.server.biz.today.api.TodoQueryService;
@@ -78,6 +79,8 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
     private static final String SCOPE_ALL = "ALL";
     private static final String STATUS_ALL = "ALL";
     private static final String STATUS_UNFINISHED = "UNFINISHED";
+    private static final String STATUS_PENDING = "PENDING";
+    private static final String STATUS_CLOSED = "CLOSED";
     private static final int MAX_CALENDAR_DAYS = 42;
 
     private final TodoMapper todoMapper;
@@ -104,7 +107,8 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         // 首页仅展示仍待处理的事项；完成、忽略记录仍由日历按业务日期查询。
         stockWarnings.reconcileFarm(member.farmId());
         feedTaskReconciliation.reconcileFarm(member.farmId());
-        List<Todo> all = todosOfFarm(member.farmId());
+        // 只用到未完成待办（今天、已逾期与预警），按状态下推到查询
+        List<Todo> all = openTodosOfFarm(member.farmId());
         List<Todo> todayList = new ArrayList<>();
         List<Todo> overdueList = new ArrayList<>();
         for (Todo todo : all) {
@@ -188,7 +192,8 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         LocalDate today = BeijingTime.today();
         LocalDateTime now = BeijingTime.now();
 
-        Map<LocalDate, List<Todo>> byDay = groupByBusinessDay(scope, today, category);
+        Map<LocalDate, List<Todo>> byDay = groupByBusinessDay(scope, today, category,
+                query.getStartDate(), query.getEndDate());
         TodoCalendarResult result = new TodoCalendarResult();
         List<CalendarDayVO> days = new ArrayList<>();
         for (LocalDate date = query.getStartDate(); !date.isAfter(query.getEndDate()); date = date.plusDays(1)) {
@@ -208,29 +213,35 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
             throw new BizException(ErrorCode.PARAM_INVALID, "请选择日期");
         }
         String category = validateCategory(query.getCategory());
-        String status = query.getStatus() == null || query.getStatus().isBlank()
-                ? STATUS_ALL : query.getStatus().toUpperCase();
-        if (!STATUS_ALL.equals(status) && !STATUS_UNFINISHED.equals(status)) {
-            throw new BizException(ErrorCode.PARAM_INVALID, "状态筛选不正确");
-        }
+        String status = normalizeDayStatus(query.getStatus());
         TodoScope.Scope scope = todoScope.resolve(userId, query.getScope());
         LocalDate today = BeijingTime.today();
         LocalDateTime now = BeijingTime.now();
         Map<Long, String> farmNames = farmNames(userId);
 
-        List<Todo> matches = new ArrayList<>();
-        for (Todo todo : visibleTodos(scope)) {
+        // 同日期、同 scope、同 category 下的全部待办；分区计数不受 status 影响
+        List<Todo> unfinished = new ArrayList<>();
+        List<Todo> closed = new ArrayList<>();
+        for (Todo todo : visibleTodos(scope, query.getDate(), query.getDate())) {
             if (category != null && !category.equals(todo.getCategory())) {
                 continue;
             }
-            if (STATUS_UNFINISHED.equals(status) && !isOpen(todo)) {
+            if (!query.getDate().equals(businessDay(todo, today))) {
                 continue;
             }
-            if (query.getDate().equals(businessDay(todo, today))) {
-                matches.add(todo);
-            }
+            (isOpen(todo) ? unfinished : closed).add(todo);
         }
-        matches.sort(dayComparator());
+        unfinished.sort(dayComparator());
+        closed.sort(closedComparator());
+        List<Todo> matches = switch (status) {
+            case STATUS_UNFINISHED -> unfinished;
+            case STATUS_CLOSED -> closed;
+            default -> {
+                List<Todo> all = new ArrayList<>(unfinished);
+                all.addAll(closed);
+                yield all;
+            }
+        };
         int page = query.pageOrDefault();
         int size = query.sizeOrDefault();
         List<TodoItemVO> items = new ArrayList<>();
@@ -239,7 +250,22 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
             boolean staff = member != null && member.isStaff();
             items.add(todoConvert.toItem(todo, farmNames.get(todo.getFarmId()), staff, today, now));
         }
-        return new PageVO<>(items, matches.size(), page, size);
+        Map<String, Integer> tabCounts = new LinkedHashMap<>();
+        tabCounts.put(STATUS_UNFINISHED, unfinished.size());
+        tabCounts.put(STATUS_CLOSED, closed.size());
+        return new PageVO<>(items, matches.size(), page, size).withTabCounts(tabCounts);
+    }
+
+    /** API-T04 status：ALL（默认）/ UNFINISHED（同义 PENDING）/ CLOSED（已完成 + 已忽略） */
+    private static String normalizeDayStatus(String value) {
+        String status = value == null || value.isBlank() ? STATUS_ALL : value.trim().toUpperCase();
+        if (STATUS_PENDING.equals(status)) {
+            return STATUS_UNFINISHED;
+        }
+        if (!STATUS_ALL.equals(status) && !STATUS_UNFINISHED.equals(status) && !STATUS_CLOSED.equals(status)) {
+            throw new BizException(ErrorCode.PARAM_INVALID, "状态筛选不正确");
+        }
+        return status;
     }
 
     // ===================== API-T05 周视图 =====================
@@ -260,15 +286,16 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         TodoScope.Scope scope = todoScope.resolve(userId, query.getScope());
         LocalDate today = BeijingTime.today();
         LocalDateTime now = BeijingTime.now();
-        Map<LocalDate, List<Todo>> byDay = groupByBusinessDay(scope, today, category);
+        Map<LocalDate, List<Todo>> byDay = groupByBusinessDay(scope, today, category,
+                query.getWeekStart(), query.getWeekStart().plusDays(6));
         Map<Long, String> farmNames = farmNames(userId);
 
         List<WeeklyDayVO> days = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
             LocalDate date = query.getWeekStart().plusDays(i);
             List<Todo> todos = new ArrayList<>(byDay.getOrDefault(date, List.of()));
-            // 周视图固定返回 7 天（没有待办的天也返回 0/空），App 按天渲染周分组
-            todos.sort(dayComparator());
+            // 周视图固定返回 7 天（没有待办的天也返回 0/空），App 按天渲染周分组；每天未完成在前、已关闭在后
+            todos.sort(partitionComparator());
             WeeklyDayVO day = new WeeklyDayVO();
             day.setDate(date.toString());
             day.setIsToday(date.equals(today));
@@ -296,7 +323,8 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         LocalDateTime now = BeijingTime.now();
         Map<Long, String> farmNames = farmNames(userId);
         List<Todo> matches = new ArrayList<>();
-        for (Todo todo : visibleTodos(scope)) {
+        for (Todo todo : visibleTodos(scope, q -> q.eq(Todo::getStatus, TodoStatus.PENDING.name())
+                .lt(Todo::getDueDate, today))) {
             // 与工作台“已逾期”页签一致：只看业务日期早于今天的未完成待办。
             if (isOpen(todo) && isDateOverdue(todo, today)) {
                 matches.add(todo);
@@ -681,7 +709,9 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
             if (isTodayList(todo, today, now)) {
                 todayTodoCount++;
             }
-            if (TodoCategory.WARNING.name().equals(todo.getCategory())) {
+            // 异常上报在生产概况里已有“今日巡检发现异常”提醒项，这里不重复列出
+            if (TodoCategory.WARNING.name().equals(todo.getCategory())
+                    && !"ABNORMAL_REPORT".equals(todo.getTodoType())) {
                 warnings.add(new WarningTodo(todo.getId(), todo.getTodoType(), todo.getTitle(),
                         todo.getContentText(), warningTag(todo.getTodoType()), todo.getBatchId(),
                         TodoLinks.listRoute(todo.getTodoType())));
@@ -816,10 +846,11 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
                 .orderByAsc(Todo::getSortTime));
     }
 
-    /** 本场全部未删除待办（含已完成/已忽略），今日视图需要把已完成也算进“今日应办”。 */
-    private List<Todo> todosOfFarm(Long farmId) {
+    /** 本场未完成待办（不再触发对账，调用方已对账） */
+    private List<Todo> openTodosOfFarm(Long farmId) {
         return todoMapper.selectList(Wrappers.<Todo>lambdaQuery()
                 .eq(Todo::getFarmId, farmId)
+                .eq(Todo::getStatus, TodoStatus.PENDING.name())
                 .orderByAsc(Todo::getSortTime));
     }
 
@@ -839,7 +870,24 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         return todo.getDueDate() != null && todo.getDueDate().isBefore(today);
     }
 
-    private List<Todo> visibleTodos(TodoScope.Scope scope) {
+    /**
+     * 业务日落在 [start, end] 内的可见待办（查询下推为日期范围，结果是候选集，调用方仍按 businessDay 精确归日）。
+     * 候选条件覆盖 2.7.3 全部归日规则：普通待办按 due_date；预警类、休药期到期未完成时归今天或 due_date，
+     * 已关闭时按完成 / 忽略日期或 due_date。
+     */
+    private List<Todo> visibleTodos(TodoScope.Scope scope, LocalDate start, LocalDate end) {
+        LocalDateTime from = start.atStartOfDay();
+        LocalDateTime to = end.plusDays(1).atStartOfDay();
+        return visibleTodos(scope, q -> q.and(w -> w.between(Todo::getDueDate, start, end)
+                .or(x -> x.and(y -> y.eq(Todo::getCategory, TodoCategory.WARNING.name())
+                                .or().eq(Todo::getTodoType, "WITHDRAWAL_END"))
+                        .and(y -> y.eq(Todo::getStatus, TodoStatus.PENDING.name())
+                                .or(z -> z.ge(Todo::getCompletedAt, from).lt(Todo::getCompletedAt, to))
+                                .or(z -> z.ge(Todo::getIgnoredAt, from).lt(Todo::getIgnoredAt, to))))));
+    }
+
+    private List<Todo> visibleTodos(TodoScope.Scope scope,
+                                    java.util.function.Consumer<LambdaQueryWrapper<Todo>> condition) {
         if (scope.farmIds().isEmpty()) {
             return List.of();
         }
@@ -850,9 +898,10 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
             }
             return null;
         });
-        List<Todo> todos = TenantSkip.call(() -> todoMapper.selectList(Wrappers.<Todo>lambdaQuery()
-                .in(Todo::getFarmId, scope.farmIds())
-                .orderByAsc(Todo::getSortTime)));
+        LambdaQueryWrapper<Todo> query = Wrappers.<Todo>lambdaQuery().in(Todo::getFarmId, scope.farmIds());
+        condition.accept(query);
+        query.orderByAsc(Todo::getSortTime);
+        List<Todo> todos = TenantSkip.call(() -> todoMapper.selectList(query));
         List<Todo> result = new ArrayList<>();
         for (Todo todo : todos) {
             FarmContext.FarmMember member = scope.member(todo.getFarmId());
@@ -863,9 +912,10 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         return result;
     }
 
-    private Map<LocalDate, List<Todo>> groupByBusinessDay(TodoScope.Scope scope, LocalDate today, String category) {
+    private Map<LocalDate, List<Todo>> groupByBusinessDay(TodoScope.Scope scope, LocalDate today, String category,
+                                                          LocalDate start, LocalDate end) {
         Map<LocalDate, List<Todo>> days = new HashMap<>();
-        for (Todo todo : visibleTodos(scope)) {
+        for (Todo todo : visibleTodos(scope, start, end)) {
             if (category != null && !category.equals(todo.getCategory())) {
                 continue;
             }
@@ -992,6 +1042,33 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
             return 1;
         }
         return 2;
+    }
+
+    /** 未完成在前（内部按 dayComparator），已完成 / 已忽略在后（按完成或忽略时间倒序） */
+    private Comparator<Todo> partitionComparator() {
+        Comparator<Todo> open = dayComparator();
+        Comparator<Todo> closed = closedComparator();
+        return (a, b) -> {
+            boolean aOpen = isOpen(a);
+            boolean bOpen = isOpen(b);
+            if (aOpen != bOpen) {
+                return aOpen ? -1 : 1;
+            }
+            return aOpen ? open.compare(a, b) : closed.compare(a, b);
+        };
+    }
+
+    /** 已关闭待办：完成 / 忽略时间倒序，时间相同按 ID 倒序 */
+    private static Comparator<Todo> closedComparator() {
+        return Comparator.comparing(TodoServiceImpl::closedAt, Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(Todo::getId, Comparator.nullsLast(Comparator.reverseOrder()));
+    }
+
+    private static LocalDateTime closedAt(Todo todo) {
+        if (TodoStatus.IGNORED.name().equals(todo.getStatus()) && todo.getIgnoredAt() != null) {
+            return todo.getIgnoredAt();
+        }
+        return todo.getCompletedAt() != null ? todo.getCompletedAt() : todo.getIgnoredAt();
     }
 
     private Comparator<Todo> dayComparator() {

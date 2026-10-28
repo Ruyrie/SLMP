@@ -2,10 +2,14 @@ package com.zhimu.server.biz.health.controller;
 
 import com.zhimu.server.biz.health.request.ImmuneRecordCreateRequest;
 import com.zhimu.server.biz.health.request.ImmuneRecordUpdateRequest;
+import com.zhimu.server.biz.health.request.NotifyManagerRequest;
 import com.zhimu.server.biz.health.service.ImmuneRecordService;
 import com.zhimu.server.biz.health.vo.ImmuneRecordVO;
+import com.zhimu.server.biz.health.vo.NotifyResultVO;
 import com.zhimu.server.common.api.ApiResponse;
+import com.zhimu.server.common.enums.FarmRole;
 import com.zhimu.server.framework.idempotent.Idempotent;
+import com.zhimu.server.framework.security.annotation.FarmRoles;
 import com.zhimu.server.framework.security.annotation.RequireFarm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,5 +47,13 @@ public class ImmuneRecordController {
     public ApiResponse<ImmuneRecordVO> update(@PathVariable("id") Long id,
                                               @RequestBody ImmuneRecordUpdateRequest request) {
         return ApiResponse.ok(immuneRecordService.update(id, request));
+    }
+
+    /** 员工通知场长处理免疫记录（请求 / 响应与 API-D27 用药记录一致） */
+    @PostMapping("/immune-records/{id:\\d+}/notify-manager")
+    @FarmRoles({FarmRole.STAFF})
+    public ApiResponse<NotifyResultVO> notifyManager(@PathVariable("id") Long id,
+                                                     @RequestBody(required = false) NotifyManagerRequest request) {
+        return ApiResponse.ok(immuneRecordService.notifyManager(id, request));
     }
 }

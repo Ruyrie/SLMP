@@ -9,7 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 class CourseConvertTest {
-    private final CourseConvert convert = new CourseConvert(mock(CourseCoverResolver.class));
+    private final CourseConvert convert = new CourseConvert(mock(CourseCoverResolver.class),
+            new com.zhimu.server.biz.ai.support.AiShareLinks("https://web.test"));
 
     @Test
     void displayRatioUsesResumePositionAndCurrentDurationWithoutRewritingHistory() {

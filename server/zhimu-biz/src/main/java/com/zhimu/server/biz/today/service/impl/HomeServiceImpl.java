@@ -43,9 +43,9 @@ import java.util.Set;
 /**
  * 首页聚合（API-T01、2.6.1）：基本信息 + 待办统计 + 角色块。
  * <p>
- * 未接模块的指标返回 0/空并注释“待模块xx”：模块04（存栏、批次、栏舍占用、我负责的栏舍批次）、
- * 模块07（巡检异常与 AI 推荐问）、模块10（待收款）后续通过 {@link HomeMetricProvider} 注册补数据；
- * 本批 warning_count / receivable_* 用 TODO 表种子数据兜底，stock_count 等为 0。
+ * 存栏、批次、栏舍数与占用、我负责的栏舍、休药等由各模块 {@link HomeMetricProvider} 提供；
+ * warning_count 统计未处理的 WARNING 类待办（库存预警、巡检异常上报 / 待处理诊断），与 T09 预警列表同口径；
+ * receivable_* 统计未关闭的 RECEIVABLE 待办（出栏单未收款，模块10 写入）。
  */
 @Service
 @RequiredArgsConstructor
@@ -96,19 +96,14 @@ public class HomeServiceImpl implements HomeService {
                 visiblePending.add(todo);
             }
         }
-        vo.setHasPen(member.isStaff() ? !member.penIds().isEmpty() : true);
+        vo.setHasPen(member.isStaff() ? !member.penIds().isEmpty() : hasPen(member.farmId()));
 
         if (member.isStaff()) {
             vo.setStaffMetrics(staffMetrics(member, visiblePending, today, now));
             vo.setMyPens(myPens(member, visiblePending, today, now));
         } else {
-            List<Todo> all = new ArrayList<>();
-            for (Todo todo : todosOfFarm(member.farmId())) {
-                if (todoScope.canView(todo, member)) {
-                    all.add(todo);
-                }
-            }
-            vo.setOwnerMetrics(ownerMetrics(member, all, today, now));
+            // 指标只计入未完成待办（PENDING），直接复用已过滤的 visiblePending
+            vo.setOwnerMetrics(ownerMetrics(member, visiblePending, today, now));
             vo.setAiHint(aiHint(visiblePending, today, now));
         }
         return vo;
@@ -157,9 +152,6 @@ public class HomeServiceImpl implements HomeService {
         vo.setTodayTodoCount(todayCount);
         vo.setOverdueCount(overdueCount);
         vo.setWarningCount(warningCount);
-        if (warningNames.isEmpty()) {
-            warningNames = warningNamesFromProviders(member.farmId());
-        }
         vo.setWarningNames(warningNames);
         vo.setReceivableOverdueCount(receivableCount);
         vo.setReceivableMaxOverdueDays(maxOverdueDays);
@@ -180,7 +172,7 @@ public class HomeServiceImpl implements HomeService {
         vo.setWithdrawalDaysLeft(nearestRelease == null ? null
                 : Math.toIntExact(ChronoUnit.DAYS.between(today, nearestRelease)));
 
-        // 待模块04：存栏数、批次数、栏舍占用率（provider 注册后自动补）；未接入时返回 0，字段保持齐全
+        // 存栏数、批次数、栏舍占用率由模块04 provider 提供；没有 provider 时返回 0，字段保持齐全
         vo.setStockCount(stockCount(member.farmId()));
         vo.setBatchCount(batchCount(member.farmId()));
         BigDecimal occupancy = penOccupancyRate(member.farmId());
@@ -383,12 +375,6 @@ public class HomeServiceImpl implements HomeService {
                 .eq(Todo::getStatus, TodoStatus.PENDING.name()));
     }
 
-    /** 本场未删除待办；指标在聚合时只计入 PENDING，历史记录不删除。 */
-    private List<Todo> todosOfFarm(Long farmId) {
-        return todoMapper.selectList(Wrappers.<Todo>lambdaQuery()
-                .eq(Todo::getFarmId, farmId));
-    }
-
     private static boolean isDueOn(Todo todo, LocalDate today) {
         return todo.getDueDate() != null && todo.getDueDate().equals(today)
                 && !TodoStatus.IGNORED.name().equals(todo.getStatus());
@@ -443,7 +429,7 @@ public class HomeServiceImpl implements HomeService {
     }
 
     private String aiHint(List<Todo> pending, LocalDate today, LocalDateTime now) {
-        // 待模块07：优先用异常上报生成推荐问；模块07 未接入时按最早的逾期作业类待办兜底
+        // 按最早的逾期作业类待办生成推荐问
         return pending.stream()
                 .filter(todo -> "WORK".equals(todo.getCategory()))
                 .filter(todo -> isOverdue(todo, now))
@@ -459,7 +445,7 @@ public class HomeServiceImpl implements HomeService {
         return name.substring(0, name.offsetByCodePoints(0, 1));
     }
 
-    // ===================== HomeMetricProvider 聚合（模块04/07/09/10 注册后生效） =====================
+    // ===================== HomeMetricProvider 聚合 =====================
 
     private int stockCount(Long farmId) {
         int value = 0;
@@ -487,14 +473,15 @@ public class HomeServiceImpl implements HomeService {
         return null;
     }
 
-    private List<String> warningNamesFromProviders(Long farmId) {
+    /** 所有者 / 场长：按本场真实栏舍数（含停用）判断；没有 provider 时按有栏舍处理 */
+    private boolean hasPen(Long farmId) {
         for (HomeMetricProvider provider : metricProviders) {
-            List<String> names = provider.warningNames(farmId);
-            if (names != null && !names.isEmpty()) {
-                return names;
+            Integer count = provider.penCount(farmId);
+            if (count != null) {
+                return count > 0;
             }
         }
-        return List.of();
+        return true;
     }
 
     private String countUnit(Long farmId) {

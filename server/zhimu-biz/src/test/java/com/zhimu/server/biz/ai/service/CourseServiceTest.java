@@ -74,7 +74,8 @@ class CourseServiceTest {
         service = new CourseServiceImpl(categoryMapper, topicMapper, courseMapper,
                 new CourseMediaResolver(mediaMapper, mock(FileVariantMapper.class), mock(ObjectStorage.class)), progressMapper,
                 playRecordMapper, new CourseConvert(new com.zhimu.server.biz.ai.support.CourseCoverResolver(
-                        mock(com.zhimu.server.biz.common.mapper.FileMapper.class), mock(ObjectStorage.class))), personalDataGuard);
+                        mock(com.zhimu.server.biz.common.mapper.FileMapper.class), mock(ObjectStorage.class)),
+                        new com.zhimu.server.biz.ai.support.AiShareLinks("https://web.test")), personalDataGuard);
     }
 
     @AfterEach

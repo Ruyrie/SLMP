@@ -7,6 +7,7 @@ import com.zhimu.server.biz.today.entity.Todo;
 import com.zhimu.server.biz.today.mapper.TodoHandleLogMapper;
 import com.zhimu.server.biz.today.mapper.TodoMapper;
 import com.zhimu.server.biz.today.query.TodoCalendarQuery;
+import com.zhimu.server.biz.today.query.TodoDateQuery;
 import com.zhimu.server.biz.today.query.TodayTodoQuery;
 import com.zhimu.server.biz.today.query.TodoWeeklyQuery;
 import com.zhimu.server.biz.today.support.TodoScope;
@@ -232,6 +233,77 @@ class TodoQueryServiceImplTest {
             assertThat(day.getTotal()).isZero();
             assertThat(day.getItems()).isEmpty();
         });
+    }
+
+    // ===== API-T04 待办分区（上：待处理；下：已完成 / 已忽略） =====
+
+    private List<Todo> dayTodos() {
+        Todo pendingTimed = todo(11L, "FEEDING", "WORK", "PENDING", LocalDate.of(2026, 10, 19),
+                LocalTime.of(11, 30), LocalDateTime.of(2026, 10, 19, 13, 30), "午餐饲喂");
+        Todo pendingAllDay = todo(12L, "DISINFECTION", "WORK", "PENDING", LocalDate.of(2026, 10, 19),
+                null, LocalDateTime.of(2026, 10, 20, 0, 0), "消毒");
+        Todo doneEarly = todo(13L, "FEEDING", "WORK", "DONE", LocalDate.of(2026, 10, 19),
+                LocalTime.of(7, 0), LocalDateTime.of(2026, 10, 19, 9, 0), "早餐饲喂");
+        doneEarly.setCompletedAt(LocalDateTime.of(2026, 10, 19, 7, 12));
+        Todo ignored = todo(14L, "INSPECTION", "WORK", "IGNORED", LocalDate.of(2026, 10, 19),
+                null, null, "巡检");
+        ignored.setIgnoredAt(LocalDateTime.of(2026, 10, 19, 8, 0));
+        Todo doneLate = todo(15L, "DISINFECTION", "WORK", "DONE", LocalDate.of(2026, 10, 19),
+                null, null, "消毒 2");
+        doneLate.setCompletedAt(LocalDateTime.of(2026, 10, 19, 9, 0));
+        Todo otherDay = todo(16L, "FEEDING", "WORK", "PENDING", LocalDate.of(2026, 10, 20),
+                LocalTime.of(7, 0), null, "明天");
+        return List.of(doneEarly, pendingTimed, ignored, pendingAllDay, doneLate, otherDay);
+    }
+
+    private TodoDateQuery dayQuery(String status) {
+        TodoDateQuery query = new TodoDateQuery();
+        query.setDate(LocalDate.of(2026, 10, 19));
+        query.setStatus(status);
+        return query;
+    }
+
+    @Test
+    void dayAllPutsUnfinishedFirstThenClosedByTimeDescWithFixedTabCounts() {
+        when(todoMapper.selectList(any())).thenReturn(dayTodos());
+
+        var page = service.day(dayQuery(null), 10001L);
+
+        assertThat(page.getList()).extracting(TodoItemVO::getTodoId).containsExactly(12L, 11L, 15L, 14L, 13L);
+        assertThat(page.getTotal()).isEqualTo(5);
+        assertThat(page.getTabCounts()).containsExactly(Map.entry("UNFINISHED", 2), Map.entry("CLOSED", 3));
+    }
+
+    @Test
+    void dayStatusFiltersKeepSameTabCounts() {
+        when(todoMapper.selectList(any())).thenReturn(dayTodos());
+
+        var unfinished = service.day(dayQuery("UNFINISHED"), 10001L);
+        var pending = service.day(dayQuery("pending"), 10001L);
+        var closed = service.day(dayQuery("CLOSED"), 10001L);
+
+        assertThat(unfinished.getList()).extracting(TodoItemVO::getTodoId).containsExactly(12L, 11L);
+        assertThat(pending.getList()).extracting(TodoItemVO::getTodoId).containsExactly(12L, 11L);
+        assertThat(closed.getList()).extracting(TodoItemVO::getTodoId).containsExactly(15L, 14L, 13L);
+        assertThat(closed.getTotal()).isEqualTo(3);
+        assertThat(closed.getTabCounts()).containsEntry("UNFINISHED", 2).containsEntry("CLOSED", 3);
+        assertThatThrownBy(() -> service.day(dayQuery("DONE"), 10001L)).isInstanceOf(BizException.class);
+    }
+
+    @Test
+    void weeklyItemsPutUnfinishedFirstAndKeepCounts() {
+        when(todoMapper.selectList(any())).thenReturn(dayTodos());
+        TodoWeeklyQuery query = new TodoWeeklyQuery();
+        query.setWeekStart(LocalDate.of(2026, 10, 19));
+        query.setPerDay(5);
+
+        TodoWeeklyResult result = service.weekly(query, 10001L);
+
+        assertThat(result.getDays().get(0).getItems()).extracting(TodoItemVO::getTodoId)
+                .containsExactly(12L, 11L, 15L, 14L, 13L);
+        assertThat(result.getDays().get(0).getClosedCount()).isEqualTo(3);
+        assertThat(result.getDays().get(0).getPendingCount() + result.getDays().get(0).getOverdueCount())
+                .isEqualTo(2);
     }
 
     private static Todo todo(long id, String type, String category, String status, LocalDate dueDate,

@@ -40,9 +40,12 @@ public class SelfBredBatchServiceImpl implements SelfBredBatchService {
     @Transactional
     public CreatedBatch create(Long penId, Long breedId, int quantity, LocalDate date,
                                boolean capacityConfirmed, String sourceType, Long sourceId) {
-        if (sourceId == null || sourceType == null || !java.util.Set.of("FARROWING", "HATCH").contains(sourceType)) {
+        // 来源记录类型与 t_batch.source_record_type 一致：FARROWING 产仔 / INCUBATION 出雏（HATCH 为旧写法）
+        if (sourceId == null || sourceType == null
+                || !java.util.Set.of("FARROWING", "INCUBATION", "HATCH").contains(sourceType)) {
             throw new BizException(ErrorCode.PARAM_INVALID, "自繁批次来源不正确");
         }
+        String recordType = "HATCH".equals(sourceType) ? "INCUBATION" : sourceType;
         BatchCreateRequest request = new BatchCreateRequest();
         request.setPenId(penId);
         request.setBreedId(breedId);
@@ -52,10 +55,10 @@ public class SelfBredBatchServiceImpl implements SelfBredBatchService {
         request.setEntryAgeDays(0);
         request.setEntryCount(quantity);
         request.setCapacityConfirmed(capacityConfirmed);
-        var result = batchService.getObject().create(request, "self-bred:" + sourceType + ":" + sourceId);
+        var result = batchService.getObject().create(request, "self-bred:" + recordType + ":" + sourceId);
         if (batchMapper.update(null, Wrappers.<Batch>lambdaUpdate()
                 .eq(Batch::getId, result.getBatchId())
-                .set(Batch::getSourceRecordType, sourceType)
+                .set(Batch::getSourceRecordType, recordType)
                 .set(Batch::getSourceRecordId, sourceId)) == 0) {
             throw new BizException(ErrorCode.VERSION_CONFLICT);
         }

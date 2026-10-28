@@ -242,6 +242,7 @@ public class BreedingDashboardServiceImpl implements BreedingDashboardService {
         Map<Long, PenInfo> pens = support.pens(animals.stream().map(BreedingAnimal::getPenId)
                 .filter(Objects::nonNull).distinct().toList());
         LocalDate today = BreedingDates.today();
+        Map<Long, List<String>> staffNames = support.penStaffNames();
         List<DueRow<FarrowDueItemVO>> rows = new ArrayList<>();
         for (BreedingAnimal animal : animals) {
             if (penScope != null && !penScope.contains(animal.getPenId())) {
@@ -265,8 +266,7 @@ public class BreedingDashboardServiceImpl implements BreedingDashboardService {
             vo.setRemindDueSentAt(BeijingTime.format(cycle.getRemindDueSentAt()));
             vo.setReminderText(BreedingDates.reminderText(remindBefore, cycle.getExpectedDueDate(),
                     cycle.getRemindBeforeSentAt() != null, cycle.getRemindDueSentAt() != null, days));
-            // TODO 模块02 提供“栏舍负责员工姓名”查询后接入 t_member_pen；本批返回空列表。
-            vo.setStaffNames(List.of());
+            vo.setStaffNames(staffNames.getOrDefault(animal.getPenId(), List.of()));
             vo.setCanRegister(farmerView && days <= 0);
             vo.setAnimalId(animal.getId());
             vo.setEarTag(animal.getEarTag());
@@ -303,6 +303,7 @@ public class BreedingDashboardServiceImpl implements BreedingDashboardService {
         Map<Long, PenInfo> pens = support.pens(incubations.stream().map(Incubation::getPenId)
                 .filter(Objects::nonNull).distinct().toList());
         LocalDate today = BreedingDates.today();
+        Map<Long, List<String>> staffNames = support.penStaffNames();
         List<DueRow<HatchDueItemVO>> rows = new ArrayList<>();
         for (Incubation incubation : incubations) {
             if (penScope != null && !penScope.contains(incubation.getPenId())) {
@@ -332,8 +333,7 @@ public class BreedingDashboardServiceImpl implements BreedingDashboardService {
             vo.setRemindDueSentAt(BeijingTime.format(incubation.getRemindDueSentAt()));
             vo.setReminderText(BreedingDates.reminderText(remindBefore, incubation.getExpectedHatchDate(),
                     incubation.getRemindBeforeSentAt() != null, incubation.getRemindDueSentAt() != null, days));
-            // TODO 模块02 提供栏舍负责员工查询后接入。
-            vo.setStaffNames(List.of());
+            vo.setStaffNames(staffNames.getOrDefault(incubation.getPenId(), List.of()));
             vo.setCanRegister(farmerView && days <= 0);
             vo.setIncubationId(incubation.getId());
             vo.setBreedingBatchId(incubation.getBreedingBatchId() == null ? 0 : incubation.getBreedingBatchId());

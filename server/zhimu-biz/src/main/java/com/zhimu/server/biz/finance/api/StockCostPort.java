@@ -3,7 +3,8 @@ package com.zhimu.server.biz.finance.api;
 import java.math.BigDecimal;
 
 /**
- * 批次成本（模块09 后续实现；本模块先 no-op 返回 0）。
+ * 批次成本（模块09 由 {@link com.zhimu.server.biz.finance.support.StockCostAdapter} 实现；
+ * 只有 {@link FinancePortConfig} 的兜底 Bean 时返回 0）。
  * 饲料、兽药疫苗取 t_batch_material_cost；死淘成本暂未进入核算口径，保留字段供后续扩展。
  */
 public interface StockCostPort {

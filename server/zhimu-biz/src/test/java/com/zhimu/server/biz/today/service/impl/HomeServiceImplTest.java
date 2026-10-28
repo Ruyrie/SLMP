@@ -231,6 +231,41 @@ class HomeServiceImplTest {
                 LocalDateTime.of(2026, 10, 16, 0, 0), new BigDecimal("68448.00"), "ZM2605-018 收款已逾期");
     }
 
+    @Test
+    void abnormalReportWarningsCountAndOwnerHasPenFollowsRealPenCount() {
+        Todo abnormal = todo("ABNORMAL_REPORT", "WARNING", LocalDate.of(2026, 10, 18), null,
+                null, null, "3 号育肥舍 · AI 诊断待处理");
+        Todo closedAbnormal = todo("ABNORMAL_REPORT", "WARNING", LocalDate.of(2026, 10, 17), null,
+                null, null, "2 号保育舍 · AI 诊断待处理");
+        closedAbnormal.setStatus("DONE");
+        when(todoMapper.selectList(any())).thenReturn(List.of(warning(), abnormal, closedAbnormal, receivable()));
+        com.zhimu.server.biz.today.api.HomeMetricProvider noPens =
+                new com.zhimu.server.biz.today.api.HomeMetricProvider() {
+                    @Override
+                    public String moduleName() {
+                        return "herd";
+                    }
+
+                    @Override
+                    public Integer penCount(Long farmId) {
+                        return 0;
+                    }
+                };
+        HomeServiceImpl withProvider = new HomeServiceImpl(farmQueryService, accountQueryService, todoMapper,
+                org.mockito.Mockito.mock(com.zhimu.server.biz.stock.support.StockWarningReconciler.class),
+                messageMapper, todoScope, todoLinks, List.of(noPens),
+                org.mockito.Mockito.mock(com.zhimu.server.biz.feeding.api.FeedTaskReconciliationService.class));
+
+        HomeVO home = withProvider.getHome(10001L);
+
+        assertThat(home.getHasPen()).isFalse();
+        // 预警数 = 未处理的库存预警 + 未处理的异常上报（与 T09 filter=WARNING 同口径）
+        assertThat(home.getOwnerMetrics().getWarningCount()).isEqualTo(2);
+        assertThat(home.getOwnerMetrics().getWarningNames())
+                .containsExactly("育肥全价料库存不足", "3 号育肥舍 · AI 诊断待处理");
+        assertThat(home.getOwnerMetrics().getReceivableOverdueCount()).isEqualTo(1);
+    }
+
     private static Todo warning() {
         return todo("FEED_LOW_STOCK", "WARNING", LocalDate.of(2026, 10, 19), null,
                 null, null, "育肥全价料库存不足");

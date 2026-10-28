@@ -120,7 +120,8 @@ class SaleOrderCreateLocalIT {
         return new SaleOrderServiceImpl(orders, mock(SaleReceiptMapper.class), mock(FinanceRecordMapper.class),
                 mock(FinanceCategoryMapper.class), mock(BatchSettlementMapper.class), mock(BatchSettlementSupplementMapper.class),
                 mock(SaleAdviceMapper.class), port, mock(BatchQueryService.class), prices,
-                mock(AccountQueryService.class), support, mock(TodoSourceWriteService.class), mock(com.zhimu.server.biz.finance.service.BatchSettlementService.class));
+                mock(AccountQueryService.class), support, mock(TodoSourceWriteService.class), mock(com.zhimu.server.biz.finance.service.BatchSettlementService.class),
+                mock(com.zhimu.server.biz.finance.support.ReceivableTodos.class));
     }
 
     @Test void createsAcrossFarmsAndRetriesConcurrentUniqueNumbersInRealTransactions() throws Exception {

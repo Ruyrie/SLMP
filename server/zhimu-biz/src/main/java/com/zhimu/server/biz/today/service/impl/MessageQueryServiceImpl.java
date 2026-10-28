@@ -380,6 +380,11 @@ public class MessageQueryServiceImpl implements MessageQueryService {
             if (batchId != null) {
                 params.put("batch_id", batchId);
             }
+            // 免疫记录通知场长：D03 按 record_id 打开接种记录
+            String recordId = TodayJson.str(extra, "record_id");
+            if (recordId != null) {
+                params.put("record_id", recordId);
+            }
         } else if (type == MsgType.MEMBER_ROLE_CHANGED || type == MsgType.FARM_ENABLED
                 || type == MsgType.FARM_UNFROZEN) {
             params.put("farm_id", String.valueOf(message.getFarmId()));

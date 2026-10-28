@@ -288,6 +288,7 @@ public class TodoConvert {
             case "HATCHING" -> "登记出雏记录";
             case "WITHDRAWAL_END" -> "登记出栏记录";
             case "RECEIVABLE" -> "登记收款记录";
+            case "ABNORMAL_REPORT" -> "登记处理结果";
             default -> "登记记录";
         };
     }

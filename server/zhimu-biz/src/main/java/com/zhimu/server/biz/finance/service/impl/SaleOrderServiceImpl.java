@@ -26,6 +26,7 @@ import com.zhimu.server.biz.finance.service.BatchSettlementService;
 import com.zhimu.server.biz.finance.support.FinanceConst;
 import com.zhimu.server.biz.finance.support.FinanceErrors;
 import com.zhimu.server.biz.finance.support.FinanceSupport;
+import com.zhimu.server.biz.finance.support.ReceivableTodos;
 import com.zhimu.server.biz.finance.vo.SaleOrderVos;
 import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.herd.api.BatchQueryService;
@@ -80,6 +81,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     private final FinanceSupport support;
     private final TodoSourceWriteService todoWriter;
     private final BatchSettlementService batchSettlementService;
+    private final ReceivableTodos receivableTodos;
 
     // ===== E14 可出栏批次 =====
 
@@ -252,6 +254,8 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             orderMapper.updateById(order);
         }
         batchSettlementService.recalculateForSale(farmId, batch.batchId());
+        // 赊账 / 未收款：写入待收款待办（首页待收款与 T 列表“待收款”）
+        receivableTodos.sync(order);
         return createdVO(order, remainingCount);
     }
 
@@ -472,6 +476,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             batchSalePort.adjustSale(farmId, batch.batchId(), saleDate, delta, order.getId());
         }
         batchSettlementService.recalculateForSale(farmId, order.getBatchId());
+        receivableTodos.sync(order);
         return detailOf(order);
     }
 
@@ -508,6 +513,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         batchSalePort.restoreSale(farmId, order.getBatchId(), order.getSaleDate(),
                 quantityMap(allocationsOf(order)), order.getId());
         batchSettlementService.recalculateForSale(farmId, order.getBatchId());
+        receivableTodos.sync(order);
         return detailOf(order);
     }
 
@@ -617,6 +623,9 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         if (newUnpaid.signum() == 0) {
             todoWriter.completeFromSource(farmId, "RECEIVABLE", "SALE_ORDER:" + order.getId(),
                     FinanceConst.SOURCE_SALE, receipt.getId(), userId);
+        } else {
+            // 部分收款：刷新待收款待办的未收金额
+            receivableTodos.sync(order);
         }
         SaleOrderVos.DetailVO vo = detailOf(order);
         SaleOrderVos.ReceiptResult result = new SaleOrderVos.ReceiptResult();

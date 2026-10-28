@@ -5,8 +5,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * 饲料库存端口（模块06 使用，模块09 落地后由 {@code StockFeedStockAdapter} 转调
- * {@link com.zhimu.server.biz.stock.api.FeedStockPort}；模块09 未合并时由本模块的 no-op 实现兜底）。
+ * 饲料库存端口（模块06 使用，由 {@code StockFeedStockAdapter} 转调模块09 的
+ * {@link com.zhimu.server.biz.stock.api.FeedStockPort}）。
  * 模块06 只在投喂记录保存 / 修改 / 作废时调用扣减与回滚，不直接写 t_feed / t_stock_flow。
  */
 public interface FeedStockPort {

@@ -153,6 +153,7 @@ public final class TodayText {
             case "DRUG_NEAR_EXPIRY", "DRUG_EXPIRED" -> "药品批号";
             case "WITHDRAWAL_END" -> "用药与休药期管理";
             case "RECEIVABLE" -> "出栏与收款";
+            case "ABNORMAL_REPORT" -> "异常上报与 AI 诊断";
             default -> "待办";
         };
     }
@@ -174,6 +175,7 @@ public final class TodayText {
             case "DRUG_NEAR_EXPIRY", "DRUG_EXPIRED" -> "批号结存清零或报废后自动完成";
             case "WITHDRAWAL_END" -> "登记出栏后自动完成";
             case "RECEIVABLE" -> "收款合计等于销售金额后自动完成";
+            case "ABNORMAL_REPORT" -> "登记处理结果后自动完成";
             default -> "登记对应记录后自动完成";
         };
     }

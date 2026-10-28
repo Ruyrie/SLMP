@@ -16,8 +16,12 @@ import com.zhimu.server.biz.health.service.ImmuneRecordService;
 import com.zhimu.server.biz.health.support.HealthAudit;
 import com.zhimu.server.biz.health.support.HealthCodes;
 import com.zhimu.server.biz.health.support.HealthFormat;
+import com.zhimu.server.biz.health.support.HealthManagerNotifier;
 import com.zhimu.server.biz.health.support.HealthSupport;
+import com.zhimu.server.biz.health.request.NotifyManagerRequest;
 import com.zhimu.server.biz.health.vo.ImmuneRecordVO;
+import com.zhimu.server.biz.health.vo.NotifyResultVO;
+import com.zhimu.server.common.enums.BizType;
 import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.stock.api.DrugLotOption;
 import com.zhimu.server.biz.stock.api.DrugStockCommand;
@@ -54,6 +58,7 @@ public class ImmuneRecordServiceImpl implements ImmuneRecordService {
     private final DrugStockPort drugStockPort;
     private final DrugCatalogQueryService drugCatalogQueryService;
     private final HealthTodoSource todoSource;
+    private final HealthManagerNotifier managerNotifier;
 
     // ===== API-D14 登记接种 =====
 
@@ -324,6 +329,33 @@ public class ImmuneRecordServiceImpl implements ImmuneRecordService {
         return key == null || key.isBlank() ? "AUTO-" + UUID.randomUUID() : key;
     }
 
+    // ===== 员工通知场长（与 API-D27 同结构） =====
+
+    @Override
+    public NotifyResultVO notifyManager(Long recordId, NotifyManagerRequest request) {
+        ImmuneRecord record = requireRecord(recordId, ErrorCode.NOT_FOUND);
+        checkAccess(record);
+        String action = request == null || request.getAction() == null ? "UPDATE" : request.getAction();
+        String batchNo = support.batchNo(record.getBatchId());
+        String summary = (batchNo == null ? "" : batchNo + " · ")
+                + (record.getVaccineName() == null ? "" : record.getVaccineName() + " · ")
+                + (record.getVaccinateDate() == null ? "" : record.getVaccinateDate().getMonthValue() + "月"
+                + record.getVaccinateDate().getDayOfMonth() + "日接种");
+        Map<String, Object> extras = new java.util.LinkedHashMap<>();
+        extras.put("action", action);
+        extras.put("record_id", record.getId());
+        if (record.getBatchId() != null) {
+            extras.put("batch_id", record.getBatchId());
+        }
+        return managerNotifier.notify(new HealthManagerNotifier.Notice("IMMUNE", recordId, record.getCreatedBy(),
+                record.getExecutorId(), "免疫记录", summary, BizType.IMMUNE_RECORD, "D03", extras));
+    }
+
+    private boolean mine(ImmuneRecord record) {
+        Long userId = UserContext.userId();
+        return userId != null && (userId.equals(record.getCreatedBy()) || userId.equals(record.getExecutorId()));
+    }
+
     private ImmuneRecord requireRecord(Long recordId, ErrorCode code) {
         ImmuneRecord record = recordId == null ? null : recordMapper.selectById(recordId);
         if (record == null) {
@@ -399,7 +431,8 @@ public class ImmuneRecordServiceImpl implements ImmuneRecordService {
             actions.add(HealthCodes.ACTION_EDIT);
         } else if (support.managerView()) {
             actions.add(HealthCodes.ACTION_CHANGE_REQUEST);
-        } else {
+        } else if (mine(record)) {
+            // 员工只能就本人登记 / 执行的记录通知场长（API-D27 同口径，接口见 notifyManager）
             actions.add(HealthCodes.ACTION_NOTIFY);
         }
         actions.add(HealthCodes.ACTION_VIEW_LOG);

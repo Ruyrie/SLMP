@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 出栏扣减/回滚批次存栏与栏舍存栏（模块04 后续实现；本模块先提供 no-op，由 ObjectProvider 兜底）。
- * 模块04 实现后，SaleOrderService 在创建/修改/作废出栏单时调用；no-op 时本模块只维护出栏单自身数据。
+ * 出栏扣减/回滚批次存栏与栏舍存栏：由 {@link com.zhimu.server.biz.finance.support.BatchSaleAdapter} 转调模块04 实现，
+ * SaleOrderService 在创建/修改/作废出栏单时调用；{@link FinancePortConfig} 的 no-op 只在模块04 缺失时兜底。
  */
 public interface BatchSalePort {
 
-    /** 批次各栏舍当前在栏数（用于多栏舍选择）；无实现时返回空列表，调用方用批次存栏兜底 */
+    /** 批次各栏舍当前在栏数（t_batch_pen，用于多栏舍选择与校验）；返回空列表时调用方用批次存栏兜底 */
     List<PenStock> penStocks(Long batchId);
 
     /**

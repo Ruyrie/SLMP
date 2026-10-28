@@ -9,7 +9,6 @@ import com.zhimu.server.biz.stock.mapper.FeedMapper;
 import com.zhimu.server.common.error.BizException;
 import com.zhimu.server.common.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -25,12 +24,9 @@ import java.util.List;
  * 找到有效流水后冲回；两者都是默认事务传播，与投喂记录的保存 / 修改 / 作废同事务，
  * 记录保存失败时扣减一并回滚。结存不足时模块09 抛 42201，这里换算成
  * {@link DeductResult#insufficient}，由模块06 给出与 App 一致的库存不足提示。
- * <p>
- * 模块09 未合并时本类不加载（{@code @ConditionalOnClass}），由 {@link NoopFeedStockPort} 兜底。
  */
 @Service
 @Primary
-@ConditionalOnClass(name = "com.zhimu.server.biz.stock.api.FeedStockPort")
 @RequiredArgsConstructor
 public class StockFeedStockAdapter implements FeedStockPort {
 

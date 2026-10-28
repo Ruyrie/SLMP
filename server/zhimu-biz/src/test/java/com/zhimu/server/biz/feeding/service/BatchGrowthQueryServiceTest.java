@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
 
 class BatchGrowthQueryServiceTest {
     private final BatchGrowthMapper mapper = mock(BatchGrowthMapper.class);
-    private final BatchGrowthQueryServiceImpl service = new BatchGrowthQueryServiceImpl(mapper);
+    private final BatchGrowthQueryServiceImpl service = new BatchGrowthQueryServiceImpl(mapper, null, null);
 
     @Test
     void latestWeightQueryAlwaysRestrictsFarmBatchAndValidMeasurement() {

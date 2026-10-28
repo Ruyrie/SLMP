@@ -45,6 +45,7 @@ public class KnowledgeViewServiceImpl implements KnowledgeViewService {
     private final AiCitationMapper citationMapper;
     private final com.zhimu.server.biz.ai.mapper.CourseMapper courseMapper;
     private final CourseCoverResolver covers;
+    private final com.zhimu.server.biz.ai.support.AiShareLinks shareLinks;
 
     @Override
     public KnowledgeDetailVO detail(Long userId, Long knowledgeId, Long citationId) {
@@ -63,7 +64,8 @@ public class KnowledgeViewServiceImpl implements KnowledgeViewService {
         vo.setSourceTypeText(AiText.sourceTypeText(knowledge.getSourceType()));
         vo.setVersionNo(knowledge.getVersionNo() == null ? 0 : knowledge.getVersionNo());
         vo.setUpdatedAt(BeijingTime.format(knowledge.getUpdatedAt()));
-        vo.setShareUrl(knowledge.getShareUrl());
+        // 库里的 share_url 为空或是示例域名，统一按部署的 Web 用户端地址生成
+        vo.setShareUrl(shareLinks.knowledge(knowledge.getId()));
         List<AiKnowledgeParagraph> paragraphs = paragraphMapper.selectByKnowledgeId(knowledgeId);
         vo.setEmbeddedVideo(embeddedVideo(knowledge, paragraphs));
         vo.setBlocks(blocks(paragraphs));
