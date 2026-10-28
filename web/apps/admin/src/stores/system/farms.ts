@@ -35,7 +35,6 @@ export const useAdminFarmsStore = defineStore('adminFarms', {
     target: null as AdminFarmItem | null,
     reason: '',
     reasonError: '',
-    smsOwner: false,
     submitting: false,
     exporting: false
   }),
@@ -150,7 +149,6 @@ export const useAdminFarmsStore = defineStore('adminFarms', {
       this.action = action
       this.reason = ''
       this.reasonError = ''
-      this.smsOwner = false
       this.drawer = false
       this.confirmOpen = true
     },
@@ -165,8 +163,7 @@ export const useAdminFarmsStore = defineStore('adminFarms', {
       try {
         const result = await setFarmFrozen(target.farm_id, this.action, {
           reason: this.reason.trim(),
-          version: target.version,
-          ...(this.action === 'freeze' ? { sms_owner: this.smsOwner } : {})
+          version: target.version
         })
         if (this.action === 'freeze') {
           const memberCount =

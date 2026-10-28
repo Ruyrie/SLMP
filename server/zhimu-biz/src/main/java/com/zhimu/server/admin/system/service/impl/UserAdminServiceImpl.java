@@ -26,8 +26,16 @@ import com.zhimu.server.common.error.BizException;
 import com.zhimu.server.common.error.ErrorCode;
 import com.zhimu.server.common.util.BeijingTime;
 import com.zhimu.server.common.util.Masks;
+import com.zhimu.server.biz.today.api.MessageCommand;
+import com.zhimu.server.biz.today.api.MessageService;
+import com.zhimu.server.common.enums.BizType;
+import com.zhimu.server.common.enums.MsgLevel;
+import com.zhimu.server.common.enums.MsgType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -39,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 /** ADM-S10–S14：账号查询与导出；停用/启用在写操作前校验文案，再调用模块01 的 AccountAdminService。 */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserAdminServiceImpl implements UserAdminService {
@@ -52,6 +61,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     private final ExportService exportService;
     private final OperationLogService operationLogService;
     private final AvatarService avatarService;
+    private final ObjectProvider<MessageService> messageServiceProvider;
 
     @Override
     public PageVO<AdminUserItemVO> list(AdminUserQuery query) {
@@ -114,15 +124,41 @@ public class UserAdminServiceImpl implements UserAdminService {
     }
 
     @Override
+    @Transactional
     public String disable(Long userId, UserStatusRequest request) {
         String reason = AuditSupport.requireReason(request.getReason(), "请填写停用原因");
         User user = userId == null ? null : queryMapper.selectUser(userId);
         if (user == null || "CANCELLED".equals(user.getStatus())) {
             throw new BizException(ErrorCode.NOT_FOUND, MSG_NOT_FOUND);
         }
-        accountAdminService.disable(userId, AdminContext.requireAdminId(), reason,
-                request.getNotifySms() == null || request.getNotifySms(), request.getVersion());
+        boolean notify = request.shouldNotify();
+        // 消息服务只给状态正常的账号写消息，所以在同一事务里先写消息再停用；停用失败时消息一起回滚
+        if (notify && "NORMAL".equals(user.getStatus())
+                && java.util.Objects.equals(user.getVersion(), request.getVersion())) {
+            notifyDisabled(user.getId(), reason);
+        }
+        accountAdminService.disable(userId, AdminContext.requireAdminId(), reason, notify, request.getVersion());
         return user.getName();
+    }
+
+    /** 停用原因写入本人的消息中心（平台没有通知类短信模板，不发短信）；重新启用后可在消息中心看到。 */
+    private void notifyDisabled(Long userId, String reason) {
+        MessageService service = messageServiceProvider == null ? null : messageServiceProvider.getIfAvailable();
+        if (service == null) {
+            log.warn("没有可用的消息服务，停用通知未写入 userId={}", userId);
+            return;
+        }
+        String content = "你的智牧通账号已被平台停用，原因：" + reason + "。如有疑问，请拨打客服电话 400-123-4567。";
+        service.send(MessageCommand.builder()
+                .msgType(MsgType.STAFF_NOTIFY)
+                .level(MsgLevel.IMPORTANT)
+                .receiverUserId(userId)
+                .title("账号已被平台停用")
+                .summary(content)
+                .content(content)
+                .bizType(BizType.USER)
+                .bizId(userId)
+                .build());
     }
 
     @Override

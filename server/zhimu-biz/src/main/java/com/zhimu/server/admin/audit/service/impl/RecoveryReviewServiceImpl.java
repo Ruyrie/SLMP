@@ -16,7 +16,7 @@ import com.zhimu.server.admin.audit.vo.ProxyRecoveryVO;
 import com.zhimu.server.admin.audit.vo.RecoveryDetailVO;
 import com.zhimu.server.admin.audit.vo.RecoveryItemVO;
 import com.zhimu.server.admin.audit.vo.RecoveryVerificationRecordsVO;
-import com.zhimu.server.admin.audit.vo.SmsResendVO;
+import com.zhimu.server.admin.audit.vo.RecoveryTempPasswordVO;
 import com.zhimu.server.biz.account.api.AccountRecoveryAdminService;
 import com.zhimu.server.biz.account.entity.AccountRecovery;
 import com.zhimu.server.biz.account.entity.User;
@@ -44,7 +44,8 @@ import java.util.Map;
 public class RecoveryReviewServiceImpl implements RecoveryReviewService {
 
     private static final String MSG_NOT_FOUND = "这条找回申请不存在，列表已刷新";
-    private static final String DEFAULT_SMS_WARNING = "临时密码短信发送失败，系统会自动重试；如长时间未收到，请联系管理员重新发送。";
+    private static final String LEGACY_PASSWORD_WARNING = "这条申请通过时临时密码没有交给用户（平台不发通知短信）。"
+            + "如用户仍无法登录，请点“重新生成临时密码”，并把新密码线下告知用户。";
 
     private final AuditAdminQueryMapper queryMapper;
     private final AccountRecoveryAdminService accountRecoveryAdminService;
@@ -145,8 +146,7 @@ public class RecoveryReviewServiceImpl implements RecoveryReviewService {
                         .status(recovery.getResultSmsStatus())
                         .statusText(AuditTexts.smsStatusText(recovery.getResultSmsStatus()))
                         .retryCount(recovery.getResultSmsRetryCount())
-                        .warning(SmsSendStatus.FAILED.name().equals(recovery.getResultSmsStatus())
-                                ? DEFAULT_SMS_WARNING : null)
+                        .warning(smsWarning(recovery))
                         .build())
                 .canRevealPhone(canRevealPhone())
                 .verifyLogs(verifyLogs(logs))
@@ -157,12 +157,14 @@ public class RecoveryReviewServiceImpl implements RecoveryReviewService {
     public AuditResultVO approve(Long id, RecoveryHandleRequest request) {
         String note = AuditSupport.requireReason(request.getHandleNote(), "请填写处理说明");
         Target target = target(id);
-        accountRecoveryAdminService.approve(id, AdminContext.requireAdminId(), request.getVerifyMethod(),
-                note, request.getVersion());
+        AccountRecoveryAdminService.ApproveResult result = accountRecoveryAdminService.approve(id,
+                AdminContext.requireAdminId(), request.getVerifyMethod(), note, request.getVersion());
         return AuditResultVO.builder()
                 .targetName(target.userName())
                 .notifiedNames(target.userName() == null ? List.of() : List.of(target.userName()))
                 .smsPhone(Masks.phone(target.recovery().getNewPhone()))
+                .tempPassword(result == null ? null : result.tempPassword())
+                .tempPasswordExpireAt(result == null ? null : result.tempPasswordExpireAt())
                 .build();
     }
 
@@ -180,17 +182,17 @@ public class RecoveryReviewServiceImpl implements RecoveryReviewService {
     }
 
     @Override
-    public SmsResendVO resendSms(Long id, SmsResendRequest request) {
-        AccountRecoveryAdminService.SmsResendResult result = accountRecoveryAdminService.resendResultSms(
+    public RecoveryTempPasswordVO regenerateTempPassword(Long id, SmsResendRequest request) {
+        Target target = target(id);
+        AccountRecoveryAdminService.TempPasswordResult result = accountRecoveryAdminService.regenerateTempPassword(
                 id, AdminContext.requireAdminId(), request == null ? null : request.getReason());
-        return SmsResendVO.builder()
+        return RecoveryTempPasswordVO.builder()
                 .id(result.id())
                 .phone(result.phone())
-                .smsStatus(result.smsStatus())
-                .smsStatusText(AuditTexts.smsStatusText(result.smsStatus()))
-                .retryCount(result.retryCount())
-                .queuedAt(result.queuedAt())
-                .note(result.note())
+                .userName(target.userName())
+                .tempPassword(result.tempPassword())
+                .tempPasswordExpireAt(result.tempPasswordExpireAt())
+                .regeneratedAt(result.regeneratedAt())
                 .build();
     }
 
@@ -246,6 +248,16 @@ public class RecoveryReviewServiceImpl implements RecoveryReviewService {
                 .statusText(AuditTexts.statusText(result.status()))
                 .submittedAt(result.submittedAt())
                 .build();
+    }
+
+    /** 已通过但从未把临时密码交给管理员的旧数据（PENDING / FAILED / 空），提示重新生成并线下告知。 */
+    private static String smsWarning(AccountRecovery recovery) {
+        if (!"APPROVED".equals(recovery.getStatus())) {
+            return null;
+        }
+        String status = recovery.getResultSmsStatus();
+        boolean delivered = "MANUAL".equals(status) || SmsSendStatus.SENT.name().equals(status);
+        return delivered ? null : LEGACY_PASSWORD_WARNING;
     }
 
     private AccountRecovery requireRecovery(Long id) {

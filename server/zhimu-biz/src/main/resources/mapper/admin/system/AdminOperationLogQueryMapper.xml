@@ -27,8 +27,11 @@
         <if test="filterAdminId != null">
             AND operator_id = #{filterAdminId}
         </if>
-        <if test="opType != null and opType != ''">
-            AND op_type = #{opType}
+        <if test="opTypes != null and opTypes.size() > 0">
+            AND op_type IN
+            <foreach collection="opTypes" item="filterOpType" open="(" separator="," close=")">
+                #{filterOpType}
+            </foreach>
         </if>
         <if test="keyword != null and keyword != ''">
             AND (target_name LIKE CONCAT('%', #{keyword}, '%')

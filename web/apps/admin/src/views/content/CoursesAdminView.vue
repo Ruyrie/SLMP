@@ -485,6 +485,55 @@ async function onVideoSelected(event: Event): Promise<void> {
   await uploadVideo(file)
 }
 
+/* 断点续传：同一个文件（名称 + 大小 + 修改时间）重试时带上次的 file_id，服务端返回已传分片，跳过它们 */
+const VIDEO_RESUME_KEY = 'zmt-admin:course-video-resume'
+
+function videoResumeKey(file: File): string {
+  return `${file.name}|${file.size}|${file.lastModified}`
+}
+
+function readVideoResume(): Record<string, number> {
+  try {
+    const raw = window.localStorage.getItem(VIDEO_RESUME_KEY)
+    const data = raw ? (JSON.parse(raw) as unknown) : null
+    return data && typeof data === 'object' ? (data as Record<string, number>) : {}
+  } catch {
+    return {}
+  }
+}
+
+function writeVideoResume(file: File, fileId: number | null): void {
+  try {
+    const data = readVideoResume()
+    if (fileId) data[videoResumeKey(file)] = fileId
+    else delete data[videoResumeKey(file)]
+    window.localStorage.setItem(VIDEO_RESUME_KEY, JSON.stringify(data))
+  } catch {
+    /* 浏览器禁用存储时只是不能续传 */
+  }
+}
+
+async function initVideoUpload(file: File) {
+  const payload = {
+    scene: 'COURSE_VIDEO',
+    original_name: file.name,
+    file_size: file.size,
+    mime_type: file.type || 'video/mp4'
+  }
+  const resumeId = readVideoResume()[videoResumeKey(file)]
+  if (resumeId) {
+    try {
+      return await initMultipartUpload({ ...payload, file_id: resumeId })
+    } catch {
+      // 上次的上传任务已失效（已完成、已过期或大小不一致），重新开始
+      writeVideoResume(file, null)
+    }
+  }
+  const init = await initMultipartUpload(payload)
+  writeVideoResume(file, init.file_id)
+  return init
+}
+
 async function uploadVideo(file: File): Promise<void> {
   const request = ++videoRequest
   const session = mediaSession
@@ -514,23 +563,27 @@ async function uploadVideo(file: File): Promise<void> {
   form.video_name = file.name
   form.video_size = file.size
   try {
-    const init = await initMultipartUpload({
-      scene: 'COURSE_VIDEO',
-      original_name: file.name,
-      file_size: file.size,
-      mime_type: file.type || 'video/mp4'
-    })
+    const init = await initVideoUpload(file)
     if (!current()) return
-    const parts: Array<{ part_no: number; etag: string }> = []
+    const done = new Map<number, string>()
+    for (const part of init.uploaded_parts || []) {
+      if (part && part.part_no && part.etag) done.set(part.part_no, part.etag)
+    }
+    if (done.size) videoStatus.value = `继续上次的上传，已跳过 ${done.size} 个分片`
+    videoProgress.value = Math.round((done.size / Math.max(1, init.part_count)) * 100)
     for (let index = 0; index < init.part_count; index += 1) {
+      const partNo = index + 1
+      if (done.has(partNo)) continue
       const start = index * init.part_size
       const chunk = file.slice(start, Math.min(start + init.part_size, file.size))
-      const part = await uploadMultipartPartProxy(init.file_id, index + 1, chunk)
+      const part = await uploadMultipartPartProxy(init.file_id, partNo, chunk)
       if (!current()) return
-      parts.push({ part_no: index + 1, etag: part.etag })
-      videoProgress.value = Math.round(((index + 1) / init.part_count) * 100)
+      done.set(partNo, part.etag)
+      videoProgress.value = Math.round((done.size / init.part_count) * 100)
     }
+    const parts = [...done.entries()].sort((a, b) => a[0] - b[0]).map(([part_no, etag]) => ({ part_no, etag }))
     const fileData = await completeMultipartUpload(init.file_id, parts)
+    writeVideoResume(file, null)
     if (!current()) return
     form.video_file_id = init.file_id
     form.video_duration = fileData.duration_sec || 0

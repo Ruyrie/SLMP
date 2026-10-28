@@ -8,7 +8,6 @@ import com.zhimu.server.admin.system.request.AdminUpdateRequest;
 import com.zhimu.server.admin.system.request.RolePermissionSaveRequest;
 import com.zhimu.server.admin.system.service.AdminAccountService;
 import com.zhimu.server.admin.system.service.AdminRoleService;
-import com.zhimu.server.admin.system.support.AdminDevSupport;
 import com.zhimu.server.admin.system.vo.AdminCreatedVO;
 import com.zhimu.server.admin.system.vo.AdminItemVO;
 import com.zhimu.server.admin.system.vo.PermissionSavedVO;
@@ -35,7 +34,8 @@ import java.util.List;
 
 /**
  * 管理员与权限（ADM-S20–S29）。除 S21 外均要求 WA-S05 权限点（超管专属）；
- * 新增与重置密码只在 dev profile 的响应里带 temp_password，生产不返回。
+ * 平台没有通知类短信模板：新增与重置密码在任何环境都把一次性 temp_password 返回给操作人，
+ * 页面只显示一次，由操作人线下告知对方。
  */
 @RestController
 @RequestMapping("/admin/v1")
@@ -44,7 +44,6 @@ public class AdminRbacController {
 
     private final AdminAccountService adminAccountService;
     private final AdminRoleService adminRoleService;
-    private final AdminDevSupport adminDevSupport;
 
     /** ADM-S20 管理员列表 */
     @AdminPermission("WA-S05:VIEW")
@@ -66,10 +65,10 @@ public class AdminRbacController {
     @PostMapping("/admins")
     public ApiResponse<AdminCreatedVO> create(@Valid @RequestBody AdminCreateRequest request) {
         AdminAccountService.AdminCreateResult result = adminAccountService.create(request);
-        AdminCreatedVO data = new AdminCreatedVO(result.adminId(),
-                adminDevSupport.exposeTempPassword() ? result.tempPassword() : null);
+        AdminCreatedVO data = new AdminCreatedVO(result.adminId(), result.tempPassword(),
+                result.tempPasswordExpireAt());
         return new ApiResponse<>(0,
-                "已创建" + result.name() + "的管理员账号，初始密码已发到 " + result.phone(), data);
+                "已创建" + result.name() + "的管理员账号，请把临时密码线下告知对方", data);
     }
 
     /** ADM-S23 编辑管理员：username 不可改；本人只能改姓名和手机号 */
@@ -88,10 +87,9 @@ public class AdminRbacController {
                                                      @RequestBody(required = false) AdminResetPasswordRequest request) {
         AdminAccountService.AdminResetResult result = adminAccountService.resetPassword(id,
                 request == null ? new AdminResetPasswordRequest(null) : request);
-        TempPasswordVO data = adminDevSupport.exposeTempPassword()
-                ? new TempPasswordVO(result.tempPassword()) : null;
+        TempPasswordVO data = new TempPasswordVO(result.tempPassword(), result.tempPasswordExpireAt());
         return new ApiResponse<>(0,
-                "已重置" + result.name() + "的密码，新密码已发到 " + result.phone(), data);
+                "已重置" + result.name() + "的密码，请把临时密码线下告知对方", data);
     }
 
     /** ADM-S25 停用管理员：不能停用自己，停用后至少保留 1 个正常超管 */

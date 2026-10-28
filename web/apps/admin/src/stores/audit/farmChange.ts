@@ -114,6 +114,10 @@ export const useFarmChangeStore = defineStore('farmChange', {
       this.total = 0
       void this.fetchList()
     },
+    search(): void {
+      this.page = 1
+      void this.fetchList()
+    },
     resetFilters(): void {
       this.query = { keyword: '', change_item: '' }
       this.page = 1

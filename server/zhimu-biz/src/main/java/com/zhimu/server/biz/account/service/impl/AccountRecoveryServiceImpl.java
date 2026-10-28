@@ -28,8 +28,13 @@ import com.zhimu.server.biz.account.support.LoginAttemptStore;
 import com.zhimu.server.biz.account.support.RecoveryAttemptRecorder;
 import com.zhimu.server.biz.account.support.Secrets;
 import com.zhimu.server.biz.account.vo.AccountRecoverySubmitVO;
+import com.zhimu.server.biz.today.api.MessageCommand;
+import com.zhimu.server.biz.today.api.MessageService;
 import com.zhimu.server.common.context.RequestContext;
+import com.zhimu.server.common.enums.BizType;
 import com.zhimu.server.common.enums.ClientType;
+import com.zhimu.server.common.enums.MsgLevel;
+import com.zhimu.server.common.enums.MsgType;
 import com.zhimu.server.common.error.BizException;
 import com.zhimu.server.common.error.ErrorCode;
 import com.zhimu.server.common.error.FieldErrorVO;
@@ -43,6 +48,7 @@ import com.zhimu.server.framework.tx.AfterCommit;
 import com.zhimu.server.integration.ipregion.IpRegionResolver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -63,6 +69,10 @@ public class AccountRecoveryServiceImpl implements AccountRecoveryService, Accou
 
     private static final String MSG_PENDING = "这个账号已有一条找回申请正在处理，请等待短信通知";
     private static final String MSG_SMS_FAILED = "验证码发送失败，请稍后重试";
+    /** 结果短信状态：通过后不发短信，临时密码由管理员线下告知 */
+    static final String RESULT_MANUAL = "MANUAL";
+    /** 结果短信状态：驳回不发短信，结果写入账号消息中心 */
+    static final String RESULT_NOT_SENT = "NOT_SENT";
 
     private final UserMapper userMapper;
     private final AccountRecoveryMapper accountRecoveryMapper;
@@ -78,6 +88,7 @@ public class AccountRecoveryServiceImpl implements AccountRecoveryService, Accou
     private final IpRegionResolver ipRegionResolver;
     private final ApplicationEventPublisher eventPublisher;
     private final AccountProperties properties;
+    private final ObjectProvider<MessageService> messageServiceProvider;
 
     @Override
     @Transactional
@@ -207,7 +218,8 @@ public class AccountRecoveryServiceImpl implements AccountRecoveryService, Accou
 
     @Override
     @Transactional
-    public void approve(Long recoveryId, Long adminId, String verifyMethod, String handleNote, int version) {
+    public AccountRecoveryAdminService.ApproveResult approve(Long recoveryId, Long adminId, String verifyMethod,
+                                                            String handleNote, int version) {
         AccountRecovery recovery = requirePending(recoveryId, version);
         User user = recovery.getUserId() == null ? null : userMapper.selectByIdForUpdate(recovery.getUserId());
         if (user == null) {
@@ -220,13 +232,14 @@ public class AccountRecoveryServiceImpl implements AccountRecoveryService, Accou
         }
         LocalDateTime now = BeijingTime.now();
         String tempPassword = Secrets.tempPassword();
+        LocalDateTime expireAt = now.plus(properties.getTempPasswordTtl());
         String oldPhone = user.getPhone();
         userMapper.update(null, Wrappers.<User>lambdaUpdate()
                 .eq(User::getId, user.getId())
                 .set(User::getPhone, recovery.getNewPhone())
                 .set(User::getPasswordHash, passwordEncoder.encode(tempPassword))
                 .set(User::getMustChangePassword, true)
-                .set(User::getTempPasswordExpireAt, now.plus(properties.getTempPasswordTtl()))
+                .set(User::getTempPasswordExpireAt, expireAt)
                 .set(User::getRecoveredAt, now)
                 .set(User::getRecoveryFailCount, 0)
                 .set(User::getRecoveryFailFirstAt, null)
@@ -234,7 +247,7 @@ public class AccountRecoveryServiceImpl implements AccountRecoveryService, Accou
                 .set(User::getUpdatedAt, now));
         user.setPhone(recovery.getNewPhone());
         user.setMustChangePassword(true);
-        user.setTempPasswordExpireAt(now.plus(properties.getTempPasswordTtl()));
+        user.setTempPasswordExpireAt(expireAt);
         user.setRecoveredAt(now);
         accountState.invalidateTokens(user, TokenRevokeReason.ACCOUNT_RECOVERED);
         accountState.revokeAllCodes(user.getId(), RecoveryCodeRevokeReason.ACCOUNT_RECOVERED);
@@ -246,7 +259,8 @@ public class AccountRecoveryServiceImpl implements AccountRecoveryService, Accou
         recovery.setHandledByType("ADMIN");
         recovery.setHandledBy(adminId);
         recovery.setHandledAt(now);
-        recovery.setResultSmsStatus("PENDING");
+        // 平台只有验证码短信模板，不发结果短信：临时密码交给管理员线下告知
+        recovery.setResultSmsStatus(RESULT_MANUAL);
         recovery.setResultSmsRetryCount(0);
         recovery.setResultSmsNextAt(null);
         recovery.setUpdatedAt(now);
@@ -270,7 +284,11 @@ public class AccountRecoveryServiceImpl implements AccountRecoveryService, Accou
             loginAttemptStore.clear(oldPhone);
             loginAttemptStore.clear(recovery.getNewPhone());
             eventPublisher.publishEvent(new UserPhoneChangedEvent(userId, oldPhone, recovery.getNewPhone()));
+            notifyResult(userId, recovery.getId(), "账号找回已通过",
+                    "登录手机号已换绑为 " + Masks.phone(recovery.getNewPhone())
+                            + "。请用管理员告知的临时密码登录，并尽快修改密码、保存新的恢复码。");
         });
+        return new AccountRecoveryAdminService.ApproveResult(tempPassword, expireAt);
     }
 
     @Override
@@ -288,7 +306,8 @@ public class AccountRecoveryServiceImpl implements AccountRecoveryService, Accou
         recovery.setHandledByType("ADMIN");
         recovery.setHandledBy(adminId);
         recovery.setHandledAt(now);
-        recovery.setResultSmsStatus("PENDING");
+        // 不发结果短信；驳回原因写入账号的消息中心
+        recovery.setResultSmsStatus(RESULT_NOT_SENT);
         recovery.setResultSmsRetryCount(0);
         recovery.setResultSmsNextAt(null);
         recovery.setUpdatedAt(now);
@@ -307,6 +326,10 @@ public class AccountRecoveryServiceImpl implements AccountRecoveryService, Accou
                 .before(Map.of("status", "PENDING"))
                 .after(Map.of("status", "REJECTED"))
                 .build());
+        Long userId = recovery.getUserId();
+        Long id = recovery.getId();
+        AfterCommit.run(() -> notifyResult(userId, id, "账号找回申请未通过",
+                "原因：" + handleNote.trim() + "。账号和原手机号保持不变，可以补充情况说明后重新申请。"));
     }
 
     @Override
@@ -317,46 +340,43 @@ public class AccountRecoveryServiceImpl implements AccountRecoveryService, Accou
 
     @Override
     @Transactional
-    public AccountRecoveryAdminService.SmsResendResult resendResultSms(Long recoveryId, Long adminId, String reason) {
+    public AccountRecoveryAdminService.TempPasswordResult regenerateTempPassword(Long recoveryId, Long adminId,
+                                                                               String reason) {
         AccountRecovery recovery = recoveryId == null ? null : accountRecoveryMapper.selectById(recoveryId);
         if (recovery == null) {
             throw new BizException(ErrorCode.NOT_FOUND, "这条找回申请不存在，列表已刷新");
         }
-        boolean approved = "APPROVED".equals(recovery.getStatus());
-        if (!approved && !"REJECTED".equals(recovery.getStatus())) {
-            throw new BizException(ErrorCode.STATE_CHANGED, "这条申请还未处理，不能重发短信");
+        if ("PENDING".equals(recovery.getStatus())) {
+            throw new BizException(ErrorCode.STATE_CHANGED, "这条申请还未处理，不能重新生成临时密码");
+        }
+        if (!"APPROVED".equals(recovery.getStatus())) {
+            throw new BizException(ErrorCode.STATE_NOT_ALLOWED, "已驳回的申请没有临时密码，不需要重新生成");
+        }
+        User user = recovery.getUserId() == null ? null : userMapper.selectByIdForUpdate(recovery.getUserId());
+        if (user == null || UserStatus.CANCELLED.name().equals(user.getStatus())) {
+            throw new BizException(ErrorCode.NOT_FOUND, "这个账号已注销，不能重新生成临时密码");
+        }
+        if (UserStatus.DISABLED.name().equals(user.getStatus())) {
+            throw new BizException(ErrorCode.STATE_NOT_ALLOWED, "这个账号已被平台停用，请先启用再重新生成临时密码");
         }
         LocalDateTime now = BeijingTime.now();
         String oldSmsStatus = recovery.getResultSmsStatus();
-        String note;
-        if (approved) {
-            User user = recovery.getUserId() == null ? null : userMapper.selectByIdForUpdate(recovery.getUserId());
-            if (user == null) {
-                throw new BizException(ErrorCode.NOT_FOUND);
-            }
-            String tempPassword = Secrets.tempPassword();
-            LocalDateTime expireAt = now.plus(properties.getTempPasswordTtl());
-            userMapper.update(null, Wrappers.<User>lambdaUpdate()
-                    .eq(User::getId, user.getId())
-                    .set(User::getPasswordHash, passwordEncoder.encode(tempPassword))
-                    .set(User::getMustChangePassword, true)
-                    .set(User::getTempPasswordExpireAt, expireAt)
-                    .set(User::getUpdatedAt, now));
-            user.setMustChangePassword(true);
-            user.setTempPasswordExpireAt(expireAt);
-            // 重新生成临时密码后旧会话立即失效；明文只交给后续短信任务，不返回、不写日志
-            accountState.invalidateTokens(user, TokenRevokeReason.ACCOUNT_RECOVERED);
-            note = "已重新生成临时密码，等待短信任务发送";
-        } else {
-            note = "已重新排队发送驳回结果短信";
-        }
-        recovery.setResultSmsStatus("PENDING");
-        recovery.setResultSmsRetryCount(0);
-        recovery.setResultSmsNextAt(null);
+        String tempPassword = Secrets.tempPassword();
+        LocalDateTime expireAt = now.plus(properties.getTempPasswordTtl());
+        userMapper.update(null, Wrappers.<User>lambdaUpdate()
+                .eq(User::getId, user.getId())
+                .set(User::getPasswordHash, passwordEncoder.encode(tempPassword))
+                .set(User::getMustChangePassword, true)
+                .set(User::getTempPasswordExpireAt, expireAt)
+                .set(User::getUpdatedAt, now));
+        user.setMustChangePassword(true);
+        user.setTempPasswordExpireAt(expireAt);
+        // 旧临时密码与会话立即失效；新明文只交给管理端页面一次性显示，不落库、不写日志
+        accountState.invalidateTokens(user, TokenRevokeReason.ACCOUNT_RECOVERED);
         int rows = accountRecoveryMapper.update(null, Wrappers.<AccountRecovery>lambdaUpdate()
                 .eq(AccountRecovery::getId, recovery.getId())
                 .eq(AccountRecovery::getVersion, recovery.getVersion())
-                .set(AccountRecovery::getResultSmsStatus, "PENDING")
+                .set(AccountRecovery::getResultSmsStatus, RESULT_MANUAL)
                 .set(AccountRecovery::getResultSmsRetryCount, 0)
                 .set(AccountRecovery::getResultSmsNextAt, null)
                 .set(AccountRecovery::getUpdatedAt, now)
@@ -364,21 +384,22 @@ public class AccountRecoveryServiceImpl implements AccountRecoveryService, Accou
         if (rows == 0) {
             throw new BizException(ErrorCode.VERSION_CONFLICT, "内容已更新，请刷新后再修改");
         }
+        recovery.setResultSmsStatus(RESULT_MANUAL);
         recovery.setVersion(recovery.getVersion() == null ? 1 : recovery.getVersion() + 1);
         operationLogRecorder.record(OperationLogEntry.builder()
                 .operatorType("ADMIN")
                 .operatorId(adminId)
                 .opType("ACCOUNT_RECOVERY")
-                .opAction("RESEND_SMS")
+                .opAction("REGENERATE_PASSWORD")
                 .bizType("ACCOUNT_RECOVERY")
                 .bizId(recovery.getId())
-                .targetName(Masks.phone(recovery.getNewPhone()))
-                .reason(reason == null || reason.isBlank() ? "短信发送失败后手动重发" : reason.trim())
+                .targetName(Masks.phone(user.getPhone()))
+                .reason(reason == null || reason.isBlank() ? "重新生成临时密码，线下告知用户" : reason.trim())
                 .before(Map.of("result_sms_status", oldSmsStatus == null ? "NONE" : oldSmsStatus))
-                .after(Map.of("result_sms_status", "PENDING"))
+                .after(Map.of("result_sms_status", RESULT_MANUAL))
                 .build());
-        return new AccountRecoveryAdminService.SmsResendResult(recovery.getId(),
-                Masks.phone(recovery.getNewPhone()), "PENDING", 0, now, note);
+        return new AccountRecoveryAdminService.TempPasswordResult(recovery.getId(), Masks.phone(user.getPhone()),
+                tempPassword, expireAt, now);
     }
 
     @Override
@@ -482,6 +503,28 @@ public class AccountRecoveryServiceImpl implements AccountRecoveryService, Accou
                 .build());
         return new AccountRecoveryAdminService.ProxyCreateResult(recovery.getId(), user.getId(), user.getName(),
                 Masks.phone(oldPhone), Masks.phone(newPhone), recovery.getStatus(), now);
+    }
+
+    /** 找回结果写入账号的消息中心（事务提交后调用；消息失败不影响审核结果）。 */
+    private void notifyResult(Long userId, Long recoveryId, String title, String content) {
+        MessageService service = messageServiceProvider == null ? null : messageServiceProvider.getIfAvailable();
+        if (service == null || userId == null) {
+            return;
+        }
+        try {
+            service.send(MessageCommand.builder()
+                    .msgType(MsgType.RECOVERY_RESULT)
+                    .level(MsgLevel.IMPORTANT)
+                    .receiverUserId(userId)
+                    .title(title)
+                    .summary(content)
+                    .content(content)
+                    .bizType(BizType.ACCOUNT_RECOVERY)
+                    .bizId(recoveryId)
+                    .build());
+        } catch (RuntimeException e) {
+            log.warn("找回结果站内消息发送失败 recoveryId={}", recoveryId, e);
+        }
     }
 
     private static BizException fieldError(String field, String message) {

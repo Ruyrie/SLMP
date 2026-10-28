@@ -21,6 +21,12 @@ function isConflict(error: ApiError): boolean {
 
 export const useRecoveryStore = defineStore('recovery', {
   state: () => ({
+    tempOpen: false,
+    tempTitle: '',
+    tempUserName: '',
+    tempPhone: '',
+    tempPassword: '',
+    tempExpireAt: '',
     tab: 'PENDING' as RecoveryTab,
     keyword: '',
     page: 1,
@@ -89,6 +95,10 @@ export const useRecoveryStore = defineStore('recovery', {
       this.page = 1
       this.list = []
       this.total = 0
+      void this.fetchList()
+    },
+    search(): void {
+      this.page = 1
       void this.fetchList()
     },
     resetFilters(): void {
@@ -162,12 +172,19 @@ export const useRecoveryStore = defineStore('recovery', {
       try {
         if (this.confirmAction === 'approve') {
           const result = await approveRecovery(this.detail.id, payload)
-          useUiStore().toast(
-            `已通过${result.target_name}的找回申请，临时密码已发到${result.sms_phone || this.detail.new_phone}`
+          this.showTempPassword(
+            `已通过${result.target_name || this.detail.user_name}的找回申请`,
+            result.target_name || this.detail.user_name,
+            result.sms_phone || this.detail.new_phone,
+            result.temp_password,
+            result.temp_password_expire_at
           )
+          if (!result.temp_password) {
+            useUiStore().toast('已通过，但没有拿到临时密码，请在详情中重新生成临时密码', 'error')
+          }
         } else {
           const result = await rejectRecovery(this.detail.id, payload)
-          useUiStore().toast(`已驳回，原因已以短信发到${result.sms_phone || this.detail.new_phone}`)
+          useUiStore().toast(`已驳回${result.target_name || ''}的找回申请，原因已发到账号的消息中心（不发短信）`)
         }
         this.confirmOpen = false
         await this.afterAction()
@@ -176,6 +193,20 @@ export const useRecoveryStore = defineStore('recovery', {
       } finally {
         this.submitting = false
       }
+    },
+    showTempPassword(title: string, userName: string, phone: string, password?: string, expireAt?: string): void {
+      if (!password) return
+      this.tempTitle = title
+      this.tempUserName = userName
+      this.tempPhone = phone
+      this.tempPassword = password
+      this.tempExpireAt = expireAt || ''
+      this.tempOpen = true
+    },
+    closeTempPassword(): void {
+      this.tempOpen = false
+      this.tempPassword = ''
+      this.tempExpireAt = ''
     },
     async afterAction(): Promise<void> {
       this.drawer = false

@@ -6,7 +6,7 @@ import { useAdminStore } from '@/stores/admin'
 import { useFarmAuditStore } from '@/stores/audit/farmAudit'
 import { useAuditPendingStore } from '@/stores/audit/pending'
 import { useUiStore } from '@/stores/ui'
-import { resendFarmAuditSms, type FarmAuditItem } from '@/api/audit'
+import { resendFarmAuditNotice, type FarmAuditItem } from '@/api/audit'
 import { fileSize, fmtDate, fmtDateTime, fmtFull, fmtShortDate, statusIcon, statusTone } from '@/views/audit/shared'
 import AuditImageViewer from '@/views/audit/components/AuditImageViewer.vue'
 import AuditImage from '@/views/audit/components/AuditImage.vue'
@@ -105,7 +105,7 @@ function openRow(row: FarmAuditItem): void {
   void store.openDetail(row)
 }
 
-/* ---------------- 重发审核结果短信 ---------------- */
+/* ---------------- 重发审核结果通知（站内消息） ---------------- */
 const resendOpen = ref(false)
 const resendSaving = ref(false)
 const resendTarget = ref<{ id: number; name: string; status: string; phone: string } | null>(null)
@@ -134,11 +134,15 @@ async function submitResend(): Promise<void> {
   if (!resendTarget.value || resendSaving.value) return
   resendSaving.value = true
   try {
-    const result = await resendFarmAuditSms(resendTarget.value.id)
+    const result = await resendFarmAuditNotice(resendTarget.value.id)
     resendOpen.value = false
-    ui.toast(`已重新发送审核结果通知到${result.phone}`)
+    if (result.notify_status === 'FAILED') {
+      ui.toast(result.note || '审核结果通知发送失败，请稍后重试', 'error')
+    } else {
+      ui.toast(result.note || `已把审核结果重新发到${result.receiver_name || '所有者'}的消息中心`)
+    }
   } catch (error) {
-    ui.toast(error instanceof Error ? error.message : '重发审核短信失败', 'error')
+    ui.toast(error instanceof Error ? error.message : '重发审核结果通知失败', 'error')
     if (error instanceof ApiError && error.code === 40308) {
       await admin.me().catch(() => undefined)
     }
@@ -184,13 +188,13 @@ const historyItems = computed(() =>
 function clearProvince(): void {
   store.query.province_code = ''
   regionName.value = ''
-  store.fetchList()
+  store.search()
 }
 
 function clearCategory(): void {
   store.query.category_id = null
   categoryName.value = ''
-  store.fetchList()
+  store.search()
 }
 
 function resetFilters(): void {
@@ -213,7 +217,7 @@ onMounted(() => {
   store.query.category_id = category > 0 ? category : null
   regionName.value = region
   categoryName.value = categoryLabel
-  void store.fetchList()
+  store.search()
   void pending.refresh()
   if (id) void store.openDetailById(id)
 })
@@ -243,13 +247,13 @@ onMounted(() => {
           placeholder="搜索养殖场名称、所有者姓名或手机号"
           prepend-inner-icon="search"
           maxlength="30"
-          @keydown.enter="store.fetchList()"
+          @keydown.enter="store.search()"
         />
         <v-select
           v-model="store.query.submit_type"
           :items="submitTypes"
           class="zw-w-140"
-          @update:model-value="store.fetchList()"
+          @update:model-value="store.search()"
         />
         <zw-tag v-if="store.query.province_code" type="primary" icon="location_on">
           {{ regionName || `省份 ${store.query.province_code}` }}
@@ -259,7 +263,7 @@ onMounted(() => {
           {{ categoryName || `品类 ${store.query.category_id}` }}
           <button class="chip-close" type="button" aria-label="清除品类筛选" @click="clearCategory"><zw-icon name="close" :size="14" /></button>
         </zw-tag>
-        <v-btn variant="text" color="primary" @click="store.fetchList()">查询</v-btn>
+        <v-btn variant="text" color="primary" @click="store.search()">查询</v-btn>
         <v-btn variant="text" @click="resetFilters">重置</v-btn>
       </div>
       <div class="zw-toolbar-r">
@@ -332,7 +336,7 @@ onMounted(() => {
             <div class="zw-cell-actions">
               <a v-if="store.tab === 'PENDING' && canHandle" @click="openRow(item as FarmAuditItem)">审核</a>
               <a v-else @click="openRow(item as FarmAuditItem)">详情</a>
-              <a v-if="canHandle && isProcessed(item.status)" @click="openRowResend(item as FarmAuditItem)">重发短信</a>
+              <a v-if="canHandle && isProcessed(item.status)" @click="openRowResend(item as FarmAuditItem)">重发通知</a>
             </div>
           </template>
         </v-data-table>
@@ -457,7 +461,7 @@ onMounted(() => {
             <span v-else class="zw-foot-note">你没有处理权限，仅可查看</span>
           </template>
           <template v-else>
-            <v-btn v-if="canHandle && isProcessed(detail.status)" variant="outlined" prepend-icon="sms" @click="openDetailResend">重发审核短信</v-btn>
+            <v-btn v-if="canHandle && isProcessed(detail.status)" variant="outlined" prepend-icon="notifications" @click="openDetailResend">重发审核通知</v-btn>
             <v-btn variant="outlined" @click="store.drawer = false">关闭</v-btn>
           </template>
         </template>
@@ -542,12 +546,12 @@ onMounted(() => {
       </template>
     </zw-dialog>
 
-    <zw-dialog v-model="resendOpen" title="重发审核结果短信？" width="480" icon="sms" tone="warning">
+    <zw-dialog v-model="resendOpen" title="重发审核结果通知？" width="480" icon="notifications" tone="warning">
       <p class="dialog-p">
-        将把{{ resendTarget?.name }}的{{ resendTarget?.status === 'APPROVED' ? '通过' : '驳回' }}结果重新发送到所有者手机号
-        <b class="num">{{ resendTarget?.phone }}</b> 和消息中心。
+        将把{{ resendTarget?.name }}的{{ resendTarget?.status === 'APPROVED' ? '通过' : '驳回' }}结果以站内消息重新发到所有者
+        <b class="num">{{ resendTarget?.phone }}</b> 的消息中心（App 与网页版都能看到）。
       </p>
-      <p class="dialog-muted">同一条申请可以重复发送，本次操作记入操作日志。</p>
+      <p class="dialog-muted">平台未开通通知短信，不会发送短信；同一条申请可以重复发送，本次操作记入操作日志。</p>
       <template #actions>
         <v-btn variant="outlined" :disabled="resendSaving" @click="resendOpen = false">取消</v-btn>
         <v-btn color="primary" :loading="resendSaving" @click="submitResend">确认重发</v-btn>

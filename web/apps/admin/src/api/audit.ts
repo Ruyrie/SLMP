@@ -144,6 +144,9 @@ export interface AuditResult {
   target_name: string
   notified_names: string[]
   sms_phone?: string
+  /** 找回通过时的一次性临时密码：只在本次响应返回，页面关闭后无法再查看 */
+  temp_password?: string
+  temp_password_expire_at?: string
   recalc_count?: number
   recalc_summary?: string
 }
@@ -171,18 +174,20 @@ export function rejectFarmAudit(
   return http().post<AuditResult>(`/farm-audits/${id}/reject`, payload)
 }
 
-export interface SmsResendResult {
+export interface NoticeResendResult {
   id: number
   phone: string
-  sms_status?: string
-  sms_status_text?: string
-  retry_count?: number
-  queued_at?: string
+  receiver_name?: string
+  /** SENT 已写入消息中心 / FAILED 发送失败 */
+  notify_status?: string
+  notify_status_text?: string
+  sent_at?: string
   note?: string
 }
 
-export function resendFarmAuditSms(id: number) {
-  return http().post<SmsResendResult>(`/farm-audits/${id}/resend-sms`, {})
+/** ADM-R05 重发审核结果通知：只发站内消息（平台没有通知类短信模板） */
+export function resendFarmAuditNotice(id: number) {
+  return http().post<NoticeResendResult>(`/farm-audits/${id}/resend-notice`, {})
 }
 
 /* ---------------- ADM-R06–R09 资料变更审核 ---------------- */
@@ -508,8 +513,18 @@ export function rejectRecovery(
   return http().post<AuditResult>(`/account-recoveries/${id}/reject`, payload)
 }
 
-export function resendRecoverySms(id: number) {
-  return http().post<SmsResendResult>(`/account-recoveries/${id}/resend-sms`, {})
+export interface RecoveryTempPassword {
+  id: number
+  phone: string
+  user_name?: string
+  temp_password: string
+  temp_password_expire_at?: string
+  regenerated_at?: string
+}
+
+/** ADM-R18 重新生成临时密码（只对已通过的申请）：旧临时密码立即失效，新密码只在本次响应返回 */
+export function regenerateRecoveryPassword(id: number) {
+  return http().post<RecoveryTempPassword>(`/account-recoveries/${id}/temp-password`, {})
 }
 
 export interface RecoveryVerificationRecord {

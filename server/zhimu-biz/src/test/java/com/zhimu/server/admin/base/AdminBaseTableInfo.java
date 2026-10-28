@@ -50,7 +50,8 @@ public final class AdminBaseTableInfo {
                 InspectItem.class, InspectOption.class, DictItem.class, DictItemScope.class, SymptomDisease.class,
                 ImmuneTemplate.class, ImmuneTemplateVersion.class, ImmuneTemplateItem.class,
                 DrugCatalog.class, DrugCatalogUsage.class, BannedDrug.class, BannedDrugHit.class,
-                DrugLotRecall.class, DrugLotRecallFarm.class)) {
+                DrugLotRecall.class, DrugLotRecallFarm.class,
+                com.zhimu.server.biz.finance.entity.FinanceCategory.class)) {
             TableInfoHelper.initTableInfo(assistant, type);
         }
         initialized = true;

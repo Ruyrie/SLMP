@@ -353,7 +353,7 @@ onMounted(() => {
           停用后，{{ target?.name }}不能登录 App 和网页版，已登录的设备立即退出。他登记过的记录保留，登记人仍显示{{ target?.name }}。
         </p>
         <zw-notice type="info" class="dialog-notice">{{ identityTip }}</zw-notice>
-        <zw-form-item label="停用原因" required :error="store.reasonError" hint="原因会记入操作日志，并以短信发给本人" class="dialog-form">
+        <zw-form-item label="停用原因" required :error="store.reasonError" hint="原因会记入操作日志；勾选下方选项时一并发到本人的消息中心" class="dialog-form">
           <v-textarea
             v-model="store.reason"
             placeholder="请填写停用原因，最多 200 字"
@@ -364,7 +364,7 @@ onMounted(() => {
             :error="!!store.reasonError"
           />
         </zw-form-item>
-        <v-checkbox v-model="store.notifySms" :label="`短信通知本人（${target?.phone || ''}）`" class="notify-check" />
+        <v-checkbox v-model="store.notifyMessage" label="站内消息通知本人（重新启用后可在消息中心看到停用原因）" class="notify-check" />
       </template>
       <template v-else>
         <p class="dialog-p">

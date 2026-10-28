@@ -39,7 +39,8 @@ class UserAdminServiceImplTest {
     private final AccountAdminService accountAdminService = mock(AccountAdminService.class);
     private final AvatarService avatarService = mock(AvatarService.class);
     private final UserAdminServiceImpl service = new UserAdminServiceImpl(mapper, accountAdminService,
-            mock(ExportService.class), mock(OperationLogService.class), avatarService);
+            mock(ExportService.class), mock(OperationLogService.class), avatarService,
+            mock(org.springframework.beans.factory.ObjectProvider.class));
 
     @BeforeEach
     void setUp() {

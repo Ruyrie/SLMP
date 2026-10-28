@@ -199,15 +199,15 @@ onMounted(() => {
           placeholder="搜索养殖场名称、所有者姓名或手机号"
           prepend-inner-icon="search"
           maxlength="30"
-          @keydown.enter="store.fetchList()"
+          @keydown.enter="store.search()"
         />
         <v-select
           v-model="store.query.change_item"
           :items="changeItems"
           class="zw-w-140"
-          @update:model-value="store.fetchList()"
+          @update:model-value="store.search()"
         />
-        <v-btn variant="text" color="primary" @click="store.fetchList()">查询</v-btn>
+        <v-btn variant="text" color="primary" @click="store.search()">查询</v-btn>
         <v-btn variant="text" @click="store.resetFilters()">重置</v-btn>
       </div>
     </div>

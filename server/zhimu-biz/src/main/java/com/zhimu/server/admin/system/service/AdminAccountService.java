@@ -26,11 +26,13 @@ public interface AdminAccountService {
 
     String enable(Long adminId, AdminStatusRequest request);
 
-    /** 新增结果：姓名、脱敏手机号与临时密码（是否返回给前端由控制器按 dev profile 决定） */
-    record AdminCreateResult(Long adminId, String name, String phone, String tempPassword) {
+    /** 新增结果：姓名、脱敏手机号与一次性临时密码（控制器在任何环境都返回给操作人，页面只显示一次） */
+    record AdminCreateResult(Long adminId, String name, String phone, String tempPassword,
+                             java.time.LocalDateTime tempPasswordExpireAt) {
     }
 
-    /** 重置结果：姓名、脱敏手机号与临时密码 */
-    record AdminResetResult(String name, String phone, String tempPassword) {
+    /** 重置结果：姓名、脱敏手机号与一次性临时密码 */
+    record AdminResetResult(String name, String phone, String tempPassword,
+                            java.time.LocalDateTime tempPasswordExpireAt) {
     }
 }

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { routeQueryId, routeQueryText } from '@/utils/routeQuery'
 import { ApiError, dayjs, formatDate, formatDateTime, formatNumber } from '@zmt/shared'
 import {
   createBreed,
@@ -31,6 +33,7 @@ import { useUiStore } from '@/stores/ui'
 
 const ui = useUiStore()
 const admin = useAdminStore()
+const route = useRoute()
 const canHandle = computed(() => admin.hasPerm('WA-D01:HANDLE'))
 
 const tree = ref<CategoryNode[]>([])
@@ -77,7 +80,7 @@ const activeWeightVersion = computed(() => weight.value?.draft || weight.value?.
 const activeFeedVersion = computed(() => feed.value?.draft || feed.value?.online || null)
 const hasOnlineStandard = computed(() => versionType.value === 'weight' ? !!weight.value?.online : !!feed.value?.online)
 
-async function loadTree(keepSelection = true): Promise<void> {
+async function loadTree(keepSelection = true, preferBreedId: number | null = null): Promise<void> {
   treeLoading.value = true
   treeError.value = ''
   try {
@@ -88,7 +91,11 @@ async function loadTree(keepSelection = true): Promise<void> {
       return
     }
     if (!keepSelection || !tree.value.some((category) => category.breeds.some((breed) => breed.id === selectedBreedId.value))) {
-      const first = tree.value.flatMap((category) => category.breeds).find((breed) => breed.status === 'ENABLED') || tree.value[0]?.breeds[0]
+      const breeds = tree.value.flatMap((category) => category.breeds)
+      const first =
+        (preferBreedId ? breeds.find((breed) => breed.id === preferBreedId) : undefined) ||
+        breeds.find((breed) => breed.status === 'ENABLED') ||
+        tree.value[0]?.breeds[0]
       if (first) await selectBreed(first.id)
     }
   } catch (e) {
@@ -819,7 +826,28 @@ function dailyGain(index: number): string {
   return ((Number(current.std_weight) - Number(prev.std_weight)) / days).toFixed(2)
 }
 
-onMounted(() => { void loadTree(false) })
+/** 从操作日志带 ?breed_id= / ?category_id=（可带 tab=weight|feed）进入时定位到对应品种或品类 */
+onMounted(async () => {
+  const breedId = routeQueryId(route, 'breed_id')
+  const categoryId = routeQueryId(route, 'category_id')
+  if (!breedId && !categoryId) {
+    void loadTree(false)
+    return
+  }
+  if (!breedId && categoryId) {
+    await loadTree(false)
+    const category = tree.value.find((item) => item.id === categoryId)
+    if (category) {
+      treeKeyword.value = category.name
+      const breed = category.breeds.find((item) => item.status === 'ENABLED') || category.breeds[0]
+      if (breed && breed.id !== selectedBreedId.value) await selectBreed(breed.id)
+    }
+  } else {
+    await loadTree(false, breedId)
+  }
+  const tab = routeQueryText(route, 'tab')
+  if (tab === 'weight' || tab === 'feed') activeTab.value = tab
+})
 </script>
 
 <template>
@@ -882,7 +910,7 @@ onMounted(() => { void loadTree(false) })
             </div>
             <div class="category-detail-meta">
               {{ detail.description || '暂无品种说明' }} · 计数单位 {{ detail.category?.count_unit === 'BIRD' ? '只' : '头' }}
-              <template v-if="detail.active_batch_count !== undefined"> · 在养批次 {{ formatNumber(detail.active_batch_count) }} 个</template>
+              <template v-if="detail.active_batch_count !== undefined"> · 在养批次 {{ formatNumber(detail.active_batch_count) }} 个<template v-if="detail.farm_count">（分布 {{ formatNumber(detail.farm_count) }} 个养殖场）</template></template>
               <template v-if="detail.breeding_animal_count"> · 在档种畜 {{ formatNumber(detail.breeding_animal_count) }} 头</template>
             </div>
           </div>

@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/** 品种详情（ADM-D04）。统计类字段本批没有模块04/05，返回 0 而不是 null。 */
+/** 品种详情（ADM-D04）。统计类字段按 breed_id 实时统计。 */
 @Data
 public class BreedDetailVO {
 
@@ -21,11 +21,11 @@ public class BreedDetailVO {
     private String status;
     private String statusText;
     private String disableReason;
-    /** 在养批次，待模块04；本批 0 */
+    /** 在养批次（t_batch ACTIVE） */
     private Integer activeBatchCount;
-    /** 分布养殖场，待模块04；本批 0 */
+    /** 在养批次分布的养殖场数（去重） */
     private Integer farmCount;
-    /** 在档种畜，待模块05；本批 0 */
+    /** 在档种畜（未淘汰、未死亡） */
     private Integer breedingAnimalCount;
     /** BREED_TAB：WEIGHT / FEED / IMMUNE_INSPECT / BREEDING / INCUBATION / IMMUNE */
     private List<String> tabs = new ArrayList<>();

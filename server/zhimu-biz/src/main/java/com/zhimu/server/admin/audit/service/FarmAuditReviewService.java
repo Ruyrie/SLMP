@@ -7,7 +7,7 @@ import com.zhimu.server.admin.audit.request.SmsResendRequest;
 import com.zhimu.server.admin.audit.vo.AuditResultVO;
 import com.zhimu.server.admin.audit.vo.FarmAuditDetailVO;
 import com.zhimu.server.admin.audit.vo.FarmAuditPageVO;
-import com.zhimu.server.admin.audit.vo.SmsResendVO;
+import com.zhimu.server.admin.audit.vo.NoticeResendVO;
 
 /** 养殖场注册审核（ADM-R02–R05、R18 的重发）：列表、详情、通过/驳回与重发审核结果通知。 */
 public interface FarmAuditReviewService {
@@ -21,5 +21,5 @@ public interface FarmAuditReviewService {
     AuditResultVO reject(Long auditId, FarmAuditRejectRequest request);
 
     /** R18 重发审核结果通知；只对已处理（APPROVED / REJECTED）的申请。 */
-    SmsResendVO resendSms(Long auditId, SmsResendRequest request);
+    NoticeResendVO resendNotice(Long auditId, SmsResendRequest request);
 }

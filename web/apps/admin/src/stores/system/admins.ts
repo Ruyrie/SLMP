@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ApiError } from '@zmt/shared'
 import {
+  checkAdminUsername,
   createAdmin,
   getAdminPage,
   getRolePermissions,
@@ -55,7 +56,12 @@ export const useAdminsStore = defineStore('admins', {
     resetReason: '',
     resetting: false,
     tempPassword: '',
+    tempExpireAt: '',
+    tempTitle: '',
+    tempTarget: '',
     tempOpen: false,
+    usernameChecking: false,
+    usernameChecked: '',
     statusOpen: false,
     statusTarget: null as AdminRow | null,
     statusAction: 'disable' as 'disable' | 'enable',
@@ -148,7 +154,56 @@ export const useAdminsStore = defineStore('admins', {
       const normalRole = this.roles.find((role) => role.role_code !== 'SUPER_ADMIN') || this.roles[0]
       this.form.role_id = normalRole ? normalRole.role_id : null
       this.formErrors = {}
+      this.usernameChecked = ''
       this.drawer = true
+    },
+    /** 新增管理员时登录账号失焦预检（包含已停用账号）；网络失败不拦截，保存时服务端仍会校验 */
+    async checkUsername(): Promise<boolean> {
+      if (!this.isCreate) return true
+      const username = this.form.username.trim()
+      if (!username) return true
+      if (!/^[A-Za-z0-9]{4,20}$/.test(username)) {
+        this.formErrors.username = '账号需为 4–20 位字母和数字'
+        return false
+      }
+      if (this.usernameChecked === username && !this.formErrors.username) return true
+      this.usernameChecking = true
+      try {
+        const result = await checkAdminUsername(username)
+        if (this.form.username.trim() !== username) return true
+        if (result && result.available === false) {
+          this.formErrors.username = result.message || '这个登录账号已被使用（含已停用账号），请换一个'
+          this.usernameChecked = ''
+          return false
+        }
+        if (this.formErrors.username) delete this.formErrors.username
+        this.usernameChecked = username
+        return true
+      } catch (error) {
+        if (error instanceof ApiError && error.fieldErrors.length) {
+          this.formErrors.username = error.fieldErrors[0]!.message
+          return false
+        }
+        if (error instanceof ApiError && error.code === 40001 && error.message) {
+          this.formErrors.username = error.message
+          return false
+        }
+        return true
+      } finally {
+        this.usernameChecking = false
+      }
+    },
+    showTempPassword(title: string, target: string, password?: string, expireAt?: string): void {
+      this.tempTitle = title
+      this.tempTarget = target
+      this.tempPassword = password || ''
+      this.tempExpireAt = expireAt || ''
+      this.tempOpen = true
+    },
+    closeTempPassword(): void {
+      this.tempOpen = false
+      this.tempPassword = ''
+      this.tempExpireAt = ''
     },
     openEdit(row: AdminRow): void {
       this.editing = row
@@ -172,6 +227,7 @@ export const useAdminsStore = defineStore('admins', {
         this.formErrors.username = '账号需为 4–20 位字母和数字'
       }
       if (Object.keys(this.formErrors).length) return
+      if (this.isCreate && !(await this.checkUsername())) return
       this.submitting = true
       try {
         if (this.isCreate) {
@@ -184,10 +240,9 @@ export const useAdminsStore = defineStore('admins', {
           })
           this.drawer = false
           if (created.temp_password) {
-            this.tempPassword = created.temp_password
-            this.tempOpen = true
+            this.showTempPassword('管理员已创建', `${this.form.name.trim()}（${this.form.username.trim()}）`, created.temp_password, created.temp_password_expire_at)
           } else {
-            useUiStore().toast('管理员已新增，临时密码已发送到手机号')
+            useUiStore().toast('管理员已新增，但没有拿到临时密码，请在列表中为其重置密码', 'error')
           }
         } else if (this.editing) {
           await updateAdmin(this.editing.admin_id, {
@@ -225,10 +280,14 @@ export const useAdminsStore = defineStore('admins', {
       }
       this.resetting = true
       try {
-        const result = await resetAdminPassword(this.resetTarget.admin_id, this.resetReason.trim())
+        const target = this.resetTarget
+        const result = await resetAdminPassword(target.admin_id, this.resetReason.trim())
         this.resetOpen = false
-        this.tempPassword = result.temp_password || ''
-        this.tempOpen = true
+        if (result?.temp_password) {
+          this.showTempPassword('密码已重置', `${target.name}（${target.username}）`, result.temp_password, result.temp_password_expire_at)
+        } else {
+          useUiStore().toast('密码已重置，但没有拿到临时密码，请重新重置', 'error')
+        }
         await this.fetchAdmins()
       } catch (error) {
         useUiStore().toast(error instanceof Error ? error.message : '重置失败', 'error')

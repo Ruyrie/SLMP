@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { routeQueryId } from '@/utils/routeQuery'
 import { ApiError, dayjs, formatDateTime, formatNumber, formatPercent, today } from '@zmt/shared'
 import {
   closeKnowledgeTask,
@@ -39,6 +40,7 @@ import { useUiStore } from '@/stores/ui'
 const ui = useUiStore()
 const admin = useAdminStore()
 const route = useRoute()
+const router = useRouter()
 const canHandle = computed(() => admin.hasPerm('WA-C04:HANDLE'))
 
 const tab = ref<'items' | 'tasks'>('items')
@@ -969,7 +971,35 @@ onMounted(async () => {
   void loadOptions()
   await Promise.all([fetchList(), loadTaskPending()])
   loading.value = false
+  await openRouteKnowledge()
 })
+
+/** 从操作日志带 ?id= 进入：按标题筛出该条目，有处理权限时直接打开编辑 */
+async function openRouteKnowledge(): Promise<void> {
+  const id = routeQueryId(route)
+  if (!id) return
+  try {
+    const data = await getKnowledgeEdit(id)
+    const title = data.draft?.title || data.online_content?.title || ''
+    if (title) {
+      query.keyword = title
+      query.page = 1
+      await fetchList()
+    }
+    if (canHandle.value && data.source_type !== 'DRUG_CATALOG') await openEdit({ id, title } as KnowledgeRow)
+  } catch (e) {
+    ui.toast(e instanceof Error ? e.message : '条目加载失败', 'error')
+  }
+}
+
+/** 兽药目录同步来的只读条目：到兽药疫苗目录按药品名称查看 */
+function openDrugCatalog(row: KnowledgeRow): void {
+  const parts = row.title.split(' · ')
+  const keyword = (parts[parts.length - 1] || row.title).trim()
+  const target: Record<string, string> = { keyword }
+  if (row.source_ref_id) target.id = String(row.source_ref_id)
+  void router.push({ name: 'WA-D03', query: target })
+}
 </script>
 
 <template>
@@ -1036,7 +1066,7 @@ onMounted(async () => {
             </template>
             <template #item.actions="{ item }">
               <div class="zw-cell-actions">
-                <a v-if="item.is_readonly" class="zw-link" @click="ui.toast('兽药目录条目请在兽药疫苗目录中维护', 'info')">查看</a>
+                <a v-if="item.is_readonly" class="zw-link" @click="openDrugCatalog(item as KnowledgeRow)">查看</a>
                 <a v-else-if="canHandle" class="zw-link" @click="openEdit(item as KnowledgeRow)">编辑</a>
                 <a v-if="!item.is_readonly" class="zw-link" @click="openVersions(item as KnowledgeRow)">历史</a>
                 <a v-if="item.has_draft && canHandle" class="zw-link" @click="openPublish(item as KnowledgeRow)">发布</a>

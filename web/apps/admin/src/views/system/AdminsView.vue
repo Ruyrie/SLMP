@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { routeQueryId, routeQueryText } from '@/utils/routeQuery'
 import { formatDateTime } from '@zmt/shared'
 import { useAdminsStore } from '@/stores/system/admins'
 import { useUiStore } from '@/stores/ui'
@@ -7,6 +9,7 @@ import type { AdminRow, PermissionCell, PermissionRow } from '@/api/system'
 
 const store = useAdminsStore()
 const ui = useUiStore()
+const route = useRoute()
 
 const headers = [
   { title: '管理员', key: 'name', width: 160, sortable: false },
@@ -71,6 +74,17 @@ function changeSize(size: number): void {
 
 onMounted(async () => {
   await Promise.all([store.fetchAdmins(), store.fetchRoles()])
+  // 从操作日志带参数进入：tab=roles&role_id= 打开角色权限；id= 打开该管理员的编辑抽屉
+  const roleId = routeQueryId(route, 'role_id')
+  if (routeQueryText(route, 'tab') === 'roles' || roleId) {
+    store.tab = 'roles'
+    if (roleId && store.roles.some((role) => role.role_id === roleId)) await store.selectRole(roleId)
+    return
+  }
+  const id = routeQueryId(route)
+  const row = id ? store.list.find((item) => item.admin_id === id) : undefined
+  if (row) store.openEdit(row)
+  else if (id) ui.toast('该管理员不在当前列表中，请翻页查找', 'info')
 })
 </script>
 
@@ -93,7 +107,7 @@ onMounted(async () => {
         <zw-empty v-else-if="store.status === 'error'" icon="cloud_off" title="加载失败" :desc="store.error" tone="error">
           <v-btn variant="outlined" @click="store.fetchAdmins()">重新加载</v-btn>
         </zw-empty>
-        <zw-empty v-else-if="store.status === 'empty'" icon="manage_accounts" title="还没有管理员" desc="新增管理员后，对方可凭短信临时密码登录管理端。" />
+        <zw-empty v-else-if="store.status === 'empty'" icon="manage_accounts" title="还没有管理员" desc="新增管理员后，把页面上显示的临时密码线下告知对方，对方凭临时密码登录管理端。" />
         <template v-else>
           <v-data-table :headers="headers" :items="store.list" item-key="admin_id" hide-default-footer density="compact">
             <template #item.name="{ item }">
@@ -138,7 +152,7 @@ onMounted(async () => {
       </zw-card>
 
       <zw-notice class="admin-tip" type="info" icon="info">
-        管理员账号只能登录管理端，不能登录 App 和用户端网页。重置密码后，新密码以短信发送到管理员手机号，首次登录必须修改。
+        管理员账号只能登录管理端，不能登录 App 和用户端网页。新增或重置密码后，临时密码只在操作完成时显示一次，请线下告知对方；临时密码 24 小时内有效，首次登录必须修改。
       </zw-notice>
     </template>
 
@@ -220,9 +234,18 @@ onMounted(async () => {
           <v-text-field v-model="store.form.name" placeholder="请输入姓名" maxlength="20" :error="!!store.formErrors.name" />
         </zw-form-item>
         <zw-form-item label="登录账号" required :error="store.formErrors.username" :hint="store.isCreate ? '4–20 位字母和数字，创建后不可修改' : '账号不可修改'">
-          <v-text-field v-model="store.form.username" placeholder="请输入登录账号" maxlength="20" :disabled="!store.isCreate" :error="!!store.formErrors.username" />
+          <v-text-field
+            v-model="store.form.username"
+            placeholder="请输入登录账号"
+            maxlength="20"
+            :disabled="!store.isCreate"
+            :loading="store.usernameChecking"
+            :error="!!store.formErrors.username"
+            @blur="store.checkUsername()"
+            @update:model-value="store.formErrors.username = ''"
+          />
         </zw-form-item>
-        <zw-form-item label="手机号" required :error="store.formErrors.phone" hint="临时密码与通知短信发送到该号码">
+        <zw-form-item label="手机号" required :error="store.formErrors.phone" hint="用于联系管理员本人；临时密码不会以短信发送">
           <v-text-field v-model="store.form.phone" placeholder="请输入 11 位手机号" maxlength="11" :error="!!store.formErrors.phone" />
         </zw-form-item>
         <zw-form-item label="角色" required :error="store.formErrors.role_id">
@@ -239,7 +262,7 @@ onMounted(async () => {
     </zw-drawer>
 
     <zw-dialog v-model="store.resetOpen" title="重置密码" width="440" icon="lock" tone="warning">
-      <p class="dialog-tip">重置后该管理员的全部会话失效，临时密码通过短信发送到 {{ store.resetTarget?.phone || '绑定手机号' }}，首次登录必须修改。</p>
+      <p class="dialog-tip">重置后该管理员的全部会话失效并解除锁定。新的临时密码只在本页面显示一次，请线下告知 {{ store.resetTarget?.name || '对方' }}，首次登录必须修改。</p>
       <zw-form-item label="修改原因" required>
         <v-textarea v-model="store.resetReason" placeholder="请填写重置密码的原因" :rows="3" maxlength="100" counter />
       </zw-form-item>
@@ -262,11 +285,12 @@ onMounted(async () => {
       </template>
     </zw-dialog>
 
-    <zw-dialog v-model="store.tempOpen" title="临时密码" width="420" icon="key" tone="primary">
-      <p class="dialog-tip">请把临时密码交给管理员本人。首次登录会强制修改密码，本密码只显示一次。</p>
+    <zw-dialog :model-value="store.tempOpen" :title="store.tempTitle || '临时密码'" width="440" icon="key" tone="primary" persistent @update:model-value="!$event && store.closeTempPassword()">
+      <p class="dialog-tip">{{ store.tempTarget }}的临时密码如下。请线下告知对方（当面或电话），<b>关闭后无法再查看</b>；系统不会发送短信。</p>
       <div class="temp-pwd"><span class="num">{{ store.tempPassword || '—' }}</span><v-btn variant="outlined" size="small" @click="copyTemp">复制</v-btn></div>
+      <p class="dialog-tip temp-expire">{{ store.tempExpireAt ? `${formatDateTime(store.tempExpireAt)} 前有效` : '24 小时内有效' }}，首次登录必须修改密码。</p>
       <template #actions>
-        <v-btn color="primary" @click="store.tempOpen = false">我已记录</v-btn>
+        <v-btn color="primary" @click="store.closeTempPassword()">我已告知对方，关闭</v-btn>
       </template>
     </zw-dialog>
   </zw-shell>
@@ -332,5 +356,6 @@ onMounted(async () => {
 .perm-foot { display: flex; align-items: center; gap: 12px; padding-top: 12px; }
 .perm-reason { max-width: 320px; }
 .dialog-tip { margin: 0 0 14px; color: var(--text-2); font-size: 13px; line-height: 20px; }
+.temp-expire { margin: 12px 0 0; }
 .temp-pwd { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: var(--radius-sm); background: var(--fill-1); font-size: 20px; font-weight: 600; letter-spacing: 2px; }
 </style>

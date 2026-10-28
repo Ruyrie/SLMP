@@ -56,6 +56,7 @@ class StdAdminServiceImplTest {
     @Mock private DictItemMapper dictItemMapper;
     @Mock private BaseLogs logs;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private com.zhimu.server.admin.base.mapper.BaseAdminReadMapper readMapper;
 
     private StdAdminServiceImpl service;
 
@@ -63,7 +64,7 @@ class StdAdminServiceImplTest {
     void setUp() {
         com.zhimu.server.admin.base.AdminBaseTableInfo.ensure();
         service = new StdAdminServiceImpl(breedMapper, categoryMapper, weightVersionMapper, pointMapper,
-                feedVersionMapper, stageMapper, dictItemMapper, logs, eventPublisher);
+                feedVersionMapper, stageMapper, dictItemMapper, logs, eventPublisher, readMapper);
         AdminContext.set(new AdminContext.LoginAdmin(1L, "周敏", Set.of("SUPER_ADMIN"), Set.of(), 0, "t"));
         Breed breed = new Breed();
         breed.setId(1101L);

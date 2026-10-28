@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { routeQueryId } from '@/utils/routeQuery'
 import { ApiError, formatDate, formatDateTime, formatNumber } from '@zmt/shared'
 import {
   addInspectItem,
@@ -24,6 +26,7 @@ import { useUiStore } from '@/stores/ui'
 
 const ui = useUiStore()
 const admin = useAdminStore()
+const route = useRoute()
 const canHandle = computed(() => admin.hasPerm('WA-D04:HANDLE'))
 
 const templates = ref<InspectTemplateListItem[]>([])
@@ -362,7 +365,15 @@ function changeLabel(item: InspectItem): string {
   return { ADDED: '新增', MODIFIED: '已修改', DELETED: '已删除' }[item.change_type || 'NONE'] || ''
 }
 
-onMounted(() => { void loadList(false) })
+onMounted(async () => {
+  const id = routeQueryId(route)
+  if (id) {
+    await selectTemplate(id)
+    await loadList(true)
+  } else {
+    await loadList(false)
+  }
+})
 </script>
 
 <template>

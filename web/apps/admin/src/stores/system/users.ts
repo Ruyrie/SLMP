@@ -43,7 +43,7 @@ export const useUsersStore = defineStore('users', {
     target: null as AdminUserItem | null,
     reason: '',
     reasonError: '',
-    notifySms: true,
+    notifyMessage: true,
     submitting: false,
     exporting: false
   }),
@@ -164,7 +164,7 @@ export const useUsersStore = defineStore('users', {
       this.action = action
       this.reason = ''
       this.reasonError = ''
-      this.notifySms = true
+      this.notifyMessage = true
       this.drawer = false
       this.confirmOpen = true
     },
@@ -173,7 +173,7 @@ export const useUsersStore = defineStore('users', {
       this.action = action
       this.reason = ''
       this.reasonError = ''
-      this.notifySms = true
+      this.notifyMessage = true
       this.confirmOpen = true
     },
     async confirmStatus(): Promise<void> {
@@ -187,7 +187,7 @@ export const useUsersStore = defineStore('users', {
         await setUserEnabled(this.target.user_id, this.action, {
           reason: this.reason.trim(),
           version: this.target.version,
-          ...(this.action === 'disable' ? { notify_sms: this.notifySms } : {})
+          ...(this.action === 'disable' ? { notify_message: this.notifyMessage } : {})
         })
         useUiStore().toast(
           this.action === 'disable' ? `已停用${this.target.name}的账号` : `已启用${this.target.name}的账号`
