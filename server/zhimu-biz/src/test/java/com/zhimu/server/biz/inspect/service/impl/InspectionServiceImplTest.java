@@ -130,6 +130,52 @@ class InspectionServiceImplTest {
     }
 
     @Test
+    void dayAbnormalListsAbnormalPensWithLinkedReportAndAllDone() {
+        when(support.pens()).thenReturn(List.of(
+                InspectFixtures.pen(2003L, "YF-03", "3 号育肥舍", 200),
+                InspectFixtures.pen(2004L, "YF-04", "4 号育肥舍", 150),
+                InspectFixtures.pen(2005L, "YF-05", "5 号育肥舍", 100)));
+        BatchPenStockRow s4 = new BatchPenStockRow();
+        s4.setBatchId(3002L);
+        s4.setPenId(2004L);
+        s4.setStockCount(150);
+        BatchPenStockRow s5 = new BatchPenStockRow();
+        s5.setBatchId(3003L);
+        s5.setPenId(2005L);
+        s5.setStockCount(100);
+        BatchPenStockRow s3 = new BatchPenStockRow();
+        s3.setBatchId(3001L);
+        s3.setPenId(2003L);
+        s3.setStockCount(200);
+        when(support.activeBatchPens()).thenReturn(List.of(s3, s4, s5));
+        LocalDate day = LocalDate.of(2026, 10, 19);
+        when(inspectionMapper.selectDay(1001L, day)).thenReturn(List.of(
+                InspectFixtures.inspection(50121L, 2003L, 3001L, day, "DONE", true, 10003L, 6001L),
+                InspectFixtures.inspection(50122L, 2004L, 3002L, day, "DONE", true, 10003L, null),
+                InspectFixtures.inspection(50123L, 2005L, 3003L, day, "DONE", false, 10003L, null)));
+
+        var result = service.dayAbnormal("2026-10-19");
+
+        assertThat(result.allDone()).isTrue();
+        assertThat(result.pens()).extracting(p -> p.penId()).containsExactlyInAnyOrder(2003L, 2004L);
+        assertThat(result.pens()).filteredOn(p -> p.penId() == 2003L).singleElement()
+                .satisfies(p -> {
+                    assertThat(p.penName()).isEqualTo("3 号育肥舍");
+                    assertThat(p.inspectionId()).isEqualTo(50121L);
+                    assertThat(p.reportId()).isEqualTo(6001L);
+                });
+        assertThat(result.pens()).filteredOn(p -> p.penId() == 2004L).singleElement()
+                .satisfies(p -> assertThat(p.reportId()).isNull());
+
+        // 有栏舍未巡时 all_done = false，异常栏舍仍返回
+        when(inspectionMapper.selectDay(1001L, day)).thenReturn(List.of(
+                InspectFixtures.inspection(50121L, 2003L, 3001L, day, "DONE", true, 10003L, 6001L)));
+        var partial = service.dayAbnormal("2026-10-19");
+        assertThat(partial.allDone()).isFalse();
+        assertThat(partial.pens()).extracting(p -> p.penId()).containsExactly(2003L);
+    }
+
+    @Test
     void futureDateReturns40001() {
         assertThatThrownBy(() -> service.summary("2026-10-20"))
                 .isInstanceOf(BizException.class)

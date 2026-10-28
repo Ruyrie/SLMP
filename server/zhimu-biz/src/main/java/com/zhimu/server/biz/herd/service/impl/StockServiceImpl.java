@@ -22,7 +22,6 @@ import com.zhimu.server.biz.herd.vo.ProductionOverviewVO;
 import com.zhimu.server.biz.herd.vo.StockSummaryVO;
 import com.zhimu.server.biz.herd.vo.TodoBriefVO;
 import com.zhimu.server.biz.inspect.service.InspectionService;
-import com.zhimu.server.biz.inspect.vo.InspectionSummaryVO;
 import com.zhimu.server.biz.today.api.TodoQueryService;
 import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.common.context.FarmContext;
@@ -35,16 +34,19 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** API-L01–L05 查询实现。模块03（今日待办）、07（巡检异常）、08（休药中批次）已接入。 */
+/** API-L01–L05 查询实现。模块03（今日待办 / 预警）、07（巡检异常与异常上报）、08（休药中批次）已接入。 */
 @Service
 @RequiredArgsConstructor
 public class StockServiceImpl implements StockService {
+
+    private static final String ABNORMAL_REPORT = "ABNORMAL_REPORT";
 
     private final HerdSupport support;
     private final BatchMapper batchMapper;
@@ -73,17 +75,13 @@ public class StockServiceImpl implements StockService {
         int stockTotal = active.stream().mapToInt(batch -> batch.getCurrentCount() == null ? 0 : batch.getCurrentCount()).sum();
         vo.setHasPen(!pens.isEmpty());
         vo.setStockTotal(stockTotal);
+        fillBatchAndPenCounts(vo, member, active);
 
-        // 模块03：今日待办数与预警类待办（生产提醒项）
+        // 模块03：今日待办数与预警类待办（生产提醒项，含未处理异常上报）
         TodoQueryService.ProductionTodoSummary todoSummary = todoQueryService.productionSummary();
-        // 模块07：今日巡检异常数（无异常时 0，不影响概况）
-        int abnormalCount = 0;
-        String abnormalPenName = null;
-        InspectionSummaryVO inspection = inspectionService.summary(BeijingTime.format(BeijingTime.today()));
-        if (inspection != null) {
-            abnormalCount = inspection.getAbnormalCount();
-            abnormalPenName = inspection.getFirstAbnormalPenName();
-        }
+        // 模块07：今日巡检异常栏舍（无异常时为空，不影响概况）
+        InspectionService.DayAbnormal inspection =
+                inspectionService.dayAbnormal(BeijingTime.format(BeijingTime.today()));
         List<ProductionOverviewVO.ProductionReminderItemVO> reminders = new ArrayList<>();
         // 模块08：休药中批次排在最前（App L01：ZM2610-031 休药中 · 3 号育肥舍 · 10月29日可出栏 · 剩 10 天）
         Map<Long, java.time.LocalDate> releaseDates = support.withdrawalReleaseDates(member.farmId());
@@ -108,40 +106,59 @@ public class StockServiceImpl implements StockService {
             item.setRoute("D05");
             reminders.add(item);
         }
+        // 模块07：未处理异常上报每条一行，排在其余预警之前；记下栏舍与上报，给下面的巡检汇总项去重
+        Set<Long> reportedPenIds = new HashSet<>();
+        Set<Long> reportIds = new HashSet<>();
         for (TodoQueryService.WarningTodo warning : todoSummary.warnings()) {
+            if (!ABNORMAL_REPORT.equals(warning.todoType())) {
+                continue;
+            }
+            ProductionOverviewVO.ProductionReminderItemVO item = reminderOf(warning);
+            item.setTagText("待处理");
+            item.setRoute("I06");
+            item.setReportId(warning.reportId());
+            reminders.add(item);
+            if (warning.penId() != null) {
+                reportedPenIds.add(warning.penId());
+            }
+            if (warning.reportId() != null) {
+                reportIds.add(warning.reportId());
+            }
+        }
+        for (TodoQueryService.WarningTodo warning : todoSummary.warnings()) {
+            if (ABNORMAL_REPORT.equals(warning.todoType())) {
+                continue;
+            }
             if ("WITHDRAWAL_END".equals(warning.todoType()) && warning.batchId() != null
                     && releaseDates.containsKey(warning.batchId())) {
                 // 休药期到期待办与上面的休药提醒是同一批次，不重复显示
                 continue;
             }
-            ProductionOverviewVO.ProductionReminderItemVO item =
-                    new ProductionOverviewVO.ProductionReminderItemVO();
-            item.setReminderType(warning.todoType());
-            item.setIsWarning(true);
-            item.setTitle(warning.title());
-            item.setSubtitle(warning.subtitle());
-            item.setTagText(warning.tagText());
-            item.setBatchId(warning.batchId());
-            item.setTodoId(warning.todoId());
-            item.setRoute(warning.route());
-            reminders.add(item);
+            reminders.add(reminderOf(warning));
         }
-        if (abnormalCount > 0) {
+        // 今日巡检汇总项只算还没有对应未处理异常上报（上面已列出）的异常栏舍，为 0 时不出
+        List<InspectionService.AbnormalPen> unreported = inspection == null ? List.of()
+                : inspection.pens().stream()
+                .filter(pen -> !reportedPenIds.contains(pen.penId())
+                        && (pen.reportId() == null || !reportIds.contains(pen.reportId())))
+                .toList();
+        if (!unreported.isEmpty()) {
+            String firstPenName = unreported.get(0).penName();
             ProductionOverviewVO.ProductionReminderItemVO item =
                     new ProductionOverviewVO.ProductionReminderItemVO();
             item.setReminderType("URGENT_DIAGNOSIS");
-            item.setIsWarning(!Boolean.TRUE.equals(inspection.isAllDone()));
+            item.setIsWarning(!inspection.allDone());
             item.setTitle("今日巡检发现异常");
-            item.setSubtitle((abnormalPenName == null ? "" : abnormalPenName + " · ")
-                    + abnormalCount + " 个栏舍待处理");
+            item.setSubtitle((firstPenName == null ? "" : firstPenName + " · ")
+                    + unreported.size() + " 个栏舍待处理");
             item.setTagText("待处理");
             item.setRoute("I04");
             reminders.add(item);
         }
+        // 老版本 App 兼容：today_todo_count、warning_count 保留；warning_count 与首页预警合集同口径
         vo.setTodayTodoCount(todoSummary.todayTodoCount());
-        // 与未解除预警列表使用同一口径；巡检概况和休药提示属于生产提醒，不能额外累加。
         vo.setWarningCount(todoSummary.warnings().size());
-        // 生产提醒总数 = 休药中批次 + 预警项（03/07）
+        // 生产提醒总数 = 列表条数（休药中 + 未处理异常上报 + 其余预警 + 今日巡检汇总）
         vo.setReminderTotal(reminders.size());
         vo.setReminders(reminders);
         ProductionOverviewVO.ProductionBadges badges = new ProductionOverviewVO.ProductionBadges();
@@ -415,6 +432,48 @@ public class StockServiceImpl implements StockService {
             result.put(entry.getKey(), vo);
         }
         return new ArrayList<>(result.values());
+    }
+
+    /**
+     * 在养批次数、启用栏舍数、有在养批次的栏舍数。所有者 / 场长按全场；
+     * 员工批次按批次档案的可见口径（当前在栏栏舍与负责栏舍有交集），栏舍只算负责的栏舍。
+     */
+    private void fillBatchAndPenCounts(ProductionOverviewVO vo, FarmContext.FarmMember member, List<Batch> active) {
+        List<Batch> visible = member.isStaff()
+                ? active.stream().filter(batch -> support.visibleToStaff(batch, member)).toList()
+                : active;
+        Set<Long> enabledPenIds = new HashSet<>();
+        for (Pen pen : support.pensVisibleTo(member)) {
+            if ("ENABLED".equals(pen.getStatus())) {
+                enabledPenIds.add(pen.getId());
+            }
+        }
+        Set<Long> activeIds = new HashSet<>();
+        for (Batch batch : active) {
+            activeIds.add(batch.getId());
+        }
+        int occupied = 0;
+        for (Long penId : positivePens(member.farmId(), activeIds).keySet()) {
+            if (enabledPenIds.contains(penId)) {
+                occupied++;
+            }
+        }
+        vo.setActiveBatchCount(visible.size());
+        vo.setPenCount(enabledPenIds.size());
+        vo.setOccupiedPenCount(occupied);
+    }
+
+    private static ProductionOverviewVO.ProductionReminderItemVO reminderOf(TodoQueryService.WarningTodo warning) {
+        ProductionOverviewVO.ProductionReminderItemVO item = new ProductionOverviewVO.ProductionReminderItemVO();
+        item.setReminderType(warning.todoType());
+        item.setIsWarning(true);
+        item.setTitle(warning.title());
+        item.setSubtitle(warning.subtitle());
+        item.setTagText(warning.tagText());
+        item.setBatchId(warning.batchId());
+        item.setTodoId(warning.todoId());
+        item.setRoute(warning.route());
+        return item;
     }
 
     private static TodoBriefVO taskBrief(TodoQueryService.PenTask task) {
