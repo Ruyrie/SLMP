@@ -54,14 +54,11 @@ public class BusinessReportActivity extends FinancePageActivity {
     private BusinessReportViewModel vm;
     private DownloadCompleteReceiver receiver;
     private ActivityResultLauncher<String> saveXlsx;
-    private ActivityResultLauncher<String> savePdf;
     private boolean renderingType;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         saveXlsx = registerForActivityResult(new ActivityResultContracts.CreateDocument(ReportFileHelper.MIME_XLSX),
-                uri -> vm.saveAs(uri));
-        savePdf = registerForActivityResult(new ActivityResultContracts.CreateDocument(ReportFileHelper.MIME_PDF),
                 uri -> vm.saveAs(uri));
         super.onCreate(savedInstanceState);
         binding = FinanceActivityReportBinding.inflate(getLayoutInflater());
@@ -74,8 +71,6 @@ public class BusinessReportActivity extends FinancePageActivity {
         binding.financeTopBar.baseToolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.finance_menu_export_xlsx) {
                 vm.export(FinanceConst.FORMAT_XLSX);
-            } else if (item.getItemId() == R.id.finance_menu_export_pdf) {
-                vm.export(FinanceConst.FORMAT_PDF);
             } else if (item.getItemId() == R.id.finance_menu_share) {
                 vm.shareExported();
             }
@@ -131,7 +126,7 @@ public class BusinessReportActivity extends FinancePageActivity {
         vm.getExportedFile().observe(this, f -> renderMenu());
         vm.getOpenSaveDocument().observe(this, f -> {
             try {
-                (ReportFileHelper.MIME_PDF.equals(f.getMimeType()) ? savePdf : saveXlsx).launch(f.getFileName());
+                saveXlsx.launch(f.getFileName());
             } catch (ActivityNotFoundException ignored) {
                 // 没有系统“保存文件”界面时文件留在专属目录
             }
@@ -166,7 +161,6 @@ public class BusinessReportActivity extends FinancePageActivity {
         Menu m = binding.financeTopBar.baseToolbar.getMenu();
         boolean exporting = Boolean.TRUE.equals(vm.getExporting().getValue());
         m.findItem(R.id.finance_menu_export_xlsx).setEnabled(!exporting);
-        m.findItem(R.id.finance_menu_export_pdf).setEnabled(!exporting);
         m.findItem(R.id.finance_menu_share).setVisible(vm.getExportedFile().getValue() != null);
         binding.financeTopBar.baseToolbar.setSubtitle(exporting ? "正在导出…" : null);
     }

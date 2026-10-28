@@ -17,7 +17,7 @@ public class ReportExportRequest {
     private final String rangeType;
     @Nullable
     private final Long rangeRefId;
-    /** XLSX / PDF */
+    /** 只支持 XLSX */
     private final String format;
 
     public ReportExportRequest(String reportType, @Nullable String periodStart, @Nullable String scope, @Nullable String rangeType, @Nullable Long rangeRefId, String format) {

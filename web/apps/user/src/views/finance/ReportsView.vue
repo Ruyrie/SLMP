@@ -526,18 +526,6 @@ onBeforeUnmount(() => window.clearTimeout(store.summaryTimer))
           </div>
           <zw-icon :name="store.exportFormat === 'XLSX' ? 'radio_button_checked' : 'radio_button_unchecked'" :size="20" />
         </button>
-        <button
-          type="button"
-          class="e07-format e07-format--disabled"
-          disabled
-        >
-          <zw-icon name="picture_as_pdf" :size="20" />
-          <div class="e07-format-main">
-            <div class="e07-format-title">文档（.pdf）</div>
-            <div class="e07-format-desc">平台暂只支持表格导出，PDF 稍后开放</div>
-          </div>
-          <zw-icon name="radio_button_unchecked" :size="20" />
-        </button>
       </div>
       <div class="e07-export-note zw-faint body-s">
         按当前报表类型、养殖场、范围和统计期生成，完成后由浏览器下载到“下载”文件夹。
@@ -600,7 +588,6 @@ onBeforeUnmount(() => window.clearTimeout(store.summaryTimer))
 .e07-export-formats { display: flex; flex-direction: column; gap: 10px; }
 .e07-format { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); background: var(--bg-card); cursor: pointer; font: inherit; text-align: left; }
 .e07-format.on { border-color: var(--primary); background: var(--primary-subtle); }
-.e07-format--disabled { opacity: .55; cursor: not-allowed; }
 .e07-format-main { flex: 1; min-width: 0; }
 .e07-format-title { font-size: 14px; font-weight: 500; color: var(--text-1); }
 .e07-format-desc { font-size: 12px; line-height: 18px; color: var(--text-3); }

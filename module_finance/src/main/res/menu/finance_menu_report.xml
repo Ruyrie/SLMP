@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- E13 顶部栏：文字按钮“导出表格”“导出文档”；导出后更多菜单中“分享报表”（client-pending 模块10 第 2 项的建议位置） -->
+<!-- E13 顶部栏：文字按钮“导出表格”（服务端只支持 XLSX，不提供 PDF）；导出后更多菜单中“分享报表”（client-pending 模块10 第 2 项的建议位置） -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -7,13 +7,6 @@
         android:id="@+id/finance_menu_export_xlsx"
         android:icon="@drawable/ic_table_view"
         android:title="@string/finance_e13_export_xlsx"
-        app:iconTint="?attr/colorPrimary"
-        app:showAsAction="always|withText" />
-
-    <item
-        android:id="@+id/finance_menu_export_pdf"
-        android:icon="@drawable/ic_description"
-        android:title="@string/finance_e13_export_pdf"
         app:iconTint="?attr/colorPrimary"
         app:showAsAction="always|withText" />
 

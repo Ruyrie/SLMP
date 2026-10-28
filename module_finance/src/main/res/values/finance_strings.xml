@@ -268,7 +268,6 @@
     <!-- E13 -->
     <string name="finance_e13_title">经营报表</string>
     <string name="finance_e13_export_xlsx">导出表格</string>
-    <string name="finance_e13_export_pdf">导出文档</string>
     <string name="finance_e13_share">分享报表</string>
     <string name="finance_e13_weekly">周报</string>
     <string name="finance_e13_monthly">月报</string>

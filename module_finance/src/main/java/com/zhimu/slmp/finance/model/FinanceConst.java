@@ -102,7 +102,6 @@ public final class FinanceConst {
     public static final String METRIC_FEED = "FEED";
     public static final String METRIC_BALANCE = "BALANCE";
     public static final String FORMAT_XLSX = "XLSX";
-    public static final String FORMAT_PDF = "PDF";
     public static final String EVENT_IN = "IN";
     public static final String EVENT_OUT = "OUT";
 
