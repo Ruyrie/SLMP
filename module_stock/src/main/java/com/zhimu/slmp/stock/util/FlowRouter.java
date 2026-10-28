@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * 点流水跳转（技术准备文档 2.6.6，biz_type 取值按服务端 t_stock_flow）：
  * <ul>
- *     <li>FEED_RECORD → L06 批次档案（batch_id；record_id 供定位，L06 暂未读取）</li>
+ *     <li>FEED_RECORD → L06 批次档案（batch_id；record_id 供 L06 定位并展开该条饲喂记录）</li>
  *     <li>IMMUNE_RECORD / MEDICATION_RECORD / DISINFECT_RECORD → D03 / D04 / D08 记录（record_id，待定事项 4）</li>
  *     <li>INBOUND → 饲料 M03、药品 M08 的只读状态；OUTBOUND → 其他出库 M10、领用与退货 M11 的只读状态</li>
  *     <li>LOSS、STOCKTAKE → 本组件的单据只读页（{@link #PAGE_RECORD}）</li>
