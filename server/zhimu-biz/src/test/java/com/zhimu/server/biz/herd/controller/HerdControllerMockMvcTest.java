@@ -97,7 +97,16 @@ class HerdControllerMockMvcTest {
                 .andExpect(jsonPath("$.data.stock_total").value(870))
                 .andExpect(jsonPath("$.data.has_pen").value(true))
                 .andExpect(jsonPath("$.data.unit").value("HEAD"))
-                .andExpect(jsonPath("$.data.unit_text").value("头"));
+                .andExpect(jsonPath("$.data.unit_text").value("头"))
+                .andExpect(jsonPath("$.data.active_batch_count").value(4))
+                .andExpect(jsonPath("$.data.pen_count").value(7))
+                .andExpect(jsonPath("$.data.occupied_pen_count").value(4))
+                .andExpect(jsonPath("$.data.reminder_total").value(1))
+                .andExpect(jsonPath("$.data.reminders[0].reminder_type").value("ABNORMAL_REPORT"))
+                .andExpect(jsonPath("$.data.reminders[0].route").value("I06"))
+                .andExpect(jsonPath("$.data.reminders[0].report_id").value(7001))
+                .andExpect(jsonPath("$.data.today_todo_count").value(0))
+                .andExpect(jsonPath("$.data.warning_count").value(1));
 
         mvc.perform(get("/api/v1/my-pens"))
                 .andExpect(status().isOk())
@@ -304,12 +313,20 @@ class HerdControllerMockMvcTest {
         overview.setToday("2026-10-19");
         overview.setHasPen(true);
         overview.setStockTotal(870);
+        overview.setActiveBatchCount(4);
+        overview.setPenCount(7);
+        overview.setOccupiedPenCount(4);
         overview.setTodayTodoCount(0);
-        overview.setWarningCount(0);
-        overview.setReminderTotal(0);
+        overview.setWarningCount(1);
+        overview.setReminderTotal(1);
         overview.setUnit("HEAD");
         overview.setUnitText("头");
-        overview.setReminders(List.of());
+        ProductionOverviewVO.ProductionReminderItemVO reminder = new ProductionOverviewVO.ProductionReminderItemVO();
+        reminder.setReminderType("ABNORMAL_REPORT");
+        reminder.setIsWarning(true);
+        reminder.setRoute("I06");
+        reminder.setReportId(7001L);
+        overview.setReminders(List.of(reminder));
         lenient().when(stockService.overview()).thenReturn(overview);
 
         MyPensVO myPens = new MyPensVO();

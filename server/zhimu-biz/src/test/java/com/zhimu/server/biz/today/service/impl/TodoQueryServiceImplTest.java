@@ -117,6 +117,33 @@ class TodoQueryServiceImplTest {
     }
 
     @Test
+    void productionSummaryListsOpenAbnormalReportsWithReportIdAndPen() {
+        Todo report = todo(90201L, "ABNORMAL_REPORT", "WARNING", "PENDING", LocalDate.of(2026, 10, 16),
+                null, null, "3 号育肥舍 · AI 诊断待处理");
+        report.setContentText("疑似猪流行性腹泻 · 发病 5 头 · ZM2610-031");
+        report.setBizId(7001L);
+        report.setBatchId(3001L);
+        Todo stock = todo(90105L, "FEED_LOW_STOCK", "WARNING", "PENDING", LocalDate.of(2026, 10, 19),
+                null, null, "库存不足");
+        stock.setBizId(80001L);
+        when(todoMapper.selectList(any())).thenReturn(List.of(report, stock));
+
+        var summary = service.productionSummary();
+
+        assertThat(summary.warnings()).extracting(w -> w.todoType())
+                .containsExactly("ABNORMAL_REPORT", "FEED_LOW_STOCK");
+        var abnormal = summary.warnings().get(0);
+        assertThat(abnormal.todoId()).isEqualTo(90201L);
+        assertThat(abnormal.subtitle()).isEqualTo("疑似猪流行性腹泻 · 发病 5 头 · ZM2610-031");
+        assertThat(abnormal.tagText()).isEqualTo("待处理");
+        assertThat(abnormal.route()).isEqualTo("I06");
+        assertThat(abnormal.reportId()).isEqualTo(7001L);
+        assertThat(abnormal.penId()).isEqualTo(2003L);
+        // 只有异常上报带 report_id
+        assertThat(summary.warnings().get(1).reportId()).isNull();
+    }
+
+    @Test
     void warningCollectionIncludesOldAndUndatedWarningsButExcludesWorkAndResolved() {
         Todo old = todo(1L, "FEED_LOW_STOCK", "WARNING", "PENDING", LocalDate.of(2026, 9, 1), null, null, "old");
         Todo undated = todo(2L, "DRUG_LOW_STOCK", "WARNING", "PENDING", null, null, null, "undated");

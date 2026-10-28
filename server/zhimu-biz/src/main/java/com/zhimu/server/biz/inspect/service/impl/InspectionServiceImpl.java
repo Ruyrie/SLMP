@@ -132,6 +132,27 @@ public class InspectionServiceImpl implements InspectionService {
         return vo;
     }
 
+    @Override
+    public DayAbnormal dayAbnormal(String date) {
+        LocalDate day = InspectRules.parseDate(date, BeijingTime.today());
+        requireNotFuture(day);
+        List<RowData> rows = dayRows(day);
+        List<AbnormalPen> pens = new ArrayList<>();
+        int open = 0;
+        for (RowData row : rows) {
+            switch (row.displayStatus()) {
+                case "ABNORMAL" -> pens.add(new AbnormalPen(row.pen().penId(), row.pen().penName(),
+                        row.inspection() == null ? null : row.inspection().getId(),
+                        row.inspection() == null ? null : row.inspection().getReportId()));
+                case "DONE" -> {
+                }
+                // 待巡与已漏巡都算未完成，与 summary 的 all_done 一致
+                default -> open++;
+            }
+        }
+        return new DayAbnormal(!rows.isEmpty() && open == 0, pens);
+    }
+
     // ===== API-I02 某日栏舍清单 =====
 
     @Override

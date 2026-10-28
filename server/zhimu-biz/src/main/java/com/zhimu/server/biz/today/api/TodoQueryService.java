@@ -10,7 +10,7 @@ public interface TodoQueryService {
     int countPendingForMember(Long farmId, Long userId);
 
     /**
-     * API-L01 生产概况用：当前养殖场（FarmContext）的今日待办数与未解除的预警类待办。
+     * API-L01 生产概况用：当前养殖场（FarmContext）的今日待办数与未解除的预警类待办（含未处理异常上报）。
      * 今日待办口径与 API-T02 一致（已逾期、今天到期、预警类与休药期到期）。
      */
     ProductionTodoSummary productionSummary();
@@ -23,9 +23,14 @@ public interface TodoQueryService {
         }
     }
 
-    /** 预警类待办（生产概况的提醒项） */
+    /** 预警类待办（生产概况的提醒项）；report_id 仅异常上报（ABNORMAL_REPORT）有值 */
     record WarningTodo(Long todoId, String todoType, String title, String subtitle, String tagText,
-                       Long batchId, String route) {
+                       Long batchId, String route, Long penId, Long reportId) {
+
+        public WarningTodo(Long todoId, String todoType, String title, String subtitle, String tagText,
+                           Long batchId, String route) {
+            this(todoId, todoType, title, subtitle, tagText, batchId, route, null, null);
+        }
     }
 
     /**

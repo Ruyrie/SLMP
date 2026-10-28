@@ -710,12 +710,13 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
             if (isTodayList(todo, today, now)) {
                 todayTodoCount++;
             }
-            // 异常上报在生产概况里已有“今日巡检发现异常”提醒项，这里不重复列出
-            if (TodoCategory.WARNING.name().equals(todo.getCategory())
-                    && !"ABNORMAL_REPORT".equals(todo.getTodoType())) {
+            // 未处理异常上报也列出（每条一行进 I06），与首页预警合集同口径；“今日巡检发现异常”汇总项由调用方去重
+            if (TodoCategory.WARNING.name().equals(todo.getCategory())) {
+                boolean report = "ABNORMAL_REPORT".equals(todo.getTodoType());
                 warnings.add(new WarningTodo(todo.getId(), todo.getTodoType(), todo.getTitle(),
                         todo.getContentText(), warningTag(todo.getTodoType()), todo.getBatchId(),
-                        TodoLinks.listRoute(todo.getTodoType())));
+                        TodoLinks.listRoute(todo.getTodoType()), todo.getPenId(),
+                        report ? todo.getBizId() : null));
             }
         }
         // pendingOfFarm 已按 sort_time 升序，提醒项保持“越早越靠前”
@@ -789,6 +790,7 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
             case "DRUG_NEAR_EXPIRY" -> "即将到期";
             case "DRUG_EXPIRED" -> "已过期";
             case "WITHDRAWAL_END" -> "休药中";
+            case "ABNORMAL_REPORT" -> "待处理";
             default -> "预警";
         };
     }
