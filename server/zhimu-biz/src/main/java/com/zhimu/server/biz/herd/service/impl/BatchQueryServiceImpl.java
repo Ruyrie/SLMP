@@ -124,6 +124,19 @@ public class BatchQueryServiceImpl implements BatchQueryService {
         return batch != null && "ACTIVE".equals(batch.getStatus());
     }
 
+    @Override
+    public List<PenStock> penStocks(Long batchId) {
+        if (batchId == null) {
+            return List.of();
+        }
+        List<BatchPen> pens = TenantSkip.call(() -> batchPenMapper.selectList(
+                Wrappers.<BatchPen>lambdaQuery()
+                        .eq(BatchPen::getBatchId, batchId)
+                        .gt(BatchPen::getStockCount, 0)
+                        .orderByAsc(BatchPen::getPenId)));
+        return pens.stream().map(row -> new PenStock(row.getPenId(), row.getStockCount())).toList();
+    }
+
     private List<Long> penIdsOf(Long batchId) {
         List<BatchPen> pens = TenantSkip.call(() -> batchPenMapper.selectList(
                 Wrappers.<BatchPen>lambdaQuery()

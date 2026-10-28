@@ -8,6 +8,7 @@ import com.zhimu.server.biz.inspect.mapper.AbnormalReportMapper;
 import com.zhimu.server.biz.inspect.mapper.AiDiagnosisAdviceMapper;
 import com.zhimu.server.biz.inspect.mapper.AiDiagnosisCauseMapper;
 import com.zhimu.server.biz.inspect.mapper.AiDiagnosisMapper;
+import com.zhimu.server.biz.inspect.support.AbnormalWarningTodos;
 import com.zhimu.server.biz.inspect.support.InspectSupport;
 import com.zhimu.server.biz.inspect.support.ParsedDiagnosis;
 import com.zhimu.server.common.util.BeijingTime;
@@ -27,6 +28,7 @@ public class DiagnosisWriter {
     private final AiDiagnosisAdviceMapper adviceMapper;
     private final AbnormalReportMapper reportMapper;
     private final InspectSupport support;
+    private final AbnormalWarningTodos warningTodos;
 
     @Transactional
     public void success(Long diagnosisId, String model, long latencyMs, ParsedDiagnosis parsed,
@@ -90,6 +92,8 @@ public class DiagnosisWriter {
             report.setAutoRetryUsed(true);
         }
         reportMapper.updateById(report);
+        // 诊断完成：预警待办改为“AI 诊断待处理”并带上疑似病因与紧急程度
+        warningTodos.sync(report);
     }
 
     @Transactional

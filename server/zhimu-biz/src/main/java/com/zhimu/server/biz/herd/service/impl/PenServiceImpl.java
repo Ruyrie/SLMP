@@ -278,12 +278,12 @@ public class PenServiceImpl implements PenService {
         return items;
     }
 
-    private List<UserBriefVO> staffOfPen(Pen pen) {
+    private List<PenDetailVO.PenStaff> staffOfPen(Pen pen) {
         Map<Long, FarmMember> members = new LinkedHashMap<>();
         for (FarmMember row : farmLookup.activeMembers(pen.getFarmId())) {
             members.put(row.getId(), row);
         }
-        List<UserBriefVO> result = new ArrayList<>();
+        List<PenDetailVO.PenStaff> result = new ArrayList<>();
         for (MemberPen row : farmLookup.pensOfFarm(pen.getFarmId())) {
             if (!pen.getId().equals(row.getPenId())) {
                 continue;
@@ -295,7 +295,7 @@ public class PenServiceImpl implements PenService {
             UserBriefVO brief = support.userBrief(row.getUserId(), staffMember.getRole());
             if (brief != null) {
                 brief.setAvatarUrl(support.avatarUrl(row.getUserId()));
-                result.add(brief);
+                result.add(PenDetailVO.PenStaff.of(brief, staffMember.getId()));
             }
         }
         return result;

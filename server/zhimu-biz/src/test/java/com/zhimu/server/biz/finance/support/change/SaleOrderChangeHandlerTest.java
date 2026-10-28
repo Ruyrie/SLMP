@@ -77,7 +77,8 @@ class SaleOrderChangeHandlerTest {
     void setUp() {
         BeijingTime.setClock(CLOCK);
         handler = new SaleOrderChangeHandler(orderMapper, receiptMapper, financeRecordMapper,
-                batchQueryService, batchSalePort, accountQueryService, operationLogRecorder, batchSettlementService);
+                batchQueryService, batchSalePort, accountQueryService, operationLogRecorder, batchSettlementService,
+                org.mockito.Mockito.mock(com.zhimu.server.biz.finance.support.ReceivableTodos.class));
         order = new SaleOrder();
         order.setId(9102L);
         order.setFarmId(1001L);

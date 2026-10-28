@@ -26,6 +26,7 @@ import com.zhimu.server.biz.health.service.MedicationService;
 import com.zhimu.server.biz.health.support.HealthAudit;
 import com.zhimu.server.biz.health.support.HealthCodes;
 import com.zhimu.server.biz.health.support.HealthFormat;
+import com.zhimu.server.biz.health.support.HealthManagerNotifier;
 import com.zhimu.server.biz.health.support.HealthSupport;
 import com.zhimu.server.biz.health.support.MedicationLogSnapshot;
 import com.zhimu.server.biz.health.vo.DeleteImpactVO;
@@ -44,27 +45,22 @@ import com.zhimu.server.biz.stock.api.DrugLotOption;
 import com.zhimu.server.biz.stock.api.DrugStockCommand;
 import com.zhimu.server.biz.stock.api.DrugStockPort;
 import com.zhimu.server.biz.stock.api.StockConsumeResult;
-import com.zhimu.server.biz.today.api.MessageCommand;
-import com.zhimu.server.biz.today.api.MessageService;
 import com.zhimu.server.common.api.PageQuery;
 import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.common.context.RequestContext;
 import com.zhimu.server.common.context.UserContext;
 import com.zhimu.server.common.enums.BizType;
-import com.zhimu.server.common.enums.MsgType;
 import com.zhimu.server.common.enums.Species;
 import com.zhimu.server.common.error.BizException;
 import com.zhimu.server.common.error.ErrorCode;
 import com.zhimu.server.common.util.BeijingTime;
 import com.zhimu.server.common.vo.ChangeRequestStateVO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,10 +68,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -94,8 +88,7 @@ public class MedicationServiceImpl implements MedicationService {
     private final DrugStockPort drugStockPort;
     private final DrugCatalogQueryService drugCatalogQueryService;
     private final com.zhimu.server.biz.herd.api.BatchQueryService batchQueryService;
-    private final MessageService messageService;
-    private final StringRedisTemplate stringRedisTemplate;
+    private final HealthManagerNotifier managerNotifier;
 
     // ===== API-D17 休药状态 =====
 
@@ -769,45 +762,11 @@ public class MedicationServiceImpl implements MedicationService {
     @Override
     public NotifyResultVO notifyManager(Long recordId, NotifyManagerRequest request) {
         MedicationRecord record = requireRecord(recordId);
-        if (!support.staffView()) {
-            throw new BizException(ErrorCode.ROLE_FORBIDDEN, "只有员工可以通知场长");
-        }
-        if (UserContext.userId() == null || !UserContext.userId().equals(record.getCreatedBy())) {
-            throw new BizException(ErrorCode.ROLE_FORBIDDEN, "只能通知本人登记的记录");
-        }
-        List<FarmMemberRow> managers = notifyReceivers();
-        if (managers.isEmpty()) {
-            throw new BizException(ErrorCode.NOT_FOUND, "本场没有可通知的场长");
-        }
-        String key = "rate:D27:" + UserContext.userId() + ":" + recordId;
-        Boolean first = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", Duration.ofMinutes(10));
-        NotifyResultVO vo = new NotifyResultVO();
-        for (FarmMemberRow row : managers) {
-            vo.getNotifiedNames().add(row.getName());
-        }
-        if (!Boolean.TRUE.equals(first)) {
-            throw new BizException(ErrorCode.TOO_FREQUENT,
-                    "已通知" + String.join("、", vo.getNotifiedNames()) + "，请勿重复发送")
-                    .with("cooldown_seconds", 600);
-        }
         String action = request == null || request.getAction() == null ? "UPDATE" : request.getAction();
-        Set<Long> receivers = new LinkedHashSet<>();
-        for (FarmMemberRow row : managers) {
-            receivers.add(row.getUserId());
-        }
-        messageService.send(MessageCommand.builder()
-                .msgType(MsgType.STAFF_NOTIFY)
-                .farmId(support.farmId())
-                .receiverUserIds(receivers)
-                .title(support.userName(UserContext.userId()) + "请你处理用药记录")
-                .summary(support.batchNo(record.getBatchId()) + " · " + record.getDrugName() + " · "
-                        + HealthFormat.rangeText(record.getFirstDate(), record.getLastDate()))
-                .bizType(BizType.MEDICATION_RECORD)
-                .bizId(recordId)
-                .route("D05")
-                .extra("action", action)
-                .build());
-        return vo;
+        return managerNotifier.notify(new HealthManagerNotifier.Notice("D27", recordId, record.getCreatedBy(), null,
+                "用药记录", support.batchNo(record.getBatchId()) + " · " + record.getDrugName() + " · "
+                + HealthFormat.rangeText(record.getFirstDate(), record.getLastDate()),
+                BizType.MEDICATION_RECORD, "D05", Map.of("action", action)));
     }
 
     // ===== 休药重算 =====
@@ -906,23 +865,6 @@ public class MedicationServiceImpl implements MedicationService {
                 return;
             }
         }
-    }
-
-    private List<FarmMemberRow> notifyReceivers() {
-        List<FarmMemberRow> managers = new ArrayList<>();
-        for (FarmMemberRow row : support.members()) {
-            if ("MANAGER".equals(row.getRole())) {
-                managers.add(row);
-            }
-        }
-        if (managers.isEmpty()) {
-            for (FarmMemberRow row : support.members()) {
-                if ("OWNER".equals(row.getRole())) {
-                    managers.add(row);
-                }
-            }
-        }
-        return managers;
     }
 
     // ===== 组装 =====

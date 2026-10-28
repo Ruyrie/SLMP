@@ -27,6 +27,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CourseConvert {
     private final CourseCoverResolver covers;
+    private final com.zhimu.server.biz.ai.support.AiShareLinks shareLinks;
 
     public String topicCover(CourseTopic topic) {
         return covers.resolve(topic);
@@ -90,7 +91,7 @@ public class CourseConvert {
         vo.setSourceLabel(course.getSourceLabel());
         vo.setUpdatedAt(BeijingTime.format(course.getUpdatedAt()));
         vo.setCoverUrl(covers.resolve(course));
-        vo.setShareUrl(course.getShareUrl());
+        vo.setShareUrl(shareLinks.course(course.getId()));
         vo.setKnowledgeId(course.getKnowledgeId());
         vo.setSectionNo(course.getSectionNo());
         List<VideoSourceVO> sources = new ArrayList<>();
@@ -132,5 +133,10 @@ public class CourseConvert {
         boolean completed = progress.getCompleted() != null && progress.getCompleted() == 1;
         int max = progress.getMaxPositionSec() == null ? 0 : progress.getMaxPositionSec();
         return AiText.learnStatus(completed, max);
+    }
+
+    /** 专题分享地址（K07 分享；Web 用户端养殖课堂页打开专题） */
+    public String topicShareUrl(Long topicId) {
+        return shareLinks.topic(topicId);
     }
 }

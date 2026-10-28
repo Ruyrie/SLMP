@@ -45,7 +45,8 @@ class FinancePortAdaptersTest {
         when(command.sale(any())).thenReturn(new BatchStockCommandService.BatchSaleResult(
                 3001L, "ACTIVE", 50, 150, 50, false, List.of(), List.of()));
 
-        BatchSaleAdapter adapter = new BatchSaleAdapter(command, mock(com.zhimu.server.biz.finance.mapper.SaleOrderMapper.class));
+        BatchSaleAdapter adapter = new BatchSaleAdapter(command, mock(com.zhimu.server.biz.herd.api.BatchQueryService.class),
+                mock(com.zhimu.server.biz.finance.mapper.SaleOrderMapper.class));
         int remaining = adapter.saleOut(1001L, 3001L, LocalDate.of(2026, 10, 19),
                 Map.of(2003L, 50), 9106L);
 
@@ -56,7 +57,8 @@ class FinancePortAdaptersTest {
     @Test
     void batchSaleAdapterRestoresByIdempotentKey() {
         BatchStockCommandService command = mock(BatchStockCommandService.class);
-        BatchSaleAdapter adapter = new BatchSaleAdapter(command, mock(com.zhimu.server.biz.finance.mapper.SaleOrderMapper.class));
+        BatchSaleAdapter adapter = new BatchSaleAdapter(command, mock(com.zhimu.server.biz.herd.api.BatchQueryService.class),
+                mock(com.zhimu.server.biz.finance.mapper.SaleOrderMapper.class));
 
         adapter.restoreSale(1001L, 3001L, LocalDate.of(2026, 10, 19), Map.of(2003L, 50), 9106L);
 
@@ -73,7 +75,7 @@ class FinancePortAdaptersTest {
         when(mapper.selectById(9106L)).thenReturn(order);
         when(command.sale(any())).thenReturn(new BatchStockCommandService.BatchSaleResult(
                 3001L, "ACTIVE", 40, 160, 40, false, List.of(), List.of()));
-        BatchSaleAdapter adapter = new BatchSaleAdapter(command, mapper);
+        BatchSaleAdapter adapter = new BatchSaleAdapter(command, mock(com.zhimu.server.biz.herd.api.BatchQueryService.class), mapper);
         assertThat(adapter.adjustSale(1001L, 3001L, LocalDate.of(2026, 10, 19),
                 Map.of(2003L, -10), 9106L)).isEqualTo(160);
         var sequence = org.mockito.Mockito.inOrder(command);

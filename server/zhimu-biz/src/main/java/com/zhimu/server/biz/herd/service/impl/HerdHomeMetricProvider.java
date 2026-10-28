@@ -46,6 +46,11 @@ public class HerdHomeMetricProvider implements HomeMetricProvider {
     }
 
     @Override
+    public Integer penCount(Long farmId) {
+        return support.pensOfFarm(farmId).size();
+    }
+
+    @Override
     public BigDecimal penOccupancyRate(Long farmId) {
         int stock = 0;
         int capacity = 0;

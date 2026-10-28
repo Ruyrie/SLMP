@@ -25,6 +25,13 @@ public interface BatchQueryService {
     /** 批次存在、未删除且在养 */
     boolean isActive(Long batchId);
 
+    /** 批次各栏舍当前在栏数（t_batch_pen，只含在栏数大于 0 的栏舍，按栏舍 ID 升序）；调用方自行校验养殖场 */
+    default List<PenStock> penStocks(Long batchId) {
+        return List.of();
+    }
+
+    record PenStock(Long penId, int stockCount) { }
+
     /** 养殖场在日期区间内（含两端）登记的死淘头数（生效的 DEATH 事件之和，经营报表死亡率用），默认 0 */
     default int deathCount(Collection<Long> farmIds, LocalDate start, LocalDate end) {
         return 0;

@@ -36,6 +36,7 @@ import com.zhimu.server.biz.inspect.request.HandleSaveRequest;
 import com.zhimu.server.biz.inspect.service.AbnormalReportService;
 import com.zhimu.server.biz.inspect.service.DiagnosisService;
 import com.zhimu.server.biz.inspect.support.InspectRules;
+import com.zhimu.server.biz.inspect.support.AbnormalWarningTodos;
 import com.zhimu.server.biz.inspect.support.InspectSupport;
 import com.zhimu.server.biz.inspect.vo.AbnormalReportListItemVO;
 import com.zhimu.server.biz.inspect.vo.DiagnosisDetailVO;
@@ -93,6 +94,7 @@ public class AbnormalReportServiceImpl implements AbnormalReportService {
     private final BaseDataQueryService baseDataQueryService;
     private final BreedQueryService breedQueryService;
     private final DiagnosisService diagnosisService;
+    private final AbnormalWarningTodos warningTodos;
 
     // ===== API-I14 上报表单 =====
 
@@ -290,6 +292,8 @@ public class AbnormalReportServiceImpl implements AbnormalReportService {
             inspectionMapper.updateById(inspection);
         }
         AiDiagnosis attempt = diagnosisService.createAttempt(report, "SUBMIT", null);
+        // 未处理的异常上报计入首页预警数与 T09 预警列表
+        warningTodos.sync(report);
         AfterCommit.run(() -> diagnosisService.executeAsync(attempt.getId()));
         return createResult(report);
     }
@@ -662,6 +666,8 @@ public class AbnormalReportServiceImpl implements AbnormalReportService {
         }
         report.setUpdatedBy(member.userId());
         reportMapper.updateById(report);
+        // 登记处理结果后预警待办自动完成
+        warningTodos.sync(report);
 
         HandleSaveResultVO vo = new HandleSaveResultVO();
         vo.setReportId(report.getId());

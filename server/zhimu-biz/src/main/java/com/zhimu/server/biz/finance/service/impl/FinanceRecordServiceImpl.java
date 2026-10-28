@@ -297,17 +297,21 @@ public class FinanceRecordServiceImpl implements FinanceRecordService {
 
     @Override
     public FinanceRecordVos.RecordPageVO listRecords(FinanceQueries.FinanceRecordQuery query) {
-        YearMonth target;
-        try {
-            target = YearMonth.parse(query.getMonth(), BeijingTime.MONTH);
-        } catch (Exception e) {
-            throw FinanceErrors.field("month", "月份格式应为 yyyy-MM");
-        }
-        FinanceErrors.require(!target.isAfter(YearMonth.from(BeijingTime.today())), "month", "月份不能晚于本月");
-        LocalDate start = target.atDay(1);
-        LocalDate end = target.atEndOfMonth();
         ScopeFarms scope = scopeFarms(query.getScope());
-        List<FinanceRecord> all = records(scope.ids(), start, end);
+        List<FinanceRecord> all;
+        if ((query.getMonth() == null || query.getMonth().isBlank()) && query.getBatchId() != null) {
+            // E10 批次核算进入 E04：不传月份时按该批次全部收支查询
+            all = recordsOfBatch(scope.ids(), query.getBatchId());
+        } else {
+            YearMonth target;
+            try {
+                target = YearMonth.parse(query.getMonth(), BeijingTime.MONTH);
+            } catch (Exception e) {
+                throw FinanceErrors.field("month", "月份格式应为 yyyy-MM");
+            }
+            FinanceErrors.require(!target.isAfter(YearMonth.from(BeijingTime.today())), "month", "月份不能晚于本月");
+            all = records(scope.ids(), target.atDay(1), target.atEndOfMonth());
+        }
 
         String type = query.getType() == null ? FinanceConst.ALL : query.getType();
         Set<Long> categoryIds = parseIds(query.getCategoryIds());
@@ -868,6 +872,16 @@ public class FinanceRecordServiceImpl implements FinanceRecordService {
         return TenantSkip.call(() -> recordMapper.selectList(Wrappers.<FinanceRecord>lambdaQuery()
                 .in(FinanceRecord::getFarmId, farmIds)
                 .between(FinanceRecord::getRecordDate, start, end)
+                .eq(FinanceRecord::getStatus, FinanceConst.RECORD_NORMAL)));
+    }
+
+    private List<FinanceRecord> recordsOfBatch(Collection<Long> farmIds, Long batchId) {
+        if (farmIds.isEmpty() || batchId == null) {
+            return List.of();
+        }
+        return TenantSkip.call(() -> recordMapper.selectList(Wrappers.<FinanceRecord>lambdaQuery()
+                .in(FinanceRecord::getFarmId, farmIds)
+                .eq(FinanceRecord::getBatchId, batchId)
                 .eq(FinanceRecord::getStatus, FinanceConst.RECORD_NORMAL)));
     }
 

@@ -49,6 +49,7 @@ class SaleOrderCreateServiceImplTest {
     @Mock private FinanceSupport support;
     @Mock private TodoSourceWriteService todoWriter;
     @Mock private com.zhimu.server.biz.finance.service.BatchSettlementService batchSettlementService;
+    @Mock private com.zhimu.server.biz.finance.support.ReceivableTodos receivableTodos;
     @InjectMocks private SaleOrderServiceImpl service;
     private FinanceRequests.SaleOrderRequest request;
 

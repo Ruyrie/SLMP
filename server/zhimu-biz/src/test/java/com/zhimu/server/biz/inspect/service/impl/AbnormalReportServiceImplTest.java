@@ -77,6 +77,7 @@ class AbnormalReportServiceImplTest {
     @Mock private DiagnosisService diagnosisService;
 
     private AbnormalReportServiceImpl service;
+    @org.mockito.Mock private com.zhimu.server.biz.inspect.support.AbnormalWarningTodos warningTodos;
     private BatchInfo batch;
 
     @BeforeEach
@@ -85,7 +86,7 @@ class AbnormalReportServiceImplTest {
         InspectFixtures.loginOwner();
         service = new AbnormalReportServiceImpl(reportMapper, symptomMapper, diagnosisMapper, causeMapper,
                 adviceMapper, handleMapper, inspectionMapper, support, bizMediaService, dictQueryService,
-                baseDataQueryService, breedQueryService, diagnosisService);
+                baseDataQueryService, breedQueryService, diagnosisService, warningTodos);
         batch = InspectFixtures.batch(3001L, "ZM2610-031", 101L, 1101L, LocalDate.of(2026, 10, 1), 78,
                 200, 2003L);
         lenient().when(support.member()).thenAnswer(invocation -> FarmContext.require());

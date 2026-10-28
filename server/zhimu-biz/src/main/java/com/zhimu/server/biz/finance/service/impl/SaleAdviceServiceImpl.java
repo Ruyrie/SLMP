@@ -1,6 +1,7 @@
 package com.zhimu.server.biz.finance.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.zhimu.server.biz.feeding.api.BatchGrowthQueryService;
 import com.zhimu.server.biz.finance.entity.MarketPrice;
 import com.zhimu.server.biz.finance.entity.SaleAdvice;
 import com.zhimu.server.biz.finance.entity.SaleAdviceRisk;
@@ -56,6 +57,7 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
     private final MarketPriceService marketPriceService;
     private final AiGateway aiGateway;
     private final FinanceSupport support;
+    private final BatchGrowthQueryService growthQueryService;
 
     @Override
     @Transactional
@@ -149,7 +151,7 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
         advice.setWindowEnd(sellable.plusDays(7));
         advice.setReasonWithdrawal(withdrawal.getReasonWithdrawal());
         advice.setReasonAge(ageReason(batch));
-        advice.setReasonWeight(withdrawal.getReasonWeight());
+        advice.setReasonWeight(weightReason(batch));
         advice.setReasonPrice(withdrawal.getReasonPrice());
         advice.setBasisInsufficient(Boolean.TRUE.equals(withdrawal.getBasisInsufficient()));
         advice.setBasisNote(withdrawal.getBasisNote());
@@ -252,6 +254,7 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
                 + FinanceSupport.daysBetween(batch.entryDate(), BeijingTime.today()))
                 + "；当前存栏：" + batch.currentCount() + "；累计死淘：" + batch.deathCount()
                 + "；已出栏：" + batch.soldCount()
+                + "；体重：" + weightReason(batch)
                 + (price == null ? "；近期无行情价" : "；今日出栏价：" + price.getPrice() + " 元/千克")
                 + "。请给出是否近期出栏的建议。";
     }
@@ -277,8 +280,48 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
         return dayAge + " 日龄，存栏 " + (batch.currentCount() == null ? 0 : batch.currentCount()) + " 头。";
     }
 
+    /** 体重依据：最近一次称重均重与同日龄品种标准对比；没有称重时给当前日龄的标准体重（不超过 100 字） */
     private String weightReason(BatchInfo batch) {
-        return "最近称重数据待模块06 接入。";
+        BatchGrowthQueryService.WeighSnapshot weigh;
+        try {
+            weigh = growthQueryService.latestWeighing(batch.farmId(), batch.batchId(), batch.breedId(), dayAge(batch));
+        } catch (RuntimeException e) {
+            weigh = null;
+        }
+        if (weigh == null || weigh.avgWeight() == null) {
+            if (weigh != null && weigh.currentStdWeight() != null) {
+                return "暂无称重记录；当前 " + dayAge(batch) + " 日龄品种标准体重约 " + kg(weigh.currentStdWeight())
+                        + " 千克。";
+            }
+            return "暂无称重记录，建议出栏前抽样称重。";
+        }
+        StringBuilder text = new StringBuilder("最近一次称重（" + weigh.weighDate().getMonthValue() + "月"
+                + weigh.weighDate().getDayOfMonth() + "日）均重 " + kg(weigh.avgWeight()) + " 千克");
+        if (weigh.stdWeight() != null && weigh.deviationRatio() != null) {
+            BigDecimal percent = weigh.deviationRatio().abs().multiply(BigDecimal.valueOf(100))
+                    .setScale(0, java.math.RoundingMode.HALF_UP);
+            int sign = weigh.deviationRatio().signum();
+            text.append("，").append(sign == 0 || percent.signum() == 0 ? "与同日龄标准 " + kg(weigh.stdWeight())
+                    + " 千克持平" : (sign < 0 ? "低于" : "高于") + "同日龄标准 " + kg(weigh.stdWeight()) + " 千克约 "
+                    + percent.toPlainString() + "%");
+        } else {
+            text.append("，该品种暂无标准体重");
+        }
+        text.append("。");
+        if (weigh.currentStdWeight() != null && weigh.dayAge() != null && weigh.dayAge() < dayAge(batch)) {
+            text.append("当前日龄标准约 ").append(kg(weigh.currentStdWeight())).append(" 千克。");
+        }
+        String value = text.toString();
+        return value.length() > 100 ? value.substring(0, 100) : value;
+    }
+
+    private static int dayAge(BatchInfo batch) {
+        return (batch.entryAgeDays() == null ? 0 : batch.entryAgeDays())
+                + FinanceSupport.daysBetween(batch.entryDate(), BeijingTime.today());
+    }
+
+    private static String kg(BigDecimal value) {
+        return value.setScale(1, java.math.RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
     }
 
     private String priceReason(BatchInfo batch) {

@@ -7,14 +7,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 首页指标扩展点：后续模块注册为 Spring Bean 后，首页自动读取其指标；没有实现时返回 0 / 空。
- * <p>
- * 本批只接模块02 与种子数据，未接入的模块标“待模块xx”：
+ * 首页指标扩展点：各模块注册为 Spring Bean 后，首页自动读取其指标；没有实现时返回 0 / 空。
  * <ul>
- *     <li>存栏、批次数、栏舍占用率：待模块04（栏舍/批次）</li>
- *     <li>预警数、预警名称：模块07（巡检异常、紧急诊断）待接入；本批按 TODO 表预警类待办统计</li>
- *     <li>待收款笔数/天数/金额：待模块10（出栏与收款）</li>
- *     <li>AI 推荐问：待模块07/11 接入，本批返回空</li>
+ *     <li>存栏、批次数、栏舍占用率、栏舍数、计数单位、员工负责栏舍：模块04（HerdHomeMetricProvider）</li>
+ *     <li>休药批次与可出栏日：模块08（HealthHomeMetricProvider）</li>
+ *     <li>预警数、待收款不走本接口：由来源模块写入 t_todo（WARNING 类：库存预警、异常上报；
+ *     RECEIVABLE：出栏单未收款），首页与 T09 列表同口径统计</li>
  * </ul>
  */
 public interface HomeMetricProvider {
@@ -32,33 +30,13 @@ public interface HomeMetricProvider {
         return 0;
     }
 
-    /** 栏舍占用率（0–1），没有返回 null */
-    default BigDecimal penOccupancyRate(Long farmId) {
+    /** 栏舍数（含停用，不含已删除）；没有实现返回 null（首页按员工负责栏舍 / 有栏舍兜底） */
+    default Integer penCount(Long farmId) {
         return null;
     }
 
-    /** 未解除的预警数（不含休药中批次），没有返回 0 */
-    default int warningCount(Long farmId) {
-        return 0;
-    }
-
-    /** 预警名称（首页展示前几个），没有返回空集合 */
-    default List<String> warningNames(Long farmId) {
-        return List.of();
-    }
-
-    /** 待收款已逾期笔数，没有返回 0 */
-    default int receivableOverdueCount(Long farmId) {
-        return 0;
-    }
-
-    /** 待收款最大逾期天数，没有返回 0 */
-    default int receivableMaxOverdueDays(Long farmId) {
-        return 0;
-    }
-
-    /** 待收款未收金额，没有返回 null */
-    default BigDecimal receivableAmount(Long farmId) {
+    /** 栏舍占用率（0–1），没有返回 null */
+    default BigDecimal penOccupancyRate(Long farmId) {
         return null;
     }
 

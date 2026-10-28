@@ -1,6 +1,7 @@
 package com.zhimu.server.biz.breeding.mapper;
 
 import com.zhimu.server.biz.breeding.support.BreedingMemberRow;
+import com.zhimu.server.biz.breeding.support.BreedingPenStaffRow;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -19,4 +20,14 @@ public interface BreedingRefMapper {
             WHERE farm_id = #{farmId} AND active_flag = 1 AND status = 'ACTIVE'
             """)
     List<BreedingMemberRow> memberRoles(@Param("farmId") Long farmId);
+
+    /** 栏舍负责员工（t_member_pen，只取在场成员），按栏舍、用户排序 */
+    @Select("""
+            SELECT mp.pen_id, mp.user_id
+            FROM t_member_pen mp
+            JOIN t_farm_member m ON m.id = mp.member_id AND m.active_flag = 1
+            WHERE mp.farm_id = #{farmId}
+            ORDER BY mp.pen_id, mp.user_id
+            """)
+    List<BreedingPenStaffRow> penStaff(@Param("farmId") Long farmId);
 }

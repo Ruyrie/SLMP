@@ -20,6 +20,7 @@ import com.zhimu.server.biz.breeding.vo.IncubationDetailVO;
 import com.zhimu.server.biz.breeding.vo.RegisterResultVO;
 import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.herd.api.PenInfo;
+import com.zhimu.server.biz.herd.api.SelfBredBatchService;
 import com.zhimu.server.common.context.FarmContext;
 import com.zhimu.server.common.context.UserContext;
 import com.zhimu.server.common.enums.BizType;
@@ -45,10 +46,14 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class IncubationServiceImpl implements IncubationService {
 
+    /** 自繁批次来源记录类型（t_batch.source_record_type） */
+    static final String SOURCE_INCUBATION = "INCUBATION";
+
     private final IncubationMapper incubationMapper;
     private final BreedingSupport support;
     private final IncubationConvert convert;
     private final OperationLogRecorder operationLogRecorder;
+    private final SelfBredBatchService selfBredBatchService;
 
     @Override
     @Transactional
@@ -281,9 +286,14 @@ public class IncubationServiceImpl implements IncubationService {
         incubation.setTargetPenId(transfer ? targetPenId : null);
         incubation.setOffspringBreedId(transfer ? offspringBreedId : null);
         incubation.setCapacityConfirmed(Boolean.TRUE.equals(request.getCapacityConfirmed()));
-        // TODO 模块04 提供写入口后改为同一事务创建自繁批次（数量 = 健雏、入栏日期 = 出雏日期、日龄 0、
-        //  source_record_type = INCUBATION）；当前批次只读，batch_id 暂空。
-        incubation.setBatchId(null);
+        // 转为新批次：同一事务创建自繁批次（数量 = 健雏、入栏日期 = 出雏日期、日龄 0、来源 INCUBATION + 记录 ID）
+        SelfBredBatchService.CreatedBatch createdBatch = null;
+        if (transfer) {
+            createdBatch = selfBredBatchService.create(targetPenId, offspringBreedId, healthy,
+                    incubation.getHatchDate(), Boolean.TRUE.equals(request.getCapacityConfirmed()),
+                    SOURCE_INCUBATION, incubation.getId());
+        }
+        incubation.setBatchId(createdBatch == null ? null : createdBatch.batchId());
         incubation.setHatchBy(userId);
         incubation.setHatchAt(BeijingTime.now());
         incubation.setHatchRequestId(requestId);
@@ -298,7 +308,7 @@ public class IncubationServiceImpl implements IncubationService {
         vo.setIncubationId(incubation.getId());
         vo.setExpectedHatchDate(BeijingTime.format(incubation.getExpectedHatchDate()));
         vo.setBatchId(incubation.getBatchId());
-        vo.setBatchNo(support.batchNo(incubation.getBatchId()));
+        vo.setBatchNo(createdBatch != null ? createdBatch.batchNo() : support.batchNo(incubation.getBatchId()));
         vo.setTodoCompleted(true);
         return vo;
     }
@@ -355,7 +365,9 @@ public class IncubationServiceImpl implements IncubationService {
         FarmContext.FarmMember viewer = FarmContext.get();
         return convert.detail(incubation, viewer == null ? null : viewer.farmName(), flockText,
                 support.breedName(incubation.getBreedId()), targetPen == null ? null : targetPen.penName(),
-                support.breedName(incubation.getOffspringBreedId()), batch == null ? null : batch.batchNo(), users);
+                support.breedName(incubation.getOffspringBreedId()),
+                // batch_no 与 batch_id 成对：健雏转入的新批次号（App 出雏步骤“新批次”行）；种禽批次号已在 flock_text 里
+                support.batchNo(incubation.getBatchId()), users);
     }
 
     public static String flockText(String penName, String batchNo) {

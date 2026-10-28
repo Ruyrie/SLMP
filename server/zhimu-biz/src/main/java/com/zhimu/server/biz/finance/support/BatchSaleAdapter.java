@@ -1,6 +1,7 @@
 package com.zhimu.server.biz.finance.support;
 
 import com.zhimu.server.biz.finance.api.BatchSalePort;
+import com.zhimu.server.biz.herd.api.BatchQueryService;
 import com.zhimu.server.biz.herd.api.BatchStockCommandService;
 import com.zhimu.server.common.enums.BizType;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +15,8 @@ import java.util.Map;
 
 /**
  * 模块10 出栏单写入模块04 存栏的适配器。
- * 创建出栏单调用 sale、作废调用 restoreSale；数量调整先恢复原扣减，
- * 再按审核后的完整栏舍分配重新出栏，由调用方事务保证原子性。
+ * 各栏舍可出数读模块04 的 t_batch_pen；创建出栏单调用 sale、作废调用 restoreSale（返回恢复后的批次存栏）；
+ * 数量调整先恢复原扣减，再按审核后的完整栏舍分配重新出栏，由调用方事务保证原子性。
  */
 @Component
 @Primary
@@ -23,12 +24,20 @@ import java.util.Map;
 public class BatchSaleAdapter implements BatchSalePort {
 
     private final BatchStockCommandService batchStockCommandService;
+    private final BatchQueryService batchQueryService;
     private final com.zhimu.server.biz.finance.mapper.SaleOrderMapper orderMapper;
 
+    /** 读模块04 的 t_batch_pen：各栏舍真实在栏数（跨栏舍批次出栏按此分配与校验） */
     @Override
     public List<PenStock> penStocks(Long batchId) {
-        // 模块04 未提供按批次查各栏舍存栏的只读端口，返回空列表由调用方用批次 currentCount 兜底
-        return List.of();
+        if (batchId == null) {
+            return List.of();
+        }
+        List<PenStock> result = new ArrayList<>();
+        for (BatchQueryService.PenStock stock : batchQueryService.penStocks(batchId)) {
+            result.add(new PenStock(stock.penId(), null, stock.stockCount()));
+        }
+        return result;
     }
 
     @Override
@@ -62,7 +71,20 @@ public class BatchSaleAdapter implements BatchSalePort {
             return -1;
         }
         batchStockCommandService.restoreSale(BizType.SALE_ORDER, saleOrderId);
-        return -1;
+        return currentCount(batchId);
+    }
+
+    /** 恢复后的批次存栏；批次不存在时返回 -1（调用方不依赖返回值） */
+    private int currentCount(Long batchId) {
+        if (batchId == null) {
+            return -1;
+        }
+        try {
+            Integer count = batchQueryService.requireBatch(batchId).currentCount();
+            return count == null ? 0 : count;
+        } catch (RuntimeException e) {
+            return -1;
+        }
     }
 
     @Override

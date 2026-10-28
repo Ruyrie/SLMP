@@ -17,13 +17,11 @@ import com.zhimu.server.biz.herd.api.BatchQueryService;
 import com.zhimu.server.biz.stock.api.DrugLotOption;
 import com.zhimu.server.biz.stock.api.DrugStockPort;
 import com.zhimu.server.biz.stock.api.StockConsumeResult;
-import com.zhimu.server.biz.today.api.MessageService;
 import com.zhimu.server.common.util.BeijingTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -49,8 +47,8 @@ class MedicationServiceAuditTest {
         HealthTableInfo.ensure();
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-27T03:00:00Z"), BeijingTime.ZONE));
         service = new MedicationServiceImpl(records, mock(BatchWithdrawalMapper.class), references,
-                support, audit, stock, catalogs, mock(BatchQueryService.class), mock(MessageService.class),
-                mock(StringRedisTemplate.class));
+                support, audit, stock, catalogs, mock(BatchQueryService.class),
+                mock(com.zhimu.server.biz.health.support.HealthManagerNotifier.class));
         when(support.farmId()).thenReturn(1001L);
         when(support.managerView()).thenReturn(true);
         when(support.userName(10001L)).thenReturn("王建国");

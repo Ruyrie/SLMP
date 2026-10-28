@@ -212,6 +212,28 @@ public class BreedingSupport {
         return users(List.of(userId)).get(userId);
     }
 
+    /** 当前养殖场各栏舍负责员工姓名（栏舍 ID → 姓名列表，同 PenServiceImpl 栏舍详情的负责人员口径） */
+    public Map<Long, List<String>> penStaffNames() {
+        Map<Long, List<String>> result = new LinkedHashMap<>();
+        List<BreedingPenStaffRow> rows = refMapper.penStaff(farmId());
+        if (rows == null || rows.isEmpty()) {
+            return result;
+        }
+        Map<Long, AccountBrief> briefs = accountQueryService.listBriefs(
+                rows.stream().map(BreedingPenStaffRow::getUserId).filter(Objects::nonNull).distinct().toList());
+        for (BreedingPenStaffRow row : rows) {
+            AccountBrief brief = briefs == null ? null : briefs.get(row.getUserId());
+            if (row.getPenId() == null || brief == null || brief.name() == null) {
+                continue;
+            }
+            List<String> names = result.computeIfAbsent(row.getPenId(), id -> new java.util.ArrayList<>());
+            if (!names.contains(brief.name())) {
+                names.add(brief.name());
+            }
+        }
+        return result;
+    }
+
     /** 批量取登记人等账号姓名与在本场的角色（一次查询；不在本场时只回姓名） */
     public Map<Long, UserBriefVO> users(Collection<Long> userIds) {
         Map<Long, UserBriefVO> result = new LinkedHashMap<>();

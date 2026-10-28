@@ -62,6 +62,7 @@ public class TodoLinks {
             case "DRUG_NEAR_EXPIRY", "DRUG_EXPIRED" -> "M06";
             case "WITHDRAWAL_END" -> "D05";
             case "RECEIVABLE" -> "E07";
+            case "ABNORMAL_REPORT" -> "I06";
             default -> "T04";
         };
     }
@@ -81,6 +82,7 @@ public class TodoLinks {
             case "DRUG_NEAR_EXPIRY", "DRUG_EXPIRED" -> "M07";
             case "WITHDRAWAL_END" -> "E06";
             case "RECEIVABLE" -> "E07";
+            case "ABNORMAL_REPORT" -> "I06";
             default -> "T04";
         };
     }
@@ -104,6 +106,7 @@ public class TodoLinks {
                 case "DRUG_LOW_STOCK", "DRUG_NEAR_EXPIRY", "DRUG_EXPIRED" ->
                         params.put("drug_id", String.valueOf(todo.getBizId()));
                 case "RECEIVABLE" -> params.put("sale_order_id", String.valueOf(todo.getBizId()));
+                case "ABNORMAL_REPORT" -> params.put("report_id", String.valueOf(todo.getBizId()));
                 default -> {
                 }
             }

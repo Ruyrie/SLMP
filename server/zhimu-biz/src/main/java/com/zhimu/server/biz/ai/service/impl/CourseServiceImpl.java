@@ -171,6 +171,7 @@ public class CourseServiceImpl implements CourseService {
         vo.setCategoryName(topic.getCategoryName());
         vo.setCoverUrl(convert.topicCover(topic));
         vo.setIntro(topic.getIntro());
+        vo.setShareUrl(convert.topicShareUrl(topic.getId()));
         vo.setCourseCount(courses.size());
         vo.setTotalDurationSec(courses.stream().mapToInt(c -> value(c.getDurationSec())).sum());
         List<CourseCardVO> cards = new ArrayList<>();

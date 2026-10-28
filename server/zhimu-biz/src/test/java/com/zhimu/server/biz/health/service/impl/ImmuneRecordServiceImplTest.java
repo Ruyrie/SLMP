@@ -90,6 +90,9 @@ class ImmuneRecordServiceImplTest {
     @Mock private DrugCatalogQueryService drugCatalogQueryService;
     @Mock private HealthAudit audit;
     @Mock private HealthTodoSource todoSource;
+    @Mock private com.zhimu.server.biz.today.api.MessageService messageService;
+    @Mock private org.springframework.data.redis.core.StringRedisTemplate redisTemplate;
+    @Mock private org.springframework.data.redis.core.ValueOperations<String, String> redisValues;
 
     private ImmuneRecordServiceImpl service;
 
@@ -109,7 +112,9 @@ class ImmuneRecordServiceImplTest {
         HealthSupport support = new HealthSupport(referenceMapper, batchQueryService, penQueryService,
                 dictQueryService, categoryQueryService, drugStockPort);
         service = new ImmuneRecordServiceImpl(recordMapper, planMapper, referenceMapper, support, audit,
-                drugStockPort, drugCatalogQueryService, todoSource);
+                drugStockPort, drugCatalogQueryService, todoSource,
+                new com.zhimu.server.biz.health.support.HealthManagerNotifier(support, messageService, redisTemplate));
+        when(redisTemplate.opsForValue()).thenReturn(redisValues);
 
         when(planMapper.selectById(PLAN_ID)).thenReturn(plan());
         when(planMapper.update(isNull(), any())).thenReturn(1);
@@ -179,6 +184,88 @@ class ImmuneRecordServiceImplTest {
                 .satisfies(error -> assertThat(((BizException) error).getCode())
                         .isEqualTo(ErrorCode.COUNT_EXCEEDED.getCode()))
                 .hasMessageContaining("不能超过存栏 200 头");
+    }
+
+    // ===== 员工通知场长（与 API-D27 同结构） =====
+
+    @Test
+    void staffNotifiesOwnerAboutOwnImmuneRecord() {
+        loginStaff();
+        when(recordMapper.selectById(8801L)).thenReturn(record(10003L));
+        when(redisValues.setIfAbsent(eq("rate:IMMUNE:10003:8801"), eq("1"), any(java.time.Duration.class)))
+                .thenReturn(true);
+        com.zhimu.server.biz.health.request.NotifyManagerRequest request =
+                new com.zhimu.server.biz.health.request.NotifyManagerRequest();
+        request.setAction("UPDATE");
+
+        com.zhimu.server.biz.health.vo.NotifyResultVO result = service.notifyManager(8801L, request);
+
+        assertThat(result.getNotifiedNames()).containsExactly("王建国");
+        ArgumentCaptor<com.zhimu.server.biz.today.api.MessageCommand> captor =
+                ArgumentCaptor.forClass(com.zhimu.server.biz.today.api.MessageCommand.class);
+        verify(messageService).send(captor.capture());
+        com.zhimu.server.biz.today.api.MessageCommand command = captor.getValue();
+        assertThat(command.getMsgType()).isEqualTo(com.zhimu.server.common.enums.MsgType.STAFF_NOTIFY);
+        assertThat(command.getReceiverUserIds()).containsExactly(10001L);
+        assertThat(command.getTitle()).isEqualTo("李明请你处理免疫记录");
+        assertThat(command.getSummary()).contains("猪瘟活疫苗").contains("10月19日接种");
+        assertThat(command.getBizType()).isEqualTo(com.zhimu.server.common.enums.BizType.IMMUNE_RECORD);
+        assertThat(command.getBizId()).isEqualTo(8801L);
+        assertThat(command.getRoute()).isEqualTo("D03");
+        assertThat(command.getExtras()).containsEntry("record_id", 8801L).containsEntry("action", "UPDATE")
+                .containsEntry("batch_id", BATCH_ID);
+    }
+
+    @Test
+    void notifyWithinCooldownReturnsTooFrequent() {
+        loginStaff();
+        when(recordMapper.selectById(8801L)).thenReturn(record(10003L));
+        when(redisValues.setIfAbsent(any(), any(), any(java.time.Duration.class))).thenReturn(false);
+
+        assertThatThrownBy(() -> service.notifyManager(8801L, null))
+                .isInstanceOf(BizException.class)
+                .satisfies(error -> assertThat(((BizException) error).getCode())
+                        .isEqualTo(ErrorCode.TOO_FREQUENT.getCode()))
+                .hasMessageContaining("已通知王建国");
+        org.mockito.Mockito.verifyNoInteractions(messageService);
+    }
+
+    @Test
+    void notifyOthersRecordOrByOwnerIsForbidden() {
+        when(recordMapper.selectById(8801L)).thenReturn(record(10003L));
+        // 所有者不能用“通知场长”
+        assertThatThrownBy(() -> service.notifyManager(8801L, null))
+                .isInstanceOf(BizException.class)
+                .satisfies(error -> assertThat(((BizException) error).getCode())
+                        .isEqualTo(ErrorCode.ROLE_FORBIDDEN.getCode()));
+        // 员工不能就别人登记的记录通知
+        loginStaff();
+        when(recordMapper.selectById(8802L)).thenReturn(record(10004L));
+        assertThatThrownBy(() -> service.notifyManager(8802L, null))
+                .isInstanceOf(BizException.class)
+                .hasMessageContaining("只能通知本人登记的记录");
+        org.mockito.Mockito.verifyNoInteractions(messageService);
+    }
+
+    private void loginStaff() {
+        FarmContext.set(new FarmContext.FarmMember(FARM_ID, "东山猪场", 10003L, 5003L,
+                FarmRole.STAFF, Set.of(PEN_ID), FarmStatus.NORMAL));
+        UserContext.set(new UserContext.LoginUser(10003L, ClientType.APP_ANDROID, 1, "jti-staff"));
+    }
+
+    private ImmuneRecord record(Long createdBy) {
+        ImmuneRecord record = new ImmuneRecord();
+        record.setId(createdBy.equals(10003L) ? 8801L : 8802L);
+        record.setFarmId(FARM_ID);
+        record.setBatchId(BATCH_ID);
+        record.setPenId(PEN_ID);
+        record.setPlanId(PLAN_ID);
+        record.setVaccineName("猪瘟活疫苗");
+        record.setVaccinateDate(LocalDate.of(2026, 10, 19));
+        record.setExecutorId(createdBy);
+        record.setCreatedBy(createdBy);
+        record.setVersion(0);
+        return record;
     }
 
     // ===== fixtures =====

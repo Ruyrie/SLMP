@@ -2,7 +2,7 @@ package com.zhimu.server.common.enums;
 
 import lombok.Getter;
 
-/** 待办类型（全系统统一 13 个编码） */
+/** 待办类型（全系统统一编码；ABNORMAL_REPORT 为巡检异常上报 / 待处理诊断的预警） */
 @Getter
 public enum TodoType implements CodeEnum {
     FEEDING("饲喂"),
@@ -17,7 +17,8 @@ public enum TodoType implements CodeEnum {
     DRUG_NEAR_EXPIRY("药品临期"),
     DRUG_EXPIRED("药品过期"),
     WITHDRAWAL_END("休药期到期"),
-    RECEIVABLE("待收款");
+    RECEIVABLE("待收款"),
+    ABNORMAL_REPORT("异常上报");
 
     private final String text;
 

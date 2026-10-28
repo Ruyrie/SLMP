@@ -42,7 +42,8 @@ class KnowledgeViewServiceTest {
     @BeforeEach
     void setUp() {
         service = new KnowledgeViewServiceImpl(knowledgeMapper, paragraphMapper, relatedMapper, messageMapper,
-                citationMapper, courseMapper, mock(com.zhimu.server.biz.ai.support.CourseCoverResolver.class));
+                citationMapper, courseMapper, mock(com.zhimu.server.biz.ai.support.CourseCoverResolver.class),
+                new com.zhimu.server.biz.ai.support.AiShareLinks("https://web.test/"));
     }
 
     @Test

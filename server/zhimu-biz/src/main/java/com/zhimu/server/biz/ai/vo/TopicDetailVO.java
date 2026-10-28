@@ -15,6 +15,8 @@ public class TopicDetailVO extends TopicVO {
 
     private String intro;
     private String action;
+    /** 分享地址：USER_WEB_BASE_URL + Web 用户端养殖课堂专题页 */
+    private String shareUrl;
     private List<CourseCardVO> courses = new ArrayList<>();
     private Resume resume;
 

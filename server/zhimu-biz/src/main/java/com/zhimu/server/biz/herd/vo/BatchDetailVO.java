@@ -49,7 +49,7 @@ public class BatchDetailVO {
     @ManagerView
     private BigDecimal introUnitPrice;
 
-    /** 管理视图，员工不输出；待接入公共修改申请统计（当前返回 0） */
+    /** 管理视图，员工不输出；本批次待审核的修改申请数 */
     @ManagerView
     private Integer pendingChangeRequestCount;
 

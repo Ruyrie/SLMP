@@ -78,6 +78,7 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
     private final AccountQueryService accountQueryService;
     private final OperationLogRecorder operationLogRecorder;
     private final BatchSettlementService batchSettlementService;
+    private final com.zhimu.server.biz.finance.support.ReceivableTodos receivableTodos;
 
     @Override
     public Set<BizType> supportedBizTypes() {
@@ -311,6 +312,8 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
             throw new BizException(ErrorCode.STATE_NOT_ALLOWED, "出栏单只能申请作废，不能删除");
         }
         batchSettlementService.recalculateForSale(order.getFarmId(), order.getBatchId());
+        // 改价 / 改数量 / 作废后同步待收款待办（收齐完成、重新欠款恢复、作废忽略）
+        receivableTodos.sync(order);
         record(request, record, changeType, before, after);
         return new ChangeApplyResult(changeType == ChangeType.VOID ? 4 : 3,
                 changeType == ChangeType.VOID ? "已作废出栏单并重新计算批次盈亏" : "已同步纠正销售金额、收款与收入记录，并重新计算批次盈亏");
