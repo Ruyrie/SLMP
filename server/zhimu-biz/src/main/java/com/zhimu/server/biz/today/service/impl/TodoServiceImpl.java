@@ -20,6 +20,7 @@ import com.zhimu.server.biz.today.request.TodoCompleteRequest;
 import com.zhimu.server.biz.today.request.TodoIgnoreRequest;
 import com.zhimu.server.biz.today.service.TodoService;
 import com.zhimu.server.biz.today.support.TodayText;
+import com.zhimu.server.biz.today.support.TodoBusinessDay;
 import com.zhimu.server.biz.today.support.TodoLinks;
 import com.zhimu.server.biz.today.support.TodoScope;
 import com.zhimu.server.biz.today.vo.CalendarDayVO;
@@ -927,37 +928,9 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         return days;
     }
 
-    /** 归日规则（2.7.3） */
+    /** 归日规则（2.7.3），与首页“今日待办”数量共用 {@link TodoBusinessDay} */
     private LocalDate businessDay(Todo todo, LocalDate today) {
-        String type = todo.getTodoType() == null ? "" : todo.getTodoType();
-        if (TodoCategory.WARNING.name().equals(todo.getCategory())) {
-            if (isOpen(todo)) {
-                return today;
-            }
-            return closedDay(todo);
-        }
-        if ("WITHDRAWAL_END".equals(type)) {
-            if (isOpen(todo)) {
-                return todo.getDueDate() != null && todo.getDueDate().isBefore(today)
-                        ? today : todo.getDueDate();
-            }
-            LocalDate closed = closedDay(todo);
-            if (closed == null) {
-                return todo.getDueDate();
-            }
-            return todo.getDueDate() != null && todo.getDueDate().isAfter(closed) ? todo.getDueDate() : closed;
-        }
-        return todo.getDueDate();
-    }
-
-    private LocalDate closedDay(Todo todo) {
-        if (todo.getIgnoredAt() != null) {
-            return todo.getIgnoredAt().toLocalDate();
-        }
-        if (todo.getCompletedAt() != null) {
-            return todo.getCompletedAt().toLocalDate();
-        }
-        return todo.getDueDate();
+        return TodoBusinessDay.of(todo, today);
     }
 
     private void fillCalendarDay(CalendarDayVO day, LocalDate date, LocalDate today, LocalDateTime now,

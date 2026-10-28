@@ -10,6 +10,7 @@ import com.zhimu.server.biz.today.entity.Todo;
 import com.zhimu.server.biz.today.mapper.MessageMapper;
 import com.zhimu.server.biz.today.mapper.TodoMapper;
 import com.zhimu.server.biz.today.service.HomeService;
+import com.zhimu.server.biz.today.support.TodoBusinessDay;
 import com.zhimu.server.biz.today.support.TodayText;
 import com.zhimu.server.biz.today.support.TodoLinks;
 import com.zhimu.server.biz.today.support.TodoScope;
@@ -122,7 +123,7 @@ public class HomeServiceImpl implements HomeService {
         BigDecimal receivableAmount = BigDecimal.ZERO;
         List<String> warningNames = new ArrayList<>();
         for (Todo todo : todos) {
-            if (isDueOn(todo, today) && TodoStatus.PENDING.name().equals(todo.getStatus())) {
+            if (TodoBusinessDay.isOpenToday(todo, today)) {
                 todayCount++;
             }
             boolean open = TodoStatus.PENDING.name().equals(todo.getStatus());
@@ -202,7 +203,7 @@ public class HomeServiceImpl implements HomeService {
             if (todo.getPenName() != null) {
                 penNames.add(todo.getPenName());
             }
-            if (TodoStatus.PENDING.name().equals(todo.getStatus()) && isDueOn(todo, today)) {
+            if (TodoBusinessDay.isOpenToday(todo, today)) {
                 todayCount++;
             }
             if (TodoStatus.PENDING.name().equals(todo.getStatus()) && isDateOverdue(todo, today)) {
@@ -375,10 +376,6 @@ public class HomeServiceImpl implements HomeService {
                 .eq(Todo::getStatus, TodoStatus.PENDING.name()));
     }
 
-    private static boolean isDueOn(Todo todo, LocalDate today) {
-        return todo.getDueDate() != null && todo.getDueDate().equals(today)
-                && !TodoStatus.IGNORED.name().equals(todo.getStatus());
-    }
 
     private static boolean isDateOverdue(Todo todo, LocalDate today) {
         return todo.getDueDate() != null && todo.getDueDate().isBefore(today);
