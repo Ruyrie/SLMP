@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { formatDate, formatMoney, formatNumber, formatPercent, formatTime } from '@zmt/shared'
 import type { TimelineItem } from '@/api/herd'
@@ -195,15 +195,15 @@ function toggleRecord(item: TimelineItem): void {
   store.toggleExpanded(item.id)
 }
 
-function currentSvg(): Element | null {
-  return qrBox.value?.querySelector('svg') || null
-}
+/** 与页面上的 zw-qr 同一内容；按内容直接生成图片，内容为空时按钮禁用。 */
+const qrContent = computed(() => String(batch.value?.qr_content || batch.value?.batch_no || '').trim())
+const qrBusy = ref(false)
 
 async function downloadQr(): Promise<void> {
-  if (!batch.value) return
-  await nextTick()
+  if (!batch.value || !qrContent.value || qrBusy.value) return
+  qrBusy.value = true
   try {
-    await downloadQrLabel(currentSvg(), {
+    await downloadQrLabel(qrContent.value, {
       batchNo: batch.value.batch_no || batchNo.value,
       label: batch.value.label_text || desc.value,
       filename: `${batch.value.batch_no || 'batch'}.png`
@@ -211,13 +211,15 @@ async function downloadQr(): Promise<void> {
     ui.toast('二维码已下载')
   } catch (error) {
     ui.toast(error instanceof Error ? error.message : '下载失败，请重试', 'error')
+  } finally {
+    qrBusy.value = false
   }
 }
 
-function printQr(): void {
-  if (!batch.value) return
+async function printQr(): Promise<void> {
+  if (!batch.value || !qrContent.value) return
   try {
-    printQrLabel(currentSvg(), {
+    await printQrLabel(qrContent.value, {
       batchNo: batch.value.batch_no || batchNo.value,
       label: batch.value.label_text || desc.value
     })
@@ -351,8 +353,8 @@ watch(batchId, async () => {
             <div class="l04-qr-no num">{{ batch.batch_no || batchNo }}</div>
             <div class="l04-qr-sub">{{ batch.label_text || desc }}</div>
             <div class="l04-qr-btns">
-              <v-btn size="small" variant="outlined" prepend-icon="download" @click="downloadQr">下载图片</v-btn>
-              <v-btn size="small" variant="outlined" prepend-icon="print" @click="printQr">打印标签</v-btn>
+              <v-btn size="small" variant="outlined" prepend-icon="download" :disabled="!qrContent" :loading="qrBusy" @click="downloadQr">下载图片</v-btn>
+              <v-btn size="small" variant="outlined" prepend-icon="print" :disabled="!qrContent" @click="printQr">打印标签</v-btn>
             </div>
             <div v-if="!isStaff" class="mt-3">
               <p class="text-caption">公开溯源{{ batch.trace_enabled === false ? '已关闭' : '已开放' }}</p>

@@ -552,7 +552,8 @@ ZW.version = '1.0.0'
 
   C.ZwSnack = {
     props: { text: String, action: String, modelValue: { type: Boolean, default: true }, type: String },
-    template: '<v-snackbar :model-value="modelValue" class="zw-snack" :timeout="-1" location="top" content-class="zw-snack-content"><span class="zw-snack-inner"><zw-icon v-if="type" :name="type === \'error\' ? \'error\' : \'check_circle\'" :size="18" fill :class="\'zw-snack-ico--\' + type"/>{{ text }}</span><template v-if="action" #actions><button class="zw-snack-action" type="button">{{ action }}</button></template></v-snackbar>'
+    emits: ['action'],
+    template: '<v-snackbar :model-value="modelValue" class="zw-snack" :timeout="-1" location="top" content-class="zw-snack-content"><span class="zw-snack-inner"><zw-icon v-if="type" :name="type === \'error\' ? \'error\' : \'check_circle\'" :size="18" fill :class="\'zw-snack-ico--\' + type"/>{{ text }}</span><template v-if="action" #actions><button class="zw-snack-action" type="button" @click="$emit(\'action\')">{{ action }}</button></template></v-snackbar>'
   };
 
   C.ZwSeg = {

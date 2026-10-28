@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getChangeRequestForm, type ChangeRequestFormVO, type ChangeRequestVO } from '@/api/change'
 import { displayChangeField as displayField, useChangeRequestStore, VOID_FIELD, DELETE_FIELD } from '@/stores/common/changeRequest'
 import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
 import { formatMonthDayTime } from '@/views/account/accountForm'
+import { financeApi, type ChangePreview } from '@/api/finance'
+import { formatMoney } from '@zmt/shared'
 
 const route = useRoute()
 const router = useRouter()
@@ -13,6 +15,45 @@ const store = useChangeRequestStore()
 const farm = useFarmStore()
 const ui = useUiStore()
 const originalOpen = ref(false)
+
+/* ---------------- 出栏单修改预计结果（API-E23 change-preview） ---------------- */
+const salePreview = ref<ChangePreview | null>(null)
+const salePreviewLoading = ref(false)
+let salePreviewTimer = 0
+let salePreviewSeq = 0
+const salePreviewPayload = computed<Record<string, unknown> | null>(() => {
+  if (store.createBizType !== 'SALE_ORDER' || !store.createBizId || store.form?.biz_type !== 'SALE_ORDER') return null
+  if (store.voidSelected) return { change_type: 'VOID' }
+  const field = store.selectedField
+  const value = Number(store.newValue)
+  if (!store.newValue.trim() || !Number.isFinite(value) || value <= 0) return null
+  if (field === 'unit_price') return { change_type: 'UPDATE', field_code: field, new_unit_price: value }
+  if (field === 'quantity' && Number.isInteger(value)) return { change_type: 'UPDATE', field_code: field, new_quantity: value }
+  return null
+})
+watch(salePreviewPayload, (payload) => {
+  window.clearTimeout(salePreviewTimer)
+  const seq = ++salePreviewSeq
+  if (!payload) {
+    salePreview.value = null
+    salePreviewLoading.value = false
+    return
+  }
+  salePreviewLoading.value = true
+  salePreviewTimer = window.setTimeout(async () => {
+    try {
+      const data = await financeApi.changePreview(store.createBizId, payload)
+      if (seq === salePreviewSeq) salePreview.value = data
+    } catch {
+      if (seq === salePreviewSeq) salePreview.value = null
+    } finally {
+      if (seq === salePreviewSeq) salePreviewLoading.value = false
+    }
+  }, 400)
+})
+function moneyOrDash(value?: number | null): string {
+  return value === null || value === undefined ? '—' : `${formatMoney(value)} 元`
+}
 const originalLoading = ref(false)
 const originalForm = ref<ChangeRequestFormVO | null>(null)
 const originalError = ref('')
@@ -856,6 +897,22 @@ async function viewOriginalRecord(): Promise<void> {
             />
           </zw-form-item>
 
+          <div v-if="salePreviewPayload" class="u01-preview">
+            <div class="u01-recalc-t">预计结果{{ salePreviewLoading ? '（计算中…）' : '' }}</div>
+            <template v-if="salePreview && salePreview.saleAmountAfter !== undefined && salePreview.saleAmountAfter !== null">
+              <div class="u01-preview-row"><span>销售金额</span><b class="num">{{ moneyOrDash(salePreview.saleAmountBefore) }} → {{ moneyOrDash(salePreview.saleAmountAfter) }}</b></div>
+              <div class="u01-preview-row"><span>未收金额</span><b class="num">{{ moneyOrDash(salePreview.unpaidAmountBefore) }} → {{ moneyOrDash(salePreview.unpaidAmountAfter) }}</b></div>
+              <div v-if="salePreview.profitBefore !== null && salePreview.profitBefore !== undefined" class="u01-preview-row">
+                <span>批次利润</span>
+                <b class="num">{{ moneyOrDash(salePreview.profitBefore) }} → {{ moneyOrDash(salePreview.profitAfter) }}</b>
+                <zw-tag v-if="salePreview.turnToLoss" type="error" size="small">转为亏损</zw-tag>
+              </div>
+              <div v-if="salePreview.restoreCount" class="u01-preview-row"><span>恢复存栏</span><b class="num">{{ salePreview.restoreCount }} 头</b></div>
+              <div v-if="salePreview.voidReceiptCount" class="u01-preview-row"><span>作废收款</span><b class="num">{{ salePreview.voidReceiptCount }} 笔，共 {{ moneyOrDash(salePreview.voidReceiptAmount) }}</b></div>
+            </template>
+            <div v-else-if="!salePreviewLoading" class="zw-faint body-s">填写新值后显示修改后的销售金额、未收金额和批次利润。</div>
+          </div>
+
           <div v-if="store.currentRecalcTags.length">
             <div class="u01-recalc-t">审核通过后会重新计算</div>
             <div class="u01-tags">
@@ -1024,6 +1081,10 @@ async function viewOriginalRecord(): Promise<void> {
   margin-left: auto;
   color: var(--text-2);
 }
+.u01-preview { padding: 12px 14px; border-radius: var(--radius-sm); background: var(--fill-1); }
+.u01-preview-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 13px; color: var(--text-2); }
+.u01-preview-row > span { width: 72px; flex-shrink: 0; }
+.u01-preview-row b { color: var(--text-1); font-weight: 500; }
 .u01-recalc-t {
   font-size: 14px;
   line-height: 22px;

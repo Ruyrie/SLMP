@@ -4,7 +4,9 @@ import { useRouter } from 'vue-router'
 import { dayjs, formatDate, formatNumber, formatTime, today as todayIso } from '@zmt/shared'
 import { useInspectionTodayStore, type ListStatus } from '@/stores/inspect/today'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { queryId, useRouteAction } from '@/composables/useRouteAction'
 import { useFarmStore } from '@/stores/farm'
+import { useUiStore } from '@/stores/ui'
 import { dateWithWeek, locationLabel, monthDay } from '@/views/inspect/inspect'
 import InspectionFormDrawer from './components/InspectionFormDrawer.vue'
 import AbnormalReportDrawer from './components/AbnormalReportDrawer.vue'
@@ -12,6 +14,7 @@ import type { InspectionListItem, RecentIssue } from '@/api/inspect'
 
 const store = useInspectionTodayStore()
 const farm = useFarmStore()
+const ui = useUiStore()
 const router = useRouter()
 
 const dateMenu = ref(false)
@@ -64,10 +67,16 @@ function reload(): void {
   void store.load()
 }
 
-onMounted(() => {
+const routeAction = useRouteAction((action, query) => {
+  if (action !== 'create') return
+  openRegister(queryId(query, 'penId', 'pen_id'))
+})
+
+onMounted(async () => {
   if (isStaff.value) store.query.status = 'ALL'
-  void store.load()
   if (!isStaff.value) void store.loadSetting()
+  await store.load()
+  await routeAction.start()
 })
 useFarmReload(reload)
 
@@ -108,6 +117,7 @@ function setDeadline(value: string | number): void {
 
 function openRegister(penId = 0): void {
   if (isStaff.value && !store.list.length) {
+    ui.toast('你还没有负责的栏舍，暂时不能登记巡检', 'info')
     return
   }
   store.openRegister(penId)

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { formatNumber } from '@zmt/shared'
+import { formatNumber, today } from '@zmt/shared'
+import { useDate } from 'vuetify'
 import { useFeedPlanStore, type StageForm } from '@/stores/feeding/feedPlan'
 import { useFarmStore } from '@/stores/farm'
 import { useFarmReload } from '@/composables/useFarmReload'
@@ -17,6 +18,28 @@ const router = useRouter()
 const { isStaff } = useRole()
 const expanded = ref('')
 const dayMenu = ref(false)
+const dateAdapter = useDate()
+/** 北京时间今天（toISOString 是 UTC 日期，早上 8 点前会少一天） */
+const todayIso = today()
+
+/**
+ * Vuetify 3.13 的 multiple="range" 选完两端后回传区间内的全部日期（Date 数组），
+ * 只点了起点时数组只有一项；取首尾两天，用日期适配器按本地日期格式化，避免 UTC 偏移。
+ */
+function onCustomRange(value: unknown): void {
+  const list = (Array.isArray(value) ? value : [])
+    .map((item) => dateAdapter.date(item))
+    .filter((item) => !!item && dateAdapter.isValid(item))
+    .map((item) => dateAdapter.toISO(item))
+    .sort()
+  if (list.length < 2) return
+  void store.setCustomRange(list[0], list[list.length - 1])
+  dayMenu.value = false
+}
+
+function onDaySelect(date: string): void {
+  void store.openDay(date)
+}
 
 const canView = computed(() => !isStaff.value)
 const batchItems = computed(() => {
@@ -375,8 +398,8 @@ watch(() => store.tab, (tab) => {
             <v-date-picker
               color="primary"
               multiple="range"
-              :max="new Date().toISOString().slice(0, 10)"
-              @update:model-value="(value: unknown) => { const list = Array.isArray(value) ? value : []; if (list.length === 2) { void store.setCustomRange(String(list[0]), String(list[1])); dayMenu = false } }"
+              :max="todayIso"
+              @update:model-value="onCustomRange"
             />
           </v-menu>
           <span class="g02-range"><zw-icon name="info" :size="16" />{{ store.execRangeLabel }} · 统计截至昨天，今天还没结束的餐次不计入</span>
@@ -412,6 +435,7 @@ watch(() => store.tab, (tab) => {
               <span class="zw-chart-unit">单位：千克</span>
             </div>
             <FeedDailyChart
+              @select="onDaySelect"
               :daily="store.execSummary?.daily || []"
               :plan-qty="Number(store.execSummary?.plan_daily_qty || 0)"
               :line-type="store.execSummary?.plan_line_type || 'FLAT'"
@@ -428,13 +452,45 @@ watch(() => store.tab, (tab) => {
               </div>
               <zw-tag :type="attentionTag(item).type" :icon="item.type === 'OVERDUE' ? 'schedule' : undefined">{{ attentionTag(item).text }}</zw-tag>
             </div>
-            <template v-if="store.attentionTotal > store.attentionSize" #foot>
-              <zw-pager :total="store.attentionTotal" :page="store.attentionPage" :size="store.attentionSize" @update:page="store.setAttentionPage" />
+            <template v-if="store.attentionTotal > 10" #foot>
+              <zw-pager :total="store.attentionTotal" :page="store.attentionPage" :size="store.attentionSize" @update:page="store.setAttentionPage" @update:size="store.setAttentionSize" />
             </template>
           </zw-card>
         </div>
       </template>
     </template>
+
+    <!-- 单日各餐明细（点每日投喂量柱子） -->
+    <zw-drawer v-model="store.dayDrawer" :title="store.dayDetail?.date ? `${monthDayWeek(store.dayDetail.date)} 投喂明细` : '投喂明细'" :sub="store.dayDetail && !store.dayLoading ? `已完成 ${formatNumber(store.dayDetail.done_meals || 0)} / ${formatNumber(store.dayDetail.planned_meals || 0)} 餐 · 实投 ${formatNumber(store.dayDetail.actual_qty || 0, 1)} 千克 · 计划 ${formatNumber(store.dayDetail.plan_qty || 0, 1)} 千克` : ''" width="640">
+      <v-skeleton-loader v-if="store.dayLoading" type="table-row@5" />
+      <zw-empty v-else-if="store.dayError" icon="cloud_off" tone="error" title="当天明细加载失败" :desc="store.dayError" />
+      <zw-empty v-else-if="!store.dayDetail?.items?.length" icon="rice_bowl" title="这一天没有饲喂任务" />
+      <v-table v-else density="compact" class="g02-day-table">
+        <thead>
+          <tr>
+            <th>餐次</th>
+            <th>栏舍 · 批次</th>
+            <th class="text-end">计划</th>
+            <th class="text-end">实投</th>
+            <th>执行人</th>
+            <th>状态</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in store.dayDetail.items" :key="`${item.task_id || index}`">
+            <td>{{ item.meal_name || '—' }}</td>
+            <td>{{ item.pen_name || '—' }}<span v-if="item.batch_no" class="zw-faint"> · {{ item.batch_no }}</span></td>
+            <td class="text-end num">{{ formatNumber(item.plan_qty || 0, 1) }}</td>
+            <td class="text-end num">{{ item.actual_qty === null || item.actual_qty === undefined ? '—' : formatNumber(item.actual_qty, 1) }}</td>
+            <td>{{ item.executor_name || '—' }}</td>
+            <td><zw-tag size="small" :type="item.abnormal_type ? 'warning' : item.status === 'OVERDUE' ? 'error' : 'neutral'">{{ item.status_text || item.status || '—' }}</zw-tag></td>
+          </tr>
+        </tbody>
+      </v-table>
+      <template #foot>
+        <v-btn variant="outlined" @click="store.dayDrawer = false">关闭</v-btn>
+      </template>
+    </zw-drawer>
 
     <!-- 投喂异常判定 -->
     <zw-dialog v-model="store.thresholdDialog" title="投喂异常判定" :width="420">

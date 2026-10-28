@@ -2,7 +2,8 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { useUiStore } from '@/stores/ui'
 import type { FarmLocationPayload } from '@/stores/farm/create'
-import FarmMapPicker from './FarmMapPicker.vue'
+import FarmAmapPicker from './FarmAmapPicker.vue'
+import { formatCoord, wgs84ToGcj02, type RegeoFields } from './amap'
 
 const props = withDefaults(
   defineProps<{
@@ -49,6 +50,13 @@ const errors = reactive<Record<string, string>>({})
 const locating = ref(false)
 const mapMode = ref<'idle' | 'live' | 'fallback'>('idle')
 const mapReady = ref(false)
+const fallbackReason = ref('')
+const picker = ref<InstanceType<typeof FarmAmapPicker> | null>(null)
+const fallbackText = computed(() =>
+  fallbackReason.value === 'NO_KEY'
+    ? '还没有配置高德地图 Key，地图暂不可用。请手动填写地址、行政区划和经纬度；“使用当前位置”仍可填入经纬度。'
+    : '高德地图加载失败（可能是网络问题），请手动填写地址、行政区划和经纬度；“使用当前位置”仍可填入经纬度。'
+)
 
 const hasCoordinates = computed(() => {
   if (!form.longitude.trim() || !form.latitude.trim()) return false
@@ -76,6 +84,7 @@ watch(
     form.locAccuracy = props.locAccuracy === null || props.locAccuracy === undefined ? '' : String(props.locAccuracy)
     for (const key of Object.keys(errors)) delete errors[key]
     mapReady.value = false
+    fallbackReason.value = ''
     mapMode.value = 'live'
   },
   { immediate: true }
@@ -92,38 +101,78 @@ function clearError(key: string): void {
   delete errors[key]
 }
 
-function onMapPick(value: { longitude: string; latitude: string }): void {
+function onMapPick(value: { longitude: string; latitude: string; accuracy?: number | null }): void {
   form.longitude = value.longitude
   form.latitude = value.latitude
+  // 点地图 / 拖标记没有定位精度；定位时由高德返回
+  form.locAccuracy = value.accuracy ? String(value.accuracy) : ''
   delete errors.longitude
   delete errors.latitude
 }
 
-function onMapUnavailable(): void {
+/** 逆地理编码结果回填省、市、区、乡镇、6 位行政区划代码和详细地址。 */
+function onMapAddress(value: RegeoFields): void {
+  if (value.address) form.address = value.address
+  form.province = value.province
+  form.city = value.city
+  form.district = value.district
+  form.township = value.township
+  if (/^\d{6}$/.test(value.adcode)) form.adcode = value.adcode
+  for (const key of ['address', 'province', 'city', 'district', 'township', 'adcode']) delete errors[key]
+}
+
+function onGeocodeError(): void {
+  ui.toast('没能自动识别这个位置的行政区划，请手动填写', 'info')
+}
+
+function onMapUnavailable(reason: string): void {
   mapReady.value = false
+  fallbackReason.value = reason
   mapMode.value = 'fallback'
 }
 
-function useCurrentLocation(): void {
-  if (!navigator.geolocation) {
-    ui.toast('当前浏览器不支持定位，请手动填写经纬度', 'error')
-    return
-  }
+async function useCurrentLocation(): Promise<void> {
   locating.value = true
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      form.longitude = position.coords.longitude.toFixed(6)
-      form.latitude = position.coords.latitude.toFixed(6)
-      form.locAccuracy = String(Math.round(position.coords.accuracy || 0))
-      locating.value = false
-      ui.toast('已填入当前位置经纬度，请补充地址和行政区划')
-    },
-    () => {
-      locating.value = false
-      ui.toast('定位失败，你可以手动填写地址和经纬度', 'error')
-    },
-    { enableHighAccuracy: true, timeout: 8000 }
-  )
+  try {
+    if (mapMode.value === 'live' && mapReady.value && picker.value) {
+      const result = await picker.value.locate()
+      if (result.ok) {
+        ui.toast('已定位到当前位置，并识别了地址与行政区划，请核对')
+        return
+      }
+    }
+    await browserLocate()
+  } finally {
+    locating.value = false
+  }
+}
+
+/** 高德定位不可用时用浏览器定位，WGS-84 先转成 GCJ-02 再填，避免偏几百米。 */
+function browserLocate(): Promise<void> {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      ui.toast('当前浏览器不支持定位，请手动填写经纬度', 'error')
+      resolve()
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const [lng, lat] = wgs84ToGcj02(position.coords.longitude, position.coords.latitude)
+        form.longitude = formatCoord(lng)
+        form.latitude = formatCoord(lat)
+        form.locAccuracy = String(Math.round(position.coords.accuracy || 0))
+        delete errors.longitude
+        delete errors.latitude
+        ui.toast(mapMode.value === 'live' ? '已填入当前位置，点一下地图上的标记附近可自动识别地址' : '已填入当前位置经纬度，请补充地址和行政区划')
+        resolve()
+      },
+      () => {
+        ui.toast('定位失败，你可以在地图上点选或手动填写', 'error')
+        resolve()
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    )
+  })
 }
 
 function confirm(): void {
@@ -158,30 +207,31 @@ function confirm(): void {
 
 <template>
   <zw-dialog v-model="visible" class="floc-dialog" title="选择养殖场位置" width="800">
-    <zw-notice v-if="mapMode === 'fallback'" type="warning" icon="map" title="地图瓦片不可用">
-      地图瓦片不可用，可手动填写经纬度；也可以点“使用当前位置”填入经纬度后补充地址与行政区划。资料变更中确认位置后需重新审核。
+    <zw-notice v-if="mapMode === 'fallback'" type="warning" icon="map" title="地图不可用">
+      {{ fallbackText }}<template v-if="changeMode">资料变更中确认位置后需重新审核。</template>
     </zw-notice>
 
     <div class="floc-map" :data-map-mode="mapMode" :data-map-ready="mapReady">
-      <FarmMapPicker
+      <FarmAmapPicker
         v-if="mapMode === 'live'"
+        ref="picker"
         :longitude="form.longitude"
         :latitude="form.latitude"
-        :fallback-longitude="longitude"
-        :fallback-latitude="latitude"
         :label="farmName || '养殖场位置'"
         @pick="onMapPick"
+        @address="onMapAddress"
+        @geocode-error="onGeocodeError"
         @ready="mapReady = true"
         @unavailable="onMapUnavailable"
       />
       <zw-map v-else-if="mapMode === 'fallback'" height="100%" pick :controls="false" :scale="false" :labels="[]" :markers="marker" />
       <span v-if="mapMode === 'live' && mapReady" class="floc-map-tip">
         <zw-icon name="info" :size="16" />
-        {{ hasCoordinates ? '点击地图或拖动标记调整位置' : '点击地图选择养殖场位置' }}
+        {{ hasCoordinates ? '点击地图或拖动标记调整位置，自动识别省市区' : '搜索地点或点击地图选择养殖场位置' }}
       </span>
       <span v-else-if="mapMode === 'fallback'" class="floc-map-tip floc-map-tip--warn">
         <zw-icon name="info" :size="16" />
-        地图瓦片不可用，可手动填写经纬度
+        地图不可用，可手动填写经纬度
       </span>
     </div>
 
@@ -227,7 +277,7 @@ function confirm(): void {
         <div class="floc-card-name">{{ farmName || '养殖场位置' }}</div>
         <div class="floc-card-address">{{ form.address || '还没有填写详细地址' }}</div>
         <div class="floc-card-hint">
-          {{ form.locAccuracy ? `定位精度约 ${form.locAccuracy} 米` : '经纬度按填写值保存，不进行地址解析' }}
+          {{ form.locAccuracy ? `定位精度约 ${form.locAccuracy} 米` : mapMode === 'live' ? '在地图上选点后自动识别省市区和行政区划代码，可再手动修改' : '经纬度按填写值保存（GCJ-02 坐标）' }}
           <template v-if="changeMode"> · 确认后需重新审核</template>
         </div>
       </div>
@@ -244,7 +294,7 @@ function confirm(): void {
 <style scoped>
 .floc-map {
   position: relative;
-  height: 260px;
+  height: 300px;
   margin-top: 12px;
   overflow: hidden;
   isolation: isolate;

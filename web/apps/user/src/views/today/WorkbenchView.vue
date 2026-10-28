@@ -143,6 +143,12 @@ function onChanged(): void {
   void store.fetchAll()
   void notice.load()
 }
+
+/** 带上养殖场编号，养殖场列表直接打开这个养殖场的审核结果 */
+function openAuditResult(): void {
+  const farmId = Number(home.value?.farm?.farm_id || 0)
+  void router.push({ name: 'WU-F01', query: farmId ? { action: 'audit', farmId: String(farmId) } : { action: 'audit' } })
+}
 </script>
 
 <template>
@@ -175,7 +181,7 @@ function onChanged(): void {
       <zw-notice v-if="store.farmBlocked" type="warning" icon="domain" :title="`${home.farm?.name || '养殖场'}${home.farm_status === 'PENDING' ? '还在审核' : '审核未通过'}`">
         {{ home.farm_status === 'PENDING' ? '审核通过后才能登记生产记录。' : '请按审核意见修改资料后重新提交。' }}
         <template #action>
-          <a @click="router.push({ name: 'WU-F01', query: { action: 'audit' } })">查看审核结果</a>
+          <a @click="openAuditResult">查看审核结果</a>
         </template>
       </zw-notice>
 

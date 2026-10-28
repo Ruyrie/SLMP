@@ -142,6 +142,11 @@ function goSales(): void {
   void router.push({ name: 'WU-E03' })
 }
 
+/** “登记出栏单”直接打开出栏单表单 */
+function createSale(): void {
+  void router.push({ name: 'WU-E03', query: { action: 'create' } })
+}
+
 function goMarket(): void {
   void router.push({ name: 'WU-E06' })
 }
@@ -184,7 +189,7 @@ useFarmReload(() => {
     <zw-page-head title="经营概览" :desc="store.todayDesc">
       <template #actions>
         <v-btn variant="outlined" prepend-icon="edit_note" @click="goRecords">记一笔</v-btn>
-        <v-btn color="primary" prepend-icon="add" @click="goSales">登记出栏单</v-btn>
+        <v-btn color="primary" prepend-icon="add" @click="createSale">登记出栏单</v-btn>
       </template>
     </zw-page-head>
 

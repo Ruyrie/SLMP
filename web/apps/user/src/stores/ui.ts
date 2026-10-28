@@ -18,9 +18,10 @@ export const useUiStore = defineStore('ui', {
       this.snackAction = action
       this.snackHandler = handler || null
       this.snackVisible = true
+      // 带操作按钮（撤销、去登记）的提示多停留一会儿，方便点击
       window.setTimeout(() => {
-        if (this.snackText === text) this.snackVisible = false
-      }, 3000)
+        if (this.snackText === text) this.closeSnack()
+      }, action ? 6000 : 3000)
     },
     closeSnack(): void {
       this.snackVisible = false

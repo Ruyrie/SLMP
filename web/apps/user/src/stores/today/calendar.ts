@@ -12,7 +12,10 @@ import { useFarmStore } from '@/stores/farm'
 
 export type CalendarView = 'month' | 'week' | 'day'
 export type ListStatus = 'loading' | 'ready' | 'empty' | 'filtered_empty' | 'error' | 'forbidden'
-export type DayStatus = 'ALL' | 'UNFINISHED'
+export type ClosedStatus = 'idle' | 'loading' | 'ready' | 'error'
+
+/** 日列表分两段：上面“待处理”（UNFINISHED），下面“已完成 / 已忽略”（CLOSED，默认折叠）。 */
+export const DAY_PAGE_SIZE = 50
 
 const VIEW_KEY = 'zmt.calendar.view'
 
@@ -34,15 +37,83 @@ function isCancel(error: unknown): boolean {
   return (error as { name?: string })?.name === 'CanceledError'
 }
 
+export function isClosedTodo(item: Pick<TodoItemVO, 'display_status'>): boolean {
+  return item.display_status === 'DONE' || item.display_status === 'IGNORED'
+}
+
+/** 列表项没有完成 / 忽略时间字段，从“李明 07:12 登记”“张伟 09:30 忽略”里取时刻排序。 */
+function closedAt(item: TodoItemVO): string {
+  const text = item.display_status === 'DONE' ? item.completed_text : item.ignore_text
+  return /\d{1,2}:\d{2}/.exec(text || '')?.[0]?.padStart(5, '0') || ''
+}
+
+/** 已关闭的按完成 / 忽略时间倒序（与服务端 status=CLOSED 的排序一致，旧接口回退时在本地排）。 */
+export function sortClosed(items: TodoItemVO[]): TodoItemVO[] {
+  return [...items].sort((a, b) => closedAt(b).localeCompare(closedAt(a)))
+}
+
+/** 服务端 tab_counts 固定返回 {UNFINISHED, CLOSED}；旧接口没有时返回 null，由日历格子上的数量兜底。 */
+export function readTabCounts(counts: Record<string, number> | undefined | null): { unfinished: number; closed: number } | null {
+  if (!counts || counts.CLOSED === undefined || counts.CLOSED === null) return null
+  return {
+    unfinished: Number(counts.UNFINISHED ?? counts.PENDING ?? 0),
+    closed: Number(counts.CLOSED || 0)
+  }
+}
+
+/** 某天待处理数量：日历格子的总数减去已关闭数。 */
+export function dayPendingCount(day: Pick<CalendarDayVO, 'total' | 'closed_count'> | undefined | null): number {
+  if (!day) return 0
+  return Math.max(0, Number(day.total || 0) - Number(day.closed_count || 0))
+}
+
+/**
+ * 按日期加载“已完成 / 已忽略”：优先 status=CLOSED；旧接口不认 CLOSED（报参数错误）或忽略它时，
+ * 回退为 status=ALL 后在本地筛出已完成 / 已忽略。
+ */
+export async function loadClosedTodos(
+  date: string,
+  page: number,
+  signal?: AbortSignal
+): Promise<{ list: TodoItemVO[]; total: number; hasMore: boolean }> {
+  try {
+    const data = await fetchDayTodos({ date, status: 'CLOSED', page, size: DAY_PAGE_SIZE }, signal)
+    const list = data.list || []
+    if (list.every(isClosedTodo)) {
+      const total = Number(data.total || 0)
+      return { list, total, hasMore: data.has_more ?? page * DAY_PAGE_SIZE < total }
+    }
+  } catch (error) {
+    if (isCancel(error)) throw error
+  }
+  const all = await fetchDayTodos({ date, status: 'ALL', page: 1, size: 200 }, signal)
+  const list = sortClosed((all.list || []).filter(isClosedTodo))
+  return { list, total: list.length, hasMore: false }
+}
+
 export const useCalendarStore = defineStore('todayCalendar', {
   state: () => ({
     view: (storedView() || 'month') as CalendarView,
     selected: today(),
-    dayStatus: 'ALL' as DayStatus,
     monthDays: [] as CalendarDayVO[],
     weekDays: [] as WeeklyDayVO[],
+    /** 待处理（未完成）分页 */
     dayItems: [] as TodoItemVO[],
     dayTotal: 0,
+    dayPage: 1,
+    dayHasMore: false,
+    dayMoreLoading: false,
+    /** 已完成 / 已忽略：默认折叠，展开后按 status=CLOSED 分页加载 */
+    closedOpen: false,
+    closedItems: [] as TodoItemVO[],
+    closedServerTotal: null as number | null,
+    closedPage: 1,
+    closedHasMore: false,
+    closedStatus: 'idle' as ClosedStatus,
+    closedError: '',
+    closedController: null as AbortController | null,
+    /** 周视图：各天展开的已关闭待办 */
+    weekClosed: {} as Record<string, { open: boolean; status: ClosedStatus; items: TodoItemVO[] }>,
     overdueItems: [] as TodoItemVO[],
     status: 'loading' as ListStatus,
     listStatus: 'loading' as ListStatus,
@@ -122,6 +193,14 @@ export const useCalendarStore = defineStore('todayCalendar', {
       const map: Record<string, WeeklyDayVO> = {}
       for (const day of state.weekDays) if (day.date) map[day.date] = day
       return map
+    },
+    /** 已完成 / 已忽略数量：新接口用 tab_counts.CLOSED，旧接口用日历格子上的 closed_count。 */
+    closedTotal(state): number {
+      if (state.closedServerTotal !== null) return state.closedServerTotal
+      const day = state.monthDays.find((item) => item.date === state.selected)
+        || state.weekDays.find((item) => item.date === state.selected)
+      if (day) return Number(day.closed_count || 0)
+      return state.closedItems.length
     }
   },
   actions: {
@@ -183,6 +262,8 @@ export const useCalendarStore = defineStore('todayCalendar', {
           this.mainController.signal
         )
         this.weekDays = data.days || []
+        // 周视图分区：每天“已完成 / 已忽略”默认折叠，刷新后重新加载
+        this.weekClosed = {}
         this.status = 'ready'
       } catch (error) {
         if (isCancel(error)) return
@@ -196,33 +277,85 @@ export const useCalendarStore = defineStore('todayCalendar', {
       this.listController = new AbortController()
       this.listStatus = 'loading'
       this.listError = ''
+      const date = this.selected
       try {
         const data = await fetchDayTodos(
-          {
-            date: this.selected,
-            status: this.dayStatus,
-            page: 1,
-            size: 100
-          },
+          { date, status: 'UNFINISHED', page: 1, size: DAY_PAGE_SIZE },
           this.listController.signal
         )
-        this.dayItems = data.list || []
-        if (this.view === 'day') {
-          this.dayTotal = data.total || 0
-        } else {
-          const day = this.monthMap[this.selected]
-          this.dayTotal = day?.total || 0
+        const list = (data.list || []).filter((item) => !isClosedTodo(item))
+        const counts = readTabCounts(data.tab_counts)
+        this.dayItems = list
+        this.dayPage = 1
+        this.dayTotal = counts ? counts.unfinished : Number(data.total || list.length)
+        this.dayHasMore = data.has_more ?? this.dayItems.length < this.dayTotal
+        this.closedServerTotal = counts ? counts.closed : null
+        this.listStatus = this.dayItems.length ? 'ready' : 'empty'
+        if (this.closedOpen) await this.fetchClosed(1)
+        else {
+          this.closedItems = []
+          this.closedStatus = 'idle'
         }
-        this.listStatus = this.dayItems.length
-          ? 'ready'
-          : this.dayStatus === 'UNFINISHED'
-            ? 'filtered_empty'
-            : 'empty'
       } catch (error) {
         if (isCancel(error)) return
         const state = errorState(error)
         this.listStatus = state.status
         this.listError = state.message
+      }
+    },
+    async fetchMoreDayItems(): Promise<void> {
+      if (!this.dayHasMore || this.dayMoreLoading) return
+      this.dayMoreLoading = true
+      try {
+        const page = this.dayPage + 1
+        const data = await fetchDayTodos({ date: this.selected, status: 'UNFINISHED', page, size: DAY_PAGE_SIZE })
+        const known = new Set(this.dayItems.map((item) => item.todo_id))
+        this.dayItems = [...this.dayItems, ...(data.list || []).filter((item) => !isClosedTodo(item) && !known.has(item.todo_id))]
+        this.dayPage = page
+        this.dayHasMore = data.has_more ?? this.dayItems.length < this.dayTotal
+      } catch (error) {
+        this.listError = errorState(error).message
+      } finally {
+        this.dayMoreLoading = false
+      }
+    },
+    async fetchClosed(page = 1): Promise<void> {
+      if (page === 1) this.closedController?.abort()
+      this.closedController = new AbortController()
+      this.closedStatus = 'loading'
+      this.closedError = ''
+      try {
+        const data = await loadClosedTodos(this.selected, page, this.closedController.signal)
+        if (page === 1) this.closedItems = data.list
+        else {
+          const known = new Set(this.closedItems.map((item) => item.todo_id))
+          this.closedItems = [...this.closedItems, ...data.list.filter((item) => !known.has(item.todo_id))]
+        }
+        this.closedPage = page
+        this.closedHasMore = data.hasMore
+        this.closedStatus = 'ready'
+      } catch (error) {
+        if (isCancel(error)) return
+        this.closedStatus = 'error'
+        this.closedError = errorState(error).message
+      }
+    },
+    toggleClosed(): void {
+      this.closedOpen = !this.closedOpen
+      if (this.closedOpen && this.closedStatus !== 'ready') void this.fetchClosed(1)
+    },
+    async toggleWeekClosed(date: string): Promise<void> {
+      const current = this.weekClosed[date]
+      if (current?.open) {
+        this.weekClosed[date] = { ...current, open: false }
+        return
+      }
+      this.weekClosed[date] = { open: true, status: 'loading', items: current?.items || [] }
+      try {
+        const data = await loadClosedTodos(date, 1)
+        this.weekClosed[date] = { open: true, status: 'ready', items: data.list }
+      } catch {
+        this.weekClosed[date] = { open: true, status: 'error', items: [] }
       }
     },
     async fetchOverdue(): Promise<void> {
@@ -253,6 +386,7 @@ export const useCalendarStore = defineStore('todayCalendar', {
       void this.fetchCurrent()
     },
     shift(delta: number): void {
+      this.closedOpen = false
       const date = dayjs(this.selected)
       if (this.view === 'month') this.selected = date.add(delta, 'month').format('YYYY-MM-DD')
       else if (this.view === 'week') this.selected = date.add(delta * 7, 'day').format('YYYY-MM-DD')
@@ -260,23 +394,22 @@ export const useCalendarStore = defineStore('todayCalendar', {
       void this.fetchCurrent()
     },
     goToday(): void {
+      if (this.selected !== today()) this.closedOpen = false
       this.selected = today()
       void this.fetchCurrent()
     },
     select(date: string): void {
       if (this.selected === date) return
       this.selected = date
+      this.closedOpen = false
+      this.closedItems = []
+      this.closedStatus = 'idle'
       if (this.view === 'day') {
         void this.fetchDayItems()
         void this.fetchOverdue()
       } else if (this.view === 'month') {
         void this.fetchDayItems()
       }
-    },
-    setDayStatus(status: DayStatus): void {
-      if (this.dayStatus === status) return
-      this.dayStatus = status
-      void this.fetchDayItems()
     },
     reload(): void {
       void this.fetchCurrent()

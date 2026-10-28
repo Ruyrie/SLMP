@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import type { DataTableHeader } from 'vuetify'
 import type { MedicationRecord, WithdrawalDrug } from '@/api/health'
 import { useMedicationStore } from '@/stores/health/medication'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { queryId, queryText, useRouteAction } from '@/composables/useRouteAction'
+import { useUiStore } from '@/stores/ui'
+import { fetchLinkableReports, type LinkableReport } from '@/api/inspect'
 import { useRole } from '@/composables/useRole'
 import { useAuthStore } from '@/stores/auth'
 import { dateText, monthDay, todayISO } from '@/stores/health/shared'
@@ -12,6 +15,7 @@ import HealthDateField from './components/HealthDateField.vue'
 
 const store = useMedicationStore()
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 const { isStaff } = useRole()
 
@@ -176,9 +180,71 @@ function drugPending(record: MedicationRecord): boolean {
   return !!record.change_state?.pending_request_id
 }
 
-onMounted(() => {
+/** create：快捷登记 / 待办进入时打开“登记用药”，带批次时先切到该批次。 */
+const routeAction = useRouteAction(async (action, query) => {
+  const batchId = queryId(query, 'batchId', 'batch_id')
+  if (batchId && batchId !== store.batchId && store.batches.some((batch) => Number(batch.batch_id) === batchId)) {
+    await store.selectBatch(batchId)
+  }
+  if (action !== 'create') return
+  if (!store.batches.length) {
+    useUiStore().toast('还没有在养批次，批次入栏后才能登记用药', 'info')
+    return
+  }
+  await store.openCreate()
+  // 诊断处理“转用药登记”带来的预填：关联上报、用药原因
+  const reportId = queryId(query, 'reportId', 'report_id')
+  if (reportId) store.model.reportId = reportId
+  const reason = queryText(query, 'reason')
+  if (reason) store.model.reason = reason.slice(0, 100)
+})
+
+/* 关联异常上报（API-I24）：按所选批次 / 栏舍列出可关联的上报，选填 */
+const linkableReports = ref<LinkableReport[]>([])
+let linkableSeq = 0
+async function loadLinkable(): Promise<void> {
+  const seq = ++linkableSeq
+  const model = store.model
+  const params = model.targetType === 'PEN'
+    ? (model.penId ? { pen_id: model.penId } : null)
+    : (model.batchId ? { batch_id: model.batchId } : null)
+  if (!params) {
+    linkableReports.value = []
+    return
+  }
+  try {
+    const list = await fetchLinkableReports(params)
+    if (seq === linkableSeq) linkableReports.value = list || []
+  } catch {
+    if (seq === linkableSeq) linkableReports.value = []
+  }
+}
+watch(() => [store.formOpen, store.model.targetType, store.model.batchId, store.model.penId], () => {
+  if (store.formOpen) void loadLinkable()
+})
+const linkableItems = computed(() => {
+  const items = linkableReports.value.map((item) => ({
+    title: item.label || [item.reported_at?.slice(5, 16), item.pen_name, item.top_cause_name].filter(Boolean).join(' · ') || `上报 #${item.report_id}`,
+    value: Number(item.report_id)
+  }))
+  const current = Number(store.model.reportId || 0)
+  if (current && !items.some((item) => item.value === current)) {
+    items.unshift({ title: store.detail?.report_summary || `已关联的上报 #${current}`, value: current })
+  }
+  return items
+})
+function onReportSelect(value: unknown): void {
+  store.model.reportId = value ? Number(value) : null
+}
+
+onMounted(async () => {
   store.staffView = isStaff.value
-  void store.load()
+  await store.load()
+  const batchId = queryId(route.query, 'batchId', 'batch_id')
+  if (!route.query.action && batchId && batchId !== store.batchId && store.batches.some((batch) => Number(batch.batch_id) === batchId)) {
+    await store.selectBatch(batchId)
+  }
+  await routeAction.start()
 })
 
 useFarmReload(async () => {
@@ -459,10 +525,17 @@ useFarmReload(async () => {
             <v-text-field v-model="store.model.reason" maxlength="100" counter />
           </zw-form-item>
 
-          <zw-form-item v-if="store.detail?.report_id" label="关联诊断" optional>
-            <div class="m-link">
-              <zw-icon name="link" :size="18" />已关联 {{ store.detail.report_summary || '异常上报或 AI 诊断' }}
-            </div>
+          <zw-form-item v-if="linkableItems.length" label="关联异常上报" optional hint="选择本批次 / 栏舍的异常上报，诊断详情里会显示这条用药">
+            <v-select
+              :model-value="store.model.reportId || undefined"
+              :items="linkableItems"
+              item-title="title"
+              item-value="value"
+              placeholder="不关联"
+              clearable
+              prepend-inner-icon="link"
+              @update:model-value="onReportSelect"
+            />
           </zw-form-item>
         </div>
       </template>

@@ -6,6 +6,7 @@ import type { DataTableHeader } from 'vuetify'
 import { useBreedingPendingStore } from '@/stores/breeding/pending'
 import { useFarmStore } from '@/stores/farm'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { queryId } from '@/composables/useRouteAction'
 import { useRole } from '@/composables/useRole'
 import {
   animalStatusText,
@@ -245,11 +246,18 @@ function fieldError(errors: Record<string, string>, field: string): string {
 async function handleQuery(): Promise<void> {
   if (isStaff.value) return
   const action = String(route.query.action || '')
-  const animalId = Number(route.query.animalId || 0)
+  if (!action) return
+  const animalId = queryId(route.query, 'animalId', 'animal_id')
   if (action === 'mating') await store.openMating(animalId || undefined)
   else if (action === 'check') await store.openMating(undefined, animalId || undefined)
-  else if (action === 'farrowing') await store.openFarrowing(animalId || undefined)
+  // create：顶栏“产仔”快捷登记、待办“去登记”（预产）都打开登记产仔
+  else if (action === 'farrowing' || action === 'create') await store.openFarrowing(animalId || undefined)
   else if (action === 'weaning') await store.openWeaning(animalId || undefined)
+  // 抽屉已打开，去掉 action：刷新不重复弹出，再次点击快捷登记也能触发
+  const query = { ...route.query }
+  delete query.action
+  delete query.animalId
+  await router.replace({ query })
 }
 
 onMounted(async () => {

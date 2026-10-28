@@ -4,6 +4,7 @@ import type { RecordLog } from '@/api/herd'
 import { herdApi } from '@/api/herd'
 import type {
   FeedAttentionItem,
+  FeedExecDay,
   FeedExecSummary,
   FeedOption,
   FeedPlan,
@@ -147,6 +148,10 @@ export const useFeedPlanStore = defineStore('feedingPlan', {  state: () => ({
     attentionTotal: 0,
     attentionPage: 1,
     attentionSize: 20,
+    dayDrawer: false,
+    dayDetail: null as FeedExecDay | null,
+    dayLoading: false,
+    dayError: '',
     attentionLoading: false,
 
     attentionDrawer: false,
@@ -607,6 +612,34 @@ export const useFeedPlanStore = defineStore('feedingPlan', {  state: () => ({
     async setAttentionPage(page: number): Promise<void> {
       this.attentionPage = Math.max(1, page)
       await this.loadExec(true)
+    },
+    async setAttentionSize(size: number): Promise<void> {
+      this.attentionSize = Math.max(1, Number(size) || 20)
+      this.attentionPage = 1
+      await this.loadExec(true)
+    },
+    /** 点每日投喂量柱子：查看当天各餐明细（API-G16） */
+    async openDay(date: string): Promise<void> {
+      this.dayDrawer = true
+      this.dayDetail = null
+      this.dayError = ''
+      this.dayLoading = true
+      try {
+        this.dayDetail = await feedingApi.execDaily({
+          batchId: this.batchId && !this.allBatches ? this.batchId : undefined,
+          allBatches: this.allBatches,
+          range: this.execRange,
+          startDate: this.execStartDate || undefined,
+          endDate: this.execEndDate || undefined,
+          date
+        })
+        if (!this.dayDetail.date) this.dayDetail = { ...this.dayDetail, date }
+      } catch (error) {
+        this.dayError = errorText(error, '当天明细加载失败')
+        this.dayDetail = { date }
+      } finally {
+        this.dayLoading = false
+      }
     },
     async openAttention(item: FeedAttentionItem): Promise<void> {
       this.attentionItem = item

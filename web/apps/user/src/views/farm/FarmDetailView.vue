@@ -120,6 +120,28 @@ onMounted(() => {
   if (id) load(id)
 })
 
+/** 个人中心“注销账号”前的转让 / 停用：?action=transfer|disable 进入后直接打开对应操作。 */
+function applyAction(): void {
+  const action = String(route.query.action || '')
+  const value = detail.value
+  if (!action || !value || Number(value.farm_id) !== Number(route.params.farmId || value.farm_id)) return
+  if (action === 'transfer') {
+    if (value.role === 'OWNER' && permissions.value.can_transfer && value.status !== 'DISABLED') void openTransfer()
+    else ui.toast('这个养殖场现在不能转让所有权', 'info')
+  } else if (action === 'disable') {
+    if (value.role === 'OWNER' && permissions.value.can_disable && value.status === 'NORMAL') disableOpen.value = true
+    else ui.toast(value.status === 'DISABLED' ? '这个养殖场已经停用' : '这个养殖场现在不能停用', 'info')
+  }
+  const query = { ...route.query }
+  delete query.action
+  void router.replace({ query })
+}
+
+watch(detail, () => applyAction())
+watch(() => route.query.action, (value) => {
+  if (value) applyAction()
+})
+
 function openBasic(): void {
   const basic = detail.value?.basic
   if (!basic) return

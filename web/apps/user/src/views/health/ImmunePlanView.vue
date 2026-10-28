@@ -6,6 +6,7 @@ import { formatNumber } from '@zmt/shared'
 import type { ImmunePlan, PreEntryItem } from '@/api/health'
 import { useImmunePlanStore, type ImmuneTab } from '@/stores/health/immune'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { queryId, useRouteAction } from '@/composables/useRouteAction'
 import { useRole } from '@/composables/useRole'
 import { useAuthStore } from '@/stores/auth'
 import { dateText, dateTimeText, monthDay, todayISO } from '@/stores/health/shared'
@@ -278,10 +279,25 @@ function openAddEdit(plan: ImmunePlan): void {
   store.openAddEdit(plan)
 }
 
-onMounted(() => {
+/** create：带 planItemId（待办去登记）时登记该免疫项目，否则打开“登记接种”。 */
+const routeAction = useRouteAction(async (action, query) => {
+  if (action !== 'create') return
+  const batchId = queryId(query, 'batchId', 'batch_id')
+  if (batchId && batchId !== store.batchId) await store.selectBatch(batchId)
+  const planId = queryId(query, 'planItemId', 'plan_item_id', 'planId')
+  if (planId) {
+    const plan = store.list.find((item) => Number(item.id) === planId)
+    store.openRegisterFor(planId, plan ? hasAction(plan, 'BACKFILL') : false)
+    return
+  }
+  store.openRegister()
+})
+
+onMounted(async () => {
   store.staffView = isStaff.value
-  const preferred = Number(route.query.batchId || route.query.batch_id || 0)
-  void store.load(preferred || undefined)
+  const preferred = queryId(route.query, 'batchId', 'batch_id')
+  await store.load(preferred || undefined)
+  await routeAction.start()
 })
 
 useFarmReload(async () => {

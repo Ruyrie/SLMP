@@ -108,6 +108,7 @@ export function calendarSubText(todo: TodoItemVO): string {
 /** 操作文字：预警类去入库、经营类登记收款/去查看，作业类去登记。 */
 export function actionLabel(todo: TodoItemVO): string {
   if (todo.display_status === 'DONE' || todo.display_status === 'IGNORED') return '详情'
+  if (todo.todo_type === 'DRUG_NEAR_EXPIRY' || todo.todo_type === 'DRUG_EXPIRED') return '去处理'
   if (todo.category === 'WARNING') return '去入库'
   if (todo.todo_type === 'RECEIVABLE') return '登记收款'
   if (todo.todo_type === 'WITHDRAWAL_END') return '去查看'
@@ -225,35 +226,63 @@ export function messageTime(message: Pick<MessageBriefVO, 'created_at' | 'date_g
 
 /* ---------------- 去向 ---------------- */
 
-const ROUTE_MAP: Record<string, string> = {
-  G02: 'WU-G01',
-  I02: 'WU-I01',
-  D03: 'WU-D01',
-  D08: 'WU-D03',
-  G05: 'WU-G03',
-  B02: 'WU-B02',
-  B04: 'WU-B02',
-  B07: 'WU-B03',
-  M01: 'WU-M01',
-  M03: 'WU-M01',
-  M05: 'WU-M02',
-  M07: 'WU-M02',
-  M08: 'WU-M02',
-  D05: 'WU-D02',
-  E06: 'WU-E03',
-  E13: 'WU-E07',
-  U02: 'WU-U01'
+/**
+ * App 页面编号 → Web 路由与参数。服务端去向参数是 snake_case（task_id、batch_id…），
+ * Web 页面读 camelCase；“去登记”时按目标页的动作词打开对应表单（见 composables/useRouteAction）。
+ */
+interface RouteSpec {
+  name: string
+  /** snake_case → 目标页参数名 */
+  params?: Record<string, string>
+  /** 去登记时的动作词；不填表示目标页没有对应表单，只打开页面 */
+  create?: string
 }
 
-/** App 页面编号 → Web 路由；路径参数按 Web 路由定义映射。 */
-export function resolveLinkTarget(link: LinkVO | null | undefined): NavTarget | null {
+const ROUTE_MAP: Record<string, RouteSpec> = {
+  G02: { name: 'WU-G01', params: { task_id: 'taskId' }, create: 'create' },
+  I02: { name: 'WU-I01', params: { pen_id: 'penId' }, create: 'create' },
+  D03: { name: 'WU-D01', params: { batch_id: 'batchId', plan_item_id: 'planItemId' }, create: 'create' },
+  D08: { name: 'WU-D03', params: { task_id: 'taskId' }, create: 'create' },
+  G05: { name: 'WU-G03', params: { batch_id: 'batchId', cycle_id: 'cycleId' }, create: 'create' },
+  B02: { name: 'WU-B02' },
+  B04: { name: 'WU-B02', create: 'farrowing' },
+  // 出雏在孵化页按步骤登记，页面默认选中今天预计出雏的孵化批次
+  B07: { name: 'WU-B03' },
+  M01: { name: 'WU-M01', params: { feed_id: 'feedId' } },
+  M03: { name: 'WU-M01', params: { feed_id: 'feedId' }, create: 'inbound' },
+  M05: { name: 'WU-M02', params: { drug_id: 'drugId' } },
+  M08: { name: 'WU-M02', params: { drug_id: 'drugId' }, create: 'inbound' },
+  // 临期 / 过期：App M07 是登记报废，Web 在兽药库存页找到该药品需关注的批号后进入批号页报废
+  M07: { name: 'WU-M02', params: { drug_id: 'drugId' }, create: 'scrap' },
+  D05: { name: 'WU-D02', params: { batch_id: 'batchId' } },
+  E06: { name: 'WU-E03', params: { batch_id: 'batchId' }, create: 'create' },
+  E13: { name: 'WU-E07' },
+  U02: { name: 'WU-U01' }
+}
+
+function renameParams(params: Record<string, string>, names: Record<string, string> = {}): Record<string, string> {
+  const query: Record<string, string> = {}
+  for (const [from, to] of Object.entries(names)) {
+    const value = params[from]
+    if (value !== undefined && value !== null && value !== '') query[to] = String(value)
+  }
+  return query
+}
+
+/** App 页面编号 → Web 路由；路径参数按 Web 路由定义映射，查询参数改成目标页读取的名字。 */
+export function resolveLinkTarget(
+  link: LinkVO | null | undefined,
+  options: { create?: boolean } = {}
+): NavTarget | null {
   if (!link?.route) return null
   const params = link.params || {}
   switch (link.route) {
     case 'M06':
-      return params.lot_id
-        ? { name: 'WU-M03', params: { lotId: params.lot_id } }
-        : { name: 'WU-M02' }
+      if (params.lot_id) return { name: 'WU-M03', params: { lotId: params.lot_id } }
+      return {
+        name: 'WU-M02',
+        query: { ...renameParams(params, { drug_id: 'drugId' }), ...(options.create ? { action: 'scrap' } : {}) }
+      }
     case 'E07':
       return params.sale_order_id
         ? { name: 'WU-E04', params: { id: params.sale_order_id } }
@@ -278,8 +307,11 @@ export function resolveLinkTarget(link: LinkVO | null | undefined): NavTarget | 
     case 'T07':
       return null
     default: {
-      const name = ROUTE_MAP[link.route]
-      return name ? { name } : null
+      const spec = ROUTE_MAP[link.route]
+      if (!spec) return null
+      const query = renameParams(params, spec.params)
+      if (options.create && spec.create) query.action = spec.create
+      return Object.keys(query).length ? { name: spec.name, query } : { name: spec.name }
     }
   }
 }
@@ -302,7 +334,7 @@ export function messageTarget(message: MessageDetailVO): NavTarget | null {
         name: 'WU-F01',
         query: {
           action: 'audit',
-          ...(farmId ? { farm_id: String(farmId) } : {})
+          ...(farmId ? { farmId: String(farmId) } : {})
         }
       }
     case 'FARM_CHANGE_RESULT':
@@ -344,10 +376,9 @@ export function useTodayLinks() {
         return false
       }
     }
-    const target = resolveLinkTarget(link)
+    const target = resolveLinkTarget(link, { create: options.create })
     if (!target) return false
-    const query: Record<string, string> = { ...(link.params || {}), ...(options.query || {}) }
-    if (options.create) query.action = 'create'
+    const query: Record<string, string> = { ...(target.query || {}), ...(options.query || {}) }
     await router.push({ name: target.name, params: target.params, query })
     return true
   }

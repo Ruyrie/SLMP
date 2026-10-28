@@ -35,6 +35,7 @@ import {
 import StockDocumentDrawer from '@/views/stock/components/StockDocumentDrawer.vue'
 import { useDrugStockStore } from '@/stores/stock/drug'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { queryId, useRouteAction } from '@/composables/useRouteAction'
 import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
 import {
@@ -75,14 +76,29 @@ function onCategory(value: string | number): void {
   void store.setCategory(String(value) as '' | 'VET_DRUG' | 'VACCINE' | 'DISINFECTANT')
 }
 
+/**
+ * 路由动作：create / inbound 入库（待办“去入库”、财务流水来源），outbound 出库，archive 药品档案，
+ * scrap 临期 / 过期待办 —— 找到该药品需关注的批号，进入批号页登记报废。
+ */
+const routeAction = useRouteAction(async (action, query) => {
+  const drugId = queryId(query, 'drugId', 'drug_id')
+  if (action === 'create' || action === 'inbound') await openInbound(drugId)
+  else if (action === 'outbound') await openOutbound(drugId, queryId(query, 'lotId', 'lot_id'))
+  else if (action === 'archive') await openArchive(drugId)
+  else if (action === 'scrap') {
+    const lot = store.attention.find((item) => item.drug_id === drugId && (item.lot_status === 'EXPIRED' || item.lot_status === 'NEAR_EXPIRY'))
+      || store.attention.find((item) => item.drug_id === drugId)
+    if (lot) goLot(lot.lot_id, 'scrap')
+    else ui.toast('没有找到这个药品需要处理的批号，可能已经处理完了', 'info')
+  }
+})
+
 onMounted(async () => {
   if (isStaff.value) return
   await store.load()
-  if (route.query.action === 'outbound') {
-    await openOutbound(Number(route.query.drugId || 0), Number(route.query.lotId || 0))
-  } else if (route.query.action === 'archive') {
-    await openArchive(Number(route.query.drugId || 0))
-  }
+  const inboundId = queryId(route.query, 'inboundId', 'inbound_id')
+  if (inboundId && !route.query.action) openFlowDoc({ flow_id: 0, biz_type: 'INBOUND', biz_id: inboundId, material_type: 'DRUG' })
+  await routeAction.start()
 })
 useFarmReload(async () => {
   if (!isStaff.value) await store.load()
@@ -650,6 +666,18 @@ function openFlow(flow: StockFlowItem): void {
   documentOpen.value = true
 }
 
+function openFlowDoc(flow: StockFlowItem): void {
+  selectedFlow.value = flow
+  returnToFlows.value = false
+  documentOpen.value = true
+}
+
+/** 单据当天修改 / 作废后刷新结存与流水 */
+async function onDocumentChanged(): Promise<void> {
+  await store.load()
+  if (returnToFlows.value) await loadFlows()
+}
+
 function onDocumentToggle(open: boolean): void {
   documentOpen.value = open
   if (!open && returnToFlows.value) {
@@ -1138,7 +1166,7 @@ function statusTagText(item: DrugLotItem): { type: string; icon: string; text: s
     </zw-drawer>
 
     <!-- 单据详情（入库单 / 领用单 / 退货单 / 报废单） -->
-    <StockDocumentDrawer :model-value="documentOpen" :flow="selectedFlow" :staff="isStaff" @update:model-value="onDocumentToggle" />
+    <StockDocumentDrawer :model-value="documentOpen" :flow="selectedFlow" :staff="isStaff" @update:model-value="onDocumentToggle" @changed="onDocumentChanged" />
   </zw-shell>
 </template>
 

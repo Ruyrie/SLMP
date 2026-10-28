@@ -7,9 +7,12 @@ import { useStockOverviewStore } from '@/stores/herd/overview'
 import { useFarmReload } from '@/composables/useFarmReload'
 import { useRole } from '@/composables/useRole'
 import { monthDay, occupancyPercent } from '@/stores/herd/shared'
+import { useUiStore } from '@/stores/ui'
+import { resolveLinkTarget } from '@/views/today/todo'
 
 const store = useStockOverviewStore()
 const router = useRouter()
+const ui = useUiStore()
 const { isStaff } = useRole()
 
 const desc = computed(() => {
@@ -103,23 +106,37 @@ function reminderIcon(type?: string): string {
   return 'notifications'
 }
 
-function reminderRoute(route?: string): string | null {
-  const map: Record<string, string> = {
-    D02: 'WU-D02',
-    M01: 'WU-M01',
-    L04: 'WU-L04',
-    I01: 'WU-I01'
-  }
-  return route ? map[route] || null : null
+/**
+ * 生产提醒的去向是 App 页面编号：休药 D05、饲料不足 M01、兽药不足 M05、临期 / 过期 M06、
+ * 巡检异常 I04（App 的巡检历史，Web 落到今日巡检，异常栏舍在那里转上报）。
+ * 与待办共用 resolveLinkTarget，批次参数改成目标页读取的 batchId。
+ */
+function reminderClickable(item: { batch_id?: number; route?: string }): boolean {
+  const route = item.route || ''
+  if (route === 'L04' || route === 'L06') return !!item.batch_id
+  return ['I04', 'I01', 'D02'].includes(route) || !!resolveLinkTarget({ route, params: {} })
 }
 
-function openReminder(item: { batch_id?: number; route?: string }): void {
-  const name = reminderRoute(item.route)
-  if (name === 'WU-L04' && item.batch_id) {
+function openReminder(item: { batch_id?: number; route?: string; todo_id?: number }): void {
+  const route = item.route || ''
+  if ((route === 'L04' || route === 'L06') && item.batch_id) {
     openBatch(item.batch_id)
     return
   }
-  if (name) void router.push({ name })
+  if (route === 'I04' || route === 'I01') {
+    void router.push({ name: 'WU-I01' })
+    return
+  }
+  if (route === 'D02') {
+    void router.push({ name: 'WU-D02', query: item.batch_id ? { batchId: String(item.batch_id) } : undefined })
+    return
+  }
+  const params: Record<string, string> = {}
+  if (item.batch_id) params.batch_id = String(item.batch_id)
+  if (item.todo_id) params.todo_id = String(item.todo_id)
+  const target = resolveLinkTarget({ route, params })
+  if (target) void router.push({ name: target.name, params: target.params, query: target.query })
+  else ui.toast('这条提醒暂时不能在网页端打开', 'info')
 }
 
 function categoryBatchCount(category: { batch_count?: number }): string {
@@ -399,7 +416,7 @@ function penActionText(pen: { is_breeding_pen?: boolean }): string {
               v-for="(item, index) in store.reminders"
               :key="`${item.reminder_type}-${index}`"
               class="l01-warn"
-              :class="{ 'l01-warn--click': reminderRoute(item.route) }"
+              :class="{ 'l01-warn--click': reminderClickable(item) }"
               @click="openReminder(item)"
             >
               <span class="zw-ico-tile zw-ico-tile--warning"><zw-icon :name="reminderIcon(item.reminder_type)" :size="18" /></span>

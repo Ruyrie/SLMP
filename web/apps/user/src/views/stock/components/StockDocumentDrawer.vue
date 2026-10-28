@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { formatMoney, formatNumber, today } from '@zmt/shared'
 import {
   fetchStockInbound,
   fetchStockLoss,
   fetchStockOutbound,
+  updateStockInbound,
+  updateStockOutbound,
+  voidStockInbound,
+  voidStockOutbound,
   type StockFlowItem,
   type StockInbound,
   type StockLoss,
@@ -15,6 +19,7 @@ import { allocationText, datetimeText, flowQty, moneyText, packQtyText } from '@
 import { useStockRefundStore, stockDocumentScope } from '@/stores/stock/refund'
 import { useUiStore } from '@/stores/ui'
 import { useFarmStore } from '@/stores/farm'
+import type { ApiError } from '@zmt/shared'
 
 /**
  * 出入库流水 → 单据详情；退货单支持登记与当日更正实际到账退款。
@@ -37,6 +42,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   'refund-saved': [value: StockOutbound]
   'view-finance-record': [id: number]
+  /** 单据被修改或作废后通知页面刷新结存与流水 */
+  changed: []
 }>()
 
 type DocKind = 'INBOUND' | 'OUTBOUND' | 'LOSS' | 'FLOW'
@@ -84,10 +91,10 @@ const title = computed(() => {
 const subTitle = computed(() => {
   const fallbackId = props.flow?.biz_id ? `#${props.flow.biz_id}` : ''
   if (docKind.value === 'INBOUND') {
-    return [inbound.value?.inbound_no || fallbackId, '只读'].filter(Boolean).join(' · ')
+    return [inbound.value?.inbound_no || fallbackId, canEditDoc.value || canVoidDoc.value ? '登记当天可修改或作废' : '只读'].filter(Boolean).join(' · ')
   }
   if (docKind.value === 'OUTBOUND') {
-    return [outbound.value?.outbound_no || fallbackId, isReturn.value ? '' : '只读'].filter(Boolean).join(' · ')
+    return [outbound.value?.outbound_no || fallbackId, canEditDoc.value || canVoidDoc.value ? '登记当天可修改或作废' : isReturn.value ? '' : '只读'].filter(Boolean).join(' · ')
   }
   if (docKind.value === 'LOSS') {
     return [loss.value?.loss_type_text || '报废单', loss.value?.loss_id ? `#${loss.value.loss_id}` : fallbackId, '只读']
@@ -118,6 +125,159 @@ const flowStockAfter = computed(() => {
   if (flow?.stock_qty_after === null || flow?.stock_qty_after === undefined) return '—'
   return `${formatNumber(flow.stock_qty_after)} ${flow.qty?.unit_text || ''}`.trim()
 })
+
+/* ---------------- 当天修改 / 作废（API-M10、M11、M22、M23，按 can_edit / can_void 显示） ---------------- */
+const manageable = computed(() => !props.staff && farm.role !== 'staff')
+const docActions = computed(() => (docKind.value === 'INBOUND' ? inbound.value?.actions : docKind.value === 'OUTBOUND' ? outbound.value?.actions : undefined))
+const docStatus = computed(() => (docKind.value === 'INBOUND' ? inbound.value?.status : outbound.value?.status))
+const canEditDoc = computed(() => manageable.value && docStatus.value !== 'VOID' && docActions.value?.can_edit === true)
+const canVoidDoc = computed(() => manageable.value && docStatus.value !== 'VOID' && docActions.value?.can_void === true)
+const editOpen = ref(false)
+const voidOpen = ref(false)
+const saving = ref(false)
+const editErrors = reactive<Record<string, string>>({})
+const editForm = reactive({
+  qty: null as number | null,
+  price: null as number | null,
+  inboundDate: '',
+  productionDate: '',
+  shelfLifeDate: '',
+  supplier: '',
+  expireDate: '',
+  outDate: '',
+  remark: '',
+  returnTo: '',
+  destination: ''
+})
+const isFeedDoc = computed(() => (inbound.value?.material_type || outbound.value?.material_type || props.flow?.material_type) === 'FEED')
+const editUnit = computed(() => {
+  const doc = docKind.value === 'INBOUND' ? inbound.value : outbound.value
+  if (!doc) return ''
+  return doc.input_unit === 'PACK' ? doc.qty?.pack_unit || doc.qty?.unit_text || '' : doc.qty?.unit_text || ''
+})
+const destinationItems = [
+  { title: '退回供应商', value: 'RETURN_SUPPLIER' },
+  { title: '调往他场', value: 'TRANSFER_FARM' },
+  { title: '出售', value: 'SALE' },
+  { title: '其他', value: 'OTHER' }
+]
+
+function clearErrors(): void {
+  Object.keys(editErrors).forEach((key) => delete editErrors[key])
+}
+
+function openEdit(): void {
+  clearErrors()
+  if (docKind.value === 'INBOUND' && inbound.value) {
+    const doc = inbound.value
+    editForm.qty = doc.input_qty ?? doc.qty?.value ?? null
+    editForm.price = doc.unit_price ?? null
+    editForm.inboundDate = doc.inbound_date || today()
+    editForm.productionDate = doc.production_date || ''
+    editForm.shelfLifeDate = doc.shelf_life_date || ''
+    editForm.supplier = doc.supplier_name || ''
+    editForm.expireDate = doc.expire_date || ''
+  } else if (docKind.value === 'OUTBOUND' && outbound.value) {
+    const doc = outbound.value
+    editForm.qty = doc.input_qty ?? doc.qty?.value ?? null
+    editForm.outDate = doc.out_date || today()
+    editForm.remark = doc.remark || ''
+    editForm.returnTo = doc.return_to || ''
+    editForm.destination = doc.destination || ''
+  }
+  editOpen.value = true
+}
+
+function validateEdit(): boolean {
+  clearErrors()
+  const qty = Number(editForm.qty)
+  if (!Number.isFinite(qty) || qty <= 0) editErrors.input_qty = '必须大于 0'
+  if (docKind.value === 'INBOUND') {
+    const price = Number(editForm.price)
+    if (!Number.isFinite(price) || price <= 0) editErrors.unit_price = '必须大于 0'
+    if (!editForm.inboundDate) editErrors.inbound_date = '请选择入库日期'
+    else if (editForm.inboundDate > today()) editErrors.inbound_date = '入库日期不能晚于今天'
+    if (isFeedDoc.value) {
+      if (!editForm.supplier.trim()) editErrors.supplier_name = '请填写供应商'
+      if (editForm.productionDate && editForm.productionDate > editForm.inboundDate) editErrors.production_date = '生产日期不能晚于入库日期'
+      if (editForm.shelfLifeDate && editForm.shelfLifeDate <= editForm.inboundDate) editErrors.shelf_life_date = '已过保质期，不能入库'
+    } else if (!editForm.expireDate) editErrors.expire_date = '请选择有效期'
+    else if (editForm.expireDate <= editForm.inboundDate) editErrors.expire_date = '早于入库日期，不能入库'
+  } else if (!editForm.outDate) editErrors.out_date = '请选择出库日期'
+  else if (editForm.outDate > today()) editErrors.out_date = '出库日期不能晚于今天'
+  return Object.keys(editErrors).length === 0
+}
+
+function applyFieldErrors(error: ApiError): void {
+  for (const field of error.fieldErrors || []) editErrors[field.field] = field.message
+}
+
+async function submitEdit(): Promise<void> {
+  if (saving.value || !validateEdit()) return
+  saving.value = true
+  try {
+    if (docKind.value === 'INBOUND' && inbound.value) {
+      const doc = inbound.value
+      inbound.value = await updateStockInbound(doc.inbound_id, {
+        input_qty: Number(editForm.qty),
+        input_unit: doc.input_unit,
+        unit_price: Number(editForm.price),
+        inbound_date: editForm.inboundDate,
+        sync_finance: doc.sync_finance,
+        ...(isFeedDoc.value
+          ? {
+              production_date: editForm.productionDate || null,
+              shelf_life_date: editForm.shelfLifeDate || null,
+              supplier_name: editForm.supplier.trim()
+            }
+          : { expire_date: editForm.expireDate }),
+        version: Number(doc.version || 0)
+      })
+      ui.toast('已保存入库单修改')
+    } else if (docKind.value === 'OUTBOUND' && outbound.value) {
+      const doc = outbound.value
+      outbound.value = await updateStockOutbound(doc.outbound_id, {
+        input_qty: Number(editForm.qty),
+        input_unit: doc.input_unit,
+        out_date: editForm.outDate,
+        remark: editForm.remark.trim(),
+        ...(isReturn.value ? { return_to: editForm.returnTo.trim() } : {}),
+        ...(doc.destination && editForm.destination ? { destination: editForm.destination } : {}),
+        version: Number(doc.version || 0)
+      })
+      ui.toast('已修改，修改记录已保留')
+    }
+    editOpen.value = false
+    emit('changed')
+    await load()
+  } catch (error) {
+    applyFieldErrors(error as ApiError)
+    ui.toast((error as ApiError).message || '保存失败，请重试', 'error')
+  } finally {
+    saving.value = false
+  }
+}
+
+async function submitVoid(): Promise<void> {
+  if (saving.value) return
+  saving.value = true
+  try {
+    if (docKind.value === 'INBOUND' && inbound.value) {
+      await voidStockInbound(inbound.value.inbound_id, Number(inbound.value.version || 0))
+      ui.toast('已作废这张入库单，结存已回退')
+    } else if (docKind.value === 'OUTBOUND' && outbound.value) {
+      await voidStockOutbound(outbound.value.outbound_id, Number(outbound.value.version || 0))
+      ui.toast('已作废这条出库记录，结存已回退')
+    }
+    voidOpen.value = false
+    emit('changed')
+    await load()
+  } catch (error) {
+    ui.toast((error as ApiError).message || '作废失败，请重试', 'error')
+  } finally {
+    saving.value = false
+  }
+}
 
 function statusTagType(status?: string): string {
   return status === 'VOID' ? 'error' : 'neutral'
@@ -218,7 +378,7 @@ onBeforeUnmount(clearDocument)
         <span class="zw-ico-tile zw-ico-tile--primary"><zw-icon name="inventory_2" :size="18" /></span>
         <div>
           <div class="zw-cell-main">{{ inbound.material_name || '—' }}</div>
-          <div class="zw-cell-sub">{{ inbound.category_text || '兽药与疫苗' }} · 批号 {{ inbound.lot_no || '—' }}</div>
+          <div class="zw-cell-sub">{{ inbound.category_text || (inbound.material_type === 'FEED' ? '饲料' : '兽药与疫苗') }}<template v-if="inbound.lot_no"> · 批号 {{ inbound.lot_no }}</template><template v-else-if="inbound.supplier_name"> · {{ inbound.supplier_name }}</template></div>
         </div>
         <zw-tag size="small" :type="statusTagType(inbound.status)">{{ inbound.status_text || inbound.status || '—' }}</zw-tag>
       </div>
@@ -389,11 +549,76 @@ onBeforeUnmount(clearDocument)
     </template>
 
     <template #foot>
+      <v-btn v-if="canVoidDoc" variant="text" color="error" prepend-icon="block" @click="voidOpen = true">作废</v-btn>
+      <v-btn v-if="canEditDoc" variant="outlined" prepend-icon="edit" @click="openEdit">修改</v-btn>
       <v-btn variant="outlined" @click="emit('update:modelValue', false)">关闭</v-btn>
       <v-btn v-if="canManageRefund && outbound?.actions?.can_refund" color="primary" prepend-icon="payments" @click="refund.begin(outbound)">登记退款</v-btn>
       <v-btn v-if="canManageRefund && outbound?.actions?.can_edit_refund" color="primary" prepend-icon="edit" @click="refund.begin(outbound, 'edit')">更正退款</v-btn>
     </template>
   </zw-drawer>
+
+  <zw-dialog v-model="editOpen" :title="docKind === 'INBOUND' ? '修改入库单' : '修改出库单'" width="520" :persistent="saving">
+    <zw-notice type="info" class="mb-4">
+      {{ docKind === 'INBOUND' ? '入库单还没有发生出库，登记当天可以直接修改；结存、金额和关联支出同步更新。' : '出库类型、物资和批号不能修改；结存与成本按修改后的数量重新计算。' }}
+    </zw-notice>
+    <div class="zw-form-2">
+      <zw-form-item label="数量" required :error="editErrors.input_qty">
+        <v-text-field v-model.number="editForm.qty" type="number" min="0" :suffix="editUnit" :error="!!editErrors.input_qty" />
+      </zw-form-item>
+      <zw-form-item v-if="docKind === 'INBOUND'" label="单价" required :error="editErrors.unit_price">
+        <v-text-field v-model.number="editForm.price" type="number" min="0" suffix="元" :error="!!editErrors.unit_price" />
+      </zw-form-item>
+      <zw-form-item v-else label="出库日期" required :error="editErrors.out_date">
+        <v-text-field v-model="editForm.outDate" type="date" :max="today()" :error="!!editErrors.out_date" />
+      </zw-form-item>
+    </div>
+    <template v-if="docKind === 'INBOUND'">
+      <div class="zw-form-2 mt-3">
+        <zw-form-item label="入库日期" required :error="editErrors.inbound_date">
+          <v-text-field v-model="editForm.inboundDate" type="date" :max="today()" :error="!!editErrors.inbound_date" />
+        </zw-form-item>
+        <zw-form-item v-if="!isFeedDoc" label="有效期至" required :error="editErrors.expire_date">
+          <v-text-field v-model="editForm.expireDate" type="date" :error="!!editErrors.expire_date" />
+        </zw-form-item>
+        <zw-form-item v-else label="供应商" required :error="editErrors.supplier_name">
+          <v-text-field v-model="editForm.supplier" maxlength="30" :error="!!editErrors.supplier_name" />
+        </zw-form-item>
+      </div>
+      <div v-if="isFeedDoc" class="zw-form-2 mt-3">
+        <zw-form-item label="生产日期" optional :error="editErrors.production_date">
+          <v-text-field v-model="editForm.productionDate" type="date" :error="!!editErrors.production_date" />
+        </zw-form-item>
+        <zw-form-item label="保质期至" optional :error="editErrors.shelf_life_date">
+          <v-text-field v-model="editForm.shelfLifeDate" type="date" :error="!!editErrors.shelf_life_date" />
+        </zw-form-item>
+      </div>
+    </template>
+    <template v-else>
+      <zw-form-item v-if="isReturn" label="退回对象" class="mt-3" :error="editErrors.return_to">
+        <v-text-field v-model="editForm.returnTo" maxlength="30" :error="!!editErrors.return_to" />
+      </zw-form-item>
+      <zw-form-item v-if="outbound?.destination" label="出库去向" class="mt-3" :error="editErrors.destination">
+        <v-select v-model="editForm.destination" :items="destinationItems" :error="!!editErrors.destination" />
+      </zw-form-item>
+      <zw-form-item label="说明" optional class="mt-3" :error="editErrors.remark">
+        <v-text-field v-model="editForm.remark" maxlength="100" :error="!!editErrors.remark" />
+      </zw-form-item>
+    </template>
+    <template #actions>
+      <v-btn variant="outlined" :disabled="saving" @click="editOpen = false">取消</v-btn>
+      <v-btn color="primary" :loading="saving" @click="submitEdit">保存修改</v-btn>
+    </template>
+  </zw-dialog>
+
+  <zw-dialog v-model="voidOpen" :title="docKind === 'INBOUND' ? '作废这张入库单？' : '作废这条出库记录？'" icon="warning" tone="error" width="440" :persistent="saving">
+    <div class="body-m">
+      作废后结存回退，{{ docKind === 'INBOUND' ? '同步生成的支出也一并作废' : '分摊到批次的成本一并撤回' }}。作废不能撤销，修改记录会保留。
+    </div>
+    <template #actions>
+      <v-btn variant="outlined" :disabled="saving" @click="voidOpen = false">取消</v-btn>
+      <v-btn color="error" :loading="saving" @click="submitVoid">确认作废</v-btn>
+    </template>
+  </zw-dialog>
 
   <zw-dialog :model-value="refund.open" :title="refund.mode === 'edit' ? '更正退款' : '登记退款'" width="480" :persistent="refund.submitting" @update:model-value="!$event && !refund.submitting && refund.close()">
     <zw-notice type="info" class="mb-4">

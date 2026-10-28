@@ -152,6 +152,39 @@ function inviteExpireText(): string {
   return `${dayjs(value).format('M月D日 HH:mm')} 前处理`
 }
 
+/** 所有权转让：受让人本人在待处理且未过期时可以接受或拒绝（二次确认）。 */
+function isPendingTransferDetail(): boolean {
+  return (
+    detail.value?.msg_type === 'OWNER_TRANSFER' &&
+    detail.value.action?.status === 'PENDING' &&
+    !!detail.value.action.can_accept
+  )
+}
+
+const transferConfirm = ref<'' | 'accept' | 'reject'>('')
+const transferBusy = ref(false)
+
+async function confirmTransfer(): Promise<void> {
+  const message = detail.value
+  const transferId = message?.action?.action_id
+  if (!message || !transferId || !transferConfirm.value) return
+  transferBusy.value = true
+  try {
+    if (transferConfirm.value === 'accept') {
+      const name = await store.acceptTransfer(transferId, message.farm?.name)
+      ui.toast(`你已成为${name || message.farm?.name || '该养殖场'}的所有者`)
+    } else {
+      await store.rejectTransfer(transferId)
+      ui.toast('已拒绝接收该养殖场的所有权')
+    }
+    transferConfirm.value = ''
+  } catch (e) {
+    ui.toast(e instanceof ApiError ? e.message : '没有处理成功，请稍后重试', 'error')
+  } finally {
+    transferBusy.value = false
+  }
+}
+
 function inviteStatusText(): string {
   if (!detail.value) return '—'
   return detail.value.action?.status_text || payloadStr(detail.value, 'status') || '—'
@@ -305,7 +338,8 @@ onMounted(async () => {
   refreshTimer = window.setInterval(refreshVisible, appConfig.pollInterval)
   document.addEventListener('visibilitychange', refreshVisible)
   await store.fetchList(true)
-  const id = Number(route.query.id)
+  // 统一用 id；兼容旧链接里的 messageId / message_id
+  const id = Number(route.query.id || route.query.messageId || route.query.message_id)
   if (Number.isFinite(id) && id > 0) await store.openFromPush(id)
 })
 
@@ -530,8 +564,13 @@ onBeforeUnmount(() => {
               <zw-desc-item label="有效期">{{ payloadStr(detail, 'expire_at') ? momentText(payloadStr(detail, 'expire_at')) : '—' }}</zw-desc-item>
             </zw-desc>
             <zw-notice class="mt-4" style="max-width: 560px" icon="info">
-              所有权转让需要双方确认，请到 App 或对应养殖场页面处理。
+              接受后你成为{{ payloadStr(detail, 'farm_name') || detail.farm?.name || '该养殖场' }}的所有者，原所有者转为场长；拒绝后转让请求失效。
             </zw-notice>
+            <div v-if="isPendingTransferDetail()" class="t04-actions">
+              <v-btn variant="outlined" @click="transferConfirm = 'reject'">拒绝</v-btn>
+              <v-btn color="primary" :loading="acceptingId === detail.action?.action_id" @click="transferConfirm = 'accept'">接受</v-btn>
+            </div>
+            <div v-else-if="detail.action?.status_text" class="t04-handled">{{ detail.action.status_text }}</div>
           </template>
 
           <template v-else-if="detail.msg_type === 'NOTICE'">
@@ -642,6 +681,29 @@ onBeforeUnmount(() => {
         <button class="zw-snack-action" type="button" @click="undoDelete">撤销</button>
       </template>
     </v-snackbar>
+
+    <zw-dialog
+      :model-value="!!transferConfirm"
+      :title="transferConfirm === 'accept' ? '接受所有权转让？' : '拒绝所有权转让？'"
+      icon="warning"
+      :tone="transferConfirm === 'accept' ? 'warning' : 'error'"
+      :width="440"
+      :persistent="transferBusy"
+      @update:model-value="!$event && !transferBusy && (transferConfirm = '')"
+    >
+      <p class="mb-2">
+        {{ transferConfirm === 'accept'
+          ? `接受后你将成为${payloadStr(detail!, 'farm_name') || detail?.farm?.name || '该养殖场'}的所有者，负责养殖场的全部管理，原所有者转为场长。`
+          : '拒绝后这次转让请求失效，需要对方重新发起。' }}
+      </p>
+      <p class="zw-faint body-s">{{ detail?.title }}</p>
+      <template #actions>
+        <v-btn variant="outlined" :disabled="transferBusy" @click="transferConfirm = ''">取消</v-btn>
+        <v-btn :color="transferConfirm === 'accept' ? 'primary' : 'error'" :loading="transferBusy" @click="confirmTransfer">
+          {{ transferConfirm === 'accept' ? '确认接受' : '确认拒绝' }}
+        </v-btn>
+      </template>
+    </zw-dialog>
 
     <zw-dialog v-model="rejectOpen" title="拒绝这条邀请？" icon="warning" :width="420">
       <p class="mb-2">拒绝后邀请失效，需要对方重新邀请。</p>

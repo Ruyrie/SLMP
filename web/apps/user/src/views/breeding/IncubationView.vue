@@ -150,7 +150,12 @@ function closeLogs(): void {
 
 async function handleQuery(): Promise<void> {
   if (isStaff.value) return
-  if (route.query.action === 'incubate') await store.openCreate()
+  const action = String(route.query.action || '')
+  if (action !== 'incubate' && action !== 'create') return
+  await store.openCreate()
+  const query = { ...route.query }
+  delete query.action
+  await router.replace({ query })
 }
 
 onMounted(async () => {
@@ -183,7 +188,7 @@ watch(() => route.query.incubationId, (value) => {
 })
 
 watch(() => route.query.action, (value) => {
-  if (value === 'incubate' && !isStaff.value) void store.openCreate()
+  if (value) void handleQuery()
 })
 </script>
 

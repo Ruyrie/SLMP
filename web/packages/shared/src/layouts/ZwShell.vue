@@ -66,9 +66,11 @@ function go(name: string): void {
   })
 }
 
-function goQuick(item: { key: string; action?: string }): void {
+function goQuick(item: { key: string; action?: string; query?: Record<string, string> }): void {
   quickMenu.value = false
-  router.push({ name: item.key, query: item.action ? { action: item.action } : undefined })
+  const query: Record<string, string> = { ...(item.query || {}) }
+  if (item.action) query.action = item.action
+  router.push({ name: item.key, query: Object.keys(query).length ? query : undefined })
 }
 
 function onSearch(): void {

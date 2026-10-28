@@ -5,6 +5,8 @@ import { formatNumber } from '@zmt/shared'
 import { useWeighStore } from '@/stores/feeding/weigh'
 import { useFarmStore } from '@/stores/farm'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { queryId, useRouteAction } from '@/composables/useRouteAction'
+import { useUiStore } from '@/stores/ui'
 import { useRole } from '@/composables/useRole'
 import { dayAgeAt, deviationText, monthDay, monthDayWeek, todayISO } from '@/stores/feeding/shared'
 import type { WeighRecordRow } from '@/api/feeding'
@@ -189,17 +191,31 @@ function closeDrawer(): void {
 }
 
 async function init(): Promise<void> {
-  const queryBatch = Number(route.query.batchId || 0)
+  const queryBatch = queryId(route.query, 'batchId', 'batch_id')
   if (queryBatch && store.loaded && queryBatch !== store.batchId) {
     await store.setBatch(queryBatch)
   } else {
     if (queryBatch) store.batchId = queryBatch
     await store.load()
   }
-  if (route.query.action === 'weigh') await store.openWeigh()
 }
 
-onMounted(init)
+/** create（快捷登记 / 待办去登记）与旧的 weigh 都打开称重登记。 */
+const routeAction = useRouteAction(async (action, query) => {
+  if (action !== 'create' && action !== 'weigh') return
+  const queryBatch = queryId(query, 'batchId', 'batch_id')
+  if (queryBatch && queryBatch !== store.batchId) await store.setBatch(queryBatch)
+  if (!store.batchId || !activeBatch.value) {
+    useUiStore().toast(store.batchId ? '这个批次已出栏，不能再称重登记' : '还没有在养批次，暂时不能称重登记', 'info')
+    return
+  }
+  await store.openWeigh()
+})
+
+onMounted(async () => {
+  await init()
+  await routeAction.start()
+})
 
 useFarmReload(async () => {
   store.reset()
