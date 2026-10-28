@@ -190,17 +190,34 @@ class AiGatewayImplTest {
     }
 
     @Test
-    void chat_timeout_50401_withoutFallback() {
+    void chat_primaryTimeout_switchesToFallbackWithinBudget() {
         route((r, ex) -> {
             Thread.sleep(2000);
             FakeHttpServer.json(ex, 200, OK_BODY);
         }, (r, ex) -> FakeHttpServer.json(ex, 200, FALLBACK_BODY));
+        AiChatRequest req = AiChatRequest.builder().message(AiMessage.user("q")).timeout(Duration.ofMillis(1000)).build();
+        long t0 = System.nanoTime();
+        AiChatResult result = new AiGatewayImpl(props()).chat(req);
+        assertThat(result.isFallback()).isTrue();
+        assertThat(result.getProvider()).isEqualTo("deepseek");
+        assertThat(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)).isLessThan(1800);
+        assertThat(server.requests("/f")).hasSize(1);
+    }
+
+    @Test
+    void chat_timeout_50401_whenFallbackAlsoSlow() {
+        route((r, ex) -> {
+            Thread.sleep(2000);
+            FakeHttpServer.json(ex, 200, OK_BODY);
+        }, (r, ex) -> {
+            Thread.sleep(2000);
+            FakeHttpServer.json(ex, 200, FALLBACK_BODY);
+        });
         AiChatRequest req = AiChatRequest.builder().message(AiMessage.user("q")).timeout(Duration.ofMillis(500)).build();
         long t0 = System.nanoTime();
         assertThatThrownBy(() -> new AiGatewayImpl(props()).chat(req))
                 .isInstanceOfSatisfying(BizException.class, e -> assertThat(e.getCode()).isEqualTo(50401));
         assertThat(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0)).isLessThan(1800);
-        assertThat(server.requests("/f")).isEmpty();
     }
 
     @Test

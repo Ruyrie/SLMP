@@ -32,6 +32,8 @@ public class ReportFormVO {
         private String batchNo;
         private long categoryId;
         private int stockCount;
+        /** 数量单位文字：头 / 只 */
+        private String unitText;
         private String breedTitle;
         private Integer dayAge;
     }

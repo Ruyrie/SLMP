@@ -8,7 +8,6 @@
     <string name="inspect_action_discard">放弃</string>
     <string name="inspect_action_cancel">取消</string>
     <string name="inspect_action_save">保存</string>
-    <string name="inspect_unit_head">头</string>
 
     <!-- I01 今日巡检 -->
     <string name="inspect_today_title">今日巡检</string>

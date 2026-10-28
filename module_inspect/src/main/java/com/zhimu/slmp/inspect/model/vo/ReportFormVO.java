@@ -92,6 +92,8 @@ public class ReportFormVO {
         private String batchNo;
         private long categoryId;
         private int stockCount;
+        /** 数量单位文字：头 / 只；为空时按“头” */
+        private String unitText;
         /** 品种与日龄（客户端补充，用于 AI 诊断提示词，服务端可不返回） */
         private String breedTitle;
         private Integer dayAge;
@@ -103,6 +105,8 @@ public class ReportFormVO {
         public long getCategoryId() { return categoryId; }
 
         public int getStockCount() { return stockCount; }
+
+        public String unitOrHead() { return unitText == null || unitText.isEmpty() ? "头" : unitText; }
 
         @Nullable
         public String getBreedTitle() { return breedTitle; }

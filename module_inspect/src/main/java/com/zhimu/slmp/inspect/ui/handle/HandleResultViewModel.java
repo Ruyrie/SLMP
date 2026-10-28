@@ -54,6 +54,8 @@ public class HandleResultViewModel extends BaseViewModel {
     private final MutableLiveData<DiagnosisDetailVO> detail = new MutableLiveData<>();
     private final MutableLiveData<String> titleText = new MutableLiveData<>("登记处理结果");
     private final MutableLiveData<String> summaryTitle = new MutableLiveData<>("");
+    /** 治愈 / 淘汰数量的单位：头 / 只 */
+    private final MutableLiveData<String> countUnit = new MutableLiveData<>("头");
     private final MutableLiveData<String> summarySubtitle = new MutableLiveData<>("");
     private final MutableLiveData<String> diagnostician = new MutableLiveData<>("");
     private final MutableLiveData<String> treatment = new MutableLiveData<>("");
@@ -118,7 +120,9 @@ public class HandleResultViewModel extends BaseViewModel {
         detail.setValue(d);
         DiagnosisDetailVO.DiagnosisReport r = d.getReport();
         int sick = r == null ? 0 : r.getSickCount();
-        summaryTitle.setValue((r == null ? "" : r.getPenName()) + " · 发病 " + sick + " 头");
+        String unit = r == null || r.getUnitText() == null || r.getUnitText().isEmpty() ? "头" : r.getUnitText();
+        countUnit.setValue(unit);
+        summaryTitle.setValue((r == null ? "" : r.getPenName()) + " · 发病 " + sick + " " + unit);
         DiagnosisResultVO dx = d.getDiagnosis();
         String top = dx == null ? null : dx.topCauseName();
         summarySubtitle.setValue((r == null ? "" : r.getBatchNo()) + (top == null ? "" : " · AI：" + top));
@@ -149,6 +153,8 @@ public class HandleResultViewModel extends BaseViewModel {
 
     /** “3 号育肥舍 · 发病 12 头” */
     public LiveData<String> getSummaryTitle() { return summaryTitle; }
+
+    public LiveData<String> getCountUnit() { return countUnit; }
 
     /** “ZM2610-031 · AI：猪流行性腹泻” */
     public LiveData<String> getSummarySubtitle() { return summarySubtitle; }

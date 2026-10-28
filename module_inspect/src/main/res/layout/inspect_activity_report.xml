@@ -109,7 +109,7 @@
                         app:helperText="@{vm.sickHelper}"
                         app:helperTextEnabled="true"
                         app:inspectError="@{vm.fieldErrors[`sick_count`]}"
-                        app:suffixText="@string/inspect_unit_head">
+                        app:suffixText="@{vm.sickUnit}">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/inspect_sick_input"

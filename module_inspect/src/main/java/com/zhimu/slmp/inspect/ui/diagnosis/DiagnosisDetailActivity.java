@@ -125,8 +125,9 @@ public class DiagnosisDetailActivity extends BaseActivity {
         if (r != null) {
             binding.inspectReportPen.setText(r.getPenName());
             binding.inspectReportBatch.setText(r.getBatchNo());
-            binding.inspectReportStock.setText(withUnit(String.valueOf(r.getStockSnapshot()), "头"));
-            binding.inspectReportSick.setText(withUnit(String.valueOf(r.getSickCount()), "头"));
+            String unit = r.getUnitText() == null || r.getUnitText().isEmpty() ? "头" : r.getUnitText();
+            binding.inspectReportStock.setText(withUnit(String.valueOf(r.getStockSnapshot()), unit));
+            binding.inspectReportSick.setText(withUnit(String.valueOf(r.getSickCount()), unit));
             binding.inspectReportRate.setText(withUnit(InspectFormat.percent1(r.getSickRate()), "%"));
             String who = r.getReporter() == null || r.getReporter().getName() == null ? "" : r.getReporter().getName();
             String head = who + " " + InspectFormat.time(r.getReportedAt()) + " 上报";

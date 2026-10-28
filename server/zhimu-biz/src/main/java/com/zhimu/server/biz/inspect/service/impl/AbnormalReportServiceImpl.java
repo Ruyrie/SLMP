@@ -467,6 +467,7 @@ public class AbnormalReportServiceImpl implements AbnormalReportService {
             // 批次结束后仍可查看历史诊断
         }
         reportVo.setBatchNo(batch == null ? null : batch.batchNo());
+        reportVo.setUnitText(unitText(batch));
         reportVo.setReporter(reporterVo(report.getReporterId()));
         reportVo.setReportedAt(BeijingTime.format(report.getReportedAt()));
         reportVo.setSource(report.getSource());
@@ -792,6 +793,7 @@ public class AbnormalReportServiceImpl implements AbnormalReportService {
                 batchVo.setBatchNo(batch.batchNo());
                 batchVo.setCategoryId(batch.categoryId() == null ? 0 : batch.categoryId());
                 batchVo.setStockCount(stock);
+                batchVo.setUnitText(unitText(batch));
                 batchVo.setBreedTitle(breedTitle(batch));
                 batchVo.setDayAge(dayAge(batch));
                 batchVos.add(batchVo);
@@ -845,6 +847,14 @@ public class AbnormalReportServiceImpl implements AbnormalReportService {
         if (!allowed) {
             throw new BizException(ErrorCode.PEN_FORBIDDEN);
         }
+    }
+
+    private String unitText(BatchInfo batch) {
+        if (batch == null || batch.categoryId() == null) {
+            return null;
+        }
+        CategoryInfo category = baseDataQueryService.getCategory(batch.categoryId());
+        return category == null ? null : category.countUnitText();
     }
 
     private String breedTitle(BatchInfo batch) {

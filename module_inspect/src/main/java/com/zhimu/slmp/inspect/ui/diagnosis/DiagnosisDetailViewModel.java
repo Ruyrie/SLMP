@@ -372,6 +372,8 @@ public class DiagnosisDetailViewModel extends BaseViewModel {
         rediagnosing.setValue(true);
         launch(repository.rediagnose(reportId), s -> {
             if (s.isDiagnosing()) {
+                // 已重新开始诊断：收起上一次“暂不可用 / 未给出诊断”的提示，结果出来后按新状态再显示
+                failureText.setValue(null);
                 startPolling(pollInterval, pollMax);
             } else {
                 onPollEnd(s);

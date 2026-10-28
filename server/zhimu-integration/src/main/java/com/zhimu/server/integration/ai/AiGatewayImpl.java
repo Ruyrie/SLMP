@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * AI 网关实现：非流式用 RestClient（JDK HttpClient），流式用 WebClient（Reactor Netty）读 text/event-stream。
- * 超时按整次调用计算（含切换备用），超时后不再切换。
+ * 超时按整次调用计算（含切换备用）；非流式调用时主服务商最多用剩余时间的 60%，超时后切换备用。
  */
 @Slf4j
 public class AiGatewayImpl implements AiGateway {
@@ -101,8 +101,11 @@ public class AiGatewayImpl implements AiGateway {
                 if (remain <= 0) {
                     throw timeoutError(req.getScene(), t, start);
                 }
+                // 后面还有备用时，本次最多用剩余时间的 60%，主模型慢时给备用留出时间
+                boolean hasNext = i + 1 < targets.size();
+                long budget = hasNext ? remain * 3 / 5 : remain;
                 try {
-                    OpenAiProtocol.Completion c = callChat(t, req, Duration.ofNanos(remain));
+                    OpenAiProtocol.Completion c = callChat(t, req, Duration.ofNanos(budget));
                     AiChatResult result = AiChatResult.builder()
                             .content(c.content().trim())
                             .provider(t.name())
@@ -115,10 +118,10 @@ public class AiGatewayImpl implements AiGateway {
                     logSuccess(req, result, false);
                     return result;
                 } catch (UpstreamException e) {
-                    if (e.timeout || System.nanoTime() >= deadline) {
+                    if (System.nanoTime() >= deadline || (e.timeout && !hasNext)) {
                         throw timeoutError(req.getScene(), t, start);
                     }
-                    boolean next = e.retryable && i + 1 < targets.size();
+                    boolean next = (e.retryable || e.timeout) && hasNext;
                     logFailure(req.getScene(), e, start, next);
                     if (!next) {
                         break;

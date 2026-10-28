@@ -40,6 +40,8 @@ public class DiagnosisDetailVO {
         private String inspectionRegisteredAt;
         private int sickCount;
         private int stockSnapshot;
+        /** 数量单位文字：头 / 只（按批次品类；批次已结束时为空，客户端按“头”） */
+        private String unitText;
         private BigDecimal sickRate;
         private List<String> symptomNames;
         private String description;

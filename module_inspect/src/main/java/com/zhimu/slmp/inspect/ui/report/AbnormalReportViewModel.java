@@ -86,6 +86,8 @@ public class AbnormalReportViewModel extends BaseViewModel {
     private final MutableLiveData<List<ReportFormVO.ReportBatch>> batches = new MutableLiveData<>(Collections.emptyList());
     private final MutableLiveData<Integer> maxSick = new MutableLiveData<>();
     private final MutableLiveData<String> sickHelper = new MutableLiveData<>("选择批次后显示存栏上限");
+    /** 发病数量输入框单位：随所选批次的品类显示头 / 只 */
+    private final MutableLiveData<String> sickUnit = new MutableLiveData<>("头");
     private final MutableLiveData<String> sickCount = new MutableLiveData<>("");
     private final MutableLiveData<String> description = new MutableLiveData<>("");
     private final MutableLiveData<List<SymptomVO>> symptoms = new MutableLiveData<>(Collections.emptyList());
@@ -212,6 +214,7 @@ public class AbnormalReportViewModel extends BaseViewModel {
 
     /** “不能超过批次当前存栏 200 头”“选择批次后显示存栏上限” */
     public LiveData<String> getSickHelper() { return sickHelper; }
+    public LiveData<String> getSickUnit() { return sickUnit; }
 
     public MutableLiveData<String> getSickCount() { return sickCount; }
 
@@ -291,7 +294,8 @@ public class AbnormalReportViewModel extends BaseViewModel {
         batchId.setValue(id);
         clearFieldError(F_BATCH);
         maxSick.setValue(batch.getStockCount());
-        sickHelper.setValue("不能超过批次当前存栏 " + batch.getStockCount() + " 头");
+        sickUnit.setValue(batch.unitOrHead());
+        sickHelper.setValue("不能超过批次当前存栏 " + batch.getStockCount() + " " + batch.unitOrHead());
         validateSick();
         if (changed) {
             loadSymptoms(id);

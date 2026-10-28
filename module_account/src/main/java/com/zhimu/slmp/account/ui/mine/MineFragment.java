@@ -173,8 +173,9 @@ public class MineFragment extends BaseFragment {
             initial.setVisibility(View.VISIBLE);
             return;
         }
+        // 图片在首字之上；加载完成前图片为空，先露出姓名首字，避免大图慢网时一片空白
         image.setVisibility(View.VISIBLE);
-        initial.setVisibility(View.GONE);
+        initial.setVisibility(View.VISIBLE);
         Glide.with(this)
                 .load(url)
                 .centerCrop()

@@ -23,7 +23,7 @@ public class AiProperties {
     private Provider primary = new Provider();
     /** 备用模型（DeepSeek） */
     private Provider fallback = new Provider();
-    private Duration diagnosisTimeout = Duration.ofSeconds(60);
+    private Duration diagnosisTimeout = Duration.ofSeconds(120);
     private Duration chatTimeout = Duration.ofSeconds(120);
     private Duration asrTimeout = Duration.ofSeconds(15);
     private Duration adviceTimeout = Duration.ofSeconds(60);

@@ -126,7 +126,7 @@ zhimu:
         api-key: ${DEEPSEEK_API_KEY:}
         chat-model: ${DEEPSEEK_CHAT_MODEL:deepseek-flash}
         vision-model: ${DEEPSEEK_VISION_MODEL:deepseek-flash}
-      diagnosis-timeout: 60s
+      diagnosis-timeout: 120s
       chat-timeout: 120s
       asr-timeout: 15s
       advice-timeout: 60s

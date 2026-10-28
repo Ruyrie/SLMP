@@ -268,7 +268,7 @@
                             android:layout_weight="1"
                             android:hint="@string/inspect_handle_cured"
                             app:inspectError="@{vm.fieldErrors[`cured_count`]}"
-                            app:suffixText="@string/inspect_unit_head">
+                            app:suffixText="@{vm.countUnit}">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/inspect_cured_input"
@@ -288,7 +288,7 @@
                             android:layout_weight="1"
                             android:hint="@string/inspect_handle_culled"
                             app:inspectError="@{vm.fieldErrors[`culled_count`]}"
-                            app:suffixText="@string/inspect_unit_head">
+                            app:suffixText="@{vm.countUnit}">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/inspect_culled_input"
