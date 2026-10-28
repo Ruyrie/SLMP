@@ -12,6 +12,7 @@ import {
 } from '@/api/stock'
 import { scrapInput, scrapQuantityError } from './scrap'
 import StockDocumentDrawer from '@/views/stock/components/StockDocumentDrawer.vue'
+import { consumeRouteAction } from '@/composables/useRouteAction'
 import { useDrugLotStore } from '@/stores/stock/lot'
 import { useFarmReload } from '@/composables/useFarmReload'
 import { useFarmStore } from '@/stores/farm'
@@ -142,11 +143,9 @@ async function load(): Promise<void> {
 /** 库存页“登记报废”、临期 / 过期待办进入时直接打开报废表单 */
 async function applyAction(): Promise<void> {
   if (route.query.action !== 'scrap') return
+  await consumeRouteAction(route, router)
   if (actionsCanScrap.value) openScrap()
   else if (!isStaff.value) ui.toast('这个批号现在不能报废，到期或停用后可以登记报废', 'info')
-  const query = { ...route.query }
-  delete query.action
-  await router.replace({ query })
 }
 
 onMounted(async () => {

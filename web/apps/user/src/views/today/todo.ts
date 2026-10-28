@@ -40,7 +40,8 @@ const TODO_ICONS: Record<string, string> = {
   DRUG_NEAR_EXPIRY: 'inventory_2',
   DRUG_EXPIRED: 'inventory_2',
   WITHDRAWAL_END: 'medication',
-  RECEIVABLE: 'payments'
+  RECEIVABLE: 'payments',
+  ABNORMAL_REPORT: 'report'
 }
 
 export function todoIcon(todo: Pick<TodoItemVO, 'todo_type'> | null | undefined): string {
@@ -108,7 +109,7 @@ export function calendarSubText(todo: TodoItemVO): string {
 /** 操作文字：预警类去入库、经营类登记收款/去查看，作业类去登记。 */
 export function actionLabel(todo: TodoItemVO): string {
   if (todo.display_status === 'DONE' || todo.display_status === 'IGNORED') return '详情'
-  if (todo.todo_type === 'DRUG_NEAR_EXPIRY' || todo.todo_type === 'DRUG_EXPIRED') return '去处理'
+  if (todo.todo_type === 'DRUG_NEAR_EXPIRY' || todo.todo_type === 'DRUG_EXPIRED' || todo.todo_type === 'ABNORMAL_REPORT') return '去处理'
   if (todo.category === 'WARNING') return '去入库'
   if (todo.todo_type === 'RECEIVABLE') return '登记收款'
   if (todo.todo_type === 'WITHDRAWAL_END') return '去查看'
@@ -288,8 +289,9 @@ export function resolveLinkTarget(
         ? { name: 'WU-E04', params: { id: params.sale_order_id } }
         : { name: 'WU-E03' }
     case 'I06':
+      // 异常上报待办（ABNORMAL_REPORT）：去处理时打开诊断详情的处理抽屉
       return params.report_id
-        ? { name: 'WU-I04', params: { id: params.report_id } }
+        ? { name: 'WU-I04', params: { id: params.report_id }, ...(options.create ? { query: { action: 'handle' } } : {}) }
         : { name: 'WU-I03' }
     case 'F07':
       return params.farm_id

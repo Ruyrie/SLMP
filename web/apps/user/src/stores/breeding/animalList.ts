@@ -500,11 +500,11 @@ export const useBreedingAnimalStore = defineStore('breedingAnimalList', {
         this.exitSubmitting = false
       }
     },
-    /** 导出当前筛选下的全部种畜：按 200 条一页取完（服务端单页上限 200），不再只导第一页。 */
+    /** 导出当前筛选下的全部种畜：按 100 条一页取完（服务端单页上限 100，超过会被拒绝或截断），不再只导第一页。 */
     async exportRows(): Promise<BreedingAnimalItem[]> {
       this.exportBusy = true
       try {
-        const size = 200
+        const size = 100
         const rows: BreedingAnimalItem[] = []
         for (let page = 1; page <= 100; page += 1) {
           const data = await breedingApi.animals({

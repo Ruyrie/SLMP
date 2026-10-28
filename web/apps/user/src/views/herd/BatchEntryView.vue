@@ -7,7 +7,7 @@ import { useHerdEntryStore, type EntrySource, type HerdActionTab } from '@/store
 import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
 import { useFarmReload } from '@/composables/useFarmReload'
-import { queryId } from '@/composables/useRouteAction'
+import { consumeRouteAction, queryId } from '@/composables/useRouteAction'
 import { useRole } from '@/composables/useRole'
 import { dateText, occupancyPercent, sourceText, todayISO } from '@/stores/herd/shared'
 import HerdDateField from './components/HerdDateField.vue'
@@ -276,24 +276,22 @@ async function applyRouteQuery(): Promise<void> {
   store.setTab(isStaff.value ? 'death' : queryTab)
   const batchId = batchIdFromQuery()
   const create = route.query.action === 'create'
+  // 先去掉 action 再开抽屉（临时抽屉在路由变化时会自动关闭）
+  const penId = queryId(route.query, 'penId', 'pen_id')
+  if (create) await consumeRouteAction(route, router)
   const tab = isStaff.value ? 'death' : queryTab
   if (tab === 'transfer') {
     if (batchId) await store.selectTransferBatch(batchId)
     if (create) await openFromQuery('transfer', defaultBatchId(batchId || selectedTransferBatch.value?.batch_id))
   } else if (tab === 'death') {
     if (batchId) await store.selectDeathBatch(batchId)
-    if (create) await openFromQuery('death', defaultBatchId(batchId || selectedDeathBatch.value?.batch_id))
+    if (create) await openFromQuery('death', defaultBatchId(batchId || selectedDeathBatch.value?.batch_id), penId)
   } else if (create) {
     await store.openEntry()
   }
-  if (create) {
-    const query = { ...route.query }
-    delete query.action
-    await router.replace({ query })
-  }
 }
 
-async function openFromQuery(kind: 'transfer' | 'death', batchId: number): Promise<void> {
+async function openFromQuery(kind: 'transfer' | 'death', batchId: number, penId = 0): Promise<void> {
   if (!batchId) {
     ui.toast('还没有在养批次，请先登记批次入栏', 'info')
     return
@@ -305,7 +303,6 @@ async function openFromQuery(kind: 'transfer' | 'death', batchId: number): Promi
     if (store.deathContext.batchId !== batchId) await store.selectDeathBatch(batchId)
     await store.openDeath(batchId)
     // 诊断处理后“去登记”死淘会带上栏舍
-    const penId = queryId(route.query, 'penId', 'pen_id')
     if (penId && (selectedDeathBatch.value?.pens || []).some((pen) => Number(pen.pen_id) === penId)) {
       await store.selectDeathPen(penId)
     }

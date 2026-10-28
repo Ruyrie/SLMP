@@ -86,7 +86,8 @@ export async function loadClosedTodos(
   } catch (error) {
     if (isCancel(error)) throw error
   }
-  const all = await fetchDayTodos({ date, status: 'ALL', page: 1, size: 200 }, signal)
+  // 服务端单页上限 100（原日列表也按 100 取）
+  const all = await fetchDayTodos({ date, status: 'ALL', page: 1, size: 100 }, signal)
   const list = sortClosed((all.list || []).filter(isClosedTodo))
   return { list, total: list.length, hasMore: false }
 }

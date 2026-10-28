@@ -8,6 +8,7 @@ import { useFinanceRecordsStore } from '@/stores/finance/records'
 import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { consumeRouteAction } from '@/composables/useRouteAction'
 import {
   currentMonth,
   monthText,
@@ -390,11 +391,9 @@ function locateDuplicate(): void {
 
 async function handleQuery(): Promise<void> {
   if (route.query.action === 'create') {
+    // 先去掉 action 再打开表单（抽屉在路由变化时会自动关闭）；刷新不重复弹出，再次点击也能触发
+    await consumeRouteAction(route, router)
     await store.openCreate()
-    // 表单已打开，去掉 action：刷新不重复弹出，再次点击快捷登记也能触发
-    const query = { ...route.query }
-    delete query.action
-    await router.replace({ query })
   }
   const recordId = Number(route.query.recordId || 0)
   if (recordId) {

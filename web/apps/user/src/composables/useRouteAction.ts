@@ -1,5 +1,5 @@
-import { watch } from 'vue'
-import { useRoute, useRouter, type LocationQuery } from 'vue-router'
+import { nextTick, watch } from 'vue'
+import { useRoute, useRouter, type LocationQuery, type RouteLocationNormalizedLoaded, type Router } from 'vue-router'
 
 /**
  * 页面登记动作（?action=）的统一约定：
@@ -22,8 +22,34 @@ export function queryId(query: LocationQuery, ...keys: string[]): number {
 }
 
 /**
+ * 先从地址栏去掉 action（及 extraKeys），再返回原来的参数。
+ * 必须在打开抽屉之前做：Vuetify 的临时抽屉（zw-drawer）在路由变化时会自动关闭，
+ * 打开后再改地址栏会把刚打开的抽屉关掉。去掉后刷新不会重复弹出，再次点击快捷登记也能触发。
+ */
+export async function consumeRouteAction(
+  route: RouteLocationNormalizedLoaded,
+  router: Router,
+  extraKeys: string[] = []
+): Promise<LocationQuery> {
+  const original = { ...route.query }
+  const query = { ...route.query }
+  let changed = false
+  for (const key of ['action', ...extraKeys]) {
+    if (key in query) {
+      delete query[key]
+      changed = true
+    }
+  }
+  if (changed) {
+    await router.replace({ query })
+    await nextTick()
+  }
+  return original
+}
+
+/**
  * 处理 ?action=：页面首屏数据加载完成后调用 start() 执行一次；停留在本页时再次带 action 进入
- * （例如再点一次顶栏快捷登记）也会执行。执行后从地址栏去掉 action，刷新不会重复弹出，再次点击也能触发。
+ * （例如再点一次顶栏快捷登记）也会执行。
  */
 export function useRouteAction(handler: (action: string, query: LocationQuery) => unknown) {
   const route = useRoute()
@@ -35,16 +61,11 @@ export function useRouteAction(handler: (action: string, query: LocationQuery) =
     const action = queryText(route.query, 'action')
     if (!action || running) return
     running = true
-    const name = route.name
     try {
-      await handler(action, { ...route.query })
+      const query = await consumeRouteAction(route, router)
+      await handler(action, query)
     } finally {
       running = false
-    }
-    if (route.name === name && route.query.action) {
-      const query = { ...route.query }
-      delete query.action
-      await router.replace({ query })
     }
   }
 

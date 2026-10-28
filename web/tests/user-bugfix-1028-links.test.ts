@@ -59,6 +59,13 @@ describe('待办去向：参数改名并带目标页的动作词', () => {
     expect(resolveLinkTarget(link('M06', { lot_id: '8' }))).toEqual({ name: 'WU-M03', params: { lotId: '8' } })
   })
 
+  it('异常上报待办（I06）去处理打开诊断详情的处理抽屉', () => {
+    expect(resolveLinkTarget(link('I06', { report_id: '501' }), { create: true }))
+      .toEqual({ name: 'WU-I04', params: { id: '501' }, query: { action: 'handle' } })
+    expect(resolveLinkTarget(link('I06', { report_id: '501' }))).toEqual({ name: 'WU-I04', params: { id: '501' } })
+    expect(actionLabel({ todo_type: 'ABNORMAL_REPORT', category: 'WARNING', display_status: 'PENDING' })).toBe('去处理')
+  })
+
   it('只看列表时不带动作词', () => {
     expect(resolveLinkTarget(link('G02', { task_id: '70107' }))).toEqual({ name: 'WU-G01', query: { taskId: '70107' } })
     expect(resolveLinkTarget(link('B02', {}))).toEqual({ name: 'WU-B02' })
