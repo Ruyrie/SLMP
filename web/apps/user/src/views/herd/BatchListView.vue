@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { formatNumber, formatPercent } from '@zmt/shared'
 import type { DataTableHeader } from 'vuetify'
@@ -10,6 +10,8 @@ import { useRole } from '@/composables/useRole'
 import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
 import { monthDay, sourceText } from '@/stores/herd/shared'
+import { resolveLinkTarget, todoIcon } from '@/views/today/todo'
+import type { LinkVO } from '@/api/today'
 
 const store = useBatchListStore()
 const farm = useFarmStore()
@@ -60,7 +62,7 @@ const ownerEmptyTitle = computed(() => {
   return '还没有批次'
 })
 const ownerEmptyDesc = computed(() => {
-  if (store.hasFilters) return '换一个栏舍或品类筛选条件试试。'
+  if (store.hasFilters) return store.query.keyword ? `没有和“${store.query.keyword}”匹配的批次，换一个搜索词或筛选条件试试。` : '换一个栏舍或品类筛选条件试试。'
   if (store.query.status === 'ACTIVE') return '点“批次入栏”登记第一个批次。'
   return '批次入栏后会显示在这里。'
 })
@@ -77,7 +79,18 @@ function openEntry(): void {
 function resetFilters(): void {
   store.query.penId = 0
   store.query.categoryId = 0
+  store.query.keyword = ''
+  searchText.value = ''
   void store.fetchList()
+}
+
+/** 列表模糊搜索（批次号、品种、品类、栏舍），输入停顿后查询 */
+const searchText = ref(store.query.keyword)
+let searchTimer = 0
+function onSearchInput(value: string | null): void {
+  searchText.value = value || ''
+  window.clearTimeout(searchTimer)
+  searchTimer = window.setTimeout(() => store.setKeyword(searchText.value), 350)
 }
 
 function handleInput(value: string): void {
@@ -123,38 +136,48 @@ async function autoLookupFromRoute(): Promise<void> {
   const keyword = Array.isArray(raw) ? String(raw[0] || '') : String(raw || '')
   if (!keyword.trim()) return
   store.lookupInput = keyword.trim().toUpperCase()
-  await openLookup(keyword.trim())
-}
-
-function taskIcon(type?: string): string {
-  const map: Record<string, string> = {
-    FEED: 'rice_bowl',
-    VACCINE: 'vaccines',
-    IMMUNE: 'vaccines',
-    INSPECT: 'fact_check',
-    DISINFECT: 'sanitizer',
-    WEIGH: 'scale'
+  const result = await openLookup(keyword.trim())
+  // 顶栏搜索输入的不是完整批次号时，退回到列表模糊搜索
+  if (!isStaff.value && (!result || result.result === 'NOT_FOUND' || result.result === 'INVALID_FORMAT')) {
+    store.clearLookupInput()
+    searchText.value = keyword.trim()
+    store.setKeyword(keyword.trim())
   }
-  return type ? map[type.toUpperCase()] || 'fact_check' : 'fact_check'
 }
 
-function taskRoute(task: { route?: string }): string | null {
-  const map: Record<string, string> = {
-    G01: 'WU-G01',
-    G02: 'WU-G01',
-    G03: 'WU-G03',
-    D01: 'WU-D01',
-    D02: 'WU-D02',
-    D03: 'WU-D03',
-    I01: 'WU-I01',
-    I02: 'WU-I02'
+type PenTask = NonNullable<MyPen['tasks']>[number]
+
+/** 各待办类型的业务编号放在哪个去向参数里（与服务端 TodoLinks 一致）。 */
+const TASK_PARAM: Record<string, string> = {
+  FEEDING: 'task_id',
+  DISINFECTION: 'task_id',
+  IMMUNIZATION: 'plan_item_id',
+  WEIGHING: 'cycle_id',
+  INSPECTION: 'record_id'
+}
+
+/** /my-pens 的任务去向是 App 页面编号（G02/I02/D03/D08/G05/B02…），与待办“去登记”共用同一套映射。 */
+function taskLink(task: PenTask): LinkVO {
+  const params: Record<string, string> = {}
+  if (task.todo_id) params.todo_id = String(task.todo_id)
+  if (task.pen_id) params.pen_id = String(task.pen_id)
+  if (task.batch_id) params.batch_id = String(task.batch_id)
+  const key = TASK_PARAM[task.todo_type || '']
+  if (key && task.task_id) params[key] = String(task.task_id)
+  return { route: task.route, params }
+}
+
+function taskDone(task: PenTask): boolean {
+  return task.status === 'DONE' || task.status === 'IGNORED'
+}
+
+function openTask(task: PenTask): void {
+  const target = resolveLinkTarget(taskLink(task), { create: !taskDone(task) })
+  if (!target) {
+    ui.toast('这项任务暂时不能在网页端登记', 'info')
+    return
   }
-  return task.route ? map[task.route] || null : null
-}
-
-function openTask(task: { route?: string }): void {
-  const name = taskRoute(task)
-  if (name) void router.push({ name })
+  void router.push({ name: target.name, params: target.params, query: target.query })
 }
 
 function penAge(pen: MyPen): string {
@@ -293,10 +316,10 @@ useFarmReload(() => store.load(isStaff.value, true))
               />
               <div v-if="pen.tasks?.length">
                 <div v-for="task in pen.tasks" :key="task.todo_id || task.title" class="l03-task">
-                  <zw-icon :name="taskIcon(task.todo_type)" :size="18" />
+                  <zw-icon :name="todoIcon(task)" :size="18" />
                   <div class="l03-task-t">{{ task.title }}<span>{{ task.time_text || task.subtitle }}</span></div>
                   <zw-tag type="primary">待处理</zw-tag>
-                  <span class="zw-cell-actions"><a @click="openTask(task)">去登记</a></span>
+                  <span class="zw-cell-actions"><a @click="openTask(task)">{{ taskDone(task) ? '查看' : '去登记' }}</a></span>
                 </div>
               </div>
               <div v-else class="l03-no-task">
@@ -338,6 +361,15 @@ useFarmReload(() => store.load(isStaff.value, true))
           <v-tab value="ALL">全部 {{ allTabCount }}</v-tab>
         </v-tabs>
         <div class="l03-filters">
+          <v-text-field
+            :model-value="searchText"
+            prepend-inner-icon="search"
+            placeholder="搜索批次号、品种、栏舍"
+            clearable
+            class="zw-w-240"
+            hide-details
+            @update:model-value="onSearchInput"
+          />
           <v-select v-model="store.query.penId" :items="store.penItems" item-title="title" item-value="value" class="zw-w-160" @update:model-value="store.setPen" />
           <v-select v-model="store.query.categoryId" :items="store.categoryItems" item-title="title" item-value="value" class="zw-w-140" @update:model-value="store.setCategory" />
         </div>

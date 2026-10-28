@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { formatDate, formatNumber, formatPercent } from '@zmt/shared'
 import type { DataTableHeader } from 'vuetify'
@@ -7,6 +7,7 @@ import { useHerdEntryStore, type EntrySource, type HerdActionTab } from '@/store
 import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { consumeRouteAction, queryId } from '@/composables/useRouteAction'
 import { useRole } from '@/composables/useRole'
 import { dateText, occupancyPercent, sourceText, todayISO } from '@/stores/herd/shared'
 import HerdDateField from './components/HerdDateField.vue'
@@ -128,7 +129,12 @@ function parseTab(value: unknown): HerdActionTab {
 }
 
 function batchIdFromQuery(): number {
-  return Number(route.query.batchId || 0)
+  return queryId(route.query, 'batchId', 'batch_id')
+}
+
+/** 没指定批次时默认第一个在养批次，抽屉里还能改选；没有在养批次时提示。 */
+function defaultBatchId(selected?: number): number {
+  return Number(selected || store.batches[0]?.batch_id || 0)
 }
 
 function openTransferFromPage(): void {
@@ -211,12 +217,13 @@ function onDeathPen(value: number): void {
   void store.selectDeathPen(Number(value || 0))
 }
 
+const entryQrContent = computed(() => String(store.entryResult?.qr_content || store.entryResult?.batch_no || '').trim())
+
 async function exportEntryQr(): Promise<void> {
   const result = store.entryResult
-  if (!result) return
-  await nextTick()
+  if (!result || !entryQrContent.value) return
   try {
-    await downloadQrLabel(entryQrBox.value?.querySelector('svg') || null, {
+    await downloadQrLabel(entryQrContent.value, {
       batchNo: result.batch_no || '',
       label: result.label_text || `${result.farm_name} · ${result.pen_name} · ${result.breed_name}`,
       filename: `${result.batch_no || 'batch'}.png`
@@ -227,11 +234,11 @@ async function exportEntryQr(): Promise<void> {
   }
 }
 
-function printEntryQr(): void {
+async function printEntryQr(): Promise<void> {
   const result = store.entryResult
-  if (!result) return
+  if (!result || !entryQrContent.value) return
   try {
-    printQrLabel(entryQrBox.value?.querySelector('svg') || null, {
+    await printQrLabel(entryQrContent.value, {
       batchNo: result.batch_no || '',
       label: result.label_text || `${result.farm_name} · ${result.pen_name} · ${result.breed_name}`
     })
@@ -268,26 +275,38 @@ async function applyRouteQuery(): Promise<void> {
   const queryTab = parseTab(route.query.tab)
   store.setTab(isStaff.value ? 'death' : queryTab)
   const batchId = batchIdFromQuery()
-  if (isStaff.value) {
-    if (batchId) await store.selectDeathBatch(batchId)
-    if (route.query.action === 'create') await store.openDeath(batchId || undefined)
-    return
-  }
-  if (queryTab === 'transfer') {
+  const create = route.query.action === 'create'
+  // 先去掉 action 再开抽屉（临时抽屉在路由变化时会自动关闭）
+  const penId = queryId(route.query, 'penId', 'pen_id')
+  if (create) await consumeRouteAction(route, router)
+  const tab = isStaff.value ? 'death' : queryTab
+  if (tab === 'transfer') {
     if (batchId) await store.selectTransferBatch(batchId)
-    if (route.query.action === 'create' && (batchId || selectedTransferBatch.value)) {
-      await store.openTransfer(selectedTransferBatch.value?.batch_id)
-    }
-    return
-  }
-  if (queryTab === 'death') {
+    if (create) await openFromQuery('transfer', defaultBatchId(batchId || selectedTransferBatch.value?.batch_id))
+  } else if (tab === 'death') {
     if (batchId) await store.selectDeathBatch(batchId)
-    if (route.query.action === 'create' && (batchId || selectedDeathBatch.value)) {
-      await store.openDeath(selectedDeathBatch.value?.batch_id)
-    }
+    if (create) await openFromQuery('death', defaultBatchId(batchId || selectedDeathBatch.value?.batch_id), penId)
+  } else if (create) {
+    await store.openEntry()
+  }
+}
+
+async function openFromQuery(kind: 'transfer' | 'death', batchId: number, penId = 0): Promise<void> {
+  if (!batchId) {
+    ui.toast('还没有在养批次，请先登记批次入栏', 'info')
     return
   }
-  if (route.query.action === 'create') await store.openEntry()
+  if (kind === 'transfer') {
+    if (store.transferContext.batchId !== batchId) await store.selectTransferBatch(batchId)
+    await store.openTransfer(batchId)
+  } else {
+    if (store.deathContext.batchId !== batchId) await store.selectDeathBatch(batchId)
+    await store.openDeath(batchId)
+    // 诊断处理后“去登记”死淘会带上栏舍
+    if (penId && (selectedDeathBatch.value?.pens || []).some((pen) => Number(pen.pen_id) === penId)) {
+      await store.selectDeathPen(penId)
+    }
+  }
 }
 
 onMounted(async () => {
@@ -299,8 +318,10 @@ onMounted(async () => {
 
 watch(
   () => [route.query.action, route.query.tab, route.query.batchId],
-  async () => {
+  async (value, previous) => {
     if (store.status === 'loading') return
+    // 处理完 action 后去掉它会再触发一次，此时不必重复加载
+    if (!value[0] && previous?.[0] && value[1] === previous[1] && value[2] === previous[2]) return
     await applyRouteQuery()
   }
 )
@@ -701,8 +722,8 @@ useFarmReload(async () => {
       </zw-desc>
       <zw-notice class="mt-3">批次号全平台唯一，生成后不能修改，二维码与批次号一一对应。</zw-notice>
       <template #actions>
-        <v-btn variant="outlined" prepend-icon="download" @click="exportEntryQr">下载图片</v-btn>
-        <v-btn variant="outlined" prepend-icon="print" @click="printEntryQr">打印标签</v-btn>
+        <v-btn variant="outlined" prepend-icon="download" :disabled="!entryQrContent" @click="exportEntryQr">下载图片</v-btn>
+        <v-btn variant="outlined" prepend-icon="print" :disabled="!entryQrContent" @click="printEntryQr">打印标签</v-btn>
         <v-btn color="primary" @click="viewEntryBatch">查看档案</v-btn>
       </template>
     </zw-dialog>

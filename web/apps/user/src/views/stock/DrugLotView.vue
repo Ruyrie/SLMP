@@ -12,6 +12,7 @@ import {
 } from '@/api/stock'
 import { scrapInput, scrapQuantityError } from './scrap'
 import StockDocumentDrawer from '@/views/stock/components/StockDocumentDrawer.vue'
+import { consumeRouteAction } from '@/composables/useRouteAction'
 import { useDrugLotStore } from '@/stores/stock/lot'
 import { useFarmReload } from '@/composables/useFarmReload'
 import { useFarmStore } from '@/stores/farm'
@@ -138,7 +139,22 @@ async function load(): Promise<void> {
   await store.load(lotId.value)
   await loadInboundDoc()
 }
-onMounted(load)
+
+/** 库存页“登记报废”、临期 / 过期待办进入时直接打开报废表单 */
+async function applyAction(): Promise<void> {
+  if (route.query.action !== 'scrap') return
+  await consumeRouteAction(route, router)
+  if (actionsCanScrap.value) openScrap()
+  else if (!isStaff.value) ui.toast('这个批号现在不能报废，到期或停用后可以登记报废', 'info')
+}
+
+onMounted(async () => {
+  await load()
+  await applyAction()
+})
+watch(() => route.query.action, (value) => {
+  if (value === 'scrap' && detail.value) void applyAction()
+})
 watch(() => route.params.lotId, () => void load())
 useFarmReload(load)
 
@@ -160,7 +176,7 @@ function openDrugArchive(): void {
 }
 
 function openRecallMessage(): void {
-  void router.push({ name: 'WU-T04', query: { messageId: String(detail.value?.recall_message_id || '') } })
+  void router.push({ name: 'WU-T04', query: { id: String(detail.value?.recall_message_id || '') } })
 }
 
 function openChangeRequest(): void {
@@ -494,7 +510,7 @@ async function submitScrap(): Promise<void> {
     </zw-drawer>
 
     <!-- 单据详情（入库单 / 领用单 / 退货单 / 报废单） -->
-    <StockDocumentDrawer v-model="documentOpen" :flow="selectedFlow" :staff="isStaff" />
+    <StockDocumentDrawer v-model="documentOpen" :flow="selectedFlow" :staff="isStaff" @changed="load" />
   </zw-shell>
 </template>
 

@@ -183,7 +183,11 @@ export const useWorkbenchStore = defineStore('todayWorkbench', {
       this.overdueStatus = 'loading'
       this.overdueError = ''
       try {
-        const data = await fetchTodayTodos({ page: this.overduePage, size: this.overdueSize, filter: 'OVERDUE' }, controller.signal)
+        // 员工按栏舍筛选时逾期区也只算该栏舍，数量与列表一致
+        const data = await fetchTodayTodos(
+          { page: this.overduePage, size: this.overdueSize, filter: 'OVERDUE', pen_id: this.query.penId || undefined },
+          controller.signal
+        )
         if (controller.signal.aborted) return
         const lastPage = Math.max(1, Math.ceil((data.total || 0) / this.overdueSize))
         if (this.overduePage > lastPage) {
@@ -249,10 +253,12 @@ export const useWorkbenchStore = defineStore('todayWorkbench', {
     },
     setFilterAndPen(filter: string, penId: number | null): void {
       if (this.query.filter === filter && this.query.penId === penId) return
+      const penChanged = this.query.penId !== penId
       this.query.filter = filter
       this.query.penId = penId
       this.query.page = 1
       void this.fetchTodos()
+      if (penChanged) this.refreshOverdueForPen()
     },
     setPenFilter(penId: number | null): void {
       if (this.query.penId === penId) return
@@ -260,6 +266,12 @@ export const useWorkbenchStore = defineStore('todayWorkbench', {
       this.query.filter = 'ALL'
       this.query.page = 1
       void this.fetchTodos()
+      this.refreshOverdueForPen()
+    },
+    refreshOverdueForPen(): void {
+      if (!this.overdueExpanded) return
+      this.overduePage = 1
+      void this.fetchOverdue()
     },
     setPage(page: number): void {
       if (this.query.page === page) return

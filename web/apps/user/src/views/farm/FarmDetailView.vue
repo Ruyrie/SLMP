@@ -7,6 +7,7 @@ import { useFarmDetailStore } from '@/stores/farm/detail'
 import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { consumeRouteAction } from '@/composables/useRouteAction'
 import { farmStatusMeta, formatPhoneInput } from '@/stores/farm/shared'
 import FarmQualView from './components/FarmQualView.vue'
 
@@ -118,6 +119,27 @@ watch(
 onMounted(() => {
   const id = Number(route.params.farmId || appFarm.currentFarmId || 0)
   if (id) load(id)
+})
+
+/** 个人中心“注销账号”前的转让 / 停用：?action=transfer|disable 进入后直接打开对应操作。 */
+async function applyAction(): Promise<void> {
+  const action = String(route.query.action || '')
+  const value = detail.value
+  if (!action || !value || Number(value.farm_id) !== Number(route.params.farmId || value.farm_id)) return
+  // 先去掉 action 再打开（转让是抽屉，路由变化会自动关闭）
+  await consumeRouteAction(route, router)
+  if (action === 'transfer') {
+    if (value.role === 'OWNER' && permissions.value.can_transfer && value.status !== 'DISABLED') void openTransfer()
+    else ui.toast('这个养殖场现在不能转让所有权', 'info')
+  } else if (action === 'disable') {
+    if (value.role === 'OWNER' && permissions.value.can_disable && value.status === 'NORMAL') disableOpen.value = true
+    else ui.toast(value.status === 'DISABLED' ? '这个养殖场已经停用' : '这个养殖场现在不能停用', 'info')
+  }
+}
+
+watch(detail, () => void applyAction())
+watch(() => route.query.action, (value) => {
+  if (value) void applyAction()
 })
 
 function openBasic(): void {

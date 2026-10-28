@@ -262,6 +262,27 @@ export interface FeedExecDaily {
   over_threshold?: boolean
 }
 
+/** G16 单日各餐明细 */
+export interface FeedExecDay {
+  date?: string
+  actual_qty?: number
+  plan_qty?: number
+  done_meals?: number
+  planned_meals?: number
+  items?: Array<{
+    task_id?: number
+    batch_no?: string
+    pen_name?: string
+    meal_name?: string
+    plan_qty?: number
+    actual_qty?: number
+    status?: string
+    status_text?: string
+    executor_name?: string
+    abnormal_type?: string
+  }>
+}
+
 export interface FeedExecSummary {
   start_date?: string
   end_date?: string
@@ -579,18 +600,16 @@ export const feedingApi = {
     return http().get<FeedExecSummary>('/feed-executions/summary', execParams(params))
   },
 
+  /** G16 某一天各餐的计划量、实投量与执行人（执行情况图表点柱子） */
+  execDaily(params: FeedExecParams & { date: string }): Promise<FeedExecDay> {
+    return http().get<FeedExecDay>('/feed-executions/daily', { ...execParams(params), date: params.date })
+  },
+
   execAttention(params: FeedExecParams): Promise<PageVO<FeedAttentionItem>> {
     return http().get<PageVO<FeedAttentionItem>>('/feed-executions/attention', {
       ...execParams(params),
       page: params.page || 1,
       size: params.size || 20
-    })
-  },
-
-  execDaily(params: FeedExecParams): Promise<{ date?: string; items?: unknown[] }> {
-    return http().get<{ date?: string; items?: unknown[] }>('/feed-executions/daily', {
-      ...execParams(params),
-      date: params.date
     })
   },
 

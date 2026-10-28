@@ -13,6 +13,7 @@ import {
 } from '@/api/today'
 import type { MessageBriefVO, MessageDetailVO, TodoDetailVO } from '@/api/today'
 import { useFarmStore } from '@/stores/farm'
+import { farmApi } from '@/api/farm'
 import { useNoticeStore } from '@/stores/notice'
 
 export type MessageListStatus = 'loading' | 'ready' | 'empty' | 'filtered_empty' | 'error' | 'forbidden'
@@ -308,6 +309,28 @@ export const useMessagesStore = defineStore('todayMessages', {
       await this.fetchList(true)
       if (this.selectedId) await this.loadDetail(this.selectedId)
       this.markInviteStatus(inviteId, 'REJECTED')
+    },
+    /** 所有权转让：受让人接受后成为所有者，刷新养殖场列表与角色。 */
+    async acceptTransfer(transferId: number, farmName?: string): Promise<string> {
+      this.acceptingId = transferId
+      try {
+        const result = await farmApi.acceptTransfer(transferId)
+        await useFarmStore().load(true)
+        void useNoticeStore().load()
+        await this.fetchList(true)
+        if (this.selectedId) await this.loadDetail(this.selectedId)
+        this.markInviteStatus(transferId, 'ACCEPTED')
+        return result?.farm_name || farmName || ''
+      } finally {
+        this.acceptingId = null
+      }
+    },
+    async rejectTransfer(transferId: number): Promise<void> {
+      await farmApi.rejectTransfer(transferId)
+      void useNoticeStore().load()
+      await this.fetchList(true)
+      if (this.selectedId) await this.loadDetail(this.selectedId)
+      this.markInviteStatus(transferId, 'REJECTED')
     },
     /** 服务端邀请动作状态未回写消息快照时，本地按处理结果更新，避免按钮重复出现。 */
     markInviteStatus(inviteId: number, status: 'ACCEPTED' | 'REJECTED'): void {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { formatDate, formatMoney, formatNumber, today as todayIso } from '@zmt/shared'
 import { ApiError } from '@zmt/shared'
 import {
@@ -14,7 +14,9 @@ import {
   fetchFeedOptions,
   fetchFeedTypes,
   fetchRecentPartners,
+  fetchStocktake,
   fetchStocktakeSheet,
+  fetchStocktakes,
   newRequestKey,
   updateFeed,
   type BaseCategory,
@@ -23,10 +25,14 @@ import {
   type FeedOption,
   type FeedStockItem,
   type FeedTypeDict,
+  type StockFlowItem,
+  type Stocktake,
   type StocktakeSheet
 } from '@/api/stock'
+import StockDocumentDrawer from '@/views/stock/components/StockDocumentDrawer.vue'
 import { useFeedStockStore } from '@/stores/stock/feed'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { queryId, useRouteAction } from '@/composables/useRouteAction'
 import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
 import {
@@ -47,6 +53,7 @@ const store = useFeedStockStore()
 const farm = useFarmStore()
 const ui = useUiStore()
 const router = useRouter()
+const route = useRoute()
 
 const isStaff = computed(() => farm.role === 'staff')
 const desc = computed(() => `${farm.farmName || '当前养殖场'} · 剩余可用天数按近 7 天日均用量估算，不足一天的部分舍去；金额按移动加权平均单价计算`)
@@ -524,8 +531,104 @@ function flowTime(value?: string): string {
   return `${value.slice(5, 10)} ${value.slice(11, 16)}`
 }
 
-onMounted(() => {
-  if (!isStaff.value) void store.load()
+/* ---------------- 单据详情（入库单 / 出库单 / 报损单，可当天修改、作废） ---------------- */
+const documentOpen = ref(false)
+const selectedFlow = ref<StockFlowItem | null>(null)
+
+function openFlowDoc(flow: StockFlowItem): void {
+  selectedFlow.value = flow
+  documentOpen.value = true
+}
+
+function openInboundDoc(inboundId: number): void {
+  openFlowDoc({ flow_id: 0, biz_type: 'INBOUND', biz_id: inboundId, material_type: 'FEED' })
+}
+
+async function onDocumentChanged(): Promise<void> {
+  await store.refresh()
+  if (store.flowsOpen) await store.loadFlows()
+}
+
+/* ---------------- 盘点记录 ---------------- */
+const stocktakesOpen = ref(false)
+const stocktakesLoading = ref(false)
+const stocktakes = ref<Stocktake[]>([])
+const stocktakesTotal = ref(0)
+const stocktakesPage = ref(1)
+const stocktakesSize = ref(10)
+const stocktakeExpanded = ref(0)
+const stocktakeDetails = reactive<Record<number, Stocktake>>({})
+
+async function openStocktakes(): Promise<void> {
+  stocktakesOpen.value = true
+  stocktakesPage.value = 1
+  stocktakeExpanded.value = 0
+  await loadStocktakes()
+}
+
+async function loadStocktakes(): Promise<void> {
+  stocktakesLoading.value = true
+  try {
+    const page = await fetchStocktakes({ page: stocktakesPage.value, size: stocktakesSize.value })
+    stocktakes.value = page.list || []
+    stocktakesTotal.value = Number(page.total || 0)
+  } catch (error) {
+    ui.toast((error as ApiError).message || '盘点记录加载失败', 'error')
+  } finally {
+    stocktakesLoading.value = false
+  }
+}
+
+function setStocktakesPage(page: number): void {
+  stocktakesPage.value = page
+  void loadStocktakes()
+}
+
+function setStocktakesSize(size: number): void {
+  stocktakesSize.value = size
+  stocktakesPage.value = 1
+  void loadStocktakes()
+}
+
+async function toggleStocktake(item: Stocktake): Promise<void> {
+  if (stocktakeExpanded.value === item.stocktake_id) {
+    stocktakeExpanded.value = 0
+    return
+  }
+  stocktakeExpanded.value = item.stocktake_id
+  if (item.items?.length || stocktakeDetails[item.stocktake_id]) return
+  try {
+    stocktakeDetails[item.stocktake_id] = await fetchStocktake(item.stocktake_id)
+  } catch (error) {
+    ui.toast((error as ApiError).message || '盘点详情加载失败', 'error')
+  }
+}
+
+function stocktakeItems(item: Stocktake): NonNullable<Stocktake['items']> {
+  return item.items?.length ? item.items : stocktakeDetails[item.stocktake_id]?.items || []
+}
+
+/* ---------------- 路由参数：去入库、定位入库单 ---------------- */
+const routeAction = useRouteAction(async (action, query) => {
+  if (action === 'inbound' || action === 'create') await openInbound(queryId(query, 'feedId', 'feed_id'))
+  else if (action === 'stocktake') await openStocktake()
+})
+
+async function applyRoute(): Promise<void> {
+  if (isStaff.value) return
+  const inboundId = queryId(route.query, 'inboundId', 'inbound_id')
+  if (inboundId && !route.query.action) openInboundDoc(inboundId)
+  await routeAction.start()
+}
+
+watch(() => route.query.inboundId, (value) => {
+  const id = Number(value || 0)
+  if (id && !isStaff.value) openInboundDoc(id)
+})
+
+onMounted(async () => {
+  if (!isStaff.value) await store.load()
+  await applyRoute()
 })
 useFarmReload(async () => {
   if (!isStaff.value) await store.load()
@@ -545,6 +648,7 @@ useFarmReload(async () => {
               <v-list-item prepend-icon="add" @click="openArchive()"><v-list-item-title>新增饲料</v-list-item-title></v-list-item>
               <v-list-item v-if="store.canOtherOut" prepend-icon="output" @click="openOtherOut()"><v-list-item-title>其他出库</v-list-item-title></v-list-item>
               <v-list-item prepend-icon="receipt_long" @click="openFeedFlows()"><v-list-item-title>全部出入库流水</v-list-item-title></v-list-item>
+              <v-list-item prepend-icon="history" @click="openStocktakes()"><v-list-item-title>盘点记录</v-list-item-title></v-list-item>
             </v-list>
           </v-menu>
           <v-btn variant="outlined" prepend-icon="fact_check" @click="openStocktake">盘点与报损</v-btn>
@@ -667,7 +771,7 @@ useFarmReload(async () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="flow in store.overview?.recent_flows || []" :key="flow.flow_id">
+              <tr v-for="flow in store.overview?.recent_flows || []" :key="flow.flow_id" class="stock-flow-row" title="查看单据" @click="openFlowDoc(flow)">
                 <td class="num">{{ flowTime(flow.occur_at) }}</td>
                 <td>
                   <div class="stock-flow-type">
@@ -903,7 +1007,7 @@ useFarmReload(async () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="flow in store.flows" :key="flow.flow_id">
+            <tr v-for="flow in store.flows" :key="flow.flow_id" class="stock-flow-row" title="查看单据" @click="openFlowDoc(flow)">
               <td class="num">{{ datetimeText(flow.occur_at) }}</td>
               <td>
                 <div class="stock-flow-type">
@@ -919,7 +1023,7 @@ useFarmReload(async () => {
           </tbody>
         </v-table>
         <div class="zw-table-foot stock-table-foot">
-          <span class="zw-faint body-s">按时间倒序</span>
+          <span class="zw-faint body-s">按时间倒序 · 点击一行查看单据，登记当天可以修改或作废</span>
           <zw-pager :total="store.flowsTotal" :page="store.flowsPage" :size="store.flowsSize" @update:page="store.setFlowsPage" @update:size="store.setFlowsSize" />
         </div>
       </template>
@@ -927,6 +1031,60 @@ useFarmReload(async () => {
         <v-btn variant="outlined" @click="store.flowsOpen = false">关闭</v-btn>
       </template>
     </zw-drawer>
+
+    <!-- 盘点记录 -->
+    <zw-drawer v-model="stocktakesOpen" title="盘点记录" :sub="`共 ${stocktakesTotal} 次`" width="680">
+      <div v-if="stocktakesLoading" class="stock-drawer-loading"><v-skeleton-loader type="table-row@5" /></div>
+      <zw-empty v-else-if="!stocktakes.length" icon="fact_check" title="还没有盘点记录" desc="点“盘点与报损”录入实盘数量并确认后，会显示在这里。" />
+      <template v-else>
+        <div v-for="item in stocktakes" :key="item.stocktake_id" class="stocktake-record">
+          <div class="stocktake-record-head" @click="toggleStocktake(item)">
+            <span class="zw-ico-tile zw-ico-tile--primary"><zw-icon name="fact_check" :size="18" /></span>
+            <div class="stocktake-head-main">
+              <div class="stocktake-name">{{ item.stocktake_date || '—' }} · {{ item.stocktake_no || `#${item.stocktake_id}` }}</div>
+              <div class="zw-cell-sub">
+                {{ formatNumber(item.item_count || 0) }} 种饲料 · 盘盈 {{ formatNumber(item.gain_count || 0) }} 条 · 盘亏 {{ formatNumber(item.loss_count || 0) }} 条
+                · {{ item.operator?.name || '—' }} {{ item.created_at ? datetimeText(item.created_at) : '' }}
+              </div>
+            </div>
+            <div class="stocktake-record-amount num">
+              <span v-if="item.gain_amount" class="stock-in-text">+{{ moneyText(item.gain_amount) }}</span>
+              <span v-if="item.loss_amount" class="stock-warn-text">-{{ moneyText(item.loss_amount) }}</span>
+            </div>
+            <zw-icon :name="stocktakeExpanded === item.stocktake_id ? 'expand_less' : 'expand_more'" :size="20" />
+          </div>
+          <v-table v-if="stocktakeExpanded === item.stocktake_id" class="stock-table stock-table--compact" density="compact">
+            <thead>
+              <tr>
+                <th>饲料</th>
+                <th class="text-end">账面</th>
+                <th class="text-end">实盘</th>
+                <th class="text-end">差异</th>
+                <th class="text-end">折合金额</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!stocktakeItems(item).length"><td colspan="5" class="zw-faint">明细加载中…</td></tr>
+              <tr v-for="row in stocktakeItems(item)" :key="row.item_id">
+                <td>{{ row.feed_name }}</td>
+                <td class="text-end num">{{ formatNumber(row.book_qty || 0) }} {{ row.unit_text || '千克' }}</td>
+                <td class="text-end num">{{ formatNumber(row.actual_qty || 0) }} {{ row.unit_text || '千克' }}</td>
+                <td class="text-end num" :class="{ 'stock-warn-text': Number(row.diff_qty || 0) < 0, 'stock-in-text': Number(row.diff_qty || 0) > 0 }">{{ row.result_text || formatNumber(row.diff_qty || 0) }}</td>
+                <td class="text-end num">{{ moneyText(row.diff_amount) }}</td>
+              </tr>
+            </tbody>
+          </v-table>
+        </div>
+        <div class="stock-table-foot">
+          <zw-pager :total="stocktakesTotal" :page="stocktakesPage" :size="stocktakesSize" @update:page="setStocktakesPage" @update:size="setStocktakesSize" />
+        </div>
+      </template>
+      <template #foot>
+        <v-btn variant="outlined" @click="stocktakesOpen = false">关闭</v-btn>
+      </template>
+    </zw-drawer>
+
+    <StockDocumentDrawer v-model="documentOpen" :flow="selectedFlow" :staff="isStaff" @changed="onDocumentChanged" />
   </zw-shell>
 </template>
 
@@ -966,4 +1124,8 @@ useFarmReload(async () => {
 .stock-dest-note { margin-top: 4px; font-size: 12px; line-height: 18px; color: var(--text-3); }
 .stock-readonly-card { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 16px; border-radius: var(--radius-sm); background: var(--fill-1); }
 .stock-flow-toolbar { display: flex; justify-content: flex-start; margin-bottom: 12px; }
+.stock-flow-row { cursor: pointer; }
+.stocktake-record { border: 1px solid var(--line-1); border-radius: var(--radius-sm); margin-bottom: 10px; overflow: hidden; }
+.stocktake-record-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; cursor: pointer; }
+.stocktake-record-amount { display: flex; flex-direction: column; align-items: flex-end; font-size: 13px; }
 </style>

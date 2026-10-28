@@ -101,6 +101,12 @@ watch(
 <template>
   <v-app class="zw-app">
     <router-view />
-    <zw-snack v-model="ui.snackVisible" :text="ui.snackText" :type="ui.snackType === 'info' ? '' : ui.snackType" />
+    <zw-snack
+      v-model="ui.snackVisible"
+      :text="ui.snackText"
+      :type="ui.snackType === 'info' ? '' : ui.snackType"
+      :action="ui.snackAction || undefined"
+      @action="ui.runSnackAction()"
+    />
   </v-app>
 </template>

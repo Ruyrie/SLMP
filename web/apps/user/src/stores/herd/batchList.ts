@@ -30,6 +30,8 @@ export const useBatchListStore = defineStore('herdBatchList', {
       status: 'ACTIVE' as BatchTab,
       penId: 0,
       categoryId: 0,
+      /** 模糊搜索：批次号、品种、品类、栏舍（服务端 keyword） */
+      keyword: '',
       sort: 'ENTRY_DATE'
     },
     penOptions: [] as PenOption[],
@@ -61,7 +63,7 @@ export const useBatchListStore = defineStore('herdBatchList', {
       return state.total === 0
     },
     hasFilters(state): boolean {
-      return !!state.query.penId || !!state.query.categoryId
+      return !!state.query.penId || !!state.query.categoryId || !!state.query.keyword
     },
     penItems(state): Array<{ title: string; value: number }> {
       return [{ title: '全部栏舍', value: 0 }, ...state.penOptions.map((pen) => ({
@@ -107,7 +109,12 @@ export const useBatchListStore = defineStore('herdBatchList', {
           this.status = data.pens?.length ? 'ready' : 'empty'
           return
         }
-        const page = await herdApi.batches({ ...this.query, penId: this.query.penId || undefined, categoryId: this.query.categoryId || undefined })
+        const page = await herdApi.batches({
+          ...this.query,
+          penId: this.query.penId || undefined,
+          categoryId: this.query.categoryId || undefined,
+          keyword: this.query.keyword.trim() || undefined
+        })
         if (requestId !== this.requestId || scope !== currentFarmScope()) return
         this.list = page.list || []
         this.total = page.total || 0
@@ -149,6 +156,13 @@ export const useBatchListStore = defineStore('herdBatchList', {
     },
     setCategory(categoryId: number): void {
       this.query.categoryId = Number(categoryId || 0)
+      this.query.page = 1
+      void this.fetchList()
+    },
+    setKeyword(keyword: string): void {
+      const value = String(keyword || '').trim()
+      if (this.query.keyword === value) return
+      this.query.keyword = value
       this.query.page = 1
       void this.fetchList()
     },

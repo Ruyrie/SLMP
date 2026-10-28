@@ -20,7 +20,10 @@ export interface QuickItem {
   key: string
   label: string
   icon: string
+  /** 目标页统一识别 action=create，打开各自的登记表单 */
   action?: string
+  /** 额外的路由参数，例如死淘转栏需要落在“死淘”页签 */
+  query?: Record<string, string>
 }
 
 export type MenuNode = MenuItem | MenuGroup
@@ -36,7 +39,7 @@ const work: QuickItem[] = [
   { key: 'WU-D01', label: '免疫接种', icon: 'vaccines', action: 'create' },
   { key: 'WU-D02', label: '用药', icon: 'medication', action: 'create' },
   { key: 'WU-D03', label: '消毒', icon: 'sanitizer', action: 'create' },
-  { key: 'WU-L05', label: '死淘转栏', icon: 'swap_horiz', action: 'create' }
+  { key: 'WU-L05', label: '死淘转栏', icon: 'swap_horiz', action: 'create', query: { tab: 'death' } }
 ]
 
 const farmer: QuickItem[] = [

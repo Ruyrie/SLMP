@@ -444,6 +444,11 @@ export function fetchStocktakes(params: { page: number; size: number }, signal?:
   return http().get<PageResult<Stocktake>>('/stocktakes', { ...params }, config(signal))
 }
 
+/** M17 盘点详情（含每种饲料的账面、实盘与差异） */
+export function fetchStocktake(stocktakeId: number): Promise<Stocktake> {
+  return http().get<Stocktake>(`/stocktakes/${stocktakeId}`)
+}
+
 export interface FeedLossPayload {
   feed_id: number
   input_qty: number
@@ -479,6 +484,56 @@ export function createFeedOtherOut(payload: FeedOtherOutPayload, key: string): P
 
 export function fetchStockOutbound(outboundId: number): Promise<StockOutbound> {
   return http().get<StockOutbound>(`/stock-outbounds/${outboundId}`)
+}
+
+/* ---------------- M10/M11、M22/M23 入库单、出库单当天修改与作废 ---------------- */
+
+export interface InboundUpdatePayload {
+  input_qty: number
+  input_unit?: string
+  unit_price: number
+  inbound_date: string
+  sync_finance?: boolean
+  production_date?: string | null
+  shelf_life_date?: string | null
+  supplier_name?: string
+  expire_date?: string | null
+  version: number
+}
+
+/** M10 修改未出库的入库单 */
+export function updateStockInbound(inboundId: number, payload: InboundUpdatePayload): Promise<StockInbound> {
+  return http().put<StockInbound>(`/stock-inbounds/${inboundId}`, payload)
+}
+
+/** M11 作废入库单 */
+export function voidStockInbound(inboundId: number, version: number): Promise<unknown> {
+  return http().post<unknown>(`/stock-inbounds/${inboundId}/void`, { version })
+}
+
+export interface OutboundUpdatePayload {
+  input_qty: number
+  input_unit?: string
+  destination?: string
+  target_type?: string
+  batch_id?: number | null
+  pen_id?: number | null
+  receiver_id?: number | null
+  return_to?: string
+  return_reason?: string
+  remark?: string
+  out_date?: string
+  version: number
+}
+
+/** M22 当天修改出库单（出库类型、物资、批号不可改） */
+export function updateStockOutbound(outboundId: number, payload: OutboundUpdatePayload): Promise<StockOutbound> {
+  return http().put<StockOutbound>(`/stock-outbounds/${outboundId}`, payload)
+}
+
+/** M23 当天作废出库单 */
+export function voidStockOutbound(outboundId: number, version: number): Promise<unknown> {
+  return http().post<unknown>(`/stock-outbounds/${outboundId}/void`, { version })
 }
 
 export interface StockRefundPayload {

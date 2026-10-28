@@ -9,6 +9,7 @@ import {
   type Urgency
 } from '@/stores/inspect/reports'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { queryId, useRouteAction } from '@/composables/useRouteAction'
 import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
 import { monthDay, timeOnly, urgencyIcon, urgencyType } from '@/views/inspect/inspect'
@@ -47,11 +48,15 @@ const emptyDesc = computed(() => {
   return isStaff.value ? '巡检发现异常后点“转上报”。' : '巡检发现异常时点“转上报”，或点“异常上报”直接上报。'
 })
 
+/** create（快捷登记）与 report（巡检转上报）都打开异常上报表单。 */
+const routeAction = useRouteAction((action, query) => {
+  if (action !== 'create' && action !== 'report') return
+  store.openDrawer(queryId(query, 'inspectionId', 'inspection_id'), queryId(query, 'penId', 'pen_id'))
+})
+
 onMounted(async () => {
   await store.load()
-  if (route.query.action === 'report') {
-    store.openDrawer(Number(route.query.inspectionId || 0), Number(route.query.penId || 0))
-  }
+  await routeAction.start()
 })
 onBeforeUnmount(() => store.cancelKeywordTimer())
 useFarmReload(async () => {

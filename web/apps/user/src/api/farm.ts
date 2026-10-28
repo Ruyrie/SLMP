@@ -500,6 +500,14 @@ export const farmApi = {
   cancelTransfer(transferId: number): Promise<TransferVO> {
     return http().post<TransferVO>(`/farm-transfers/${transferId}/cancel`)
   },
+  /** F30 受让人接受所有权转让 */
+  acceptTransfer(transferId: number): Promise<{ farm_id?: number; farm_name?: string }> {
+    return http().post<{ farm_id?: number; farm_name?: string }>(`/farm-transfers/${transferId}/accept`)
+  },
+  /** F31 受让人拒绝所有权转让 */
+  rejectTransfer(transferId: number): Promise<void> {
+    return http().post<void>(`/farm-transfers/${transferId}/reject`)
+  },
   categories(): Promise<FarmCategoryVO[]> {
     return http().get<FarmCategoryVO[]>('/base/categories')
   },

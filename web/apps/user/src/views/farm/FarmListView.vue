@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { dayjs, formatNumber } from '@zmt/shared'
 import type { FarmListItemVO } from '@/api/farm'
 import { useFarmListStore } from '@/stores/farm/list'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { queryId } from '@/composables/useRouteAction'
+import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
 import FarmQualView from './components/FarmQualView.vue'
 import { farmStatusMeta } from '@/stores/farm/shared'
@@ -14,6 +16,7 @@ const router = useRouter()
 const route = useRoute()
 const ui = useUiStore()
 const store = useFarmListStore()
+const farmStore = useFarmStore()
 const {
   list,
   total,
@@ -193,7 +196,7 @@ function onAuditToggle(value: boolean): void {
     return
   }
   store.closeAudit()
-  if (route.query.audit) void router.replace({ name: 'WU-F01', query: {} })
+  if (route.query.audit || route.query.action) void router.replace({ name: 'WU-F01', query: {} })
 }
 
 function editRegistration(): void {
@@ -231,15 +234,28 @@ async function confirmQuit(): Promise<void> {
   await store.quitFarm(farm)
 }
 
+/**
+ * 打开审核结果：兼容 ?audit=<farmId> 与 ?action=audit&farmId=<farmId>（工作台横幅、审核结果消息）。
+ * 没带养殖场编号时，优先当前养殖场，其次第一个待审核 / 已驳回的养殖场。
+ */
 async function handleQuery(): Promise<void> {
   if (queryHandled.value) return
+  const isAudit = !!route.query.audit || route.query.action === 'audit'
+  if (!isAudit) return
   queryHandled.value = true
-  const auditId = Number(route.query.audit || 0)
-  if (auditId) {
-    const farm = list.value.find((item) => item.farm_id === auditId)
-    if (farm) await store.openAudit(farm)
-  }
+  const auditId = queryId(route.query, 'audit', 'farmId', 'farm_id')
+  const reviewing = (item: { status?: string }) => item.status === 'PENDING' || item.status === 'REJECTED'
+  const farm = (auditId ? list.value.find((item) => item.farm_id === auditId) : undefined)
+    || list.value.find((item) => item.farm_id === farmStore.currentFarmId && reviewing(item))
+    || list.value.find(reviewing)
+  if (farm) await store.openAudit(farm)
+  else ui.toast('没有找到需要查看审核结果的养殖场', 'info')
 }
+
+watch(() => [route.query.audit, route.query.action], () => {
+  queryHandled.value = false
+  void handleQuery()
+})
 
 onMounted(async () => {
   await store.fetch()

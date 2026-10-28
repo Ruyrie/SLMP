@@ -74,7 +74,7 @@ onBeforeUnmount(() => { requestId++ })
   <main class="trace-page">
     <header class="trace-header"><span>智牧通 · 公开溯源</span><span class="trace-readonly">只读</span></header>
     <zw-card v-if="loading || error">
-      <zw-empty :icon="loading ? 'qr_code_scanner' : 'info'" :title="loading ? '正在读取溯源信息' : '暂时无法查看'" :desc="error">
+      <zw-empty :icon="loading ? 'qr_code_2' : 'info'" :title="loading ? '正在读取溯源信息' : '暂时无法查看'" :desc="error">
         <v-progress-circular v-if="loading" indeterminate color="primary" :size="28" />
         <v-btn v-else color="primary" variant="outlined" @click="load">重新加载</v-btn>
       </zw-empty>

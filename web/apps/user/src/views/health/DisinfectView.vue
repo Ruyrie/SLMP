@@ -6,6 +6,7 @@ import { formatTime } from '@zmt/shared'
 import type { DisinfectPlan, DisinfectRecord, DisinfectTask } from '@/api/health'
 import { useDisinfectStore, type DisinfectTab, type PlanStatusFilter, type TaskStatusFilter } from '@/stores/health/disinfect'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { queryId, useRouteAction } from '@/composables/useRouteAction'
 import { useRole } from '@/composables/useRole'
 import { useFarmStore } from '@/stores/farm'
 import { useAuthStore } from '@/stores/auth'
@@ -298,8 +299,30 @@ function photoUrl(photo: { url?: string; thumb_url?: string }): string {
   return photo.url || photo.thumb_url || ''
 }
 
-onMounted(() => {
-  void store.init(isStaff.value)
+/** create：带 taskId（待办去登记）时登记该消毒任务，否则打开“登记临时消毒”。 */
+const routeAction = useRouteAction((action, query) => {
+  if (action !== 'create') return
+  store.setTab('tasks')
+  const taskId = queryId(query, 'taskId', 'task_id')
+  const task = taskId ? store.tasks.find((item) => Number(item.id) === taskId) : undefined
+  if (task && task.status === 'PENDING') {
+    openTaskRegister(task)
+    return
+  }
+  if (task && task.status === 'OVERDUE' && !isStaff.value) {
+    openTaskRegister(task, true)
+    return
+  }
+  if (task?.record_id) {
+    openRecord(Number(task.record_id))
+    return
+  }
+  openTemp()
+})
+
+onMounted(async () => {
+  await store.init(isStaff.value)
+  await routeAction.start()
 })
 
 useFarmReload(async () => {

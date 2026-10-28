@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useReportsStore, type ReportMetric } from '@/stores/finance/reports'
 import { useFarmStore } from '@/stores/farm'
+import { useUiStore } from '@/stores/ui'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { consumeRouteAction } from '@/composables/useRouteAction'
 import { formatMoney, formatNumber, formatPercent } from '@zmt/shared'
 import { dateText, dateTimeText, monthRangeText, signedPercent, trendTone, type Tone } from '@/stores/finance/shared'
 
 const store = useReportsStore()
 const farm = useFarmStore()
+const ui = useUiStore()
 const router = useRouter()
+const route = useRoute()
 
 const metricLabels: Record<ReportMetric, string> = {
   STOCK: '期末存栏',
@@ -169,7 +173,43 @@ function studyTone(value?: number): string {
   return Number(value) > 0 ? 'error' : Number(value) < 0 ? 'success' : 'muted'
 }
 
+/**
+ * 个人中心“注销前导出报表”带 scope=MINE：切到全部养殖场后直接打开导出对话框。
+ * 也接受 scope=ALL；scope=CURRENT 回到当前养殖场。
+ */
+async function applyScopeQuery(): Promise<void> {
+  const scope = String(route.query.scope || '').toUpperCase()
+  if (!scope) return
+  if (scope === 'MINE' || scope === 'ALL') {
+    if (!farm.viewAll) farm.setViewAll(true)
+    store.scope = 'ALL'
+  } else if (scope === 'CURRENT') {
+    if (farm.viewAll) farm.setViewAll(false)
+    store.scope = ''
+  }
+  await consumeRouteAction(route, router, ['scope'])
+  await store.load()
+  // 切到全部养殖场会触发页面重载，store.load 正在进行时直接返回，这里等它加载完再判断能否导出
+  if (store.loading) {
+    await new Promise<void>((resolve) => {
+      const stop = watch(() => store.loading, (loading) => {
+        if (loading) return
+        stop()
+        resolve()
+      })
+    })
+  }
+  if (scope === 'MINE') {
+    if (store.canExport) store.openExport()
+    else ui.toast('当前统计期还没有可导出的报表数据', 'info')
+  }
+}
+
 onMounted(() => {
+  if (route.query.scope) {
+    void applyScopeQuery()
+    return
+  }
   if (farm.viewAll) store.scope = 'ALL'
   void store.load()
 })

@@ -6,6 +6,18 @@ import type { PageStatus } from '@/stores/finance/shared'
 
 export type ReportMetric = 'STOCK' | 'MORTALITY' | 'FEED' | 'BALANCE'
 
+/** 用临时 <a download> 下载签名地址（不打开新窗口，不会被弹窗拦截）。 */
+export function downloadFile(url: string, fileName?: string): void {
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName || ''
+  link.rel = 'noopener'
+  link.style.display = 'none'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+}
+
 export const useReportsStore = defineStore('financeReports', {
   state: () => ({
     reportType: 'TO_DATE' as 'TO_DATE' | 'WEEKLY' | 'MONTHLY',
@@ -303,9 +315,12 @@ export const useReportsStore = defineStore('financeReports', {
       try {
         const result = await financeApi.exportReport({ ...this.payload(), format: this.exportFormat })
         this.lastExport = result
-        if (result.downloadUrl) window.open(result.downloadUrl, '_blank')
+        // 请求返回后再 window.open 会被浏览器当成弹窗拦截；改为 <a download> 触发下载
+        if (result.downloadUrl) downloadFile(result.downloadUrl, result.fileName)
         this.exportOpen = false
-        ui.toast('已导出经营报表')
+        ui.toast('已导出经营报表，浏览器开始下载', 'success', result.downloadUrl ? '重新下载' : '', () => {
+          if (result.downloadUrl) downloadFile(result.downloadUrl, result.fileName)
+        })
       } catch (e) {
         const err = e as ApiError
         this.exportError = err.message || '导出失败，请稍后重试'

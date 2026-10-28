@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive } from 'vue'
+import { computed, nextTick, onMounted, reactive, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { dayjs, formatDate, today } from '@zmt/shared'
-import { useCalendarStore } from '@/stores/today/calendar'
+import { dayPendingCount, isClosedTodo, useCalendarStore } from '@/stores/today/calendar'
 import { useFarmStore } from '@/stores/farm'
 import { useFarmReload } from '@/composables/useFarmReload'
 import { useRole } from '@/composables/useRole'
@@ -22,6 +22,7 @@ import TodoDetailDrawer from './components/TodoDetailDrawer.vue'
 import ReminderDrawer from './components/ReminderDrawer.vue'
 
 const route = useRoute()
+const router = useRouter()
 const farm = useFarmStore()
 const store = useCalendarStore()
 const { isStaff } = useRole()
@@ -29,7 +30,6 @@ const { goRegister, goList } = useTodayLinks()
 const {
   view,
   selected,
-  dayStatus,
   monthDays,
   weekDays,
   dayItems,
@@ -107,6 +107,8 @@ const weekStrip = computed(() => {
       weekday: WEEK_LABELS[start.add(index, 'day').day()],
       isToday: date === today(),
       total: data?.total || 0,
+      /** 与首页“今日待办”口径一致：只算待处理 */
+      openCount: dayPendingCount(data),
       overdueCount: data?.overdue_count || 0,
       pendingCount: data?.pending_count || 0,
       closedCount: data?.closed_count || 0
@@ -114,8 +116,12 @@ const weekStrip = computed(() => {
   })
 })
 
+/** 选中日期的待处理全部为空、但有已完成 / 已忽略时显示“都处理完了”。 */
+const allDoneTitle = computed(() => (selected.value === today() ? '今天的待办都处理完了' : '这一天的待办都处理完了'))
+const dayHeadSub = computed(() => `待处理 ${dayTotal.value} 项`)
+
 const weekGroups = computed(() =>
-  weekDays.value.filter((day) => (day.total || 0) > 0 && (day.items || []).length > 0)
+  weekDays.value.filter((day) => (day.total || 0) > 0)
 )
 
 const weekHasItems = computed(() => weekGroups.value.length > 0)
@@ -145,25 +151,38 @@ function onViewValue(value: string | number): void {
   store.setView(String(value) as 'day' | 'week' | 'month')
 }
 
-function onDayStatusValue(value: string | number): void {
-  store.setDayStatus(String(value) as 'ALL' | 'UNFINISHED')
-}
-
 function toggleGroup(date: string): void {
   expanded[date] = !expanded[date]
 }
 
+/** 周视图每天分两段：待处理在上，已完成 / 已忽略折叠在下。 */
+function openItems(day: WeeklyDayVO): TodoItemVO[] {
+  return (day.items || []).filter((item) => !isClosedTodo(item))
+}
+
 function visibleItems(day: WeeklyDayVO): TodoItemVO[] {
-  const items = day.items || []
+  const items = openItems(day)
   return expanded[day.date || ''] ? items : items.slice(0, 5)
 }
 
+function weekOpenCount(day: WeeklyDayVO): number {
+  return Math.max(dayPendingCount(day), openItems(day).length)
+}
+
 function restCount(day: WeeklyDayVO): number {
-  return Math.max(0, (day.total || (day.items || []).length) - 5)
+  return Math.max(0, weekOpenCount(day) - 5)
 }
 
 function hasRest(day: WeeklyDayVO): boolean {
-  return (day.items || []).length > 5
+  return openItems(day).length > 5
+}
+
+function weekClosedCount(day: WeeklyDayVO): number {
+  return Number(day.closed_count || 0) || (day.items || []).filter(isClosedTodo).length
+}
+
+function weekClosedState(day: WeeklyDayVO) {
+  return store.weekClosed[day.date || '']
 }
 
 function categoryTime(item: TodoItemVO): string {
@@ -203,9 +222,21 @@ function onChanged(): void {
 function applyRouteQuery(): void {
   const date = String(route.query.date || '')
   if (/^\d{4}-\d{2}-\d{2}$/.test(date)) store.selected = date
-  const todoId = Number(route.query.todo_id)
+  const todoId = Number(route.query.todo_id || route.query.todoId)
   if (Number.isFinite(todoId) && todoId > 0) store.openTodo(todoId)
+  // 个人中心“提醒设置”跳过来时直接打开提醒设置
+  if (route.query.dialog === 'reminder') store.reminderOpen = true
 }
+
+watch(() => route.query.dialog, (value) => {
+  if (value === 'reminder') store.reminderOpen = true
+})
+watch(reminderOpen, (open) => {
+  if (open || !route.query.dialog) return
+  const query = { ...route.query }
+  delete query.dialog
+  void router.replace({ query })
+})
 
 onMounted(async () => {
   if (isStaff.value && farm.viewAll) farm.setViewAll(false)
@@ -297,16 +328,7 @@ useFarmReload(() => store.reload())
           </div>
         </zw-card>
 
-        <zw-card :title="store.dayTitle" :sub="`${dayTotal} 项`" flush class="t03-day">
-          <template #extra>
-            <zw-seg
-              size="small"
-              :model-value="dayStatus"
-              :items="[{ label: '全部', value: 'ALL' }, { label: '未完成', value: 'UNFINISHED' }]"
-              @update:model-value="onDayStatusValue"
-            />
-          </template>
-
+        <zw-card :title="store.dayTitle" :sub="dayHeadSub" flush class="t03-day">
           <v-skeleton-loader v-if="listStatus === 'loading'" type="list-item-two-line@6" />
 
           <zw-empty
@@ -319,40 +341,86 @@ useFarmReload(() => store.reload())
             <v-btn v-if="listStatus === 'error'" variant="outlined" prepend-icon="refresh" @click="store.fetchDayItems()">重新加载</v-btn>
           </zw-empty>
 
-          <zw-empty
-            v-else-if="listStatus === 'empty' || listStatus === 'filtered_empty'"
-            icon="task_alt"
-            :title="listStatus === 'filtered_empty' ? '这一天没有未完成的待办' : '这一天没有待办。'"
-            :desc="isStaff ? '你负责的栏舍在这一天没有作业待办。' : '换一个日期，或点“今天”回到今天。'"
-          />
+          <template v-else>
+            <zw-empty
+              v-if="!dayItems.length && store.closedTotal > 0"
+              icon="task_alt"
+              :title="allDoneTitle"
+              desc="已完成和已忽略的待办收在下面。"
+            />
+            <zw-empty
+              v-else-if="!dayItems.length"
+              icon="task_alt"
+              title="这一天没有待办。"
+              :desc="isStaff ? '你负责的栏舍在这一天没有作业待办。' : '换一个日期，或点“今天”回到今天。'"
+            />
 
-          <div v-else class="t03-list">
-            <div
-              v-for="item in dayItems"
-              :key="item.todo_id"
-              class="t03-item"
-              :class="{ 'is-done': item.display_status === 'DONE', 'is-ign': item.display_status === 'IGNORED' }"
-              @click="openItem(item)"
-            >
-              <span class="zw-ico-tile" :class="'zw-ico-tile--' + todoTone(item)">
-                <zw-icon :name="todoIcon(item)" :size="18" />
-              </span>
-              <div class="t03-item-main">
-                <div class="t03-item-title">{{ item.title }}</div>
-                <div class="t03-item-sub">
-                  <zw-tag v-if="farm.viewAll && item.farm_name" type="farm" size="small">{{ item.farm_name }}</zw-tag>
-                  <span>{{ calendarSubText(item) }}</span>
+            <div v-else class="t03-list">
+              <div class="t03-sec">待处理 {{ dayTotal }} 项</div>
+              <div
+                v-for="item in dayItems"
+                :key="item.todo_id"
+                class="t03-item"
+                @click="openItem(item)"
+              >
+                <span class="zw-ico-tile" :class="'zw-ico-tile--' + todoTone(item)">
+                  <zw-icon :name="todoIcon(item)" :size="18" />
+                </span>
+                <div class="t03-item-main">
+                  <div class="t03-item-title">{{ item.title }}</div>
+                  <div class="t03-item-sub">
+                    <zw-tag v-if="farm.viewAll && item.farm_name" type="farm" size="small">{{ item.farm_name }}</zw-tag>
+                    <span>{{ calendarSubText(item) }}</span>
+                  </div>
+                </div>
+                <div class="t03-item-r">
+                  <zw-tag :type="statusTag(item).type" :icon="statusTag(item).icon">{{ statusTag(item).text }}</zw-tag>
+                  <a @click.stop="onItemAction(item)">{{ actionLabel(item) }}</a>
                 </div>
               </div>
-              <div class="t03-item-r">
-                <zw-tag :type="statusTag(item).type" :icon="statusTag(item).icon">{{ statusTag(item).text }}</zw-tag>
-                <a
-                  v-if="item.display_status === 'PENDING' || item.display_status === 'OVERDUE'"
-                  @click.stop="onItemAction(item)"
-                >{{ actionLabel(item) }}</a>
+              <div v-if="store.dayHasMore" class="t03-more-row">
+                <v-btn variant="text" size="small" :loading="store.dayMoreLoading" @click="store.fetchMoreDayItems()">加载更多待处理</v-btn>
               </div>
             </div>
-          </div>
+
+            <div v-if="store.closedTotal > 0" class="t03-closed">
+              <button type="button" class="t03-closed-head" :aria-expanded="store.closedOpen" @click="store.toggleClosed()">
+                <zw-icon :name="store.closedOpen ? 'expand_less' : 'expand_more'" :size="18" />
+                已完成 / 已忽略 {{ store.closedTotal }} 项
+              </button>
+              <template v-if="store.closedOpen">
+                <v-skeleton-loader v-if="store.closedStatus === 'loading' && !store.closedItems.length" type="list-item-two-line@2" />
+                <div v-else-if="store.closedStatus === 'error'" class="t03-closed-err">
+                  {{ store.closedError || '加载失败' }}
+                  <a @click="store.fetchClosed(1)">重试</a>
+                </div>
+                <div
+                  v-for="item in store.closedItems"
+                  :key="item.todo_id"
+                  class="t03-item"
+                  :class="{ 'is-done': item.display_status === 'DONE', 'is-ign': item.display_status === 'IGNORED' }"
+                  @click="openItem(item)"
+                >
+                  <span class="zw-ico-tile" :class="'zw-ico-tile--' + todoTone(item)">
+                    <zw-icon :name="todoIcon(item)" :size="18" />
+                  </span>
+                  <div class="t03-item-main">
+                    <div class="t03-item-title">{{ item.title }}</div>
+                    <div class="t03-item-sub">
+                      <zw-tag v-if="farm.viewAll && item.farm_name" type="farm" size="small">{{ item.farm_name }}</zw-tag>
+                      <span>{{ calendarSubText(item) }}</span>
+                    </div>
+                  </div>
+                  <div class="t03-item-r">
+                    <zw-tag :type="statusTag(item).type" :icon="statusTag(item).icon">{{ statusTag(item).text }}</zw-tag>
+                  </div>
+                </div>
+                <div v-if="store.closedHasMore" class="t03-more-row">
+                  <v-btn variant="text" size="small" :loading="store.closedStatus === 'loading'" @click="store.fetchClosed(store.closedPage + 1)">加载更多</v-btn>
+                </div>
+              </template>
+            </div>
+          </template>
         </zw-card>
       </div>
     </template>
@@ -372,7 +440,7 @@ useFarmReload(() => store.reload())
             <div class="t03-strip-w">周{{ day.weekday }}</div>
             <div class="t03-strip-d">
               <span class="t03-d" :class="{ today: day.isToday }">{{ day.d }}</span>
-              <span class="t03-strip-n">{{ day.total }} 项</span>
+              <span class="t03-strip-n">{{ day.openCount }} 项</span>
             </div>
             <div v-if="day.overdueCount || day.pendingCount || day.closedCount" class="t03-cnts">
               <span v-if="day.overdueCount" class="t03-cnt"><i class="t03-dot t03-dot--late"></i>{{ day.overdueCount }}</span>
@@ -412,8 +480,11 @@ useFarmReload(() => store.reload())
               <tr :id="`week-day-${day.date}`" class="t03-grp">
                 <td colspan="6">
                   {{ formatDate(day.date) }}<template v-if="day.is_today"> · 今天</template>
-                  <span class="t03-grp-n">{{ day.total }} 项</span>
+                  <span class="t03-grp-n">待处理 {{ weekOpenCount(day) }} 项</span>
                 </td>
+              </tr>
+              <tr v-if="!openItems(day).length" class="t03-more">
+                <td colspan="6" class="zw-faint">{{ weekClosedCount(day) ? (day.is_today ? '今天的待办都处理完了' : '这一天的待办都处理完了') : '没有待处理的待办' }}</td>
               </tr>
               <tr v-for="item in visibleItems(day)" :key="item.todo_id" :class="{ 'zw-row-muted': isMuted(item) }">
                 <td>
@@ -442,6 +513,33 @@ useFarmReload(() => store.reload())
                   </a>
                 </td>
               </tr>
+              <tr v-if="weekClosedCount(day)" class="t03-more">
+                <td colspan="6">
+                  <a class="zw-link d-inline-flex align-center ga-1" @click="store.toggleWeekClosed(day.date || '')">
+                    <zw-icon :name="weekClosedState(day)?.open ? 'expand_less' : 'expand_more'" :size="18" />
+                    已完成 / 已忽略 {{ weekClosedCount(day) }} 项
+                  </a>
+                  <span v-if="weekClosedState(day)?.open && weekClosedState(day)?.status === 'loading'" class="zw-faint ml-2">加载中…</span>
+                  <span v-else-if="weekClosedState(day)?.open && weekClosedState(day)?.status === 'error'" class="zw-faint ml-2">加载失败，请再点一次</span>
+                </td>
+              </tr>
+              <template v-if="weekClosedState(day)?.open">
+                <tr v-for="item in weekClosedState(day)?.items || []" :key="`c-${item.todo_id}`" class="zw-row-muted">
+                  <td>
+                    <div class="t03-tbl-title">
+                      <span class="zw-ico-tile" :class="'zw-ico-tile--' + todoTone(item)">
+                        <zw-icon :name="todoIcon(item)" :size="18" />
+                      </span>
+                      <span :style="item.display_status === 'DONE' ? 'text-decoration: line-through' : ''">{{ item.title }}</span>
+                    </div>
+                  </td>
+                  <td><zw-tag type="farm" size="small">{{ item.farm_name }}</zw-tag></td>
+                  <td class="zw-muted">{{ categoryTime(item) }}</td>
+                  <td class="zw-muted">{{ personText(item) }}</td>
+                  <td><zw-tag :type="statusTag(item).type" :icon="statusTag(item).icon">{{ statusTag(item).text }}</zw-tag></td>
+                  <td class="text-end"><span class="zw-cell-actions"><a @click.stop="openItem(item)">详情</a></span></td>
+                </tr>
+              </template>
             </template>
           </tbody>
         </v-table>
@@ -463,7 +561,7 @@ useFarmReload(() => store.reload())
             <div class="t03-strip-w">周{{ day.weekday }}</div>
             <div class="t03-strip-d">
               <span class="t03-d" :class="{ today: day.isToday }">{{ day.d }}</span>
-              <span class="t03-strip-n">{{ day.total }} 项</span>
+              <span class="t03-strip-n">{{ day.openCount }} 项</span>
             </div>
             <div v-if="day.overdueCount || day.pendingCount || day.closedCount" class="t03-cnts">
               <span v-if="day.overdueCount" class="t03-cnt"><i class="t03-dot t03-dot--late"></i>{{ day.overdueCount }}</span>
@@ -475,7 +573,7 @@ useFarmReload(() => store.reload())
       </zw-card>
 
       <div class="t03-day-main">
-        <zw-card :title="store.dayTitle" :sub="`${dayTotal} 项`" flush class="t03-timeline-card">
+        <zw-card :title="store.dayTitle" :sub="dayHeadSub" flush class="t03-timeline-card">
           <v-skeleton-loader v-if="listStatus === 'loading'" type="list-item-two-line@5" />
 
           <zw-empty
@@ -488,19 +586,65 @@ useFarmReload(() => store.reload())
             <v-btn v-if="listStatus === 'error'" variant="outlined" prepend-icon="refresh" @click="store.fetchDayItems()">重新加载</v-btn>
           </zw-empty>
 
-          <zw-empty
-            v-else-if="listStatus === 'empty' || listStatus === 'filtered_empty'"
-            icon="task_alt"
-            title="这一天没有待办。"
-            :desc="isStaff ? '你负责的栏舍在这一天没有作业待办。' : '换一个日期，或点“今天”回到今天。'"
-          />
+          <template v-else>
+            <zw-empty
+              v-if="!dayItems.length && store.closedTotal > 0"
+              icon="task_alt"
+              :title="allDoneTitle"
+              desc="已完成和已忽略的待办收在下面。"
+            />
+            <zw-empty
+              v-else-if="!dayItems.length"
+              icon="task_alt"
+              title="这一天没有待办。"
+              :desc="isStaff ? '你负责的栏舍在这一天没有作业待办。' : '换一个日期，或点“今天”回到今天。'"
+            />
 
-          <div v-else class="t03-tl">
-            <div v-for="group in store.dayGroups" :key="group.time" class="t03-tl-row">
-              <div class="t03-tl-time">{{ group.time }}</div>
-              <div class="t03-tl-items">
+            <div v-else class="t03-tl">
+              <div v-for="group in store.dayGroups" :key="group.time" class="t03-tl-row">
+                <div class="t03-tl-time">{{ group.time }}</div>
+                <div class="t03-tl-items">
+                  <div
+                    v-for="item in group.items"
+                    :key="item.todo_id"
+                    class="t03-item"
+                    @click="openItem(item)"
+                  >
+                    <span class="zw-ico-tile" :class="'zw-ico-tile--' + todoTone(item)">
+                      <zw-icon :name="todoIcon(item)" :size="18" />
+                    </span>
+                    <div class="t03-item-main">
+                      <div class="t03-item-title">{{ item.title }}</div>
+                      <div class="t03-item-sub">
+                        <zw-tag v-if="farm.viewAll && item.farm_name" type="farm" size="small">{{ item.farm_name }}</zw-tag>
+                        <span>{{ calendarSubText(item) }}</span>
+                      </div>
+                    </div>
+                    <zw-tag :type="statusTag(item).type" :icon="statusTag(item).icon">{{ statusTag(item).text }}</zw-tag>
+                    <span class="t03-item-op">
+                      <a @click.stop="onItemAction(item)">{{ actionLabel(item) }}</a>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div v-if="store.dayHasMore" class="t03-more-row">
+                <v-btn variant="text" size="small" :loading="store.dayMoreLoading" @click="store.fetchMoreDayItems()">加载更多待处理</v-btn>
+              </div>
+            </div>
+
+            <div v-if="store.closedTotal > 0" class="t03-closed">
+              <button type="button" class="t03-closed-head" :aria-expanded="store.closedOpen" @click="store.toggleClosed()">
+                <zw-icon :name="store.closedOpen ? 'expand_less' : 'expand_more'" :size="18" />
+                已完成 / 已忽略 {{ store.closedTotal }} 项
+              </button>
+              <template v-if="store.closedOpen">
+                <v-skeleton-loader v-if="store.closedStatus === 'loading' && !store.closedItems.length" type="list-item-two-line@2" />
+                <div v-else-if="store.closedStatus === 'error'" class="t03-closed-err">
+                  {{ store.closedError || '加载失败' }}
+                  <a @click="store.fetchClosed(1)">重试</a>
+                </div>
                 <div
-                  v-for="item in group.items"
+                  v-for="item in store.closedItems"
                   :key="item.todo_id"
                   class="t03-item"
                   :class="{ 'is-done': item.display_status === 'DONE', 'is-ign': item.display_status === 'IGNORED' }"
@@ -517,13 +661,13 @@ useFarmReload(() => store.reload())
                     </div>
                   </div>
                   <zw-tag :type="statusTag(item).type" :icon="statusTag(item).icon">{{ statusTag(item).text }}</zw-tag>
-                  <span class="t03-item-op">
-                    <a v-if="item.display_status === 'PENDING' || item.display_status === 'OVERDUE'" @click.stop="onItemAction(item)">{{ actionLabel(item) }}</a>
-                  </span>
                 </div>
-              </div>
+                <div v-if="store.closedHasMore" class="t03-more-row">
+                  <v-btn variant="text" size="small" :loading="store.closedStatus === 'loading'" @click="store.fetchClosed(store.closedPage + 1)">加载更多</v-btn>
+                </div>
+              </template>
             </div>
-          </div>
+          </template>
         </zw-card>
 
         <div class="t03-day-side zw-stack">
@@ -737,6 +881,47 @@ useFarmReload(() => store.reload())
   min-height: 0;
   display: flex;
   flex-direction: column;
+}
+.t03-sec {
+  padding: 10px 16px 4px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-3);
+}
+.t03-more-row {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0;
+}
+.t03-closed {
+  border-top: 1px solid var(--line-1);
+}
+.t03-closed-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 16px;
+  border: 0;
+  background: var(--fill-1);
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-2);
+  cursor: pointer;
+  text-align: left;
+}
+.t03-closed-head:hover {
+  color: var(--text-1);
+}
+.t03-closed-err {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.t03-closed-err a {
+  margin-left: 8px;
+  color: var(--primary);
+  cursor: pointer;
 }
 .t03-list {
   flex: 1;

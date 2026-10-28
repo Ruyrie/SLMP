@@ -6,6 +6,7 @@ import { useIncubationStore } from '@/stores/breeding/incubation'
 import { useFarmStore } from '@/stores/farm'
 import { useFarmReload } from '@/composables/useFarmReload'
 import { useRole } from '@/composables/useRole'
+import { consumeRouteAction } from '@/composables/useRouteAction'
 import { monthDay, monthDayWeek, todayISO } from '@/stores/breeding/shared'
 import type { IncubationTimeline } from '@/api/breeding'
 import BreedingDateField from './components/BreedingDateField.vue'
@@ -150,7 +151,10 @@ function closeLogs(): void {
 
 async function handleQuery(): Promise<void> {
   if (isStaff.value) return
-  if (route.query.action === 'incubate') await store.openCreate()
+  const action = String(route.query.action || '')
+  if (action !== 'incubate' && action !== 'create') return
+  await consumeRouteAction(route, router)
+  await store.openCreate()
 }
 
 onMounted(async () => {
@@ -183,7 +187,7 @@ watch(() => route.query.incubationId, (value) => {
 })
 
 watch(() => route.query.action, (value) => {
-  if (value === 'incubate' && !isStaff.value) void store.openCreate()
+  if (value) void handleQuery()
 })
 </script>
 

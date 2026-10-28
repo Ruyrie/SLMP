@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { formatDate, formatNumber } from '@zmt/shared'
+import { formatDate, formatNumber, today } from '@zmt/shared'
 import type { DataTableHeader } from 'vuetify'
 import { useBreedingAnimalStore } from '@/stores/breeding/animalList'
 import { useFarmStore } from '@/stores/farm'
@@ -221,7 +221,7 @@ async function exportCsv(): Promise<void> {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = `种畜档案-${new Date().toISOString().slice(0, 10)}.csv`
+  link.download = `种畜档案-${today()}.csv`
   link.click()
   URL.revokeObjectURL(url)
 }
@@ -438,8 +438,8 @@ async function exportCsv(): Promise<void> {
             <span class="zw-faint">还没有繁育记录。登记配种后，记录会按时间显示在这里。</span>
           </div>
         </div>
-        <div v-if="store.recordsTotal > store.recordsSize" class="b01-rec-pager">
-          <zw-pager :total="store.recordsTotal" :page="store.recordsPage" :size="store.recordsSize" @update:page="store.loadRecords" />
+        <div v-if="store.recordsTotal > 10" class="b01-rec-pager">
+          <zw-pager :total="store.recordsTotal" :page="store.recordsPage" :size="store.recordsSize" @update:page="store.loadRecords" @update:size="store.setRecordsSize" />
         </div>
       </template>
     </zw-drawer>

@@ -6,6 +6,8 @@ import type { DataTableHeader } from 'vuetify'
 import { useFeedTaskStore } from '@/stores/feeding/feedTask'
 import { useFarmStore } from '@/stores/farm'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { queryId, useRouteAction } from '@/composables/useRouteAction'
+import { useUiStore } from '@/stores/ui'
 import { useRole } from '@/composables/useRole'
 import { minutesText } from '@/stores/feeding/shared'
 import type { FeedTaskItem } from '@/api/feeding'
@@ -115,13 +117,28 @@ function cancelVoid(): void {
   store.voidConfirm = false
 }
 
+/** 待办 / 快捷登记进入：带 taskId 打开该餐次；只带 action=create 时打开第一条待登记的餐次。 */
+async function openFromRoute(create: boolean): Promise<void> {
+  const taskId = queryId(route.query, 'taskId', 'task_id')
+  const item = taskId ? store.list.find((task) => Number(task.task_id) === taskId) : undefined
+  if (item) {
+    await store.openTask(item)
+    return
+  }
+  if (!create) return
+  const next = store.list.find((task) => task.action === 'REGISTER')
+  if (next) await store.openTask(next)
+  else useUiStore().toast(taskId ? '这餐投喂任务不在今天的列表里，可能已登记或已调整' : '今天没有待登记的投喂任务', 'info')
+}
+
+const routeAction = useRouteAction(async (action) => {
+  if (action === 'create' || action === 'register') await openFromRoute(true)
+})
+
 onMounted(async () => {
   await store.load()
-  const taskId = Number(route.query.taskId || 0)
-  if (taskId) {
-    const item = store.list.find((task) => Number(task.task_id) === taskId)
-    if (item) await store.openTask(item)
-  }
+  if (!route.query.action) await openFromRoute(false)
+  await routeAction.start()
 })
 
 useFarmReload(async () => {

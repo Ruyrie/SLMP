@@ -8,6 +8,7 @@ import { useSaleOrdersStore } from '@/stores/finance/saleOrders'
 import { useSaleOrderFormStore } from '@/stores/finance/saleOrderForm'
 import { useReceiveStore } from '@/stores/finance/receive'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { consumeRouteAction, queryId } from '@/composables/useRouteAction'
 import { dateText, dueTone, paymentIcon, paymentTone } from '@/stores/finance/shared'
 import SaleOrderFormDrawer from './components/SaleOrderFormDrawer.vue'
 import ReceiveDialog from './components/ReceiveDialog.vue'
@@ -116,9 +117,15 @@ async function handleQuery(): Promise<void> {
     store.query.month = month
     await store.load()
   }
-  const batchId = Number(route.query.batchId || 0)
-  if (route.query.action === 'create') await openCreate(batchId)
+  const batchId = queryId(route.query, 'batchId', 'batch_id')
+  if (route.query.action === 'create') await createFromRoute()
   else if (batchId) await openCreate(batchId)
+}
+
+/** 先去掉 action 再打开表单（抽屉在路由变化时会自动关闭）；刷新不重复弹出，再次点击快捷登记也能触发。 */
+async function createFromRoute(): Promise<void> {
+  const query = await consumeRouteAction(route, router)
+  await openCreate(queryId(query, 'batchId', 'batch_id'))
 }
 
 onMounted(async () => {
@@ -137,7 +144,7 @@ watch(
       store.query.month = month
       void store.load()
     }
-    if (route.query.action === 'create') void openCreate(Number(route.query.batchId || 0))
+    if (route.query.action === 'create') void createFromRoute()
   }
 )
 </script>

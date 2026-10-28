@@ -8,6 +8,7 @@ import { useFinanceRecordsStore } from '@/stores/finance/records'
 import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { consumeRouteAction } from '@/composables/useRouteAction'
 import {
   currentMonth,
   monthText,
@@ -300,7 +301,9 @@ function openRecord(item: Record<string, unknown>): void {
 async function openSource(item: Record<string, unknown> | FinanceRecordDetail): Promise<void> {
   const target = item.sourceTarget as { bizType?: string; bizId?: number } | undefined
   if (!target?.bizType || !target.bizId) return
-  if (target.bizType === 'OUTBOUND') {
+  // 退货退款与入库支出：在本页打开来源单据（饲料、兽药入库都能看，不再一律跳到饲料库存页）
+  if (target.bizType === 'OUTBOUND' || target.bizType === 'INBOUND') {
+    const inbound = target.bizType === 'INBOUND'
     const request = ++sourceRequest
     const targetFarm = Number(item.farmId || farm.currentFarmId)
     closeLinkedRecord()
@@ -308,19 +311,17 @@ async function openSource(item: Record<string, unknown> | FinanceRecordDetail): 
       if (targetFarm !== farm.currentFarmId) await farm.switchTo(targetFarm)
       await nextTick()
       if (request !== sourceRequest || farm.currentFarmId !== targetFarm) return
-      sourceFlow.value = { flow_id: 0, biz_type: 'OUTBOUND', biz_id: target.bizId, flow_type: 'RETURN' }
+      sourceFlow.value = inbound
+        ? { flow_id: 0, biz_type: 'INBOUND', biz_id: target.bizId, flow_type: 'INBOUND' }
+        : { flow_id: 0, biz_type: 'OUTBOUND', biz_id: target.bizId, flow_type: 'RETURN' }
       sourceDocumentOpen.value = true
     } catch (error) {
-      if (request === sourceRequest) ui.toast((error as Error).message || '来源退货单打开失败', 'error')
+      if (request === sourceRequest) ui.toast((error as Error).message || (inbound ? '来源入库单打开失败' : '来源退货单打开失败'), 'error')
     }
     return
   }
   if (target.bizType === 'SALE_ORDER') {
     void router.push({ name: 'WU-E04', params: { id: String(target.bizId) } })
-    return
-  }
-  if (target.bizType === 'INBOUND') {
-    void router.push({ name: 'WU-M01', query: { inboundId: String(target.bizId) } })
     return
   }
   if (target.bizType === 'DRUG_LOT') {
@@ -390,6 +391,8 @@ function locateDuplicate(): void {
 
 async function handleQuery(): Promise<void> {
   if (route.query.action === 'create') {
+    // 先去掉 action 再打开表单（抽屉在路由变化时会自动关闭）；刷新不重复弹出，再次点击也能触发
+    await consumeRouteAction(route, router)
     await store.openCreate()
   }
   const recordId = Number(route.query.recordId || 0)
@@ -411,6 +414,9 @@ onMounted(async () => {
 })
 
 watch(() => [route.query.recordId, route.query.date, route.query.detail], () => void handleQuery())
+watch(() => route.query.action, (value) => {
+  if (value === 'create' && store.status !== 'loading') void handleQuery()
+})
 
 useFarmReload(async () => {
   store.reset()
@@ -420,7 +426,7 @@ useFarmReload(async () => {
 
 <template>
   <zw-shell side="user" active="WU-E02" :crumbs="['经营管理', '收支记账']">
-    <StockDocumentDrawer v-model="sourceDocumentOpen" :flow="sourceFlow" :staff="farm.role === 'staff'" @refund-saved="onRefundSaved" @view-finance-record="onViewRefundRecord" />
+    <StockDocumentDrawer v-model="sourceDocumentOpen" :flow="sourceFlow" :staff="farm.role === 'staff'" @refund-saved="onRefundSaved" @view-finance-record="onViewRefundRecord" @changed="store.load()" />
     <zw-drawer :model-value="linkedRecordOpen" title="关联收支流水" width="560" @update:model-value="!$event && closeLinkedRecord()">
       <v-skeleton-loader v-if="linkedRecordLoading" type="article" />
       <zw-notice v-else-if="linkedRecordError" type="warning">

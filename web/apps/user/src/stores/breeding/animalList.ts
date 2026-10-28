@@ -408,6 +408,10 @@ export const useBreedingAnimalStore = defineStore('breedingAnimalList', {
         this.detailLoading = false
       }
     },
+    async setRecordsSize(size: number): Promise<void> {
+      this.recordsSize = Math.max(1, Number(size) || 20)
+      await this.loadRecords(1)
+    },
     async loadRecords(page?: number): Promise<void> {
       if (!this.detail) return
       const targetPage = page ?? this.recordsPage
@@ -496,17 +500,26 @@ export const useBreedingAnimalStore = defineStore('breedingAnimalList', {
         this.exitSubmitting = false
       }
     },
+    /** 导出当前筛选下的全部种畜：按 100 条一页取完（服务端单页上限 100，超过会被拒绝或截断），不再只导第一页。 */
     async exportRows(): Promise<BreedingAnimalItem[]> {
       this.exportBusy = true
       try {
-        const data = await breedingApi.animals({
-          page: 1,
-          size: 200,
-          status: this.showExited ? 'EXITED' : this.query.status,
-          keyword: this.query.keyword.trim() || undefined,
-          penId: this.query.penId || undefined
-        })
-        return data.list || []
+        const size = 100
+        const rows: BreedingAnimalItem[] = []
+        for (let page = 1; page <= 100; page += 1) {
+          const data = await breedingApi.animals({
+            page,
+            size,
+            status: this.showExited ? 'EXITED' : this.query.status,
+            keyword: this.query.keyword.trim() || undefined,
+            penId: this.query.penId || undefined
+          })
+          const list = data.list || []
+          rows.push(...list)
+          const total = Number(data.total || 0)
+          if (!list.length || list.length < size || (total && rows.length >= total)) break
+        }
+        return rows
       } catch (error) {
         useUiStore().toast(errorText(error, '导出失败'), 'error')
         return []
