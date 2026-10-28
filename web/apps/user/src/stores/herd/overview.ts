@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { BatchListItem, CategoryStock, PenStockItem, ProductionOverview, StockSummary } from '@/api/herd'
+import type { BatchListItem, CategoryStock, PenStockItem, ProductionOverview, ProductionReminder, StockSummary } from '@/api/herd'
 import { herdApi } from '@/api/herd'
 import { useFarmStore } from '@/stores/farm'
 import { useAuthStore } from '@/stores/auth'
@@ -94,11 +94,12 @@ export const useStockOverviewStore = defineStore('herdStockOverview', {
     pageTotal(): number {
       return this.tab === 'pen' ? this.filteredPens.length : this.filteredBatches.length
     },
-    reminders(state) {
+    /** 服务端已排好序：休药中 → 未处理异常上报 → 其余预警 → 今日巡检汇总；侧栏只放前 3 条。 */
+    reminders(state): ProductionReminder[] {
       return (state.overview?.reminders || []).slice(0, 3)
     },
     reminderTotal(state): number {
-      return state.overview?.reminder_total || 0
+      return state.overview?.reminder_total ?? state.overview?.reminders?.length ?? 0
     },
     categoryStockFoot(): string {
       const categories = this.summary?.categories || []
