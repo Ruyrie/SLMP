@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { routeQueryId } from '@/utils/routeQuery'
 import { ApiError, dayjs, formatDate, formatDateTime, formatNumber, formatPercent, today } from '@zmt/shared'
 import {
   createAiQaTask,
@@ -25,6 +27,7 @@ import { useUiStore } from '@/stores/ui'
 
 const ui = useUiStore()
 const admin = useAdminStore()
+const route = useRoute()
 const canHandle = computed(() => admin.hasPerm('WA-C05:HANDLE'))
 
 const summary = ref<AiQaSummary | null>(null)
@@ -184,12 +187,16 @@ const detail = ref<QaDetail | null>(null)
 const detailError = ref('')
 
 async function openDetail(row: QaRow): Promise<void> {
+  await openDetailById(row.message_id)
+}
+
+async function openDetailById(messageId: number): Promise<void> {
   drawer.value = true
   detailLoading.value = true
   detail.value = null
   detailError.value = ''
   try {
-    detail.value = await getAiQaDetail(row.message_id)
+    detail.value = await getAiQaDetail(messageId)
     if (detail.value?.correction) correctionContent.value = detail.value.correction.content
   } catch (e) {
     detailError.value = e instanceof Error ? e.message : '详情加载失败'
@@ -450,6 +457,8 @@ onMounted(async () => {
   void loadOptions()
   await Promise.all([fetchList(), loadSummary()])
   loading.value = false
+  const id = routeQueryId(route)
+  if (id) void openDetailById(id)
 })
 </script>
 

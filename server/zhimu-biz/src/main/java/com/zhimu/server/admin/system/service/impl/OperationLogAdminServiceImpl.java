@@ -64,12 +64,13 @@ public class OperationLogAdminServiceImpl implements OperationLogAdminService {
         int offset = (page - 1) * size;
         String keyword = query.getKeyword() == null || query.getKeyword().isBlank() ? null : query.getKeyword().trim();
 
+        List<String> opTypes = AdminLogTexts.expandOpType(query.getOpType());
         long total = operationLogQueryMapper.countAdminLogs(viewerId, visibility.allVisible(),
-                visibility.allowedOpTypes(), dateFrom, dateTo, query.getAdminId(), query.getOpType(), keyword);
+                visibility.allowedOpTypes(), dateFrom, dateTo, query.getAdminId(), opTypes, keyword);
         List<OperationLogItemVO> list = new ArrayList<>();
         if (total > 0) {
             List<OperationLog> rows = operationLogQueryMapper.selectAdminLogs(viewerId, visibility.allVisible(),
-                    visibility.allowedOpTypes(), dateFrom, dateTo, query.getAdminId(), query.getOpType(), keyword,
+                    visibility.allowedOpTypes(), dateFrom, dateTo, query.getAdminId(), opTypes, keyword,
                     offset, size);
             for (OperationLog row : rows) {
                 list.add(toItem(row));
@@ -114,13 +115,75 @@ public class OperationLogAdminServiceImpl implements OperationLogAdminService {
                         .build())
                 .changes(changes(row.getBeforeJson(), row.getAfterJson()))
                 .related(related)
-                .link(OperationLogDetailVO.Link.builder()
-                        .pageCode(AdminLogTexts.pageCodeOfBizType(row.getBizType()))
-                        .bizType(row.getBizType())
-                        .bizId(row.getBizId())
-                        .exists(row.getBizType() != null && row.getBizId() != null)
-                        .build())
+                .link(link(row.getBizType(), row.getBizId()))
                 .build();
+    }
+
+    /** 日志详情“打开对应记录”：页面编号 + 定位参数；查不到定位所需的数据时 exists = false。 */
+    OperationLogDetailVO.Link link(String bizType, Long bizId) {
+        String pageCode = AdminLogTexts.pageCodeOfBizType(bizType);
+        Map<String, String> query = pageCode == null || bizId == null ? null : linkQuery(bizType, bizId);
+        return OperationLogDetailVO.Link.builder()
+                .pageCode(pageCode)
+                .bizType(bizType)
+                .bizId(bizId)
+                .exists(pageCode != null && query != null)
+                .query(query)
+                .build();
+    }
+
+    private Map<String, String> linkQuery(String bizType, Long bizId) {
+        Map<String, String> query = new LinkedHashMap<>();
+        String id = String.valueOf(bizId);
+        switch (bizType) {
+            case "COURSE" -> query.put("course_id", id);
+            case "KNOWLEDGE_TASK" -> query.put("task_id", id);
+            case "CATEGORY" -> query.put("category_id", id);
+            case "BREED" -> query.put("breed_id", id);
+            case "STD_WEIGHT", "FEED_STD" -> {
+                Long breedId = "STD_WEIGHT".equals(bizType)
+                        ? operationLogQueryMapper.selectStdWeightBreedId(bizId)
+                        : operationLogQueryMapper.selectFeedStdBreedId(bizId);
+                if (breedId == null) {
+                    return null;
+                }
+                query.put("breed_id", String.valueOf(breedId));
+                query.put("tab", "STD_WEIGHT".equals(bizType) ? "weight" : "feed");
+            }
+            case "BANNED_DRUG" -> {
+                query.put("tab", "BANNED");
+                String name = operationLogQueryMapper.selectBannedDrugName(bizId);
+                if (name != null && !name.isBlank()) {
+                    query.put("keyword", name);
+                }
+            }
+            case "DRUG_LOT_RECALL" -> {
+                query.put("tab", "RECALL");
+                query.put("id", id);
+            }
+            case "DICT_ITEM" -> {
+                String dictType = operationLogQueryMapper.selectDictItemType(bizId);
+                if (dictType == null) {
+                    return null;
+                }
+                query.put("dict_type", dictType);
+                query.put("id", id);
+            }
+            case "FINANCE_CATEGORY" -> {
+                String direction = operationLogQueryMapper.selectFinanceCategoryDirection(bizId);
+                if (direction == null) {
+                    return null;
+                }
+                query.put("dict_type", "EXPENSE".equals(direction) ? "EXPENSE_CATEGORY" : "INCOME_CATEGORY");
+                query.put("id", id);
+            }
+            case "ADMIN_ROLE" -> {
+                query.put("tab", "roles");
+                query.put("role_id", id);
+            }
+            default -> query.put("id", id);
+        }
+        return query;
     }
 
     private List<OperationLogDetailVO.Related> related(OperationLog row) {
@@ -204,10 +267,14 @@ public class OperationLogAdminServiceImpl implements OperationLogAdminService {
             }
         }
         if (baseData) {
-            allowed.add("BASE_DATA");
+            allowed.addAll(AdminLogTexts.BASE_DATA_OP_TYPES);
         }
-        addWhen(allowed, admin, "WA-S03:HANDLE", "USER_STATUS");
-        addWhen(allowed, admin, "WA-S04:HANDLE", "FARM_FREEZE");
+        if (admin.hasPermission("WA-S03:HANDLE")) {
+            allowed.addAll(AdminLogTexts.USER_OP_TYPES);
+        }
+        if (admin.hasPermission("WA-S04:HANDLE")) {
+            allowed.addAll(AdminLogTexts.FARM_FREEZE_OP_TYPES);
+        }
         addWhen(allowed, admin, "WA-S05:HANDLE", "LOGIN");
         addWhen(allowed, admin, "WA-S05:HANDLE", "ADMIN_RBAC");
         // 导出日志跟随被导出页面的 HANDLE；任一管理端页面有处理权限即可见 EXPORT

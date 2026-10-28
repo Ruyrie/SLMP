@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { routeQueryId } from '@/utils/routeQuery'
 import { ApiError, dayjs, formatDateTime, formatNumber, formatPercent } from '@zmt/shared'
 import {
   cancelNotice,
@@ -25,6 +27,7 @@ import { useUiStore } from '@/stores/ui'
 
 const ui = useUiStore()
 const admin = useAdminStore()
+const route = useRoute()
 const canHandle = computed(() => admin.hasPerm('WA-C01:HANDLE'))
 
 const loading = ref(true)
@@ -305,11 +308,15 @@ async function copyDetail(id: number): Promise<void> {
 }
 
 async function openDetail(row: NoticeRow): Promise<void> {
+  await openDetailById(row.id)
+}
+
+async function openDetailById(id: number): Promise<void> {
   detailDrawer.value = true
   detailLoading.value = true
   detail.value = null
   try {
-    detail.value = await getNoticeDetail(row.id)
+    detail.value = await getNoticeDetail(id)
   } catch (e) {
     ui.toast(e instanceof Error ? e.message : '详情加载失败', 'error')
     detailDrawer.value = false
@@ -562,6 +569,8 @@ onMounted(async () => {
   loadCategories()
   await Promise.all([fetchList(), loadSummary()])
   loading.value = false
+  const id = routeQueryId(route)
+  if (id) void openDetailById(id)
 })
 </script>
 

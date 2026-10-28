@@ -163,8 +163,8 @@ public class FarmAdminServiceImpl implements FarmAdminService {
     public FreezeResultVO freeze(Long farmId, FarmFreezeRequest request) {
         String reason = AuditSupport.requireReason(request.getReason(), "请填写冻结原因");
         Farm farm = requireFarm(farmId);
-        farmPlatformService.freeze(farmId, AdminContext.requireAdminId(), reason,
-                Boolean.TRUE.equals(request.getSmsOwner()), request.getVersion());
+        // 冻结原因由模块02 以站内消息发给全部成员（含所有者）；平台不发通知短信
+        farmPlatformService.freeze(farmId, AdminContext.requireAdminId(), reason, false, request.getVersion());
         int members = farmPlatformService.listActiveUserIds(farmId).size();
         return new FreezeResultVO(members, farm.getName());
     }

@@ -776,6 +776,9 @@ export interface DictItem {
   usage_count?: number
   usage_label?: string
   diseases?: Array<{ id: number; name: string }>
+  /** 仅收入 / 支出分类：自动记账来源与子类数 */
+  auto_source_text?: string | null
+  subcategory_count?: number | null
   version?: number
 }
 

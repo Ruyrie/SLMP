@@ -429,7 +429,7 @@ onMounted(() => {
         <ul class="effect-list zw-muted">
           <li>{{ target?.name }}的 {{ memberCount }} 名成员暂时不能使用：切换养殖场时显示“已被平台冻结，暂时不能使用”</li>
           <li>数据全部保留，停止生成待办和提醒；解冻后恢复</li>
-          <li>冻结原因发到全部成员的消息中心</li>
+          <li>冻结原因以站内消息发到全部成员（含所有者{{ target?.owner_name ? ` ${target.owner_name}` : '' }}）的消息中心；不发短信</li>
         </ul>
         <zw-form-item label="冻结原因" required :error="store.reasonError" class="dialog-form">
           <v-textarea
@@ -442,11 +442,6 @@ onMounted(() => {
             :error="!!store.reasonError"
           />
         </zw-form-item>
-        <v-checkbox
-          v-model="store.smsOwner"
-          :label="`同时短信通知所有者（${target?.owner_name || ''} ${target?.owner_phone || ''}）`"
-          class="notify-check"
-        />
       </template>
       <template v-else>
         <p class="dialog-p">解冻后，{{ target?.name }}的全部成员可以继续使用，待办和提醒恢复生成。</p>

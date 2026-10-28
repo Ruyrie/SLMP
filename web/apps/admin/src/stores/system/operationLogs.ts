@@ -59,6 +59,10 @@ export const useOperationLogsStore = defineStore('operationLogs', {
         this.error = error instanceof Error ? error.message : '加载失败'
       }
     },
+    search(): void {
+      this.query.page = 1
+      void this.fetchList()
+    },
     resetFilters(): void {
       this.query = {
         date_from: weekAgo(),

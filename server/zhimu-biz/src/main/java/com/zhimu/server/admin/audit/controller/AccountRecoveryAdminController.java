@@ -10,7 +10,7 @@ import com.zhimu.server.admin.audit.vo.ProxyRecoveryVO;
 import com.zhimu.server.admin.audit.vo.RecoveryDetailVO;
 import com.zhimu.server.admin.audit.vo.RecoveryItemVO;
 import com.zhimu.server.admin.audit.vo.RecoveryVerificationRecordsVO;
-import com.zhimu.server.admin.audit.vo.SmsResendVO;
+import com.zhimu.server.admin.audit.vo.RecoveryTempPasswordVO;
 import com.zhimu.server.common.api.ApiResponse;
 import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.framework.security.annotation.AdminPermission;
@@ -45,32 +45,37 @@ public class AccountRecoveryAdminController {
         return ApiResponse.ok(service.detail(id));
     }
 
-    /** ADM-R16 通过：换绑手机号并发临时密码短信。 */
+    /**
+     * ADM-R16 通过：换绑手机号并生成临时密码。平台没有通知类短信模板，临时密码只在本次响应里返回一次，
+     * 由管理员线下告知用户。
+     */
     @AdminPermission("WA-R04:HANDLE")
     @PostMapping("/{id:\\d+}/approve")
     public ApiResponse<AuditResultVO> approve(@PathVariable("id") Long id,
                                                @Valid @RequestBody RecoveryHandleRequest request) {
         AuditResultVO result = service.approve(id, request);
-        return new ApiResponse<>(0, "已通过" + result.getTargetName() + "的找回申请，临时密码已发到"
-                + result.getSmsPhone(), result);
+        return new ApiResponse<>(0, "已通过" + result.getTargetName() + "的找回申请，请把临时密码线下告知用户", result);
     }
 
-    /** ADM-R17 驳回并短信通知。 */
+    /** ADM-R17 驳回：原因写入账号的消息中心，不发短信。 */
     @AdminPermission("WA-R04:HANDLE")
     @PostMapping("/{id:\\d+}/reject")
     public ApiResponse<AuditResultVO> reject(@PathVariable("id") Long id,
                                               @Valid @RequestBody RecoveryHandleRequest request) {
         AuditResultVO result = service.reject(id, request);
-        return new ApiResponse<>(0, "已驳回，原因已以短信发到" + result.getSmsPhone(), result);
+        return new ApiResponse<>(0, "已驳回" + result.getTargetName() + "的找回申请，原因已发到账号的消息中心", result);
     }
 
-    /** ADM-R18 重发找回结果短信：只对已处理申请，APPROVED 时同时重新生成临时密码。 */
+    /**
+     * ADM-R18 重新生成临时密码：只对已通过申请；旧临时密码立即失效，新密码只在响应里返回一次。
+     * 旧路径 resend-sms 保留兼容。
+     */
     @AdminPermission("WA-R04:HANDLE")
-    @PostMapping("/{id:\\d+}/resend-sms")
-    public ApiResponse<SmsResendVO> resendSms(@PathVariable("id") Long id,
-                                               @Valid @RequestBody(required = false) SmsResendRequest request) {
-        SmsResendVO result = service.resendSms(id, request);
-        return new ApiResponse<>(0, "已重新发送" + result.getPhone() + "的找回结果短信", result);
+    @PostMapping({"/{id:\\d+}/temp-password", "/{id:\\d+}/resend-sms"})
+    public ApiResponse<RecoveryTempPasswordVO> regenerateTempPassword(
+            @PathVariable("id") Long id, @Valid @RequestBody(required = false) SmsResendRequest request) {
+        RecoveryTempPasswordVO result = service.regenerateTempPassword(id, request);
+        return new ApiResponse<>(0, "已重新生成临时密码，请线下告知用户", result);
     }
 
     /** ADM-R21 恢复码校验记录（次数、时间、结果、IP/设备）；无记录返回空数组。 */

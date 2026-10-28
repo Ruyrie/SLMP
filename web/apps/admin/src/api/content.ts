@@ -699,6 +699,8 @@ export interface KnowledgeRow {
   updated_at?: string
   updated_by_name?: string
   is_readonly?: boolean
+  /** 只读条目来源的兽药目录 ID（兽药目录同步时写入，可能为空） */
+  source_ref_id?: number | null
   version?: number
 }
 
@@ -1114,7 +1116,8 @@ export function initMultipartUpload(payload: {
     part_count: number
     original_name: string
     part_urls: Array<{ part_no: number; url: string }>
-    uploaded_parts: number[]
+    /** 续传时服务端已收到的分片（带 etag），这些分片不用再传 */
+    uploaded_parts: Array<{ part_no: number; etag: string }>
     url_expire_at?: string
   }>('/files/multipart', payload)
 }

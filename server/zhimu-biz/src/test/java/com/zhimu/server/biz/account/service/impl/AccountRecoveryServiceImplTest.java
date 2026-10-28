@@ -15,6 +15,8 @@ import com.zhimu.server.biz.account.support.RecoveryAttemptRecorder;
 import com.zhimu.server.biz.account.test.FixedTime;
 import com.zhimu.server.biz.account.test.TestStores;
 import com.zhimu.server.biz.account.vo.AccountRecoverySubmitVO;
+import com.zhimu.server.biz.today.api.MessageCommand;
+import com.zhimu.server.biz.today.api.MessageService;
 import com.zhimu.server.common.enums.ClientType;
 import com.zhimu.server.common.error.BizException;
 import com.zhimu.server.framework.oplog.OperationLogRecorder;
@@ -25,6 +27,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -58,6 +61,9 @@ class AccountRecoveryServiceImplTest {
     private final IpRegionResolver ipRegionResolver = mock(IpRegionResolver.class);
     private final ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
     private final AccountProperties properties = new AccountProperties();
+    @SuppressWarnings("unchecked")
+    private final ObjectProvider<MessageService> messageServiceProvider = mock(ObjectProvider.class);
+    private final MessageService messageService = mock(MessageService.class);
     private AccountRecoveryServiceImpl service;
 
     @BeforeEach
@@ -65,7 +71,8 @@ class AccountRecoveryServiceImplTest {
         FixedTime.set();
         service = new AccountRecoveryServiceImpl(userMapper, recoveryMapper, verifyLogMapper, passwordEncoder,
                 accountState, smsCodeService, attemptRecorder, loginAttempts, userTokenService, authStateCache,
-                operationLogRecorder, ipRegionResolver, eventPublisher, properties);
+                operationLogRecorder, ipRegionResolver, eventPublisher, properties, messageServiceProvider);
+        when(messageServiceProvider.getIfAvailable()).thenReturn(messageService);
     }
 
     @AfterEach
@@ -214,7 +221,7 @@ class AccountRecoveryServiceImplTest {
     }
 
     @Test
-    void 管理端通过_换绑手机号生成临时密码且短信状态为PENDING() {
+    void 管理端通过_换绑手机号并返回一次性临时密码_结果状态为线下告知() {
         AccountRecovery recovery = pending();
         when(recoveryMapper.selectById(3021L)).thenReturn(recovery);
         when(userMapper.selectByIdForUpdate(10001L)).thenReturn(user());
@@ -222,11 +229,15 @@ class AccountRecoveryServiceImplTest {
         when(passwordEncoder.encode(anyString())).thenReturn("temp-hash");
         when(recoveryMapper.updateById(any(AccountRecovery.class))).thenReturn(1);
 
-        service.approve(3021L, 9001L, "CALLBACK_NEW_PHONE", "已电话核实", 0);
+        com.zhimu.server.biz.account.api.AccountRecoveryAdminService.ApproveResult result =
+                service.approve(3021L, 9001L, "CALLBACK_NEW_PHONE", "已电话核实", 0);
 
+        assertThat(result.tempPassword()).isNotBlank();
+        assertThat(result.tempPasswordExpireAt()).isNotNull();
+        verify(passwordEncoder).encode(result.tempPassword());
         assertThat(recovery.getStatus()).isEqualTo("APPROVED");
         assertThat(recovery.getPendingFlag()).isNull();
-        assertThat(recovery.getResultSmsStatus()).isEqualTo("PENDING");
+        assertThat(recovery.getResultSmsStatus()).isEqualTo("MANUAL");
         assertThat(recovery.getHandledBy()).isEqualTo(9001L);
         verify(userMapper).update(eq(null), any());
         verify(accountState).invalidateTokens(any(User.class),
@@ -238,6 +249,43 @@ class AccountRecoveryServiceImplTest {
         verify(operationLogRecorder).record(captor.capture());
         assertThat(captor.getValue().getOpAction()).isEqualTo("APPROVE");
         assertThat(captor.getValue().getBizType()).isEqualTo("ACCOUNT_RECOVERY");
+        assertThat(String.valueOf(captor.getValue().getAfter())).doesNotContain(result.tempPassword());
+        ArgumentCaptor<MessageCommand> message = ArgumentCaptor.forClass(MessageCommand.class);
+        verify(messageService).send(message.capture());
+        assertThat(message.getValue().getMsgType()).isEqualTo(com.zhimu.server.common.enums.MsgType.RECOVERY_RESULT);
+        assertThat(message.getValue().getReceiverUserIds()).containsExactly(10001L);
+        assertThat(message.getValue().getContent()).doesNotContain(result.tempPassword());
+    }
+
+    @Test
+    void 管理端重新生成临时密码_只允许已通过_返回新密码() {
+        AccountRecovery recovery = pending();
+        recovery.setStatus("REJECTED");
+        when(recoveryMapper.selectById(3021L)).thenReturn(recovery);
+        BizException rejected = (BizException) catchException(() ->
+                service.regenerateTempPassword(3021L, 9001L, null));
+        assertThat(rejected.getMessage()).isEqualTo("已驳回的申请没有临时密码，不需要重新生成");
+
+        recovery.setStatus("APPROVED");
+        User user = user();
+        user.setPhone("15147602288");
+        when(userMapper.selectByIdForUpdate(10001L)).thenReturn(user);
+        when(passwordEncoder.encode(anyString())).thenReturn("temp-hash");
+        when(recoveryMapper.update(eq(null), any())).thenReturn(1);
+
+        com.zhimu.server.biz.account.api.AccountRecoveryAdminService.TempPasswordResult result =
+                service.regenerateTempPassword(3021L, 9001L, " ");
+
+        assertThat(result.tempPassword()).isNotBlank();
+        assertThat(result.phone()).isEqualTo("151****2288");
+        assertThat(recovery.getResultSmsStatus()).isEqualTo("MANUAL");
+        verify(accountState).invalidateTokens(any(User.class),
+                eq(com.zhimu.server.biz.account.enums.TokenRevokeReason.ACCOUNT_RECOVERED));
+        ArgumentCaptor<com.zhimu.server.framework.oplog.OperationLogEntry> captor =
+                ArgumentCaptor.forClass(com.zhimu.server.framework.oplog.OperationLogEntry.class);
+        verify(operationLogRecorder).record(captor.capture());
+        assertThat(captor.getValue().getOpAction()).isEqualTo("REGENERATE_PASSWORD");
+        assertThat(String.valueOf(captor.getValue().getAfter())).doesNotContain(result.tempPassword());
     }
 
     @Test
@@ -274,7 +322,7 @@ class AccountRecoveryServiceImplTest {
     }
 
     @Test
-    void 管理端驳回_缺少原因40001_成功后保留原因与PENDING短信状态() {
+    void 管理端驳回_缺少原因40001_成功后保留原因并发站内消息_不发短信() {
         AccountRecovery recovery = pending();
         when(recoveryMapper.selectById(3021L)).thenReturn(recovery);
         BizException missing = (BizException) catchException(() ->
@@ -287,8 +335,11 @@ class AccountRecoveryServiceImplTest {
         assertThat(recovery.getStatus()).isEqualTo("REJECTED");
         assertThat(recovery.getPendingFlag()).isNull();
         assertThat(recovery.getHandleNote()).isEqualTo("信息不完整");
-        assertThat(recovery.getResultSmsStatus()).isEqualTo("PENDING");
+        assertThat(recovery.getResultSmsStatus()).isEqualTo("NOT_SENT");
         verify(operationLogRecorder).record(any());
+        ArgumentCaptor<MessageCommand> message = ArgumentCaptor.forClass(MessageCommand.class);
+        verify(messageService).send(message.capture());
+        assertThat(message.getValue().getContent()).contains("信息不完整");
     }
 
     @Test

@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 仅 dev 联调返回的临时密码（ADM-S22、S24）。生产环境控制器不输出该字段，
- * 密码只通过短信下发（本批不发送）；不写日志。
+ * 一次性临时密码（ADM-S24）。平台没有通知类短信模板，任何环境都只在本次响应里返回给操作人，
+ * 页面只显示一次，由操作人线下告知；不写日志。
  */
 @Data
 @Builder
@@ -15,4 +15,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TempPasswordVO {
     private String tempPassword;
+    private java.time.LocalDateTime tempPasswordExpireAt;
 }

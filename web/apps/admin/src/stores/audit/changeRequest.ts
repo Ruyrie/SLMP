@@ -94,6 +94,10 @@ export const useChangeRequestStore = defineStore('changeRequest', {
       this.total = 0
       void this.fetchList()
     },
+    search(): void {
+      this.page = 1
+      void this.fetchList()
+    },
     resetFilters(): void {
       this.query = { keyword: '', source_module: '', impact: '' }
       this.page = 1

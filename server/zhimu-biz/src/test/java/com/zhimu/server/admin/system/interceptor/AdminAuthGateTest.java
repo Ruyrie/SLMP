@@ -8,7 +8,6 @@ import com.zhimu.server.admin.system.service.AdminAccountService;
 import com.zhimu.server.admin.system.service.AdminAuthService;
 import com.zhimu.server.admin.system.service.AdminRoleService;
 import com.zhimu.server.admin.system.service.CaptchaService;
-import com.zhimu.server.admin.system.support.AdminDevSupport;
 import com.zhimu.server.admin.system.vo.AdminLoginVO;
 import com.zhimu.server.admin.system.vo.AdminMeVO;
 import com.zhimu.server.admin.system.vo.AdminProfileVO;
@@ -46,7 +45,6 @@ class AdminAuthGateTest {
     private final AdminSessionService sessionService = mock(AdminSessionService.class);
     private final AdminAccountService accountService = mock(AdminAccountService.class);
     private final AdminRoleService roleService = mock(AdminRoleService.class);
-    private final AdminDevSupport devSupport = mock(AdminDevSupport.class);
     private final AdminMessageService messageService = mock(AdminMessageService.class);
     private final AdminAuthService authService = mock(AdminAuthService.class);
     private final CaptchaService captchaService = mock(CaptchaService.class);
@@ -64,7 +62,7 @@ class AdminAuthGateTest {
         when(loaderProvider.getIfAvailable()).thenAnswer(invocation -> loader);
         AdminAuthInterceptor interceptor = new AdminAuthInterceptor(sessionService, loaderProvider);
         mvc = TestMvc.builder(
-                        new AdminRbacController(accountService, roleService, devSupport),
+                        new AdminRbacController(accountService, roleService),
                         new AdminMessageController(messageService),
                         new AdminAuthController(authService, captchaService, sessionService))
                 .addMappedInterceptors(new String[]{"/admin/v1/**"}, interceptor)

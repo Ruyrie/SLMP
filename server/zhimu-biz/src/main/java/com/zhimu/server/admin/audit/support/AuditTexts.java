@@ -106,6 +106,17 @@ public final class AuditTexts {
         if (status == null) {
             return null;
         }
+        // 平台只有验证码短信模板：找回结果不发短信，按实际处理方式显示
+        switch (status) {
+            case "MANUAL":
+                return "未发短信，临时密码由管理员线下告知";
+            case "NOT_SENT":
+                return "未发短信，结果已发到账号消息中心";
+            case "PENDING":
+                return "未发送（平台未开通通知短信）";
+            default:
+                break;
+        }
         try {
             return SmsSendStatus.valueOf(status).getText();
         } catch (IllegalArgumentException e) {

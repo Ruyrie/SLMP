@@ -11,6 +11,8 @@ public enum AdminOpAction implements CodeEnum {
     REJECT("驳回"),
     PROXY_SUBMIT("代为登记"),
     RESEND_SMS("重发短信"),
+    RESEND_NOTICE("重发通知"),
+    REGENERATE_PASSWORD("重新生成临时密码"),
     VIEW_PHONE("查看完整号码"),
     FREEZE("冻结"),
     UNFREEZE("解冻"),

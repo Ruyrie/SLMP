@@ -29,4 +29,6 @@ public class KnowledgeRowVO {
     private LocalDateTime updatedAt;
     private String updatedByName;
     private Boolean isReadonly;
+    /** 只读条目来源的兽药目录 ID（source_type = DRUG_CATALOG 时可能有值），管理端“查看”跳兽药疫苗目录用 */
+    private Long sourceRefId;
 }

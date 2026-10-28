@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-/** ADM-D49–D54 字典维护：本批 8 类，EXPENSE/INCOME 财务分类待模块10。 */
+/** ADM-D49–D54 字典维护：t_dict_item 8 类 + 收入 / 支出分类（t_finance_category，见 FinanceCategoryDictSupport）。 */
 @Service
 @RequiredArgsConstructor
 public class DictAdminServiceImpl implements DictAdminService {
@@ -56,6 +56,7 @@ public class DictAdminServiceImpl implements DictAdminService {
     private final BaseDataReadSupport support;
     private final BaseLogs logs;
     private final ApplicationEventPublisher eventPublisher;
+    private final FinanceCategoryDictSupport finance;
 
     @Override
     public List<DictTypeVO> types() {
@@ -74,13 +75,27 @@ public class DictAdminServiceImpl implements DictAdminService {
             vo.setPlatformOnly(false);
             result.add(vo);
         }
-        // EXPENSE_CATEGORY / INCOME_CATEGORY（财务一级分类）归模块10 的 t_finance_category，本批不返回。
+        // 收入 / 支出一级分类（t_finance_category）：平台统一维护，养殖户只能在支出分类下加子类
+        Map<String, Integer> financeCounts = finance.counts();
+        for (String type : DictTypes.FINANCE) {
+            DictTypeVO vo = new DictTypeVO();
+            vo.setDictType(type);
+            vo.setName(DictTypes.displayName(type));
+            vo.setIcon(DictTypes.icon(type));
+            vo.setItemCount(financeCounts.getOrDefault(type, 0));
+            vo.setScopeMode("NONE");
+            vo.setPlatformOnly(true);
+            result.add(vo);
+        }
         return result;
     }
 
     @Override
     public List<DictItemVO> items(String dictType, DictItemQuery query) {
         String type = requireType(dictType);
+        if (DictTypes.isFinance(type)) {
+            return finance.items(type);
+        }
         String species = query == null ? null : normalizeSpecies(query.getSpecies());
         Long categoryId = query == null ? null : query.getCategoryId();
         Category category = categoryId == null ? null : categoryMapper.selectById(categoryId);
@@ -112,6 +127,9 @@ public class DictAdminServiceImpl implements DictAdminService {
     public DictItemVO create(String dictType, DictItemSaveRequest request) {
         Long adminId = AdminContext.requireAdminId();
         String type = requireType(dictType);
+        if (DictTypes.isFinance(type)) {
+            return finance.create(type, request);
+        }
         String name = validateName(type, request.getName());
         List<ScopeValue> scopes = validateScopes(type, request.getScopes());
         requireNameUnique(type, name, scopes, null);
@@ -145,6 +163,9 @@ public class DictAdminServiceImpl implements DictAdminService {
     public DictItemVO update(String dictType, Long id, DictItemSaveRequest request) {
         Long adminId = AdminContext.requireAdminId();
         String type = requireType(dictType);
+        if (DictTypes.isFinance(type)) {
+            return finance.update(type, id, request);
+        }
         DictItem item = requireItem(type, id);
         if (request.getVersion() == null) {
             throw BaseErrors.field("version", "缺少版本号");
@@ -186,6 +207,10 @@ public class DictAdminServiceImpl implements DictAdminService {
     public void order(String dictType, ItemOrderRequest request) {
         AdminContext.requireAdminId();
         String type = requireType(dictType);
+        if (DictTypes.isFinance(type)) {
+            finance.order(type, request);
+            return;
+        }
         List<DictItem> items = dictItemMapper.selectList(Wrappers.<DictItem>lambdaQuery()
                 .eq(DictItem::getDictType, type)
                 .in(DictItem::getId, request.getItemIds()));
@@ -225,6 +250,9 @@ public class DictAdminServiceImpl implements DictAdminService {
     public DictItemVO changeStatus(String dictType, Long id, DictStatusRequest request) {
         Long adminId = AdminContext.requireAdminId();
         String type = requireType(dictType);
+        if (DictTypes.isFinance(type)) {
+            return finance.changeStatus(type, id, request);
+        }
         DictItem item = requireItem(type, id);
         if (request.getVersion() == null) {
             throw BaseErrors.field("version", "缺少版本号");
@@ -298,7 +326,7 @@ public class DictAdminServiceImpl implements DictAdminService {
 
     private String requireType(String dictType) {
         String type = DictTypes.normalize(dictType);
-        if (!DictTypes.isKnown(type)) {
+        if (!DictTypes.isKnown(type) && !DictTypes.isFinance(type)) {
             throw BaseErrors.notFound();
         }
         return type;

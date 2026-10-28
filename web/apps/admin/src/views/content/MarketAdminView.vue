@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { routeQueryId } from '@/utils/routeQuery'
 import { ApiError, formatDate, formatDateTime, formatNumber, formatPercent, today } from '@zmt/shared'
 import {
   batchPublishMarketPrices,
@@ -31,6 +33,7 @@ import { useUiStore } from '@/stores/ui'
 
 const ui = useUiStore()
 const admin = useAdminStore()
+const route = useRoute()
 const canHandle = computed(() => admin.hasPerm('WA-C02:HANDLE'))
 const isSuper = computed(() => admin.isSuper)
 
@@ -342,11 +345,15 @@ const detail = ref<MarketPriceDetail | null>(null)
 
 async function openDetail(row: MarketPriceRow): Promise<void> {
   if (!row.price_id) return
+  await openDetailById(row.price_id)
+}
+
+async function openDetailById(id: number): Promise<void> {
   detailOpen.value = true
   detailLoading.value = true
   detail.value = null
   try {
-    detail.value = await getMarketPriceDetail(row.price_id)
+    detail.value = await getMarketPriceDetail(id)
   } catch (e) {
     detailOpen.value = false
     ui.toast(e instanceof Error ? e.message : '详情加载失败', 'error')
@@ -637,6 +644,8 @@ onMounted(async () => {
   loading.value = true
   await Promise.all([loadBase(), fetchProgress(), fetchList()])
   loading.value = false
+  const id = routeQueryId(route)
+  if (id) void openDetailById(id)
 })
 </script>
 

@@ -10,6 +10,7 @@ import com.zhimu.server.admin.base.entity.FeedStdVersion;
 import com.zhimu.server.admin.base.entity.StdWeightPoint;
 import com.zhimu.server.admin.base.entity.StdWeightVersion;
 import com.zhimu.server.admin.base.event.StdWeightEffectiveEvent;
+import com.zhimu.server.admin.base.mapper.BaseAdminReadMapper;
 import com.zhimu.server.admin.base.mapper.BreedMapper;
 import com.zhimu.server.admin.base.mapper.CategoryMapper;
 import com.zhimu.server.admin.base.mapper.DictItemMapper;
@@ -72,6 +73,7 @@ public class StdAdminServiceImpl implements StdAdminService {
     private final DictItemMapper dictItemMapper;
     private final BaseLogs logs;
     private final ApplicationEventPublisher eventPublisher;
+    private final BaseAdminReadMapper readMapper;
 
     // ==================== 查询 ====================
 
@@ -116,6 +118,7 @@ public class StdAdminServiceImpl implements StdAdminService {
                 onlineBySort.put(stage.getSortNo(), stage);
             }
             vo.setOnline(AdminBaseConvert.feedStdVersion(online, stages, null, false));
+            vo.getOnline().setAppliedPlanCount(readMapper.countAppliedFeedPlansByVersion(online.getId()));
         }
         FeedStdVersion draft = draftFeed(breedId);
         if (draft != null) {
@@ -152,16 +155,80 @@ public class StdAdminServiceImpl implements StdAdminService {
     public StdImpactVO impact(Long breedId, String stdType) {
         requireBreed(breedId);
         String type = stdType(stdType);
-        boolean hasDraft = "weight".equals(type) ? draft(breedId) != null : draftFeed(breedId) != null;
-        if (!hasDraft) {
-            throw BaseErrors.stateChanged(BaseErrors.MSG_NO_DRAFT);
+        Integer firstChangedDayAge;
+        if ("weight".equals(type)) {
+            StdWeightVersion draft = draft(breedId);
+            if (draft == null) {
+                throw BaseErrors.stateChanged(BaseErrors.MSG_NO_DRAFT);
+            }
+            StdWeightVersion online = latest(breedId, "PUBLISHED");
+            firstChangedDayAge = firstChangedWeightDayAge(points(draft.getId()),
+                    online == null ? null : points(online.getId()));
+        } else {
+            FeedStdVersion draft = draftFeed(breedId);
+            if (draft == null) {
+                throw BaseErrors.stateChanged(BaseErrors.MSG_NO_DRAFT);
+            }
+            FeedStdVersion online = latestFeed(breedId, "PUBLISHED");
+            firstChangedDayAge = firstChangedStageDayAge(stages(draft.getId()),
+                    online == null ? null : stages(online.getId()));
         }
         StdImpactVO vo = new StdImpactVO();
-        vo.setActiveBatchCount(0);
-        vo.setFarmCount(0);
-        vo.setAffectedBatchCount(0);
-        vo.setAppliedPlanCount(0);
+        vo.setActiveBatchCount(readMapper.countActiveBatchesByBreed(breedId));
+        vo.setFarmCount(readMapper.countActiveBatchFarmsByBreed(breedId));
+        vo.setAffectedBatchCount(firstChangedDayAge == null ? 0
+                : readMapper.countActiveBatchesReachedDayAge(breedId, firstChangedDayAge, BeijingTime.today()));
+        vo.setAppliedPlanCount("feed".equals(type) ? readMapper.countAppliedFeedPlansByBreed(breedId) : 0);
         return vo;
+    }
+
+    /** 草稿与生效版本相比最早改动的日龄点（新增、删除、体重变化）；没有生效版本时取草稿第一个点。 */
+    static Integer firstChangedWeightDayAge(List<StdWeightPoint> draft, List<StdWeightPoint> online) {
+        Map<Integer, BigDecimal> onlineWeights = new LinkedHashMap<>();
+        for (StdWeightPoint point : online == null ? List.<StdWeightPoint>of() : online) {
+            onlineWeights.put(point.getDayAge(), point.getStdWeight());
+        }
+        Integer first = null;
+        Set<Integer> draftDays = new HashSet<>();
+        for (StdWeightPoint point : draft == null ? List.<StdWeightPoint>of() : draft) {
+            draftDays.add(point.getDayAge());
+            BigDecimal before = onlineWeights.get(point.getDayAge());
+            boolean changed = before == null || point.getStdWeight() == null
+                    || before.compareTo(point.getStdWeight()) != 0;
+            if (changed && point.getDayAge() != null && (first == null || point.getDayAge() < first)) {
+                first = point.getDayAge();
+            }
+        }
+        for (Integer day : onlineWeights.keySet()) {
+            if (day != null && !draftDays.contains(day) && (first == null || day < first)) {
+                first = day;
+            }
+        }
+        return first;
+    }
+
+    /** 草稿与生效版本相比最早改动阶段的起始日龄（按阶段顺序比较）；没有生效版本时取草稿第一段。 */
+    static Integer firstChangedStageDayAge(List<FeedStdStage> draft, List<FeedStdStage> online) {
+        Map<Integer, FeedStdStage> onlineBySort = new LinkedHashMap<>();
+        for (FeedStdStage stage : online == null ? List.<FeedStdStage>of() : online) {
+            onlineBySort.put(stage.getSortNo(), stage);
+        }
+        Integer first = null;
+        Set<Integer> draftSorts = new HashSet<>();
+        for (FeedStdStage stage : draft == null ? List.<FeedStdStage>of() : draft) {
+            draftSorts.add(stage.getSortNo());
+            if (!StdCalculator.sameStage(stage, onlineBySort.get(stage.getSortNo()))
+                    && stage.getDayAgeStart() != null && (first == null || stage.getDayAgeStart() < first)) {
+                first = stage.getDayAgeStart();
+            }
+        }
+        for (FeedStdStage stage : onlineBySort.values()) {
+            if (!draftSorts.contains(stage.getSortNo()) && stage.getDayAgeStart() != null
+                    && (first == null || stage.getDayAgeStart() < first)) {
+                first = stage.getDayAgeStart();
+            }
+        }
+        return first;
     }
 
     // ==================== 草稿 ====================

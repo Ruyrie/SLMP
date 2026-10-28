@@ -4,6 +4,7 @@ import com.zhimu.server.admin.base.api.BreedQueryService;
 import com.zhimu.server.admin.base.convert.AdminBaseConvert;
 import com.zhimu.server.admin.base.entity.Breed;
 import com.zhimu.server.admin.base.entity.Category;
+import com.zhimu.server.admin.base.mapper.BaseAdminReadMapper;
 import com.zhimu.server.admin.base.mapper.BreedMapper;
 import com.zhimu.server.admin.base.mapper.CategoryMapper;
 import com.zhimu.server.admin.base.support.BaseDataReadSupport;
@@ -24,6 +25,7 @@ public class BreedQueryServiceImpl implements BreedQueryService {
     private final BreedMapper breedMapper;
     private final CategoryMapper categoryMapper;
     private final BaseDataReadSupport support;
+    private final BaseAdminReadMapper readMapper;
 
     @Override
     public BreedDetailVO detail(Long breedId) {
@@ -37,6 +39,9 @@ public class BreedQueryServiceImpl implements BreedQueryService {
                 : breedMapper.selectById(breed.getOffspringBreedId());
         BreedDetailVO vo = AdminBaseConvert.breedDetail(breed, category, categoryVO, offspring);
         vo.setTabs(tabs(breed, category));
+        vo.setActiveBatchCount(readMapper.countActiveBatchesByBreed(breed.getId()));
+        vo.setFarmCount(readMapper.countActiveBatchFarmsByBreed(breed.getId()));
+        vo.setBreedingAnimalCount(readMapper.countBreedingAnimalsByBreed(breed.getId()));
         return vo;
     }
 

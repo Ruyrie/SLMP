@@ -94,6 +94,10 @@ export const useFarmAuditStore = defineStore('farmAudit', {
       this.total = 0
       void this.fetchList()
     },
+    search(): void {
+      this.page = 1
+      void this.fetchList()
+    },
     resetFilters(): void {
       this.query = { keyword: '', submit_type: '', province_code: '', category_id: null }
       this.page = 1

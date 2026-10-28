@@ -170,8 +170,9 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                         "role", "角色", role.getRoleName()))
                 .build());
 
-        // 初始密码只生成；短信在后续批次发送（本批不发送、不打印、不写日志）
-        return new AdminCreateResult(admin.getId(), name, Masks.phone(phone), tempPassword);
+        // 平台没有通知类短信模板：初始密码只返回给操作人一次，由其线下告知；不打印、不写日志
+        return new AdminCreateResult(admin.getId(), name, Masks.phone(phone), tempPassword,
+                admin.getTempPasswordExpireAt());
     }
 
     @Override
@@ -256,7 +257,8 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 .extraText("重置密码并解锁，临时密码 24 小时有效")
                 .build());
         AfterCommit.run(() -> adminSessionService.invalidateAll(adminId));
-        return new AdminResetResult(target.getName(), Masks.phone(target.getPhone()), tempPassword);
+        return new AdminResetResult(target.getName(), Masks.phone(target.getPhone()), tempPassword,
+                target.getTempPasswordExpireAt());
     }
 
     @Override

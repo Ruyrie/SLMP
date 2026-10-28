@@ -48,13 +48,15 @@ class DictAdminServiceImplTest {
     @Mock private BaseDataReadSupport support;
     @Mock private BaseLogs logs;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private FinanceCategoryDictSupport finance;
 
     private DictAdminServiceImpl service;
 
     @BeforeEach
     void setUp() {
         AdminBaseTableInfo.ensure();
-        service = new DictAdminServiceImpl(dictItemMapper, scopeMapper, categoryMapper, support, logs, eventPublisher);
+        service = new DictAdminServiceImpl(dictItemMapper, scopeMapper, categoryMapper, support, logs, eventPublisher,
+                finance);
         AdminContext.set(new AdminContext.LoginAdmin(1L, "周敏", Set.of("SUPER_ADMIN"), Set.of(), 0, "t"));
         lenient().when(dictItemMapper.update(any(), any())).thenReturn(1);
         lenient().when(dictItemMapper.insert(any(DictItem.class))).thenAnswer(invocation -> {
@@ -79,11 +81,16 @@ class DictAdminServiceImplTest {
                 item(501L, "PEN_TYPE", "NURSERY", "保育舍", "ENABLED", false, false),
                 item(502L, "PEN_TYPE", "FATTENING", "育肥舍", "ENABLED", false, false),
                 item(401L, "SYMPTOM", "DIARRHEA", "腹泻", "ENABLED", false, false)));
+        when(finance.counts()).thenReturn(Map.of("EXPENSE_CATEGORY", 7, "INCOME_CATEGORY", 5));
         var types = service.types();
-        assertThat(types).hasSize(8);
+        assertThat(types).hasSize(10);
         assertThat(types.get(0).getDictType()).isEqualTo("PEN_TYPE");
         assertThat(types.get(0).getItemCount()).isEqualTo(2);
         assertThat(types).extracting("dictType").contains("PAYMENT_METHOD");
+        assertThat(types.get(8).getDictType()).isEqualTo("EXPENSE_CATEGORY");
+        assertThat(types.get(8).getItemCount()).isEqualTo(7);
+        assertThat(types.get(8).getPlatformOnly()).isTrue();
+        assertThat(types.get(9).getDictType()).isEqualTo("INCOME_CATEGORY");
     }
 
     @Test

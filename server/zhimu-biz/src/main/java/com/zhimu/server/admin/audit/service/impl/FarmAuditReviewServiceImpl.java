@@ -19,7 +19,7 @@ import com.zhimu.server.admin.audit.vo.FarmAuditDetailVO;
 import com.zhimu.server.admin.audit.vo.FarmAuditItemVO;
 import com.zhimu.server.admin.audit.vo.FarmAuditPageVO;
 import com.zhimu.server.admin.audit.vo.ReviewVO;
-import com.zhimu.server.admin.audit.vo.SmsResendVO;
+import com.zhimu.server.admin.audit.vo.NoticeResendVO;
 import com.zhimu.server.admin.base.api.BaseDataQueryService;
 import com.zhimu.server.admin.base.api.CategoryInfo;
 import com.zhimu.server.admin.system.api.AdminLogCommand;
@@ -211,53 +211,66 @@ public class FarmAuditReviewServiceImpl implements FarmAuditReviewService {
     }
 
     @Override
-    public SmsResendVO resendSms(Long auditId, SmsResendRequest request) {
+    public NoticeResendVO resendNotice(Long auditId, SmsResendRequest request) {
         FarmAudit audit = auditId == null ? null : queryMapper.selectFarmAudit(auditId);
         if (audit == null) {
             throw new BizException(ErrorCode.NOT_FOUND, MSG_NOT_FOUND);
         }
         boolean approved = "APPROVED".equals(audit.getStatus());
         if (!approved && !"REJECTED".equals(audit.getStatus())) {
-            throw new BizException(ErrorCode.STATE_CHANGED, "这条申请还未处理，不能重发短信");
+            throw new BizException(ErrorCode.STATE_CHANGED, "这条申请还未处理，不能重发审核结果通知");
         }
         Farm farm = queryMapper.selectFarmIncludingDeleted(audit.getFarmId());
         if (farm == null || Boolean.TRUE.equals(farm.getDeleted())) {
             throw new BizException(ErrorCode.RECORD_DELETED, MSG_DELETED);
         }
         User owner = queryMapper.selectUser(farm.getOwnerUserId());
-        if (owner == null || owner.getPhone() == null || owner.getPhone().isBlank()) {
-            throw new BizException(ErrorCode.NOT_FOUND, "找不到所有者手机号");
+        if (owner == null) {
+            throw new BizException(ErrorCode.NOT_FOUND, "找不到这个养殖场的所有者");
         }
         String reason = request == null ? null : trimToNull(request.getReason());
         if (reason != null && reason.length() > 200) {
             throw new BizException(ErrorCode.PARAM_INVALID, "原因不能超过 200 字");
         }
-        String logReason = reason == null ? "重新发送审核结果短信" : reason;
-        farmNotify.auditResult(farm, audit.getId(), approved,
-                approved ? audit.getAuditOpinion() : audit.getRejectReason());
+        String logReason = reason == null ? "重新发送审核结果通知" : reason;
+        String ownerName = owner.getName() == null || owner.getName().isBlank() ? "所有者" : owner.getName();
+        boolean sent;
+        try {
+            // 不在事务内调用：AfterCommit 立即执行，消息服务异常在这里如实反馈
+            farmNotify.auditResult(farm, audit.getId(), approved,
+                    approved ? audit.getAuditOpinion() : audit.getRejectReason());
+            sent = true;
+        } catch (RuntimeException e) {
+            log.warn("重发注册审核结果通知失败 auditId={}", audit.getId(), e);
+            sent = false;
+        }
+        LocalDateTime now = BeijingTime.now();
+        String note = sent
+                ? "已把审核结果重新发到" + ownerName + "的消息中心（站内消息，不发短信）"
+                : "审核结果通知发送失败，请稍后重试";
         operationLogService.writeAdminLog(AdminLogCommand.builder()
                 .opType("FARM_AUDIT")
-                .opAction("RESEND_SMS")
+                .opAction("RESEND_NOTICE")
                 .bizType("FARM_AUDIT")
                 .bizId(audit.getId())
                 .farmId(farm.getId())
                 .targetName(farm.getName() + " · 所有者 " + Masks.phone(owner.getPhone()))
                 .searchText(farm.getName())
                 .reason(logReason)
-                .extraText("审核结果通知已重新发送")
-                .notifyText("已发到" + owner.getName() + "的消息中心")
+                .extraText(sent ? "审核结果通知已重新发到消息中心" : "审核结果通知发送失败")
+                .notifyText(sent ? "已发到" + ownerName + "的消息中心" : null)
                 .before(Map.of("audit_status", audit.getStatus()))
-                .after(Map.of("resend", "MESSAGE_CENTER"))
-                .result("SUCCESS")
+                .after(Map.of("resend", "MESSAGE_CENTER", "notify_status", sent ? "SENT" : "FAILED"))
+                .result(sent ? "SUCCESS" : "FAIL")
                 .build());
-        return SmsResendVO.builder()
+        return NoticeResendVO.builder()
                 .id(audit.getId())
                 .phone(Masks.phone(owner.getPhone()))
-                .smsStatus("QUEUED")
-                .smsStatusText("待发送")
-                .retryCount(0)
-                .queuedAt(BeijingTime.now())
-                .note("审核结果通知已重新发送到消息中心；当前项目未配置审核结果短信模板，短信通道接入后同一操作会发送短信")
+                .receiverName(ownerName)
+                .notifyStatus(sent ? "SENT" : "FAILED")
+                .notifyStatusText(sent ? "已发到消息中心" : "发送失败")
+                .sentAt(sent ? now : null)
+                .note(note)
                 .build();
     }
 

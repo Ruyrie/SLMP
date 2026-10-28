@@ -31,6 +31,47 @@ public interface BaseAdminReadMapper {
             + "WHERE a.breed_id = #{breedId} AND a.status NOT IN ('CULLED', 'DEAD')")
     int countBreedingFarmsByBreed(@Param("breedId") Long breedId);
 
+    /** 品种的在养批次数（ADM-D04 / D10） */
+    @Select("SELECT COUNT(*) FROM t_batch WHERE breed_id = #{breedId} AND deleted = 0 AND status = 'ACTIVE'")
+    int countActiveBatchesByBreed(@Param("breedId") Long breedId);
+
+    /** 品种的在养批次分布养殖场数（ADM-D04 / D10） */
+    @Select("SELECT COUNT(DISTINCT farm_id) FROM t_batch WHERE breed_id = #{breedId} AND deleted = 0 "
+            + "AND status = 'ACTIVE'")
+    int countActiveBatchFarmsByBreed(@Param("breedId") Long breedId);
+
+    /** 品种的在档种畜数（未淘汰、未死亡，ADM-D04） */
+    @Select("SELECT COUNT(*) FROM t_breeding_animal WHERE breed_id = #{breedId} "
+            + "AND status NOT IN ('CULLED', 'DEAD')")
+    int countBreedingAnimalsByBreed(@Param("breedId") Long breedId);
+
+    /** 当前日龄已到某日龄的在养批次数（ADM-D10：改动日龄段之后的批次） */
+    @Select("SELECT COUNT(*) FROM t_batch WHERE breed_id = #{breedId} AND deleted = 0 AND status = 'ACTIVE' "
+            + "AND entry_age_days + DATEDIFF(#{today}, entry_date) >= #{dayAge}")
+    int countActiveBatchesReachedDayAge(@Param("breedId") Long breedId, @Param("dayAge") int dayAge,
+                                        @Param("today") java.time.LocalDate today);
+
+    /** 在养批次中套用过该品种饲喂标准的方案数（ADM-D10 饲喂标准“可重新套用”） */
+    @Select("SELECT COUNT(*) FROM t_feed_plan p JOIN t_batch b ON b.id = p.batch_id "
+            + "WHERE p.breed_id = #{breedId} AND p.std_version_id IS NOT NULL "
+            + "AND b.deleted = 0 AND b.status = 'ACTIVE'")
+    int countAppliedFeedPlansByBreed(@Param("breedId") Long breedId);
+
+    /** 在养批次中套用某个饲喂标准版本的方案数（饲喂标准生效版本） */
+    @Select("SELECT COUNT(*) FROM t_feed_plan p JOIN t_batch b ON b.id = p.batch_id "
+            + "WHERE p.std_version_id = #{versionId} AND b.deleted = 0 AND b.status = 'ACTIVE'")
+    int countAppliedFeedPlansByVersion(@Param("versionId") Long versionId);
+
+    /** 各收支一级分类的有效流水笔数（WA-D05 收支分类“使用”列） */
+    @Select("SELECT category_id AS id, COUNT(*) AS cnt FROM t_finance_record WHERE status = 'NORMAL' "
+            + "GROUP BY category_id")
+    List<com.zhimu.server.admin.base.query.IdCountRow> financeRecordCounts();
+
+    /** 各支出分类下未删除的子类数（全部养殖场合计） */
+    @Select("SELECT category_id AS id, COUNT(*) AS cnt FROM t_expense_subcategory WHERE deleted = 0 "
+            + "GROUP BY category_id")
+    List<com.zhimu.server.admin.base.query.IdCountRow> expenseSubcategoryCounts();
+
     /** 使用该品类巡检模板的启用栏舍数（ADM-D40） */
     @Select("SELECT COUNT(*) FROM t_pen WHERE category_id = #{categoryId} AND status = 'ENABLED'")
     int countEnabledPensByCategory(@Param("categoryId") Long categoryId);

@@ -9,7 +9,7 @@ import { useUiStore } from '@/stores/ui'
 import {
   getRecoveryVerificationRecords,
   proxyRecovery,
-  resendRecoverySms,
+  regenerateRecoveryPassword,
   type RecoveryItem,
   type RecoveryVerificationRecord
 } from '@/api/audit'
@@ -40,7 +40,7 @@ const flow = [
   { title: '用户提交申请', desc: 'App、网页或客服代登记', status: 'done' },
   { title: '系统核对恢复码', desc: '连续填错 5 次锁定 24 小时', status: 'done' },
   { title: '人工核实身份', desc: '建议回拨新手机号', status: 'current' },
-  { title: '重置密码并换绑', desc: '临时密码短信发到新手机号', status: 'wait' }
+  { title: '重置密码并换绑', desc: '页面显示临时密码，线下告知用户', status: 'wait' }
 ]
 
 const ruleCards = [
@@ -49,7 +49,7 @@ const ruleCards = [
     icon: 'check',
     title: '通过',
     items: [
-      '重置密码，临时密码以短信发到新手机号',
+      '重置密码，临时密码只在页面显示一次，请线下告知用户（不发短信）',
       '登录手机号换绑为新手机号，旧恢复码作废',
       '其他设备上的登录立即失效',
       '首次登录先改密码、再保存新的恢复码；7 天内不能注销'
@@ -59,7 +59,7 @@ const ruleCards = [
     tone: 'error',
     icon: 'block',
     title: '驳回',
-    items: ['账号和原手机号保持不变', '驳回原因以短信发到新手机号，并记入账号的消息中心', '用户可以补充情况说明后重新申请']
+    items: ['账号和原手机号保持不变', '驳回原因发到账号的消息中心（不发短信），必要时请电话告知', '用户可以补充情况说明后重新申请']
   },
   {
     tone: 'neutral',
@@ -86,7 +86,7 @@ const afterItems = computed(() => {
   const newPhone = detail.value?.after_actions?.new_phone || detail.value?.new_phone || '新手机号'
   const cancelDate = detail.value?.after_actions?.cancel_forbidden_until
   return [
-    `重置密码，临时密码以短信发到新手机号 ${newPhone}`,
+    `重置密码，临时密码在页面上显示一次，请线下告知新手机号 ${newPhone} 的机主`,
     `把登录手机号换绑为新手机号，旧恢复码作废`,
     `其他设备上的登录立即失效`,
     `首次登录先修改密码、再保存新的恢复码${cancelDate ? `；${fmtShortDate(cancelDate)}前不能注销` : ''}`
@@ -97,10 +97,6 @@ function verifyTone(result?: string): string {
   if (result === 'CODE_CORRECT') return 'success'
   if (result === 'LOCKED') return 'error'
   return 'warning'
-}
-
-function isHandled(status?: string): boolean {
-  return status === 'APPROVED' || status === 'REJECTED'
 }
 
 function checkTone(level?: string): string {
@@ -186,7 +182,7 @@ async function revealCurrentPhone(): Promise<void> {
   }
 }
 
-/* ---------------- 重发找回结果短信 ---------------- */
+/* ---------------- 重新生成临时密码（平台不发通知短信，线下告知） ---------------- */
 const resendOpen = ref(false)
 const resendSaving = ref(false)
 
@@ -195,14 +191,29 @@ async function submitResend(): Promise<void> {
   if (!current || resendSaving.value) return
   resendSaving.value = true
   try {
-    const result = await resendRecoverySms(current.id)
+    const result = await regenerateRecoveryPassword(current.id)
     resendOpen.value = false
-    ui.toast(result.note ? `已重新发送到${result.phone}；${result.note}` : `已重新发送到${result.phone}`)
+    store.showTempPassword(
+      '已重新生成临时密码',
+      result.user_name || current.user_name,
+      result.phone || current.new_phone,
+      result.temp_password,
+      result.temp_password_expire_at
+    )
     await store.loadDetail(current.id)
   } catch (error) {
-    await toastError(error, '重发短信失败')
+    await toastError(error, '重新生成临时密码失败')
   } finally {
     resendSaving.value = false
+  }
+}
+
+async function copyTempPassword(): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(store.tempPassword)
+    ui.toast('临时密码已复制')
+  } catch {
+    ui.toast('复制失败，请手动选择复制', 'error')
   }
 }
 
@@ -354,9 +365,9 @@ onMounted(() => {
           placeholder="搜索姓名或完整手机号"
           prepend-inner-icon="search"
           maxlength="30"
-          @keydown.enter="store.fetchList()"
+          @keydown.enter="store.search()"
         />
-        <v-btn variant="text" color="primary" @click="store.fetchList()">查询</v-btn>
+        <v-btn variant="text" color="primary" @click="store.search()">查询</v-btn>
         <v-btn variant="text" @click="store.resetFilters()">重置</v-btn>
       </div>
       <div class="zw-toolbar-r">
@@ -564,6 +575,7 @@ onMounted(() => {
               <zw-desc-item label="处理时间">{{ fmtFull(detail.handled_at) }}</zw-desc-item>
               <zw-desc-item label="核实方式">{{ detail.verify_method_text || '—' }}</zw-desc-item>
               <zw-desc-item label="处理说明">{{ detail.handle_note || '—' }}</zw-desc-item>
+              <zw-desc-item v-if="detail.sms?.status_text" label="结果通知">{{ detail.sms.status_text }}</zw-desc-item>
             </zw-desc>
           </section>
         </template>
@@ -574,17 +586,17 @@ onMounted(() => {
       <template #foot>
         <template v-if="detail">
           <span class="zw-foot-note">
-            {{ detail.status === 'PENDING' ? '通过后临时密码以短信发到新手机号' : '结果短信发送情况可在账号消息中查看' }}
+            {{ detail.status === 'PENDING' ? '通过后页面显示一次临时密码，请线下告知用户' : '平台不发通知短信；处理结果已写入账号的消息中心' }}
           </span>
           <template v-if="detail.status === 'PENDING'">
             <template v-if="canHandle">
               <v-btn variant="outlined" color="error" prepend-icon="block" @click="store.openConfirm('reject')">驳回</v-btn>
-              <v-btn color="primary" prepend-icon="check" @click="store.openConfirm('approve')">通过并发送临时密码</v-btn>
+              <v-btn color="primary" prepend-icon="check" @click="store.openConfirm('approve')">通过并生成临时密码</v-btn>
             </template>
             <span v-else class="zw-foot-note">你没有处理权限，仅可查看</span>
           </template>
           <template v-else>
-            <v-btn v-if="canHandle && isHandled(detail.status)" variant="outlined" prepend-icon="sms" @click="resendOpen = true">重发短信</v-btn>
+            <v-btn v-if="canHandle && detail.status === 'APPROVED'" variant="outlined" prepend-icon="key" @click="resendOpen = true">重新生成临时密码</v-btn>
             <v-btn variant="outlined" @click="store.drawer = false">关闭</v-btn>
           </template>
         </template>
@@ -602,14 +614,14 @@ onMounted(() => {
       <template v-if="store.confirmAction === 'approve'">
         <p class="dialog-p">
           通过后，{{ detail?.user_name }}的登录手机号由 {{ detail?.old_phone }} 换绑为
-          <b>{{ detail?.new_phone }}</b>，临时密码以短信发到新手机号，旧恢复码和其他设备上的登录立即失效。
+          <b>{{ detail?.new_phone }}</b>，旧恢复码和其他设备上的登录立即失效。临时密码会在下一步显示一次，请线下告知用户（不发短信）。
         </p>
         <p v-if="store.handleNote" class="dialog-muted">处理说明：{{ store.handleNote }}</p>
       </template>
       <template v-else>
         <p class="dialog-p">
-          驳回后，{{ detail?.user_name }}的账号和原手机号 {{ detail?.old_phone }} 保持不变，驳回原因以短信发到新手机号
-          {{ detail?.new_phone }}，并记入账号的消息中心。
+          驳回后，{{ detail?.user_name }}的账号和原手机号 {{ detail?.old_phone }} 保持不变，驳回原因发到账号的消息中心；
+          平台不发短信，如需告知请电话联系 {{ detail?.new_phone }}。
         </p>
         <p v-if="store.handleNote" class="dialog-muted">驳回原因：{{ store.handleNote }}</p>
       </template>
@@ -625,15 +637,36 @@ onMounted(() => {
       </template>
     </zw-dialog>
 
-    <zw-dialog v-model="resendOpen" title="重发找回结果短信？" width="480" icon="sms" tone="warning">
+    <zw-dialog v-model="resendOpen" title="重新生成临时密码？" width="480" icon="key" tone="warning">
       <p class="dialog-p">
-        将向 <b class="num">{{ detail?.new_phone }}</b> 重新发送{{ detail?.status === 'APPROVED' ? '通过结果和新的临时密码' : '驳回结果' }}短信。
+        将为{{ detail?.user_name }}（登录手机号 <b class="num">{{ detail?.new_phone }}</b>）重新生成临时密码，之前的临时密码和已登录的设备立即失效。
       </p>
-      <p v-if="detail?.status === 'APPROVED'" class="dialog-muted">重新发送会重新生成临时密码，之前发出的临时密码立即失效。</p>
-      <p class="dialog-muted">发送结果可在账号消息中查看，本次操作记入操作日志。</p>
+      <p class="dialog-muted">新密码只在页面上显示一次，请线下告知用户；平台不发短信。本次操作记入操作日志。</p>
       <template #actions>
         <v-btn variant="outlined" :disabled="resendSaving" @click="resendOpen = false">取消</v-btn>
-        <v-btn color="primary" :loading="resendSaving" @click="submitResend">确认重发</v-btn>
+        <v-btn color="primary" :loading="resendSaving" @click="submitResend">重新生成</v-btn>
+      </template>
+    </zw-dialog>
+
+    <zw-dialog
+      :model-value="store.tempOpen"
+      :title="store.tempTitle || '临时密码'"
+      width="460"
+      icon="key"
+      tone="primary"
+      persistent
+      @update:model-value="!$event && store.closeTempPassword()"
+    >
+      <p class="dialog-p">
+        {{ store.tempUserName }}的新登录手机号为 <b class="num">{{ store.tempPhone }}</b>。请把下面的临时密码线下告知用户（电话或当面），
+        <b>关闭后无法再查看</b>；系统不会发送短信。
+      </p>
+      <div class="temp-pwd"><span class="num">{{ store.tempPassword }}</span><v-btn variant="outlined" size="small" @click="copyTempPassword">复制</v-btn></div>
+      <p class="dialog-muted temp-expire">
+        {{ store.tempExpireAt ? `${fmtFull(store.tempExpireAt)} 前有效` : '24 小时内有效' }}，用户首次登录需先修改密码、再保存新的恢复码。
+      </p>
+      <template #actions>
+        <v-btn color="primary" @click="store.closeTempPassword()">我已告知用户，关闭</v-btn>
       </template>
     </zw-dialog>
 
@@ -673,6 +706,22 @@ onMounted(() => {
 <style scoped>
 .flow-card {
   margin-bottom: 16px;
+}
+.temp-pwd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--fill-1);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+.temp-expire {
+  margin-top: 12px;
 }
 .flow-card :deep(.zw-card-body) {
   padding: 16px 20px;

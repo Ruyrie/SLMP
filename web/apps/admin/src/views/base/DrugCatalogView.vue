@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { routeQueryId, routeQueryText } from '@/utils/routeQuery'
 import { ApiError, formatDate, formatDateTime, formatNumber } from '@zmt/shared'
 import {
   addBannedDrug,
@@ -8,6 +10,7 @@ import {
   downloadDrugCatalogImportTemplate,
   getBannedDrugs,
   getBannedHits,
+  getBannedImpact,
   getDictItems,
   getDrugCatalog,
   getDrugDetail,
@@ -35,6 +38,7 @@ import ImportXlsxDialog from '@/views/common/ImportXlsxDialog.vue'
 
 const ui = useUiStore()
 const admin = useAdminStore()
+const route = useRoute()
 const canHandle = computed(() => admin.hasPerm('WA-D03:HANDLE'))
 
 type Tab = 'VET_DRUG' | 'VACCINE' | 'DISINFECTANT' | 'BANNED' | 'RECALL'
@@ -513,6 +517,31 @@ const bannedForm = reactive({
   reason: ''
 })
 const bannedEditing = ref<BannedDrug | null>(null)
+const bannedImpact = ref<{ archive_farm_count: number; stock_totals: Array<{ qty: number; unit: string; unit_text?: string }> } | null>(null)
+const bannedImpactLoading = ref(false)
+const bannedImpactError = ref('')
+let bannedImpactRequest = 0
+
+async function loadBannedImpact(catalogId: number): Promise<void> {
+  const request = ++bannedImpactRequest
+  bannedImpact.value = null
+  bannedImpactError.value = ''
+  bannedImpactLoading.value = true
+  try {
+    const data = await getBannedImpact(catalogId)
+    if (request === bannedImpactRequest) bannedImpact.value = data
+  } catch (e) {
+    if (request === bannedImpactRequest) bannedImpactError.value = e instanceof Error ? e.message : '影响范围加载失败'
+  } finally {
+    if (request === bannedImpactRequest) bannedImpactLoading.value = false
+  }
+}
+
+const bannedStockText = computed(() => {
+  const totals = bannedImpact.value?.stock_totals || []
+  if (!totals.length) return '没有库存'
+  return totals.map((item) => `${formatNumber(Number(item.qty))} ${item.unit_text || item.unit}`).join('、')
+})
 
 function openAddBanned(row?: DrugRow): void {
   bannedTarget.value = row || null
@@ -523,6 +552,11 @@ function openAddBanned(row?: DrugRow): void {
   bannedForm.banned_class = 'BETA_AGONIST'
   bannedForm.reason = ''
   bannedError2.value = ''
+  bannedImpactRequest++
+  bannedImpact.value = null
+  bannedImpactError.value = ''
+  bannedImpactLoading.value = false
+  if (row?.id) void loadBannedImpact(row.id)
   bannedOpen.value = true
 }
 
@@ -761,8 +795,63 @@ async function afterImport(): Promise<void> {
 onMounted(async () => {
   listLoading.value = true
   void loadDicts()
-  await fetchCatalog()
+  if (!(await openRouteTarget())) await fetchCatalog()
 })
+
+/**
+ * 从操作日志 / 知识库带参数进入：tab=BANNED（keyword）、tab=RECALL（id）、id=目录 ID、keyword=药品名称。
+ * 返回 true 表示已经加载了对应列表。
+ */
+async function openRouteTarget(): Promise<boolean> {
+  const targetTab = routeQueryText(route, 'tab')
+  const id = routeQueryId(route)
+  const keyword = routeQueryText(route, 'keyword')
+  if (targetTab === 'BANNED') {
+    bannedKeyword.value = keyword
+    bannedPage.value = 1
+    tab.value = 'BANNED'
+    await fetchBanned()
+    void fetchCatalog()
+    return true
+  }
+  if (targetTab === 'RECALL') {
+    tab.value = 'RECALL'
+    recallsPage.value = 1
+    await fetchRecalls()
+    void fetchCatalog()
+    const row = id ? recalls.value.find((item) => item.id === id) : undefined
+    if (row) void openProgress(row)
+    return true
+  }
+  if (id) {
+    try {
+      const data = await getDrugDetail(id)
+      tab.value = (['VET_DRUG', 'VACCINE', 'DISINFECTANT'].includes(data.drug_category) ? data.drug_category : 'VET_DRUG') as Tab
+      query.keyword = data.name
+      query.page = 1
+      await fetchCatalog()
+      if (canHandle.value) void openEdit({ id } as DrugRow)
+      return true
+    } catch (e) {
+      ui.toast(e instanceof Error ? e.message : '药品加载失败', 'error')
+    }
+  }
+  if (keyword) {
+    query.keyword = keyword
+    for (const candidate of ['VET_DRUG', 'VACCINE', 'DISINFECTANT'] as Tab[]) {
+      tab.value = candidate
+      query.page = 1
+      await fetchCatalog()
+      if (list.value.length) break
+    }
+    if (!list.value.length) {
+      tab.value = 'VET_DRUG'
+      await fetchCatalog()
+    }
+    return true
+  }
+  return false
+}
 </script>
 
 <template>
@@ -1042,6 +1131,13 @@ onMounted(async () => {
           <v-select v-model="bannedForm.banned_class" :items="bannedClassOptions" />
         </zw-form-item>
       </div>
+      <zw-notice v-if="!bannedEditing && bannedForm.catalog_id" type="warning" class="drug-banned-impact" title="列入前请确认影响范围">
+        <template v-if="bannedImpactLoading">正在统计建档养殖场和库存…</template>
+        <template v-else-if="bannedImpactError">{{ bannedImpactError }}</template>
+        <template v-else-if="bannedImpact">
+          已有 {{ formatNumber(bannedImpact.archive_farm_count || 0) }} 个养殖场建档，现有库存 {{ bannedStockText }}；列入后这些库存只能登记报废。
+        </template>
+      </zw-notice>
       <p v-if="!bannedEditing" class="drug-dialog-text">列入后不能再入库和领用，现有库存只能登记报废；用户端搜索命中时会提示为禁用药。</p>
       <div v-if="bannedError2" class="drug-form-error">{{ bannedError2 }}</div>
       <template #actions>
@@ -1134,6 +1230,7 @@ onMounted(async () => {
 .drug-form-error { color: var(--error); font-size: 12px; margin-top: 6px; }
 .drug-dialog-strong { font-size: 15px; font-weight: 600; margin: 0 0 6px; }
 .drug-dialog-text { font-size: 13px; line-height: 21px; color: var(--text-2); }
+.drug-banned-impact { margin: 8px 0; }
 .drug-recall-preview { padding: 10px 14px; border-radius: var(--radius-sm); background: var(--fill-1); display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
 .drug-recall-preview > div { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 8px; }
 .drug-recall-preview span { color: var(--text-2); }

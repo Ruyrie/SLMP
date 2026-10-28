@@ -86,7 +86,10 @@ public class OperationLogDetailVO {
         private String statusText;
     }
 
-    /** 跳转：page_code 为管理端页面编号，exists 表示业务对象是否仍可打开 */
+    /**
+     * 跳转：page_code 为管理端页面编号，query 为打开该页面时带的路由参数（例如 id、breed_id、dict_type），
+     * exists 表示业务对象是否仍可打开；page_code 为空表示没有可以定位的页面，前端不显示按钮。
+     */
     @Data
     @Builder
     @NoArgsConstructor
@@ -96,5 +99,6 @@ public class OperationLogDetailVO {
         private String bizType;
         private Long bizId;
         private Boolean exists;
+        private java.util.Map<String, String> query;
     }
 }

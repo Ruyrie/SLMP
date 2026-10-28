@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { routeQueryId } from '@/utils/routeQuery'
 import { ApiError, formatDate, formatDateTime, formatNumber } from '@zmt/shared'
 import {
   addImmuneItem,
@@ -28,6 +30,7 @@ import { useUiStore } from '@/stores/ui'
 
 const ui = useUiStore()
 const admin = useAdminStore()
+const route = useRoute()
 const canHandle = computed(() => admin.hasPerm('WA-D02:HANDLE'))
 
 const groups = ref<ImmuneTemplateGroup[]>([])
@@ -414,7 +417,13 @@ function changeLabel(item: ImmuneItem): string {
 
 onMounted(async () => {
   void loadOptions()
-  await loadList(false)
+  const id = routeQueryId(route)
+  if (id) {
+    await selectTemplate(id)
+    await loadList(true)
+  } else {
+    await loadList(false)
+  }
 })
 </script>
 

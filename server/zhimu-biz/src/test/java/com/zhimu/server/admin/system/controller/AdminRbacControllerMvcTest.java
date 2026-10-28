@@ -4,7 +4,6 @@ import com.zhimu.server.admin.system.request.AdminCreateRequest;
 import com.zhimu.server.admin.system.request.RolePermissionSaveRequest;
 import com.zhimu.server.admin.system.service.AdminAccountService;
 import com.zhimu.server.admin.system.service.AdminRoleService;
-import com.zhimu.server.admin.system.support.AdminDevSupport;
 import com.zhimu.server.admin.system.vo.AdminCreatedVO;
 import com.zhimu.server.admin.system.vo.AdminItemVO;
 import com.zhimu.server.admin.system.vo.PermissionSavedVO;
@@ -38,12 +37,11 @@ class AdminRbacControllerMvcTest {
 
     private final AdminAccountService accountService = mock(AdminAccountService.class);
     private final AdminRoleService roleService = mock(AdminRoleService.class);
-    private final AdminDevSupport devSupport = mock(AdminDevSupport.class);
     private MockMvc mvc;
 
     @BeforeEach
     void setUp() {
-        mvc = TestMvc.builder(new AdminRbacController(accountService, roleService, devSupport)).build();
+        mvc = TestMvc.builder(new AdminRbacController(accountService, roleService)).build();
     }
 
     @AfterEach
@@ -79,10 +77,10 @@ class AdminRbacControllerMvcTest {
     }
 
     @Test
-    void S22新增管理员_dev返回temp_password且文案含脱敏手机号() throws Exception {
-        when(devSupport.exposeTempPassword()).thenReturn(true);
+    void S22新增管理员_任何环境都返回一次性temp_password且文案提示线下告知() throws Exception {
         when(accountService.create(any(AdminCreateRequest.class)))
-                .thenReturn(new AdminAccountService.AdminCreateResult(10L, "李四", "139****1185", "Ab3K9mN2xQ"));
+                .thenReturn(new AdminAccountService.AdminCreateResult(10L, "李四", "139****1185", "Ab3K9mN2xQ",
+                        java.time.LocalDateTime.of(2026, 10, 29, 9, 0)));
 
         var result = mvc.perform(post("/admin/v1/admins").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"李四\",\"username\":\"lisi\",\"phone\":\"13900001185\","
@@ -91,23 +89,10 @@ class AdminRbacControllerMvcTest {
         JsonNode json = TestMvc.json(result.getContentAsString());
 
         assertThat(result.getStatus()).isEqualTo(200);
-        assertThat(json.get("message").asString()).isEqualTo("已创建李四的管理员账号，初始密码已发到 139****1185");
+        assertThat(json.get("message").asString()).isEqualTo("已创建李四的管理员账号，请把临时密码线下告知对方");
         assertThat(json.get("data").get("admin_id").asLong()).isEqualTo(10L);
         assertThat(json.get("data").get("temp_password").asString()).isEqualTo("Ab3K9mN2xQ");
-    }
-
-    @Test
-    void S22新增管理员_生产不返回temp_password() throws Exception {
-        when(devSupport.exposeTempPassword()).thenReturn(false);
-        when(accountService.create(any())).thenReturn(
-                new AdminAccountService.AdminCreateResult(10L, "李四", "139****1185", "Ab3K9mN2xQ"));
-
-        JsonNode data = TestMvc.json(mvc.perform(post("/admin/v1/admins").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"李四\",\"username\":\"lisi\",\"phone\":\"13900001185\","
-                                + "\"role_id\":2,\"reason\":\"新同事\"}"))
-                .andReturn().getResponse().getContentAsString()).get("data");
-
-        assertThat(data.has("temp_password")).isFalse();
+        assertThat(json.get("data").has("temp_password_expire_at")).isTrue();
     }
 
     @Test
@@ -123,30 +108,17 @@ class AdminRbacControllerMvcTest {
     }
 
     @Test
-    void S24重置密码_dev返回临时密码与文案() throws Exception {
-        when(devSupport.exposeTempPassword()).thenReturn(true);
+    void S24重置密码_返回一次性临时密码与文案() throws Exception {
         when(accountService.resetPassword(eq(2L), any())).thenReturn(
-                new AdminAccountService.AdminResetResult("吴昊", "139****5874", "Zx8Kp2Qm5N"));
-
-        JsonNode json = TestMvc.json(mvc.perform(post("/admin/v1/admins/2/reset-password")
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"忘记密码\"}"))
-                .andReturn().getResponse().getContentAsString()).get("data");
-
-        assertThat(json.get("temp_password").asString()).isEqualTo("Zx8Kp2Qm5N");
-    }
-
-    @Test
-    void S24重置密码_生产不返回数据() throws Exception {
-        when(devSupport.exposeTempPassword()).thenReturn(false);
-        when(accountService.resetPassword(eq(2L), any())).thenReturn(
-                new AdminAccountService.AdminResetResult("吴昊", "139****5874", "Zx8Kp2Qm5N"));
+                new AdminAccountService.AdminResetResult("吴昊", "139****5874", "Zx8Kp2Qm5N",
+                        java.time.LocalDateTime.of(2026, 10, 29, 9, 0)));
 
         JsonNode json = TestMvc.json(mvc.perform(post("/admin/v1/admins/2/reset-password")
                         .contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"忘记密码\"}"))
                 .andReturn().getResponse().getContentAsString());
 
-        assertThat(json.has("data")).isFalse();
-        assertThat(json.get("message").asString()).isEqualTo("已重置吴昊的密码，新密码已发到 139****5874");
+        assertThat(json.get("data").get("temp_password").asString()).isEqualTo("Zx8Kp2Qm5N");
+        assertThat(json.get("message").asString()).isEqualTo("已重置吴昊的密码，请把临时密码线下告知对方");
     }
 
     @Test

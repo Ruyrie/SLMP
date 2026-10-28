@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-/** 管理端-03 字典类型常量与范围规则（8 类；收支分类待模块10）。 */
+/** 管理端-03 字典类型常量与范围规则（t_dict_item 8 类 + t_finance_category 收入 / 支出分类）。 */
 public final class DictTypes {
 
     public static final String PEN_TYPE = "PEN_TYPE";
@@ -20,6 +20,11 @@ public final class DictTypes {
     public static final List<String> ALL = List.of(PEN_TYPE, DEATH_REASON, SYMPTOM, FEED_TYPE,
             VACCINATE_METHOD, DISINFECT_METHOD, SCRAP_REASON, PAYMENT_METHOD);
 
+    /** 收支一级分类（t_finance_category，平台维护）：只在管理端字典导航里出现，用户端字典查询不走这里 */
+    public static final String EXPENSE_CATEGORY = "EXPENSE_CATEGORY";
+    public static final String INCOME_CATEGORY = "INCOME_CATEGORY";
+    public static final List<String> FINANCE = List.of(EXPENSE_CATEGORY, INCOME_CATEGORY);
+
     public static final Set<String> SPECIES_SCOPED = Set.of(PEN_TYPE, VACCINATE_METHOD);
     public static final Set<String> CATEGORY_SCOPED = Set.of(SYMPTOM);
 
@@ -28,6 +33,15 @@ public final class DictTypes {
 
     public static boolean isKnown(String dictType) {
         return dictType != null && ALL.contains(dictType.toUpperCase(Locale.ROOT));
+    }
+
+    public static boolean isFinance(String dictType) {
+        return dictType != null && FINANCE.contains(dictType.toUpperCase(Locale.ROOT));
+    }
+
+    /** EXPENSE_CATEGORY → EXPENSE，INCOME_CATEGORY → INCOME */
+    public static String financeDirection(String dictType) {
+        return EXPENSE_CATEGORY.equals(dictType) ? "EXPENSE" : "INCOME";
     }
 
     public static String normalize(String dictType) {
@@ -44,6 +58,8 @@ public final class DictTypes {
             case DISINFECT_METHOD -> "消毒方式";
             case SCRAP_REASON -> "报废原因";
             case PAYMENT_METHOD -> "收款方式";
+            case EXPENSE_CATEGORY -> "支出分类";
+            case INCOME_CATEGORY -> "收入分类";
             default -> dictType;
         };
     }
@@ -58,6 +74,8 @@ public final class DictTypes {
             case DISINFECT_METHOD -> "sanitizer";
             case SCRAP_REASON -> "delete";
             case PAYMENT_METHOD -> "payments";
+            case EXPENSE_CATEGORY -> "trending_down";
+            case INCOME_CATEGORY -> "trending_up";
             default -> null;
         };
     }

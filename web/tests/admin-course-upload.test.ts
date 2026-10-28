@@ -209,5 +209,29 @@ describe('course upload state', () => {
     await flushPromises()
     expect(wrapper.find('.test-drawer').exists()).toBe(false)
   })
+
+  it('resumes a failed video upload with the same file_id and skips parts the server already has', async () => {
+    window.localStorage.clear()
+    await page()
+    vi.mocked(content.initMultipartUpload).mockResolvedValue({ file_id: 30, part_size: 1, part_count: 2,
+      original_name: 'big.mp4', part_urls: [], uploaded_parts: [] })
+    vi.mocked(content.uploadMultipartPartProxy)
+      .mockResolvedValueOnce({ part_no: 1, etag: 'e1' })
+      .mockRejectedValueOnce(new Error('网络中断'))
+    await choose('video', 'big.mp4')
+    expect(wrapper.text()).toContain('网络中断')
+
+    vi.mocked(content.initMultipartUpload).mockResolvedValue({ file_id: 30, part_size: 1, part_count: 2,
+      original_name: 'big.mp4', part_urls: [], uploaded_parts: [{ part_no: 1, etag: 'e1' }] })
+    vi.mocked(content.uploadMultipartPartProxy).mockResolvedValue({ part_no: 2, etag: 'e2' })
+    vi.mocked(content.completeMultipartUpload).mockResolvedValue({ file_id: 30, transcode_status: 'WAITING' })
+    await wrapper.findAll('a').find((node) => node.text() === '重新上传')!.trigger('click')
+    await flushPromises()
+
+    expect(content.initMultipartUpload).toHaveBeenLastCalledWith(expect.objectContaining({ file_id: 30 }))
+    expect(content.uploadMultipartPartProxy).toHaveBeenLastCalledWith(30, 2, expect.anything())
+    expect(vi.mocked(content.uploadMultipartPartProxy).mock.calls.filter((call) => call[1] === 1)).toHaveLength(1)
+    expect(content.completeMultipartUpload).toHaveBeenCalledWith(30, [{ part_no: 1, etag: 'e1' }, { part_no: 2, etag: 'e2' }])
+  })
 })
 

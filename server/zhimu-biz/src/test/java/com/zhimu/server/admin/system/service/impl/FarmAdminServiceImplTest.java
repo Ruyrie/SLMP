@@ -51,12 +51,12 @@ class FarmAdminServiceImplTest {
         when(farmPlatformService.listActiveUserIds(1001L)).thenReturn(List.of(10001L, 10002L, 10003L));
         FarmFreezeRequest request = new FarmFreezeRequest();
         request.setReason("证件被注销");
-        request.setSmsOwner(true);
         request.setVersion(3);
 
         FreezeResultVO result = service.freeze(1001L, request);
 
-        verify(farmPlatformService).freeze(1001L, 1L, "证件被注销", true, 3);
+        // 不发短信：冻结原因由站内消息发给全部成员
+        verify(farmPlatformService).freeze(1001L, 1L, "证件被注销", false, 3);
         assertThat(result.getMemberCount()).isEqualTo(3);
         assertThat(result.getFarmName()).isEqualTo("东山猪场");
     }

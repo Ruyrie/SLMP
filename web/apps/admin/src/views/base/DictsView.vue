@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { routeQueryId, routeQueryText } from '@/utils/routeQuery'
 import { ApiError, formatNumber } from '@zmt/shared'
 import {
   createDictItem,
@@ -19,6 +21,7 @@ import { useUiStore } from '@/stores/ui'
 
 const ui = useUiStore()
 const admin = useAdminStore()
+const route = useRoute()
 const canHandle = computed(() => admin.hasPerm('WA-D05:HANDLE'))
 
 const types = ref<DictType[]>([])
@@ -35,6 +38,8 @@ const categoryFilter = ref<number | null>(null)
 const sortLoading = ref(false)
 
 const currentType = computed(() => types.value.find((type) => type.dict_type === selectedType.value) || null)
+/** 收入 / 支出一级分类（t_finance_category）：没有说明和“说明必填”，可以设图标 */
+const isFinance = computed(() => selectedType.value === 'EXPENSE_CATEGORY' || selectedType.value === 'INCOME_CATEGORY')
 const scopeMode = computed(() => currentType.value?.scope_mode || 'NONE')
 const filteredItems = computed(() => {
   const keyword = search.value.trim().toLowerCase()
@@ -57,7 +62,9 @@ const navDescription: Record<string, string> = {
   VACCINATE_METHOD: '免疫模板和接种登记时选择；按畜种过滤。',
   DISINFECT_METHOD: '消毒计划和消毒登记时选择。',
   SCRAP_REASON: '库存报废时单选；选“其他”时说明必填。',
-  PAYMENT_METHOD: '收支记账选择收款方式。'
+  PAYMENT_METHOD: '收支记账选择收款方式。',
+  EXPENSE_CATEGORY: '收支记账的支出一级分类，养殖户可以在其下添加子类；平台统一维护。',
+  INCOME_CATEGORY: '收支记账的收入一级分类；平台统一维护。'
 }
 
 function typeIcon(type: DictType): string {
@@ -310,8 +317,14 @@ onMounted(async () => {
   } catch {
     categories.value = []
   }
+  const routeType = routeQueryText(route, 'dict_type')
+  if (routeType) selectedType.value = routeType
   await loadTypes()
   await loadItems()
+  // 从操作日志带 ?dict_type=&id= 进入：按名称筛出对应字典项
+  const id = routeQueryId(route)
+  const target = id ? items.value.find((item) => item.id === id) : undefined
+  if (target) search.value = target.name
 })
 </script>
 
@@ -356,6 +369,7 @@ onMounted(async () => {
             <template v-else-if="selectedType === 'FEED_TYPE'">饲料档案的类型只能从这里选，不能手动输入；饲喂标准的“建议饲料”按类型匹配本场的饲料档案。</template>
             <template v-else-if="selectedType === 'PEN_TYPE'">栏舍类型按畜种维护，用户端新建栏舍时从对应畜种的类型中选择。</template>
             <template v-else-if="selectedType === 'VACCINATE_METHOD'">接种方式按畜种过滤，被免疫模板引用时不能停用。</template>
+            <template v-else-if="isFinance">停用后，用户端记账时不再显示这个分类，已有流水保留原分类；兜底“其他”和自动记账的分类（饲料、兽药、引种入库、出栏收款等）不能停用。</template>
             <template v-else>停用后，用户端新增或编辑记录时不再显示这个选项；已有记录保留原值。</template>
           </zw-notice>
         </div>
@@ -386,6 +400,8 @@ onMounted(async () => {
                 <span>{{ item.name }}</span>
                 <zw-tag v-if="item.remark_required" type="warning" size="small">说明必填</zw-tag>
                 <zw-tag v-if="item.is_fallback" type="outline" size="small">兜底</zw-tag>
+                <zw-tag v-if="isFinance && item.auto_source_text" type="neutral" size="small">自动记账 · {{ item.auto_source_text }}</zw-tag>
+                <span v-if="isFinance && item.subcategory_count" class="zw-muted dict-sub-count">子类 {{ item.subcategory_count }}</span>
               </div>
             </template>
             <template #item.description="{ item }"><span class="dict-desc">{{ item.description || '—' }}</span></template>
@@ -404,7 +420,7 @@ onMounted(async () => {
             </template>
           </v-data-table>
           <div class="dict-foot">
-            <span class="zw-muted"><template v-if="selectedType === 'DEATH_REASON'">“其他”是兜底选项，不能停用</template><template v-else-if="scopeMode === 'CATEGORY'">按品类维护 · 调整顺序保存即生效</template><template v-else>调整顺序保存即生效</template></span>
+            <span class="zw-muted"><template v-if="selectedType === 'DEATH_REASON'">“其他”是兜底选项，不能停用</template><template v-else-if="isFinance">“其他”是兜底分类，自动记账分类不能停用 · 调整顺序保存即生效</template><template v-else-if="scopeMode === 'CATEGORY'">按品类维护 · 调整顺序保存即生效</template><template v-else>调整顺序保存即生效</template></span>
             <span class="zw-muted">共 {{ filteredItems.length }} 项</span>
           </div>
         </template>
@@ -419,8 +435,11 @@ onMounted(async () => {
         <zw-form-item label="排序" required hint="用户端按排序从左到右显示">
           <v-text-field v-model.number="form.sort_no" type="number" min="0" />
         </zw-form-item>
-        <zw-form-item label="说明" optional style="grid-column: 1 / -1">
+        <zw-form-item v-if="!isFinance" label="说明" optional style="grid-column: 1 / -1">
           <v-text-field v-model="form.description" maxlength="50" placeholder="给养殖户的简短说明" />
+        </zw-form-item>
+        <zw-form-item v-else label="图标" optional style="grid-column: 1 / -1" hint="Material Symbols 图标名，例如 inventory_2；留空用默认图标">
+          <v-text-field v-model="form.icon" maxlength="40" placeholder="category" />
         </zw-form-item>
         <zw-form-item v-if="scopeMode === 'SPECIES'" label="适用畜种" required :error="formErrors.scopes" style="grid-column: 1 / -1">
           <v-select v-model="form.scope_species" :items="speciesOptions.filter((option) => option.value)" multiple chips density="compact" hide-details placeholder="请选择畜种" />
@@ -428,7 +447,7 @@ onMounted(async () => {
         <zw-form-item v-if="scopeMode === 'CATEGORY'" label="适用品类" required :error="formErrors.scopes" style="grid-column: 1 / -1">
           <v-select v-model="form.scope_categories" :items="categories.map((category) => ({ title: category.name, value: category.id }))" multiple chips density="compact" hide-details placeholder="请选择品类" />
         </zw-form-item>
-        <zw-form-item label="选中后说明" required style="grid-column: 1 / -1" hint="必填时，用户端“说明”框改为必填">
+        <zw-form-item v-if="!isFinance" label="选中后说明" required style="grid-column: 1 / -1" hint="必填时，用户端“说明”框改为必填">
           <v-switch v-model="form.remark_required" :label="form.remark_required ? '说明必填' : '说明选填'" density="compact" hide-details />
         </zw-form-item>
       </div>
@@ -472,6 +491,7 @@ onMounted(async () => {
 .dict-notice { padding: 0 20px 12px; }
 .dict-table :deep(tbody tr) { height: 40px; }
 .dict-name { display: flex; align-items: center; gap: 6px; }
+.dict-sub-count { font-size: 12px; }
 .dict-ico { width: 26px; height: 26px; border-radius: 4px; background: var(--primary-subtle); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; }
 .dict-desc { display: block; max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-2); }
 .dict-sort { display: flex; align-items: center; gap: 3px; color: var(--text-3); }

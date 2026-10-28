@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useRouter, type RouteLocationRaw } from 'vue-router'
 import { formatDateTime } from '@zmt/shared'
+import { useAdminStore } from '@/stores/admin'
 import { useOperationLogsStore } from '@/stores/system/operationLogs'
 import type { OperationLogItem } from '@/api/system'
 
 const store = useOperationLogsStore()
+const admin = useAdminStore()
+const router = useRouter()
 const selected = ref<OperationLogItem | null>(null)
 
 const opTypes = [
@@ -54,6 +58,22 @@ function actionTone(row: OperationLogItem): string {
   return 'neutral'
 }
 
+/** 日志对应的记录：只在页面存在、当前管理员有查看权限且服务端给出定位参数时显示按钮 */
+const recordTarget = computed<RouteLocationRaw | null>(() => {
+  const link = store.detail?.link
+  if (!link?.exists || !link.page_code) return null
+  const record = router.getRoutes().find((item) => item.name === link.page_code)
+  if (!record || record.meta.public || !admin.hasPerm(record.meta.perm as string | undefined)) return null
+  const query = link.query && Object.keys(link.query).length ? { ...link.query } : link.biz_id ? { id: String(link.biz_id) } : null
+  return query ? { name: link.page_code, query } : null
+})
+
+function openRecord(): void {
+  if (!recordTarget.value) return
+  store.drawer = false
+  void router.push(recordTarget.value)
+}
+
 function openDetail(row: OperationLogItem): void {
   selected.value = row
   void store.openDetail(row.log_id)
@@ -88,11 +108,11 @@ onMounted(() => {
       <div class="zw-toolbar-l">
         <v-text-field v-model="store.query.date_from" type="date" class="zw-w-140" density="compact" hide-details />
         <span class="zw-muted">至</span>
-        <v-text-field v-model="store.query.date_to" type="date" class="zw-w-140" density="compact" hide-details @keydown.enter="store.fetchList()" />
-        <v-select v-model="store.query.admin_id" :items="adminOptions" class="zw-w-200" density="compact" hide-details @update:model-value="store.fetchList()" />
-        <v-select v-model="store.query.op_type" :items="opTypes" class="zw-w-200" density="compact" hide-details @update:model-value="store.fetchList()" />
-        <v-text-field v-model="store.query.keyword" class="zw-w-240" placeholder="搜索对象、账号、批次号" prepend-inner-icon="search" density="compact" hide-details @keydown.enter="store.fetchList()" />
-        <v-btn variant="text" color="primary" @click="store.fetchList()">查询</v-btn>
+        <v-text-field v-model="store.query.date_to" type="date" class="zw-w-140" density="compact" hide-details @keydown.enter="store.search()" />
+        <v-select v-model="store.query.admin_id" :items="adminOptions" class="zw-w-200" density="compact" hide-details @update:model-value="store.search()" />
+        <v-select v-model="store.query.op_type" :items="opTypes" class="zw-w-200" density="compact" hide-details @update:model-value="store.search()" />
+        <v-text-field v-model="store.query.keyword" class="zw-w-240" placeholder="搜索对象、账号、批次号" prepend-inner-icon="search" density="compact" hide-details @keydown.enter="store.search()" />
+        <v-btn variant="text" color="primary" @click="store.search()">查询</v-btn>
         <v-btn variant="text" @click="store.resetFilters()">重置</v-btn>
       </div>
     </div>
@@ -182,12 +202,7 @@ onMounted(() => {
 
       <template #foot>
         <v-btn variant="outlined" @click="store.drawer = false">关闭</v-btn>
-        <v-btn
-          v-if="store.detail?.link?.exists && store.detail.link?.page_code"
-          color="primary"
-          variant="outlined"
-          @click="$router.push({ name: store.detail.link.page_code, query: { id: String(store.detail.link.biz_id) } })"
-        >
+        <v-btn v-if="recordTarget" color="primary" variant="outlined" @click="openRecord">
           打开对应记录
         </v-btn>
       </template>

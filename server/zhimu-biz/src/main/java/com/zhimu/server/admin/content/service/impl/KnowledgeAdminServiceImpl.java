@@ -149,6 +149,7 @@ public class KnowledgeAdminServiceImpl implements KnowledgeAdminService {
         vo.setStatusText(ContentTexts.contentStatus(knowledge.getStatus()));
         vo.setVersionLabel(versionLabel(knowledge));
         vo.setIsReadonly("DRUG_CATALOG".equals(knowledge.getSourceType()));
+        vo.setSourceRefId("DRUG_CATALOG".equals(knowledge.getSourceType()) ? knowledge.getSourceRefId() : null);
         vo.setCiteCount30d(knowledge.getCiteCount30d());
         vo.setUsefulRate30d(knowledge.getUsefulRate30d());
         vo.setUpdatedAt(knowledge.getUpdatedAt());

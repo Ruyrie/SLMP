@@ -46,11 +46,14 @@ export interface AdminUpdatePayload {
 
 export interface AdminCreated {
   admin_id: number
+  /** 一次性临时密码：只在本次响应返回，页面关闭后无法再查看 */
   temp_password?: string
+  temp_password_expire_at?: string
 }
 
 export interface TempPassword {
   temp_password?: string
+  temp_password_expire_at?: string
 }
 
 export interface RoleItem {
@@ -134,7 +137,8 @@ export interface OperationLogDetail {
   client?: { client_type?: string; client_type_text?: string; browser?: string; ip_region?: string }
   changes?: Array<{ field_name: string; before: string; after: string }>
   related?: Array<{ time: string; desc: string; source?: string; source_text?: string; status_text?: string }>
-  link?: { page_code?: string; biz_type?: string; biz_id?: number; exists?: boolean }
+  /** 打开对应记录：page_code 为页面编号，query 为定位参数（例如 id、breed_id、dict_type） */
+  link?: { page_code?: string; biz_type?: string; biz_id?: number; exists?: boolean; query?: Record<string, string> | null }
 }
 
 export interface OperationLogQuery {
@@ -423,7 +427,7 @@ export function getUserDetail(id: number) {
 export function setUserEnabled(
   id: number,
   action: 'disable' | 'enable',
-  payload: { reason: string; version: number; notify_sms?: boolean }
+  payload: { reason: string; version: number; notify_message?: boolean }
 ) {
   return http().post<void>(`/users/${id}/${action}`, payload)
 }
@@ -528,7 +532,7 @@ export function getAdminFarmDetail(id: number) {
 export function setFarmFrozen(
   id: number,
   action: 'freeze' | 'unfreeze',
-  payload: { reason: string; version: number; sms_owner?: boolean }
+  payload: { reason: string; version: number }
 ) {
   return http().post<{ member_count?: number; farm_name?: string } | void>(`/farms/${id}/${action}`, payload)
 }
