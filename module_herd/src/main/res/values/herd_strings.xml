@@ -23,9 +23,10 @@
     <string name="herd_production_error_title">生产概况加载失败</string>
     <string name="herd_production_overview_title">今日生产概况</string>
     <string name="herd_production_stock">存栏</string>
-    <string name="herd_production_todo">今日待办</string>
-    <string name="herd_production_warning">预警</string>
-    <string name="herd_production_view_all_reminders">查看全部 %1$d 条预警</string>
+    <string name="herd_production_batch">在养批次</string>
+    <string name="herd_production_batch_unit">批</string>
+    <string name="herd_production_pen_occupancy">栏舍占用 %1$s</string>
+    <string name="herd_production_reminder">生产提醒</string>
     <string name="herd_production_audit_notice">这个养殖场还没有通过审核，审核通过后才能使用栏舍和批次功能。</string>
     <string name="herd_production_audit_action">查看审核结果</string>
     <string name="herd_production_no_pen_notice">还没有栏舍。先新增栏舍，再登记批次入栏。</string>
