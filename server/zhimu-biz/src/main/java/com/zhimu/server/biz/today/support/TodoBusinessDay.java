@@ -42,6 +42,15 @@ public final class TodoBusinessDay {
         return isOpen(todo) && today.equals(of(todo, today));
     }
 
+    /** 未完成且业务日早于今天（已逾期）；未关闭的预警类与已过期的休药期到期始终归今天，不算逾期 */
+    public static boolean isOpenOverdue(Todo todo, LocalDate today) {
+        if (!isOpen(todo)) {
+            return false;
+        }
+        LocalDate day = of(todo, today);
+        return day != null && day.isBefore(today);
+    }
+
     private static LocalDate closedDay(Todo todo) {
         if (todo.getIgnoredAt() != null) {
             return todo.getIgnoredAt().toLocalDate();

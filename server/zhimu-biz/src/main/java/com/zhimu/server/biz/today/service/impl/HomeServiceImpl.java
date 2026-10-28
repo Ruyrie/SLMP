@@ -378,7 +378,7 @@ public class HomeServiceImpl implements HomeService {
 
 
     private static boolean isDateOverdue(Todo todo, LocalDate today) {
-        return todo.getDueDate() != null && todo.getDueDate().isBefore(today);
+        return TodoBusinessDay.isOpenOverdue(todo, today);
     }
 
     private List<Todo> doneToday(FarmContext.FarmMember member, LocalDate today) {

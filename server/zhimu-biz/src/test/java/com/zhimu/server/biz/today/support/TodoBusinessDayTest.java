@@ -44,4 +44,11 @@ class TodoBusinessDayTest {
         Todo withdrawal = todo("WORK", "WITHDRAWAL_END", "PENDING", TODAY.minusDays(2));
         assertThat(TodoBusinessDay.isOpenToday(withdrawal, TODAY)).isTrue();
     }
+
+    @Test
+    void openWarningIsNeverOverdueButOldWorkTodoIs() {
+        assertThat(TodoBusinessDay.isOpenOverdue(todo("WARNING", "ABNORMAL_REPORT", "PENDING", TODAY.minusDays(5)), TODAY)).isFalse();
+        assertThat(TodoBusinessDay.isOpenOverdue(todo("WORK", "FEEDING", "PENDING", TODAY.minusDays(1)), TODAY)).isTrue();
+        assertThat(TodoBusinessDay.isOpenOverdue(todo("WORK", "FEEDING", "DONE", TODAY.minusDays(1)), TODAY)).isFalse();
+    }
 }

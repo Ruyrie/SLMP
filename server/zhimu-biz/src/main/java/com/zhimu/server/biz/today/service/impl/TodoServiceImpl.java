@@ -859,16 +859,13 @@ public class TodoServiceImpl implements TodoService, TodoQueryService, TodoSourc
         return TodoStatus.IGNORED.name().equals(todo.getStatus());
     }
 
-    /** 业务日是否就是指定日期；没有 due_date 的历史待办按 businessDay 兜底。 */
+    /** 业务日是否就是指定日期（与日视图、首页数量同一归日规则） */
     private boolean isDueOn(Todo todo, LocalDate day) {
-        if (todo.getDueDate() != null) {
-            return todo.getDueDate().equals(day);
-        }
         return day.equals(businessDay(todo, day));
     }
 
     private static boolean isDateOverdue(Todo todo, LocalDate today) {
-        return todo.getDueDate() != null && todo.getDueDate().isBefore(today);
+        return TodoBusinessDay.isOpenOverdue(todo, today);
     }
 
     /**
