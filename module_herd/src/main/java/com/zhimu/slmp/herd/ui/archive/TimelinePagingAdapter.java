@@ -66,6 +66,14 @@ public class TimelinePagingAdapter extends PagingDataAdapter<TimelineItemVO, Tim
         });
     }
 
+    /** 访问最后一项，让分页加载下一页（定位记录时用） */
+    public void loadMore() {
+        int count = getItemCount();
+        if (count > 0) {
+            getItem(count - 1);
+        }
+    }
+
     /** 展开的记录；只刷新变化的项 */
     public void setExpanded(@NonNull Set<Long> ids) {
         Set<Long> old = expanded;
