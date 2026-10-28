@@ -50,6 +50,7 @@ public class MedicationArchiveViewModel extends BaseListViewModel<Long, Medicati
     public static final String IMPACT_NO_CHANGE_EARLIER = "NO_CHANGE_EARLIER";
     public static final String IMPACT_LOCKED = "LOCKED";
     public static final String CHANGE_DELETE = "DELETE";
+    public static final String CHANGE_UPDATE = "UPDATE";
 
     private final MedicationRepository repository;
     private final HealthSharedRepository shared;
@@ -224,7 +225,7 @@ public class MedicationArchiveViewModel extends BaseListViewModel<Long, Medicati
         showTip.call();
     }
 
-    /** 记录菜单：EDIT、DELETE、CHANGE_REQUEST、VIEW_REQUEST、VIEW_LOG */
+    /** 记录菜单：EDIT、DELETE、CHANGE_REQUEST、VIEW_REQUEST、VIEW_LOG、NOTIFY（员工通知场长） */
     public void onRecordAction(@NonNull MedicationRecordVO r, @NonNull String action) {
         switch (action) {
             case HealthExtras.ACTION_EDIT:
@@ -241,6 +242,9 @@ public class MedicationArchiveViewModel extends BaseListViewModel<Long, Medicati
                 break;
             case HealthExtras.ACTION_VIEW_LOG:
                 showLogs.setValue(r.getId());
+                break;
+            case HealthExtras.ACTION_NOTIFY:
+                notifyManager(r, CHANGE_UPDATE);
                 break;
             default:
                 break;
@@ -381,10 +385,15 @@ public class MedicationArchiveViewModel extends BaseListViewModel<Long, Medicati
         if (r == null) {
             return;
         }
-        launch(repository.notifyManager(r.getId(), new NotifyManagerRequest(CHANGE_DELETE)), names -> {
-            pendingRecord = null;
-            showMessage("已通知" + (names == null || names.isEmpty() ? "场长" : String.join("、", names)));
-        }, e -> showMessage(e.getMessage()));
+        pendingRecord = null;
+        notifyManager(r, CHANGE_DELETE);
+    }
+
+    /** 员工“通知场长”（API-D27）：菜单 NOTIFY 为 UPDATE（非当天的本人记录需要场长修改），删除受限对话框为 DELETE */
+    private void notifyManager(@NonNull MedicationRecordVO r, @NonNull String action) {
+        launch(repository.notifyManager(r.getId(), new NotifyManagerRequest(action)), names ->
+                showMessage("已通知" + (names == null || names.isEmpty() ? "场长" : String.join("、", names))),
+                e -> showMessage(e.getMessage()));
     }
 
     /** 弹窗内的操作失败：无权限只提示，数据已变化提示后刷新 */

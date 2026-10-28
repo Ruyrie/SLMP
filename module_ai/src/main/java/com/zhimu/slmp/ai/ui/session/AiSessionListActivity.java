@@ -24,6 +24,11 @@ import com.zhimu.slmp.ai.di.AiInjector;
 import com.zhimu.slmp.ai.ui.common.FooterAdapter;
 import com.zhimu.slmp.ai.ui.common.PagingStates;
 import com.zhimu.slmp.ai.ui.common.SingleViewAdapter;
+import com.zhimu.slmp.ai.model.vo.AiSessionItemVO;
+import com.zhimu.slmp.ai.util.AiText;
+import com.zhimu.slmp.base.dialog.ConfirmDialogFragment;
+import com.zhimu.slmp.base.dialog.MoreMenuHelper;
+import com.zhimu.slmp.base.dialog.ReasonDialogFragment;
 import com.zhimu.slmp.base.mvvm.UiState;
 import com.zhimu.slmp.base.ui.BaseActivity;
 import com.zhimu.slmp.base.widget.NoticeView;
@@ -36,8 +41,15 @@ import com.zhimu.slmp.common.router.RouterPath;
 /**
  * K02 历史会话：说明横幅、按日期分组（今天 / 昨天 / 近 7 天 / 更早）的本人会话、搜索（结果不分组）、扩展 FAB“新对话”。
  * 点会话以 RESULT_OK 带 session_id 返回 K01；“新对话”“去提问”带 new_session 返回。
+ * 长按会话：“重命名”（1–40 字）、“删除”（二次确认）；删除过会话时返回 K01 带已删除的 ID。
  */
 public class AiSessionListActivity extends BaseActivity {
+
+    private static final String REQ_RENAME = "ai_session_rename";
+    private static final String REQ_DELETE = "ai_session_delete";
+    private static final String KEY_SESSION_ID = "session_id";
+    private static final int MENU_RENAME = 1;
+    private static final int MENU_DELETE = 2;
 
     private AiActivitySessionListBinding binding;
     private AiSessionListViewModel vm;
@@ -69,7 +81,7 @@ public class AiSessionListActivity extends BaseActivity {
         notice.setLayoutParams(lp);
         SingleViewAdapter header = new SingleViewAdapter(notice);
 
-        adapter = new AiSessionPagingAdapter(vm::onSessionClick);
+        adapter = new AiSessionPagingAdapter(vm::onSessionClick, this::showSessionMenu);
         binding.aiSessionList.setLayoutManager(new LinearLayoutManager(this));
         binding.aiSessionList.setAdapter(new ConcatAdapter(header,
                 adapter.withLoadStateFooter(new FooterAdapter(adapter::retry))));
@@ -142,6 +154,57 @@ public class AiSessionListActivity extends BaseActivity {
             setResult(RESULT_OK, new Intent().putExtra(RouterPath.EXTRA_NEW_SESSION, true));
             finish();
         });
+        // 删除过会话：返回 K01 时带上已删除的 ID（K01 正在看的会话被删则回到新对话）
+        vm.getDeletedIds().observe(this, ids -> setResult(RESULT_OK,
+                new Intent().putExtra(AiExtras.RESULT_DELETED_SESSION_IDS, ids)));
+        getSupportFragmentManager().setFragmentResultListener(REQ_RENAME, this, (key, result) -> {
+            Bundle extras = ReasonDialogFragment.getExtras(result);
+            if (ReasonDialogFragment.isConfirmed(result) && extras != null) {
+                vm.rename(extras.getLong(KEY_SESSION_ID), ReasonDialogFragment.getReason(result));
+            }
+        });
+        getSupportFragmentManager().setFragmentResultListener(REQ_DELETE, this, (key, result) -> {
+            Bundle extras = ConfirmDialogFragment.getExtras(result);
+            if (ConfirmDialogFragment.isConfirmed(result) && extras != null) {
+                vm.delete(extras.getLong(KEY_SESSION_ID));
+            }
+        });
+    }
+
+    /** 长按会话：“重命名”“删除” */
+    private void showSessionMenu(@NonNull View anchor, @NonNull AiSessionItemVO s) {
+        MoreMenuHelper.with(anchor)
+                .add(MENU_RENAME, getString(R.string.ai_session_menu_rename), com.zhimu.slmp.base.R.drawable.ic_edit)
+                .addDanger(MENU_DELETE, getString(R.string.ai_session_menu_delete),
+                        com.zhimu.slmp.base.R.drawable.ic_delete)
+                .setOnItemClickListener(id -> {
+                    Bundle extras = new Bundle();
+                    extras.putLong(KEY_SESSION_ID, s.getId());
+                    if (id == MENU_RENAME) {
+                        ReasonDialogFragment.builder(REQ_RENAME)
+                                .title(getString(R.string.ai_session_rename_title))
+                                .label(getString(R.string.ai_session_rename_label))
+                                .helper(getString(R.string.ai_session_rename_helper))
+                                .maxLength(AiText.MAX_SESSION_TITLE)
+                                .prefill(s.getTitle())
+                                .positive(getString(R.string.ai_session_rename_ok))
+                                .negative(getString(com.zhimu.slmp.base.R.string.base_action_cancel))
+                                .extras(extras)
+                                .build()
+                                .showSafely(getSupportFragmentManager());
+                    } else if (id == MENU_DELETE) {
+                        ConfirmDialogFragment.builder(REQ_DELETE)
+                                .title(getString(R.string.ai_session_delete_title))
+                                .message(getString(R.string.ai_session_delete_message))
+                                .positive(getString(R.string.ai_session_menu_delete))
+                                .negative(getString(com.zhimu.slmp.base.R.string.base_action_cancel))
+                                .danger(true)
+                                .extras(extras)
+                                .build()
+                                .showSafely(getSupportFragmentManager());
+                    }
+                })
+                .show();
     }
 
     private Unit onLoadStates(@NonNull CombinedLoadStates states) {

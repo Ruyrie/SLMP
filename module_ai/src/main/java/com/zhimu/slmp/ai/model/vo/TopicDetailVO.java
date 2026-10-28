@@ -19,6 +19,8 @@ public class TopicDetailVO extends TopicVO {
     private String action;
     private List<CourseCardVO> courses;
     private Resume resume;
+    /** 网页版专题完整地址（服务端按 USER_WEB_BASE_URL 拼出）；为空时只分享标题 */
+    private String shareUrl;
 
     /** 续学位置 */
     public static class Resume {
@@ -85,5 +87,14 @@ public class TopicDetailVO extends TopicVO {
 
     public void setResume(@Nullable Resume resume) {
         this.resume = resume;
+    }
+
+    @Nullable
+    public String getShareUrl() {
+        return shareUrl;
+    }
+
+    public void setShareUrl(@Nullable String shareUrl) {
+        this.shareUrl = shareUrl;
     }
 }

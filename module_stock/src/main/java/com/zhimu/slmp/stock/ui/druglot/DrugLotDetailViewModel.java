@@ -75,6 +75,9 @@ public class DrugLotDetailViewModel extends BaseListViewModel<Long, ListRow<Stoc
 
     private long lotId;
     private boolean fromMessage;
+    /** 从消息进入时的消息 ID（记录失效跳 T08 时带上） */
+    @Nullable
+    private Long messageId;
 
     @Inject
     public DrugLotDetailViewModel(@NonNull StockRepository repository) {
@@ -89,6 +92,7 @@ public class DrugLotDetailViewModel extends BaseListViewModel<Long, ListRow<Stoc
             id = StockExtras.readId(handle.get(RouterPath.EXTRA_BIZ_ID));
         }
         fromMessage = handle.contains(RouterPath.EXTRA_MESSAGE_ID) || handle.contains(RouterPath.EXTRA_ROUTE);
+        messageId = StockExtras.readId(handle.get(RouterPath.EXTRA_MESSAGE_ID));
         load(id == null ? 0 : id);
     }
 
@@ -312,6 +316,11 @@ public class DrugLotDetailViewModel extends BaseListViewModel<Long, ListRow<Stoc
 
     public SingleLiveEvent<Long> getOpenChangeLog() {
         return openChangeLog;
+    }
+
+    @Nullable
+    public Long getMessageId() {
+        return messageId;
     }
 
     public SingleLiveEvent<String> getRecordGone() {

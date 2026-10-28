@@ -10,6 +10,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.zhimu.slmp.base.error.ApiException;
+import com.zhimu.slmp.base.error.ErrorCodes;
 import com.zhimu.slmp.base.mvvm.BaseViewModel;
 import com.zhimu.slmp.base.mvvm.SingleLiveEvent;
 import com.zhimu.slmp.base.util.DateFormatter;
@@ -35,6 +36,7 @@ import javax.inject.Inject;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -69,6 +71,8 @@ public class DiagnosisDetailViewModel extends BaseViewModel {
     private final MutableLiveData<HandleVO> handle = new MutableLiveData<>();
     private final MutableLiveData<DiagnosisDetailVO.DiagnosisPermissions> permissions = new MutableLiveData<>();
     private final MutableLiveData<Boolean> polling = new MutableLiveData<>(false);
+    /** 首轮轮询（默认 90 秒）结束仍在诊断：占位卡改显示“诊断时间较长”与“刷新”按钮 */
+    private final MutableLiveData<Boolean> slowDiagnosing = new MutableLiveData<>(false);
     private final MutableLiveData<Boolean> rediagnosing = new MutableLiveData<>(false);
     private final MutableLiveData<String> sourceLabel = new MutableLiveData<>();
     private final SingleLiveEvent<NavTarget> navEvent = new SingleLiveEvent<>();
@@ -78,6 +82,10 @@ public class DiagnosisDetailViewModel extends BaseViewModel {
     private long reportId;
     private int pollInterval = 3;
     private int pollMax = 90;
+    private static final int BACKOFF_START_SEC = 10;
+    private static final int BACKOFF_MAX_SEC = 60;
+    /** 当前退避间隔（秒），0 表示尚未进入退避 */
+    private int backoffSec;
     /** I05 刚提交、尚未拿到结果 */
     private boolean freshSubmit;
     @Nullable
@@ -136,7 +144,15 @@ public class DiagnosisDetailViewModel extends BaseViewModel {
         if (freshSubmit || d.isDiagnosing()) {
             freshSubmit = false;
             getSavedState().set("inspect_diag_done", true);
-            startPolling(pollInterval, pollMax);
+            if (Boolean.TRUE.equals(slowDiagnosing.getValue())) {
+                // 已进入慢速轮询（手动刷新后仍诊断中）：从最短间隔重新退避
+                backoffSec = 0;
+                scheduleBackoff();
+            } else {
+                startPolling(pollInterval, pollMax);
+            }
+        } else {
+            stopPolling();
         }
     }
 
@@ -257,7 +273,10 @@ public class DiagnosisDetailViewModel extends BaseViewModel {
 
     // ===== 轮询 =====
 
-    /** 诊断中：每 intervalSec 秒查 API-I20，结束或到 maxSec 后取 API-I19 */
+    /**
+     * 诊断中：每 intervalSec 秒查 API-I20，结束或到 maxSec 后取 API-I19。单次请求失败（网络抖动）跳过、下一次继续；
+     * 到时仍诊断中改为退避轮询（{@link #scheduleBackoff()}），页面同时提供下拉刷新与“刷新”按钮。
+     */
     public void startPolling(int intervalSec, int maxSec) {
         if (pollSub != null && !pollSub.isDisposed()) {
             return;
@@ -267,7 +286,7 @@ public class DiagnosisDetailViewModel extends BaseViewModel {
         long times = Math.max(1, maxSec / Math.max(1, intervalSec));
         pollSub = Observable.interval(intervalSec, intervalSec, TimeUnit.SECONDS, Schedulers.io())
                 .take(times)
-                .concatMapSingle(t -> repository.getDiagnosisState(reportId))
+                .concatMapMaybe(t -> repository.getDiagnosisState(reportId).toMaybe().onErrorComplete())
                 .takeUntil(s -> !s.isDiagnosing())
                 .lastElement()
                 .observeOn(AndroidSchedulers.mainThread())
@@ -275,7 +294,43 @@ public class DiagnosisDetailViewModel extends BaseViewModel {
         disposables.add(pollSub);
     }
 
+    /** 首轮轮询结束仍诊断中：按 10、20、40、60 秒（之后固定 60 秒）继续查 API-I20，失败也继续 */
+    private void scheduleBackoff() {
+        disposePoll();
+        backoffSec = backoffSec <= 0 ? BACKOFF_START_SEC : Math.min(BACKOFF_MAX_SEC, backoffSec * 2);
+        slowDiagnosing.setValue(true);
+        polling.setValue(true);
+        aiCardState.setValue(AI_PLACEHOLDER);
+        pollSub = Single.timer(backoffSec, TimeUnit.SECONDS, Schedulers.io())
+                .flatMap(t -> repository.getDiagnosisState(reportId))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(s -> {
+                    if (s.isDiagnosing()) {
+                        scheduleBackoff();
+                    } else {
+                        onPollEnd(s);
+                    }
+                }, e -> scheduleBackoff());
+        disposables.add(pollSub);
+    }
+
+    private void disposePoll() {
+        if (pollSub != null) {
+            disposables.remove(pollSub);
+            pollSub = null;
+        }
+    }
+
+    /** 诊断已结束：停止轮询并清除慢速状态 */
+    private void stopPolling() {
+        disposePoll();
+        backoffSec = 0;
+        polling.setValue(false);
+        slowDiagnosing.setValue(false);
+    }
+
     private void onPollEnd(@Nullable DiagnosisStateVO state) {
+        disposePoll();
         polling.setValue(false);
         boolean wasRediagnosing = Boolean.TRUE.equals(rediagnosing.getValue());
         launch(repository.getDiagnosis(reportId), d -> {
@@ -284,13 +339,29 @@ public class DiagnosisDetailViewModel extends BaseViewModel {
                 overlay(d, directResult);
             }
             apply(d);
+            if (d.isDiagnosing()) {
+                scheduleBackoff();
+                return;
+            }
+            stopPolling();
             if (wasRediagnosing && !DiagnosisDetailVO.AI_DONE.equals(d.getAiState())) {
                 showMessage(MSG_STILL_UNAVAILABLE);
             }
         }, e -> {
             rediagnosing.setValue(false);
-            handleError(e);
+            DiagnosisDetailVO cur = detail.getValue();
+            if (cur != null && cur.isDiagnosing() && !ErrorCodes.isNoPermission(e.getCode())) {
+                // 取详情失败但仍在诊断中：继续退避轮询，不让页面停在骨架屏
+                scheduleBackoff();
+            } else {
+                handleError(e);
+            }
         });
+    }
+
+    /** 下拉刷新 / 占位卡“刷新”：立即重新取 API-I19；仍诊断中时继续轮询 */
+    public void refresh() {
+        load();
     }
 
     /** 重新诊断：按钮加载；成功后刷新为已诊断，仍失败时保持待诊断 */
@@ -330,6 +401,8 @@ public class DiagnosisDetailViewModel extends BaseViewModel {
     public LiveData<DiagnosisDetailVO.DiagnosisPermissions> getPermissions() { return permissions; }
 
     public LiveData<Boolean> getPolling() { return polling; }
+
+    public LiveData<Boolean> getSlowDiagnosing() { return slowDiagnosing; }
 
     public LiveData<Boolean> getRediagnosing() { return rediagnosing; }
 

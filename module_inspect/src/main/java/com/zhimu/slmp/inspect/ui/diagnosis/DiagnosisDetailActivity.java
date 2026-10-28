@@ -90,6 +90,16 @@ public class DiagnosisDetailActivity extends BaseActivity {
         vm.getNavEvent().observe(this, t -> InspectNav.open(this, handleLauncher, t));
         vm.getShowRecordLogs().observe(this, id -> RecordLogSheet.show(getSupportFragmentManager(),
                 InspectExtras.BIZ_DIAGNOSIS_HANDLE, id, null));
+        // 下拉刷新与占位卡“刷新”：诊断超时仍未出结果时可手动重新查询
+        binding.inspectRefresh.setOnRefreshListener(() -> vm.refresh());
+        vm.getRefreshing().observe(this, r -> binding.inspectRefresh.setRefreshing(Boolean.TRUE.equals(r)));
+        ClickThrottle.setOnClickListener(binding.inspectAiRefresh, v -> vm.refresh());
+        vm.getSlowDiagnosing().observe(this, slow -> {
+            boolean s = Boolean.TRUE.equals(slow);
+            binding.inspectAiRefresh.setVisibility(s ? View.VISIBLE : View.GONE);
+            binding.inspectAiDiagnosingHint.setText(s ? com.zhimu.slmp.inspect.R.string.inspect_diag_slow_hint
+                    : com.zhimu.slmp.inspect.R.string.inspect_diag_diagnosing_hint);
+        });
         ClickThrottle.setOnClickListener(binding.inspectReportFooter, v -> {
             expanded = !expanded;
             binding.inspectReportExpand.setVisibility(expanded ? View.VISIBLE : View.GONE);

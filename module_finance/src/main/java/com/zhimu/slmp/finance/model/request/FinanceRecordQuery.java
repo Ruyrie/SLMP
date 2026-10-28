@@ -9,10 +9,12 @@ import java.util.Objects;
 
 /**
  * API-E03 收支流水查询参数（E04）：不可变，变化即重建分页。page、size 由分页数据源传入。
+ * month 为空时不传（只在带 batch_id 时使用，服务端按该批次全部记录查询）。
  */
 public final class FinanceRecordQuery {
 
-    @NonNull
+    /** “2026-10”；为空表示不按月份筛选（E10 进入时按批次查全部） */
+    @Nullable
     private final String month;
     @NonNull
     private final String type;
@@ -33,7 +35,7 @@ public final class FinanceRecordQuery {
     @Nullable
     private final String scope;
 
-    public FinanceRecordQuery(@NonNull String month, @NonNull String type, @Nullable String categoryIds,
+    public FinanceRecordQuery(@Nullable String month, @NonNull String type, @Nullable String categoryIds,
                               @Nullable String categoryLabel, @Nullable Long batchId, @Nullable String batchLabel,
                               @Nullable Boolean hasVoucher, @Nullable String keyword, @Nullable String scope) {
         this.month = month;
@@ -48,12 +50,12 @@ public final class FinanceRecordQuery {
     }
 
     @NonNull
-    public static FinanceRecordQuery of(@NonNull String month) {
+    public static FinanceRecordQuery of(@Nullable String month) {
         return new FinanceRecordQuery(month, FinanceConst.TYPE_ALL, null, null, null, null, null, null, null);
     }
 
     @NonNull
-    public FinanceRecordQuery withMonth(@NonNull String m) {
+    public FinanceRecordQuery withMonth(@Nullable String m) {
         return new FinanceRecordQuery(m, type, categoryIds, categoryLabel, batchId, batchLabel, hasVoucher, keyword,
                 scope);
     }
@@ -92,9 +94,14 @@ public final class FinanceRecordQuery {
                 keyword, s);
     }
 
-    @NonNull
+    @Nullable
     public String getMonth() {
         return month;
+    }
+
+    /** 不按月份筛选（按批次查全部） */
+    public boolean isAllMonths() {
+        return month == null;
     }
 
     @NonNull
@@ -152,7 +159,7 @@ public final class FinanceRecordQuery {
             return false;
         }
         FinanceRecordQuery q = (FinanceRecordQuery) o;
-        return month.equals(q.month) && type.equals(q.type) && Objects.equals(categoryIds, q.categoryIds)
+        return Objects.equals(month, q.month) && type.equals(q.type) && Objects.equals(categoryIds, q.categoryIds)
                 && Objects.equals(batchId, q.batchId) && Objects.equals(hasVoucher, q.hasVoucher)
                 && Objects.equals(keyword, q.keyword) && Objects.equals(scope, q.scope);
     }

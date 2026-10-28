@@ -26,6 +26,7 @@ import io.reactivex.rxjava3.core.Single;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
@@ -59,6 +60,14 @@ public interface AiApi {
     /** API-K04 更改关联批次（body：{"batch_id": 3001 | null}） */
     @PATCH("api/v1/ai/sessions/{id}")
     Single<ApiResponse<AiSessionDetailVO>> changeBatch(@Path("id") long sessionId, @Body RequestBody body);
+
+    /** 修改会话标题（body：{"title": "…"}，只传 title 时保留关联批次） */
+    @PATCH("api/v1/ai/sessions/{id}")
+    Single<ApiResponse<AiSessionDetailVO>> updateSession(@Path("id") long sessionId, @Body RequestBody body);
+
+    /** 删除本人会话（逻辑删除，重复删除也返回成功） */
+    @DELETE("api/v1/ai/sessions/{id}")
+    Single<ApiResponse<Object>> deleteSession(@Path("id") long sessionId);
 
     /** API-K05 可关联批次 */
     @GET("api/v1/ai/linkable-batches")

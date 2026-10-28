@@ -227,31 +227,33 @@ public class BatchSettlementViewModel extends FinanceViewModel {
         }
     }
 
-    /** 顶部栏 receipt_long：E04 筛选关联该批次的收支 */
+    /** 顶部栏 receipt_long：E04 筛选关联该批次的全部收支（不带月份）；返回后刷新核算 */
     public void openLinkedRecords() {
         BatchSettlementVO s = settlement.getValue();
-        NavTarget t = NavTarget.of(RouterPath.E04).put(RouterPath.EXTRA_BATCH_ID, batchId);
+        NavTarget t = NavTarget.of(RouterPath.E04).put(RouterPath.EXTRA_BATCH_ID, batchId).forResult();
         if (s != null) {
-            t.put(RouterPath.EXTRA_BATCH_NO, s.getBatch().getBatchNo())
-                    .put(RouterPath.EXTRA_MONTH, FinanceFormat.monthOf(s.getBatch().getEndDate() == null ? null
-                            : s.getBatch().getEndDate()));
+            t.put(RouterPath.EXTRA_BATCH_NO, s.getBatch().getBatchNo());
         }
         open(t);
     }
 
-    /** “其他费用”行：E04 按该批次筛选手工支出 */
+    /** “其他费用”行：E04 按该批次筛选手工支出（不带月份）；返回后刷新核算 */
     public void openOtherCosts() {
         BatchSettlementVO s = settlement.getValue();
         NavTarget t = NavTarget.of(RouterPath.E04).put(RouterPath.EXTRA_BATCH_ID, batchId)
-                .put(RouterPath.EXTRA_RECORD_FILTER_TYPE, FinanceConst.TYPE_MANUAL);
+                .put(RouterPath.EXTRA_RECORD_FILTER_TYPE, FinanceConst.TYPE_MANUAL).forResult();
         if (s != null) {
-            t.put(RouterPath.EXTRA_BATCH_NO, s.getBatch().getBatchNo())
-                    .put(RouterPath.EXTRA_MONTH, FinanceFormat.monthOf(s.getBatch().getEndDate()));
+            t.put(RouterPath.EXTRA_BATCH_NO, s.getBatch().getBatchNo());
         }
         open(t);
     }
 
     public void openSaleOrder(long id) {
-        open(NavTarget.of(RouterPath.E07).put(RouterPath.EXTRA_SALE_ORDER_ID, id));
+        open(NavTarget.of(RouterPath.E07).put(RouterPath.EXTRA_SALE_ORDER_ID, id).forResult());
+    }
+
+    /** 从 E04、E07 返回：收支可能已修改或作废，重新取核算 */
+    public void onChildResult() {
+        load();
     }
 }

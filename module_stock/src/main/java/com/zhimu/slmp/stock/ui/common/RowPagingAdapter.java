@@ -59,6 +59,11 @@ public abstract class RowPagingAdapter<T> extends PagingDataAdapter<ListRow<T>, 
     /** 绑定数据行（图标、文字、数量、标签） */
     protected abstract void bindItem(@NonNull StockItemRowBinding b, @NonNull T item);
 
+    /** 该行是否可点（没有跳转目标的行去掉点击态）；默认可点 */
+    protected boolean isItemClickable(@NonNull T item) {
+        return true;
+    }
+
     @Override
     public int getItemViewType(int position) {
         ListRow<T> r = peek(position);
@@ -97,7 +102,7 @@ public abstract class RowPagingAdapter<T> extends PagingDataAdapter<ListRow<T>, 
         int size = first && last ? 1 : 3;
         int index = first ? 0 : last ? 2 : 1;
         StockUi.position(b.stockRowCard, index, size);
-        if (onClick != null) {
+        if (onClick != null && isItemClickable(item)) {
             b.stockRowCard.setOnClickListener(v -> onClick.accept(item));
         } else {
             b.stockRowCard.setOnClickListener(null);

@@ -34,6 +34,7 @@ import javax.inject.Inject;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.FlowableEmitter;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -83,6 +84,20 @@ public class AiRepository {
     @NonNull
     public Single<AiMessageSliceVO> getMessages(long sessionId, @Nullable Integer beforeRoundNo, int size) {
         return api.messages(sessionId, beforeRoundNo, null, size).compose(RxResult.unwrap());
+    }
+
+    /** 重命名会话（PATCH title，1–40 字） */
+    @NonNull
+    public Single<AiSessionDetailVO> renameSession(long sessionId, @NonNull String title) {
+        JsonObject body = new JsonObject();
+        body.addProperty("title", title);
+        return api.updateSession(sessionId, RequestBody.create(body.toString(), JSON)).compose(RxResult.unwrap());
+    }
+
+    /** 删除会话 */
+    @NonNull
+    public Completable deleteSession(long sessionId) {
+        return RxResult.completable(api.deleteSession(sessionId));
     }
 
     /** API-K04：batchId 为 null 表示取消关联（序列化保留 null） */

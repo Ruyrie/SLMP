@@ -10,6 +10,9 @@ public final class AiExtras {
     }
 
 
+    /** K02 返回 K01：本次删除的会话 ID（long[]），K01 正在看的会话被删时回到新对话 */
+    public static final String RESULT_DELETED_SESSION_IDS = "deleted_session_ids";
+
     public static final String MODE_CHAT = "chat";
     public static final String MODE_COURSE = "course";
 }

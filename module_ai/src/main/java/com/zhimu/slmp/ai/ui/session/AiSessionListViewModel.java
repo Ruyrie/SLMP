@@ -20,6 +20,8 @@ import com.zhimu.slmp.base.mvvm.BaseListViewModel;
 import com.zhimu.slmp.base.mvvm.BaseViewModel;
 import com.zhimu.slmp.base.mvvm.SingleLiveEvent;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +44,9 @@ public class AiSessionListViewModel extends BaseViewModel {
     private final LiveData<PagingData<SessionRow>> sessions;
     private final SingleLiveEvent<Long> openSession = new SingleLiveEvent<>();
     private final SingleLiveEvent<Boolean> newChat = new SingleLiveEvent<>();
+    /** 删除成功后通知页面更新返回结果（本次已删除的全部会话 ID） */
+    private final SingleLiveEvent<long[]> deletedIds = new SingleLiveEvent<>();
+    private final List<Long> deleted = new ArrayList<>();
     private final PublishSubject<String> input = PublishSubject.create();
     @Nullable
     private PagingSource<Integer, AiSessionItemVO> source;
@@ -104,6 +109,10 @@ public class AiSessionListViewModel extends BaseViewModel {
         return newChat;
     }
 
+    public SingleLiveEvent<long[]> getDeletedIds() {
+        return deletedIds;
+    }
+
     /** 当前是否在搜索（空状态文案用） */
     public boolean hasKeyword() {
         String q = query.getValue();
@@ -140,6 +149,39 @@ public class AiSessionListViewModel extends BaseViewModel {
 
     public void onNewChat() {
         newChat.setValue(true);
+    }
+
+    /** 长按菜单“重命名”：1–40 字，成功后刷新列表 */
+    public void rename(long sessionId, @Nullable String title) {
+        String t = title == null ? "" : title.trim();
+        if (t.isEmpty()) {
+            showMessage("标题不能为空");
+            return;
+        }
+        if (t.length() > AiText.MAX_SESSION_TITLE) {
+            showMessage("标题不能超过 " + AiText.MAX_SESSION_TITLE + " 字");
+            return;
+        }
+        launch(repository.renameSession(sessionId, t), vo -> {
+            showMessage("已重命名");
+            refresh();
+        });
+    }
+
+    /** 长按菜单“删除”（二次确认后）：成功后刷新列表 */
+    public void delete(long sessionId) {
+        launch(repository.deleteSession(sessionId), () -> {
+            if (!deleted.contains(sessionId)) {
+                deleted.add(sessionId);
+            }
+            long[] ids = new long[deleted.size()];
+            for (int i = 0; i < ids.length; i++) {
+                ids[i] = deleted.get(i);
+            }
+            deletedIds.setValue(ids);
+            showMessage("已删除会话");
+            refresh();
+        });
     }
 
     public void refresh() {

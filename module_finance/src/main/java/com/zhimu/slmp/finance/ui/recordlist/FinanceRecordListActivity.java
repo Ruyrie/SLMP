@@ -151,7 +151,11 @@ public class FinanceRecordListActivity extends FinancePageActivity {
         if (q == null) {
             return;
         }
-        binding.financeMonthChip.setText(FinanceFormat.monthLabel(q.getMonth()));
+        // 按批次查全部（E10 进入）时不显示月份筛选
+        binding.financeMonthChip.setVisibility(q.isAllMonths() ? View.GONE : View.VISIBLE);
+        if (!q.isAllMonths()) {
+            binding.financeMonthChip.setText(FinanceFormat.monthLabel(q.getMonth()));
+        }
         renderingChips = true;
         binding.financeTypeChips.removeAllViews();
         String[][] types = {{FinanceConst.TYPE_ALL, getString(R.string.finance_e04_type_all)},
@@ -218,7 +222,8 @@ public class FinanceRecordListActivity extends FinancePageActivity {
         }
         FinanceRecordQuery q = vm.currentFilter();
         OptionSheetDialogFragment.builder(REQ_MONTH).title(getString(R.string.finance_month_title)).options(options)
-                .selected(q == null ? m : q.getMonth()).build().showSafely(getSupportFragmentManager());
+                .selected(q == null || q.getMonth() == null ? m : q.getMonth()).build()
+                .showSafely(getSupportFragmentManager());
     }
 
     private void showFilter() {

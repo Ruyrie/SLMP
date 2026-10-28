@@ -71,14 +71,16 @@ public class FinanceRecordListViewModel extends FinanceListViewModel<FinanceReco
             return;
         }
         String month = handle.get(RouterPath.EXTRA_MONTH);
+        Long batch = handle.get(RouterPath.EXTRA_BATCH_ID);
+        boolean byBatch = batch != null && batch > 0;
+        // E10 按批次进入不带月份：查该批次全部收支，隐藏月份筛选（服务端带 batch_id 时 month 可不传）
         FinanceRecordQuery q = FinanceRecordQuery.of(month != null && month.length() == 7 ? month
-                : FinanceFormat.currentMonth());
+                : byBatch ? null : FinanceFormat.currentMonth());
         String ids = handle.get(RouterPath.EXTRA_CATEGORY_IDS);
         if (ids != null) {
             q = q.withCategories(ids, handle.get(RouterPath.EXTRA_CATEGORY_NAME));
         }
-        Long batch = handle.get(RouterPath.EXTRA_BATCH_ID);
-        if (batch != null && batch > 0) {
+        if (byBatch) {
             q = q.withBatch(batch, handle.get(RouterPath.EXTRA_BATCH_NO));
         }
         String type = handle.get(RouterPath.EXTRA_RECORD_FILTER_TYPE);
@@ -155,8 +157,13 @@ public class FinanceRecordListViewModel extends FinanceListViewModel<FinanceReco
         setFilter(query().withCategories(null, null));
     }
 
+    /** 去掉批次筛选；原先按批次查全部时回到当月 */
     public void clearBatch() {
-        setFilter(query().withBatch(null, null));
+        FinanceRecordQuery q = query().withBatch(null, null);
+        if (q.isAllMonths()) {
+            q = q.withMonth(FinanceFormat.currentMonth());
+        }
+        setFilter(q);
     }
 
     /** 筛选面板“应用” */

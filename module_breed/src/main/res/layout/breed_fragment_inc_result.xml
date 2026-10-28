@@ -61,7 +61,7 @@
                     layout="@layout/breed_include_kv"
                     app:chevron="@{vm.detail.batchId != null}"
                     app:label="@{@string/breed_kv_new_batch}"
-                    app:value="@{vm.detail.batchNo == null ? @string/breed_kv_not_transferred : vm.detail.batchNo + ` · ` + vm.detail.targetPenName}" />
+                    app:value="@{vm.detail.batchNo == null ? @string/breed_kv_not_transferred : (vm.detail.targetPenName == null ? vm.detail.batchNo : vm.detail.batchNo + ` · ` + vm.detail.targetPenName)}" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

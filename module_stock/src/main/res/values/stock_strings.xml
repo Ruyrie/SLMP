@@ -124,6 +124,8 @@
 
     <!-- M06 批号详情 -->
     <string name="stock_lot_title">批号详情</string>
+    <string name="stock_lot_gone_title">该批号已被删除，无法查看</string>
+    <string name="stock_lot_gone_desc">这条消息关联的药品批号已被删除或不在当前养殖场，消息本身仍保留在消息中心。</string>
     <string name="stock_lot_info">批号信息</string>
     <string name="stock_lot_flows">出入库流水</string>
     <string name="stock_lot_flows_note">报废损失不计入批次成本</string>

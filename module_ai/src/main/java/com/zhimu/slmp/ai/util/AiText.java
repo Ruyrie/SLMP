@@ -46,6 +46,8 @@ public final class AiText {
     public static final int COUNT_FROM = 480;
     public static final int MAX_IMAGES = 9;
     public static final int MAX_SESSION_KEYWORD = 50;
+    /** 会话标题上限（服务端 40 字） */
+    public static final int MAX_SESSION_TITLE = 40;
     public static final int MAX_COURSE_KEYWORD = 30;
 
     public static final String UNLINKED = "未关联批次";

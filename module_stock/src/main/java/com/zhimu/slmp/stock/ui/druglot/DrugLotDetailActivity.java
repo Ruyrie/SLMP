@@ -123,7 +123,8 @@ public class DrugLotDetailActivity extends BaseActivity {
         });
         vm.getOpenArchive().observe(this, id -> StockNav.open(this, childLauncher, RouterPath.M09,
                 StockNav.idArgs(RouterPath.EXTRA_DRUG_ID, id)));
-        vm.getOpenMessage().observe(this, id -> Router.open(this, RouterPath.T06,
+        // 召回通知：T07 按 message_id 显示该条消息详情
+        vm.getOpenMessage().observe(this, id -> Router.open(this, RouterPath.T07,
                 StockNav.idArgs(RouterPath.EXTRA_MESSAGE_ID, id)));
         vm.getOpenInboundEdit().observe(this, id -> {
             Bundle b = StockNav.idArgs(RouterPath.EXTRA_RECORD_ID, id);
@@ -135,9 +136,17 @@ public class DrugLotDetailActivity extends BaseActivity {
         vm.getOpenChangeLog().observe(this, id -> RecordLogSheet.show(getSupportFragmentManager(),
                 StockEnums.BIZ_INBOUND, id, null));
         vm.getOpenRecord().observe(this, f -> StockNav.openFlow(this, childLauncher, f));
+        // T08 只读 page_title、deleted_title、deleted_desc、message_id
         vm.getRecordGone().observe(this, msg -> {
             Bundle b = new Bundle();
-            b.putString(RouterPath.EXTRA_MESSAGE, msg);
+            b.putString(RouterPath.EXTRA_PAGE_TITLE, getString(R.string.stock_lot_title));
+            b.putString(RouterPath.EXTRA_DELETED_TITLE, getString(R.string.stock_lot_gone_title));
+            b.putString(RouterPath.EXTRA_DELETED_DESC, msg == null || msg.isEmpty()
+                    ? getString(R.string.stock_lot_gone_desc) : msg);
+            Long messageId = vm.getMessageId();
+            if (messageId != null) {
+                b.putLong(RouterPath.EXTRA_MESSAGE_ID, messageId);
+            }
             if (Router.open(this, RouterPath.T08, b)) {
                 finish();
             }

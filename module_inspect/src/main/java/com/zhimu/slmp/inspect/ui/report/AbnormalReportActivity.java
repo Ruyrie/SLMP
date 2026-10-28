@@ -127,6 +127,8 @@ public class AbnormalReportActivity extends BaseActivity {
     protected void onMessageAction(@NonNull String actionId) {
         if ("inspect_report_retry".equals(actionId)) {
             vm.submit();
+        } else if (AbnormalReportViewModel.ACTION_RETRY_SYMPTOMS.equals(actionId)) {
+            vm.retrySymptoms();
         }
     }
 
