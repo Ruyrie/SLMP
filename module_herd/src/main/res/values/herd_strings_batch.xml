@@ -4,6 +4,9 @@
 
     <!-- ===== L06 ===== -->
     <string name="herd_archive_error_title">批次档案加载失败</string>
+    <string name="herd_archive_page_title">批次档案</string>
+    <string name="herd_archive_deleted_title">该批次已被删除，无法查看</string>
+    <string name="herd_archive_deleted_desc">批次删除后，入栏记录和相关待办不再显示。</string>
     <string name="herd_archive_no_permission">你没有这个批次的查看权限</string>
     <string name="herd_archive_qr">批次二维码</string>
     <string name="herd_archive_records">生产记录</string>

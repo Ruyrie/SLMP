@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 
+import com.zhimu.slmp.base.mvvm.UiState;
 import com.zhimu.slmp.base.util.DateFormatter;
 import com.zhimu.slmp.common.farm.FarmContext;
 import com.zhimu.slmp.network.model.PageVO;
@@ -26,6 +27,7 @@ import com.zhimu.slmp.today.data.TodayPrefs;
 import com.zhimu.slmp.today.data.TodoRepository;
 import com.zhimu.slmp.today.model.vo.HomeVO;
 import com.zhimu.slmp.today.model.vo.TodoCalendarResult;
+import com.zhimu.slmp.today.model.vo.TodoItemVO;
 import com.zhimu.slmp.today.model.vo.TodoWeeklyResult;
 import com.zhimu.slmp.today.service.TodayServiceImpl;
 import com.zhimu.slmp.today.util.CalendarMode;
@@ -42,6 +44,8 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
@@ -216,6 +220,135 @@ public class CalendarViewModelTest {
         assertEquals("10月19日 周一 · 今天", vm.getWeekGroups().getValue().get(0).getTitle());
         assertEquals(23, vm.getWeekGroups().getValue().get(0).getRemaining());
         assertEquals(Collections.emptyList(), vm.getOverdueItems().getValue());
+    }
+
+    // ===================== 待处理 / 已完成·已忽略 分段 =====================
+
+    private static Map<String, Integer> tabs(int unfinished, int closed) {
+        Map<String, Integer> m = new HashMap<>();
+        m.put("UNFINISHED", unfinished);
+        m.put("CLOSED", closed);
+        return m;
+    }
+
+    private static TodoItemVO item(long id, String status) {
+        return TestData.parse(TestData.todo(id, status, "WORK"), TodoItemVO.class);
+    }
+
+    @Test
+    public void dayList_onlyClosedLeft_showsAllDoneAndPendingCountZero() {
+        vm.init("2026-10-19", null, "DAY");
+
+        vm.onOpenFirstPage(vm.lastDayKey(), new PageVO<>(Collections.emptyList(), 0, 1, 20, false, tabs(0, 2)));
+
+        assertEquals(0, (int) vm.getDayTotal().getValue());
+        assertEquals(2, (int) vm.getClosedTotal().getValue());
+        assertFalse(vm.getClosedExpanded().getValue());
+        assertEquals(UiState.Status.EMPTY, vm.getListState().getValue().getStatus());
+        assertEquals(CalendarViewModel.ALL_DONE_TODAY, vm.getListState().getValue().getTitle());
+    }
+
+    @Test
+    public void dayList_noTodosAtAll_plainEmpty() {
+        vm.init("2026-10-19", null, "DAY");
+
+        vm.onOpenFirstPage(vm.lastDayKey(), new PageVO<>(Collections.emptyList(), 0, 1, 20, false, tabs(0, 0)));
+
+        assertEquals(0, (int) vm.getClosedTotal().getValue());
+        assertEquals(UiState.Status.EMPTY, vm.getListState().getValue().getStatus());
+        assertNull(vm.getListState().getValue().getTitle());
+    }
+
+    @Test
+    public void dayList_closedCollapsedByDefault_keptOnRefresh_resetOnDateChange() {
+        vm.init("2026-10-19", null, "DAY");
+        vm.onOpenFirstPage(vm.lastDayKey(), new PageVO<>(Collections.singletonList(item(1, "PENDING")), 1, 1, 20,
+                false, tabs(1, 3)));
+        assertEquals(1, (int) vm.getDayTotal().getValue());
+        assertEquals(3, (int) vm.getClosedTotal().getValue());
+        assertEquals(UiState.Status.CONTENT, vm.getListState().getValue().getStatus());
+        assertFalse(vm.getClosedExpanded().getValue());
+
+        vm.toggleClosed();
+        assertTrue(vm.getClosedExpanded().getValue());
+
+        // 完成 / 忽略后同一天刷新：保留展开状态与数量，等新结果更新
+        vm.onTodoChanged();
+        assertTrue(vm.getClosedExpanded().getValue());
+        assertEquals(3, (int) vm.getClosedTotal().getValue());
+        vm.onOpenFirstPage(vm.lastDayKey(), new PageVO<>(Collections.emptyList(), 0, 1, 20, false, tabs(0, 4)));
+        assertEquals(0, (int) vm.getDayTotal().getValue());
+        assertEquals(4, (int) vm.getClosedTotal().getValue());
+
+        // 换日期：默认收起
+        vm.selectDate(LocalDate.of(2026, 10, 20));
+        assertFalse(vm.getClosedExpanded().getValue());
+        assertEquals(0, (int) vm.getClosedTotal().getValue());
+    }
+
+    @Test
+    public void dayList_noClosedLeft_collapsesSection() {
+        vm.init("2026-10-19", null, "MONTH");
+        vm.onOpenFirstPage(vm.lastDayKey(), new PageVO<>(Collections.emptyList(), 0, 1, 20, false, tabs(0, 1)));
+        vm.toggleClosed();
+        assertTrue(vm.getClosedExpanded().getValue());
+
+        vm.onOpenFirstPage(vm.lastDayKey(), new PageVO<>(Collections.singletonList(item(1, "PENDING")), 1, 1, 20,
+                false, tabs(1, 0)));
+
+        assertFalse(vm.getClosedExpanded().getValue());
+        assertEquals(0, (int) vm.getClosedTotal().getValue());
+    }
+
+    @Test
+    public void dayList_closedCountFallsBackToCalendarGrid() {
+        vm.init("2026-10-19", null, "MONTH");
+        vm.applyGrid(TestData.parse("{'days':[{'date':'2026-10-19','is_today':true,'total':3,'overdue_count':0,"
+                + "'pending_count':1,'closed_count':2}]}", TodoCalendarResult.class));
+
+        vm.onOpenFirstPage(vm.lastDayKey(), new PageVO<>(Collections.singletonList(item(1, "PENDING")), 1, 1, 20,
+                false, null));
+
+        assertEquals(1, (int) vm.getDayTotal().getValue());
+        assertEquals(2, (int) vm.getClosedTotal().getValue());
+    }
+
+    @Test
+    public void weekly_splitsPendingAndClosed() {
+        when(todoRepository.getDayTodos(anyString(), any(), any(), anyString(), anyInt()))
+                .thenReturn(Single.just(new PageVO<>(Collections.singletonList(item(2, "DONE")), 2, 1, 100, false,
+                        null)));
+        vm.init(null, null, CalendarMode.WEEK.name());
+
+        vm.applyWeek(TestData.parse("{'days':[{'date':'2026-10-19','is_today':true,'total':8,'closed_count':2,"
+                + "'items':[" + TestData.todo(1, "PENDING", "WORK") + "," + TestData.todo(2, "DONE", "WORK") + "]},"
+                + "{'date':'2026-10-20','total':1,'closed_count':1,'items':[" + TestData.todo(3, "IGNORED", "WORK")
+                + "]}]}", TodoWeeklyResult.class));
+
+        assertEquals(2, vm.getWeekGroups().getValue().size());
+        com.zhimu.slmp.today.util.WeekGroup today = vm.getWeekGroups().getValue().get(0);
+        assertEquals(6, today.getTotal());
+        assertEquals(1, today.getItems().size());
+        assertEquals(5, today.getRemaining());
+        assertEquals(2, today.getClosedTotal());
+        assertFalse(today.isClosedExpanded());
+        com.zhimu.slmp.today.util.WeekGroup next = vm.getWeekGroups().getValue().get(1);
+        assertEquals(0, next.getTotal());
+        assertTrue(next.getItems().isEmpty());
+        assertEquals(1, next.getClosedTotal());
+
+        vm.toggleClosedDay(LocalDate.of(2026, 10, 19));
+        verify(todoRepository).getDayTodos("2026-10-19", CalendarViewModel.SCOPE_CURRENT, null,
+                TodoRepository.STATUS_CLOSED, TodoRepository.EXPAND_SIZE);
+        assertTrue(vm.getWeekGroups().getValue().get(0).isClosedExpanded());
+        assertEquals(1, vm.getWeekGroups().getValue().get(0).getClosedItems().size());
+
+        vm.toggleClosedDay(LocalDate.of(2026, 10, 19));
+        assertFalse(vm.getWeekGroups().getValue().get(0).isClosedExpanded());
+
+        vm.expandDay(LocalDate.of(2026, 10, 19));
+        verify(todoRepository).getDayTodos("2026-10-19", CalendarViewModel.SCOPE_CURRENT, null,
+                TodoRepository.STATUS_UNFINISHED, TodoRepository.EXPAND_SIZE);
     }
 
     @Test

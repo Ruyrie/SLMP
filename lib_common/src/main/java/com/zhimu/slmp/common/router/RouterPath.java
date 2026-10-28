@@ -316,6 +316,8 @@ public final class RouterPath {
     public static final String EXTRA_MAIN_TAB = "main_tab";
     /** 打开 MAIN 时转交给该标签的参数（Bundle，标签页用 MainTabHost.argsResultKey 接收） */
     public static final String EXTRA_MAIN_TAB_ARGS = "main_tab_args";
+    /** 打开 MAIN 后弹出 F01 切换养殖场面板（boolean；F01 是底部面板，没有独立页面，消息、推送的 route F01 用它） */
+    public static final String EXTRA_OPEN_FARM_SWITCHER = "open_farm_switcher";
     /** 推荐问题（String，T01 AI 入口打开 K01） */
     public static final String EXTRA_QUESTION = "question";
     /** 待办类别（String，TODO_CATEGORY，T01 进入 T03 时预选） */

@@ -4,5 +4,10 @@
 -keep class com.zhimu.slmp.**.model.vo.** { <fields>; <init>(...); }
 -keep class com.zhimu.slmp.**.model.request.** { <fields>; <init>(...); }
 
+# 表单草稿：各 ViewModel 的内部类 Draft / DraftData 用 Gson 存入 Room（t_form_draft），字段名就是 JSON 键，
+# 不能改名或被优化掉，否则升级后读不回草稿（覆盖 herd、feed、health、stock 等组件）
+-keepclassmembers class com.zhimu.slmp.**$Draft { <fields>; <init>(); }
+-keepclassmembers class com.zhimu.slmp.**$DraftData { <fields>; <init>(); }
+
 # 组件入口：BaseApplication 按类名反射创建，保留实现类与无参构造方法
 -keep class * implements com.zhimu.slmp.common.service.IModuleEntry { <init>(); }

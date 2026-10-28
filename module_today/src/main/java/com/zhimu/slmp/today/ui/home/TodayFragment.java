@@ -15,9 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -59,7 +57,9 @@ import java.util.List;
 /**
  * T01 今日首页（底部导航“今日”，TabRegistry.TODAY）：一级页顶部栏、问候区、按角色的指标卡 / 我负责的栏舍、
  * 今日三项预览与默认折叠的逾期分组（ConcatAdapter：头部 + 待办 + 列表状态）、扩展 FAB“登记”打开 T02。
- * 长按待办以 Activity Result 打开 T04；回到前台刷新未读数与首页；首次进入后先说明再申请通知权限（Android 13 及以上）。
+ * 长按待办以 Activity Result 打开 T04；页面恢复（含应用回到前台、从子页返回）时只在 onResume 刷新一次未读数与首页，
+ * 已展开的逾期组保持展开并随之刷新；首次进入后先说明再申请通知权限（Android 13 及以上）。
+ * 待办标题旁的日历图标进入 T03；所有者 / 场长有 ai_hint 时显示 AI 推荐横幅，点击进入 K01。
  */
 public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Listener {
 
@@ -88,21 +88,6 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
     private final ActivityResultLauncher<String> permissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(),
                     granted -> vm.onNotifyPermissionResult(granted));
-
-    private final DefaultLifecycleObserver foregroundObserver = new DefaultLifecycleObserver() {
-        private boolean first = true;
-
-        @Override
-        public void onStart(@NonNull LifecycleOwner owner) {
-            if (first) {
-                first = false;
-                return;
-            }
-            if (vm != null) {
-                vm.onAppForeground();
-            }
-        }
-    };
 
     @Nullable
     @Override
@@ -204,7 +189,7 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
             }
         });
         CoreInjector.get(requireContext()).farmContext().getContext().observe(owner, this::onFarmContext);
-        ProcessLifecycleOwner.get().getLifecycle().addObserver(foregroundObserver);
+        vm.getAiHint().observe(owner, this::renderAiHint);
     }
 
     private void bindHeaderClicks(@NonNull TodayItemHomeHeaderBinding h) {
@@ -214,6 +199,16 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
         h.cardWarning.setOnClickListener(v -> vm.onMetricClick(TodayViewModel.CARD_WARNING));
         h.cardOverdue.setOnClickListener(v -> vm.onMetricClick(TodayViewModel.CARD_OVERDUE));
         h.todoHeader.setOnActionClickListener(v -> vm.onMetricClick(TodayViewModel.CARD_TODAY));
+        ClickThrottle.setOnClickListener(h.calendarButton, v -> vm.onCalendarClick());
+        h.aiBanner.setAction(getString(R.string.today_home_ai_action), v -> vm.onAiBannerClick());
+        ClickThrottle.setOnClickListener(h.aiBanner, v -> vm.onAiBannerClick());
+    }
+
+    /** AI 推荐横幅：加粗“问问 AI 养殖助手”+ 推荐问题；显隐由布局按 ai_hint 绑定 */
+    private void renderAiHint(@Nullable String hint) {
+        if (header != null && hint != null) {
+            header.aiBanner.setNotice(getString(R.string.today_home_ai_default), hint);
+        }
     }
 
     private void onFarmContext(@Nullable FarmContextVO ctx) {
@@ -260,7 +255,7 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
                 && vm.getHome().getValue() != null;
         header.noPen.setVisibility(staffNoPen ? View.VISIBLE : View.GONE);
         // 员工还没有负责栏舍时不显示待办列表
-        header.todoHeader.setVisibility(staffNoPen || Boolean.TRUE.equals(vm.getFarmBlocked().getValue())
+        header.todoHeaderRow.setVisibility(staffNoPen || Boolean.TRUE.equals(vm.getFarmBlocked().getValue())
                 || !Boolean.TRUE.equals(vm.getHasPen().getValue()) ? View.GONE : View.VISIBLE);
         updateFooter(null);
     }
@@ -347,8 +342,8 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
     @Override
     public void onResume() {
         super.onResume();
+        // 回到前台与从子页返回都走这里（只刷新一次）；逾期组保持原展开状态，刷新后重新取展开内容
         if (vm != null) {
-            vm.collapseOverdue();
             vm.onAppForeground();
         }
     }
@@ -399,7 +394,6 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
 
     @Override
     public void onDestroyView() {
-        ProcessLifecycleOwner.get().getLifecycle().removeObserver(foregroundObserver);
         if (binding != null) {
             binding.list.setAdapter(null);
         }

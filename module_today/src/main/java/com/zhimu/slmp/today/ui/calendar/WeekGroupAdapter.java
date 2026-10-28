@@ -25,8 +25,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * 周视图：一周 7 天依次列出（没有待办的日期不显示），每天分组标题“10月19日 周一 · 今天 / 24 项”、先显示前 5 项，
- * 第 6 项起收起为“展开其余 N 项”，展开后为“收起”。行展平为标题、待办、展开按钮三种。
+ * 周视图：一周 7 天依次列出（没有待办的日期不显示），每天分组标题“10月19日 周一 · 今天 / 待处理 24 项”、
+ * 先显示前 5 项未完成，第 6 项起收起为“展开其余 N 项”，展开后为“收起”；下方“已完成 / 已忽略 · M 项”默认收起，
+ * 点开后加载当天已关闭的待办（M 为 0 时不显示）。行展平为标题、待办、展开按钮、已关闭标题四种。
  */
 public class WeekGroupAdapter extends ListAdapter<WeekGroupAdapter.Row, RecyclerView.ViewHolder> {
 
@@ -35,9 +36,15 @@ public class WeekGroupAdapter extends ListAdapter<WeekGroupAdapter.Row, Recycler
         void onExpand(@NonNull LocalDate date);
     }
 
+    /** “已完成 / 已忽略”展开 / 收起 */
+    public interface ClosedListener {
+        void onToggleClosed(@NonNull LocalDate date);
+    }
+
     static final int TYPE_TITLE = 0;
     static final int TYPE_ITEM = 1;
     static final int TYPE_EXPAND = 2;
+    static final int TYPE_CLOSED = 3;
 
     /** 展平后的一行 */
     static final class Row {
@@ -48,18 +55,25 @@ public class WeekGroupAdapter extends ListAdapter<WeekGroupAdapter.Row, Recycler
         final TodoItemVO item;
         final int index;
         final int size;
+        /** 已关闭段中的待办 */
+        final boolean closed;
 
         Row(int type, @NonNull WeekGroup group, @Nullable TodoItemVO item, int index, int size) {
+            this(type, group, item, index, size, false);
+        }
+
+        Row(int type, @NonNull WeekGroup group, @Nullable TodoItemVO item, int index, int size, boolean closed) {
             this.type = type;
             this.group = group;
             this.item = item;
             this.index = index;
             this.size = size;
+            this.closed = closed;
         }
 
         @NonNull
         String key() {
-            return type + "_" + group.getDate() + "_" + (item == null ? "" : item.getTodoId());
+            return type + "_" + group.getDate() + "_" + (closed ? "c" : "") + (item == null ? "" : item.getTodoId());
         }
     }
 
@@ -79,7 +93,10 @@ public class WeekGroupAdapter extends ListAdapter<WeekGroupAdapter.Row, Recycler
             }
             return Objects.equals(a.group.getTitle(), b.group.getTitle()) && a.group.getTotal() == b.group.getTotal()
                     && a.group.isExpanded() == b.group.isExpanded() && a.group.isExpanding() == b.group.isExpanding()
-                    && a.group.getRemaining() == b.group.getRemaining();
+                    && a.group.getRemaining() == b.group.getRemaining()
+                    && a.group.getClosedTotal() == b.group.getClosedTotal()
+                    && a.group.isClosedExpanded() == b.group.isClosedExpanded()
+                    && a.group.isClosedLoading() == b.group.isClosedLoading();
         }
     };
 
@@ -87,12 +104,16 @@ public class WeekGroupAdapter extends ListAdapter<WeekGroupAdapter.Row, Recycler
     private final TodoPagingAdapter.Listener listener;
     @NonNull
     private final ExpandListener expandListener;
+    @NonNull
+    private final ClosedListener closedListener;
     private boolean showFarmTag = true;
 
-    public WeekGroupAdapter(@NonNull TodoPagingAdapter.Listener listener, @NonNull ExpandListener expandListener) {
+    public WeekGroupAdapter(@NonNull TodoPagingAdapter.Listener listener, @NonNull ExpandListener expandListener,
+                            @NonNull ClosedListener closedListener) {
         super(DIFF);
         this.listener = listener;
         this.expandListener = expandListener;
+        this.closedListener = closedListener;
     }
 
     public void setShowFarmTag(boolean show) {
@@ -113,6 +134,14 @@ public class WeekGroupAdapter extends ListAdapter<WeekGroupAdapter.Row, Recycler
                 }
                 if (g.isExpanded() || g.getRemaining() > 0) {
                     rows.add(new Row(TYPE_EXPAND, g, null, 0, 0));
+                }
+                if (g.getClosedTotal() > 0) {
+                    rows.add(new Row(TYPE_CLOSED, g, null, 0, 0));
+                    List<TodoItemVO> closed = g.isClosedExpanded() ? g.getClosedItems()
+                            : java.util.Collections.emptyList();
+                    for (int i = 0; i < closed.size(); i++) {
+                        rows.add(new Row(TYPE_ITEM, g, closed.get(i), i, closed.size(), true));
+                    }
                 }
             }
         }
@@ -139,7 +168,7 @@ public class WeekGroupAdapter extends ListAdapter<WeekGroupAdapter.Row, Recycler
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        if (viewType == TYPE_TITLE) {
+        if (viewType == TYPE_TITLE || viewType == TYPE_CLOSED) {
             return new TitleVH(TodayItemSectionBinding.inflate(inflater, parent, false));
         }
         if (viewType == TYPE_EXPAND) {
@@ -151,10 +180,21 @@ public class WeekGroupAdapter extends ListAdapter<WeekGroupAdapter.Row, Recycler
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Row row = getItem(position);
-        if (holder instanceof TitleVH) {
+        if (holder instanceof TitleVH && row.type == TYPE_CLOSED) {
+            TodayItemSectionBinding b = ((TitleVH) holder).b;
+            android.content.Context c = b.getRoot().getContext();
+            b.title.setText(c.getString(R.string.today_calendar_closed_title, row.group.getClosedTotal()));
+            b.count.setText(row.group.isClosedLoading() ? c.getString(R.string.today_calendar_loading)
+                    : c.getString(row.group.isClosedExpanded() ? R.string.today_collapse : R.string.today_expand));
+            ClickThrottle.setOnClickListener(b.getRoot(), v -> closedListener.onToggleClosed(row.group.getDate()));
+            b.getRoot().setContentDescription(b.title.getText() + "，" + b.count.getText());
+        } else if (holder instanceof TitleVH) {
             TodayItemSectionBinding b = ((TitleVH) holder).b;
             b.title.setText(row.group.getTitle());
-            b.count.setText(b.getRoot().getContext().getString(R.string.today_calendar_count, row.group.getTotal()));
+            b.count.setText(CalendarTexts.pendingCount(b.getRoot().getContext(), row.group.getTotal()));
+            b.getRoot().setOnClickListener(null);
+            b.getRoot().setClickable(false);
+            b.getRoot().setContentDescription(null);
         } else if (holder instanceof ExpandVH) {
             TodayItemExpandBinding b = ((ExpandVH) holder).b;
             if (row.group.isExpanded()) {

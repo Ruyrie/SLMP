@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- T01 头部：问候区、审核横幅、指标卡行（养殖户：存栏 / 今日待办 / 预警；员工：负责栏舍 / 今日待办 / 已逾期）、
-     我负责的栏舍（员工）、“今日待办 · N 项”分组标题 + “查看全部” -->
+     AI 推荐横幅（养殖户）、我负责的栏舍（员工）、“今日待办 · N 项”分组标题 + “查看全部” + 日历图标 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -113,6 +113,17 @@
                 app:visibleIf="@{!safeUnbox(vm.managerView)}" />
         </LinearLayout>
 
+        <!-- AI 推荐横幅：服务端 ai_hint 有值时显示（只给所有者和场长），点击进入 K01 并带上推荐问题 -->
+        <com.zhimu.slmp.base.widget.NoticeView
+            android:id="@+id/ai_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/base_space_4"
+            android:visibility="gone"
+            app:noticeActionText="@string/today_home_ai_action"
+            app:noticeIcon="@drawable/ic_auto_awesome"
+            app:visibleIf="@{vm.aiHint != null &amp;&amp; !safeUnbox(vm.farmBlocked)}" />
+
         <LinearLayout
             android:id="@+id/my_pens_section"
             android:layout_width="match_parent"
@@ -143,13 +154,35 @@
                 android:visibility="gone" />
         </LinearLayout>
 
-        <com.zhimu.slmp.base.widget.SectionHeaderView
-            android:id="@+id/todo_header"
+        <!-- “今日待办 · N 项”+“查看全部”（进日历日视图）+ 日历图标（进日历默认视图） -->
+        <LinearLayout
+            android:id="@+id/todo_header_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/base_space_4"
-            app:sectionActionText="@string/today_view_all"
-            app:sectionTitle="@{@string/today_home_section_todos(safeUnbox(vm.todoTotal))}"
-            app:visibleIf="@{!safeUnbox(vm.farmBlocked) &amp;&amp; safeUnbox(vm.hasPen)}" />
+            android:clipChildren="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:visibleIf="@{!safeUnbox(vm.farmBlocked) &amp;&amp; safeUnbox(vm.hasPen)}">
+
+            <com.zhimu.slmp.base.widget.SectionHeaderView
+                android:id="@+id/todo_header"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:clipChildren="false"
+                app:sectionActionText="@string/today_view_all"
+                app:sectionTitle="@{@string/today_home_section_todos(safeUnbox(vm.todoTotal))}" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/calendar_button"
+                style="@style/Widget.Zmt.Button.Icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="-12dp"
+                android:contentDescription="@string/today_home_calendar_cd"
+                android:tooltipText="@string/today_home_calendar"
+                app:icon="@drawable/ic_calendar_month" />
+        </LinearLayout>
     </LinearLayout>
 </layout>

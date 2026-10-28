@@ -223,8 +223,18 @@ public class PenDetailViewModel extends BaseViewModel {
 
     // ===== 点击 =====
 
+    /** 负责员工：按 member_id 打开 F09 成员详情；服务端没有返回 member_id 时不跳转 */
     public void onStaffClick(@NonNull UserBriefVO user) {
-        navEvent.setValue(NavTarget.of(RouterPath.F09).put(RouterPath.EXTRA_USER_ID, user.getUserId()));
+        Long memberId = user.getMemberId();
+        if (memberId == null || memberId <= 0) {
+            return;
+        }
+        navEvent.setValue(NavTarget.of(RouterPath.F09).put(RouterPath.EXTRA_MEMBER_ID, memberId.longValue()));
+    }
+
+    /** 负责员工行能否点进成员详情 */
+    public static boolean canOpenStaff(@NonNull UserBriefVO user) {
+        return user.getMemberId() != null && user.getMemberId() > 0;
     }
 
     public void onAssignClick() {

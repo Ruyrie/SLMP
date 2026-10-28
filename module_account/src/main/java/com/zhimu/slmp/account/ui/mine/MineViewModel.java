@@ -48,6 +48,10 @@ public class MineViewModel extends BaseViewModel {
     private static final String TAG = "MineViewModel";
 
     public static final String ENTRY_FARMS = "farms";
+    /** 当前养殖场的 F05 养殖场信息 */
+    public static final String ENTRY_FARM_INFO = "farm_info";
+    /** 当前养殖场的 F07 成员管理 */
+    public static final String ENTRY_MEMBERS = "members";
     public static final String ENTRY_CHANGE_REQUESTS = "change_requests";
     public static final String ENTRY_REMINDER = "reminder";
     public static final String ENTRY_SECURITY = "security";
@@ -98,6 +102,12 @@ public class MineViewModel extends BaseViewModel {
     private final LiveData<Boolean> showQuitFarm;
     /** 退出行次文字“东山猪场 · 员工” */
     private final LiveData<String> quitFarmSubtitle;
+    /** 所有者、场长显示当前养殖场的“养殖场信息”（F05），员工不显示 */
+    private final LiveData<Boolean> showFarmInfo;
+    /** 所有者、场长显示当前养殖场的“成员管理”（F07），员工不显示 */
+    private final LiveData<Boolean> showMembers;
+    /** “养殖场信息”行副文字：当前养殖场名 · 角色 */
+    private final LiveData<String> farmInfoSubtitle;
     /** 打开退出确认对话框，值为当前养殖场名 */
     private final SingleLiveEvent<String> confirmQuitFarm = new SingleLiveEvent<>();
     /** 退出成功，值为提示文案“你已退出东山猪场” */
@@ -115,6 +125,9 @@ public class MineViewModel extends BaseViewModel {
                         || FarmContextVO.ROLE_MANAGER.equals(ctx.getRole())));
         quitFarmSubtitle = Transformations.map(farmContext.getContext(),
                 ctx -> ctx == null ? null : ctx.getName() + " · " + ctx.getRoleText());
+        showFarmInfo = Transformations.map(farmContext.getContext(), ctx -> showFarmInfoOf(ctx));
+        showMembers = Transformations.map(farmContext.getContext(), ctx -> showMembersOf(ctx));
+        farmInfoSubtitle = quitFarmSubtitle;
         user.addSource(overview, o -> user.setValue(pickUser()));
         user.addSource(sessionManager.getUser(), u -> user.setValue(pickUser()));
         avatarUrl = Transformations.map(user, u -> u == null ? null : u.getAvatarUrl());
@@ -132,6 +145,22 @@ public class MineViewModel extends BaseViewModel {
         farmChanged = Transformations.distinctUntilChanged(Transformations.map(farmContext.getContext(),
                 ctx -> ctx == null ? 0L : ctx.getFarmId()));
         load();
+    }
+
+    /** 当前养殖场中是所有者或场长 */
+    private static boolean isOwnerOrManager(@Nullable FarmContextVO ctx) {
+        return ctx != null && (FarmContextVO.ROLE_OWNER.equals(ctx.getRole())
+                || FarmContextVO.ROLE_MANAGER.equals(ctx.getRole()));
+    }
+
+    /** 所有者、场长可进入 F05；权限缺省（旧缓存没有 permissions）时按角色判断 */
+    static boolean showFarmInfoOf(@Nullable FarmContextVO ctx) {
+        return isOwnerOrManager(ctx) && (ctx.getPermissions() == null || ctx.getPermissions().isCanViewFarmInfo());
+    }
+
+    /** 所有者、场长可进入 F07；权限缺省时按角色判断 */
+    static boolean showMembersOf(@Nullable FarmContextVO ctx) {
+        return isOwnerOrManager(ctx) && (ctx.getPermissions() == null || ctx.getPermissions().isCanViewMembers());
     }
 
     @NonNull
@@ -227,6 +256,23 @@ public class MineViewModel extends BaseViewModel {
 
     public LiveData<List<String>> getFarmTags() {
         return farmTags;
+    }
+
+    public LiveData<Boolean> getShowFarmInfo() {
+        return showFarmInfo;
+    }
+
+    public LiveData<Boolean> getShowMembers() {
+        return showMembers;
+    }
+
+    public LiveData<String> getFarmInfoSubtitle() {
+        return farmInfoSubtitle;
+    }
+
+    /** 当前养殖场编号，没有时为 0 */
+    public long currentFarmId() {
+        return farmContext.farmIdOrZero();
     }
 
     public LiveData<Boolean> getShowChangeRequest() {

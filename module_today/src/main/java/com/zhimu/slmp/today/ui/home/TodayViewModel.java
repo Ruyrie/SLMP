@@ -330,7 +330,9 @@ public class TodayViewModel extends BaseViewModel {
         managerView.setValue(manager);
         ownerMetrics.setValue(vo.getOwnerMetrics());
         staffMetrics.setValue(vo.getStaffMetrics());
-        aiHint.setValue(null);
+        // AI 推荐横幅：服务端只给所有者和场长返回 ai_hint，有值才显示
+        String hint = vo.getAiHint();
+        aiHint.setValue(manager && !Texts.isBlank(hint) ? hint.trim() : null);
         myPens.setValue(vo.getMyPens());
         farmBlocked.setValue(vo.isFarmBlocked());
         hasPen.setValue(vo.isHasPen());
@@ -432,6 +434,7 @@ public class TodayViewModel extends BaseViewModel {
         }
     }
 
+    /** 待办标题旁的日历图标：进入 T03（视图按上次选择），选中服务端今天 */
     public void onCalendarClick() {
         Map<String, String> p = new HashMap<>();
         LocalDate today = serverToday();
@@ -443,7 +446,11 @@ public class TodayViewModel extends BaseViewModel {
 
     /** AI 横幅：进入 K01，推荐问题填入输入框，不自动发送 */
     public void onAiBannerClick() {
-        navEvent.setValue(NavTarget.of("K01", EXTRA_QUESTION, aiHint.getValue()));
+        String hint = aiHint.getValue();
+        if (Texts.isBlank(hint)) {
+            return;
+        }
+        navEvent.setValue(NavTarget.of("K01", EXTRA_QUESTION, hint));
     }
 
     public void onAvatarClick() {

@@ -66,9 +66,10 @@ public class RxResultTest {
                 Response.error(502, ResponseBody.create("<html>Bad Gateway</html>", MediaType.get("text/html")))));
         assertEquals(ErrorCodes.SERVER_ERROR, e.getCode());
 
+        // 超时与断网同属网络失败，超时的提示单独为“服务器响应超时，请稍后重试”（ApiException.network）
         ApiException net = RxResult.toApiException(new SocketTimeoutException("timeout"));
         assertTrue(net.isNetwork());
-        assertEquals(ApiException.MSG_NETWORK, net.getMessage());
+        assertEquals(ApiException.MSG_TIMEOUT, net.getMessage());
     }
 
     @Test

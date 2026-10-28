@@ -23,7 +23,9 @@ import com.zhimu.slmp.base.ui.BaseActivity;
 import com.zhimu.slmp.common.di.CoreInjector;
 import com.zhimu.slmp.common.model.vo.FarmContextVO;
 import com.zhimu.slmp.common.router.RouterPath;
+import com.zhimu.slmp.common.service.IFarmContextService;
 import com.zhimu.slmp.common.service.MainTabHost;
+import com.zhimu.slmp.common.service.ServiceHub;
 import com.zhimu.slmp.common.service.TabRegistry;
 
 import java.util.ArrayList;
@@ -34,7 +36,8 @@ import java.util.List;
  * 主页：按 FarmContext 角色装配底部导航（01 号文档 2.2 节）。
  * 所有者与场长“今日、生产、助手、经营、我的”；员工“今日、我的栏舍、助手、我的”；没有养殖场或养殖场待审核时按所有者。
  * 标签 Fragment 由 TabRegistry 创建，没有注册的标签显示占位页；角色变化时重建导航。
- * 打开时可带 RouterPath.EXTRA_MAIN_TAB（及 EXTRA_MAIN_TAB_ARGS）切到指定标签，导航装配好后生效。
+ * 打开时可带 RouterPath.EXTRA_MAIN_TAB（及 EXTRA_MAIN_TAB_ARGS）切到指定标签，导航装配好后生效；
+ * 带 RouterPath.EXTRA_OPEN_FARM_SWITCHER 时在页面恢复后弹出 F01 切换养殖场面板（消息、推送的 route F01）。
  * 返回：不在“今日”标签时先回到“今日”，在“今日”时交给系统（预测性返回到桌面）。
  */
 public class MainActivity extends BaseActivity implements MainTabHost {
@@ -87,6 +90,8 @@ public class MainActivity extends BaseActivity implements MainTabHost {
     private String pendingTab;
     @Nullable
     private Bundle pendingTabArgs;
+    /** 页面恢复后弹出 F01 切换养殖场面板 */
+    private boolean pendingFarmSwitcher;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -136,6 +141,23 @@ public class MainActivity extends BaseActivity implements MainTabHost {
         if (tab != null) {
             pendingTab = tab;
             pendingTabArgs = intent.getBundleExtra(RouterPath.EXTRA_MAIN_TAB_ARGS);
+        }
+        if (intent != null && intent.getBooleanExtra(RouterPath.EXTRA_OPEN_FARM_SWITCHER, false)) {
+            pendingFarmSwitcher = true;
+            // 只弹一次：重建（旋转屏幕等）时不再弹
+            intent.removeExtra(RouterPath.EXTRA_OPEN_FARM_SWITCHER);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (pendingFarmSwitcher) {
+            pendingFarmSwitcher = false;
+            IFarmContextService farm = ServiceHub.get(IFarmContextService.class);
+            if (farm != null) {
+                farm.showSwitcher(this, false, false);
+            }
         }
     }
 

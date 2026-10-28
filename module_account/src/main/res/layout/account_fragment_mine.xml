@@ -179,6 +179,27 @@
                                     </LinearLayout>
                                 </com.zhimu.slmp.base.widget.ListRowView>
 
+                                <!-- 当前养殖场的 F05 养殖场信息（转让所有权在其中）、F07 成员管理（邀请成员在其中）：所有者、场长可见 -->
+                                <com.zhimu.slmp.base.widget.ListRowView
+                                    android:id="@+id/account_mine_farm_info"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    app:rowLeadingIcon="@drawable/ic_info"
+                                    app:rowShowChevron="true"
+                                    app:rowSubtitle="@{vm.farmInfoSubtitle}"
+                                    app:rowTitle="@string/account_mine_farm_info"
+                                    app:visibleIf="@{vm.showFarmInfo}" />
+
+                                <com.zhimu.slmp.base.widget.ListRowView
+                                    android:id="@+id/account_mine_members"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    app:rowLeadingIcon="@drawable/ic_group"
+                                    app:rowShowChevron="true"
+                                    app:rowSubtitle="@string/account_mine_members_desc"
+                                    app:rowTitle="@string/account_mine_members"
+                                    app:visibleIf="@{vm.showMembers}" />
+
                                 <com.zhimu.slmp.base.widget.ListRowView
                                     android:id="@+id/account_mine_quit_farm"
                                     android:layout_width="match_parent"

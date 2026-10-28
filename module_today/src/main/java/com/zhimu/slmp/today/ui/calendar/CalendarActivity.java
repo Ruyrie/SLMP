@@ -42,6 +42,8 @@ import kotlin.Unit;
 /**
  * T03 养殖日历：月 / 周 / 日三种视图（技术文档 2.6.3），头部（按钮组、周期、MonthCalendarView、图例）与列表由 ConcatAdapter 拼接，
  * 切换视图时换成对应的适配器组合并交叉淡入 250 毫秒；长按待办、点已完成或已忽略的待办以 Activity Result 打开 T04。
+ * 当天列表分两段：“待处理 N 项”分页在上，“已完成 / 已忽略 · M 项”折叠头在下（默认收起，展开后分页加载）；
+ * 两段末尾各有加载更多 / 失败重试行。
  */
 public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.Listener {
 
@@ -54,8 +56,16 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
     private final SectionAdapter overdueSection = new SectionAdapter();
     private final SectionAdapter overdueMore = new SectionAdapter();
     private final ListStateAdapter listStateAdapter = new ListStateAdapter();
+    /** “待处理”段加载更多 / 失败重试 */
+    private final ListStateAdapter openFooter = new ListStateAdapter();
+    /** “已完成 / 已忽略”折叠头 */
+    private final SectionAdapter closedSection = new SectionAdapter();
+    /** “已完成 / 已忽略”段加载中 / 失败重试 */
+    private final ListStateAdapter closedFooter = new ListStateAdapter();
     private TodoPagingAdapter dayAdapter;
     private DayTimelineAdapter timelineAdapter;
+    private TodoPagingAdapter closedDayAdapter;
+    private DayTimelineAdapter closedTimelineAdapter;
     private WeekGroupAdapter weekAdapter;
     private TodoListAdapter overdueAdapter;
     private ConcatAdapter concat;
@@ -102,19 +112,35 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
         headerAdapter = new SingleViewAdapter(header.getRoot());
         dayAdapter = new TodoPagingAdapter(this, true);
         timelineAdapter = new DayTimelineAdapter(this);
-        weekAdapter = new WeekGroupAdapter(this, vm::expandDay);
+        closedDayAdapter = new TodoPagingAdapter(this, true);
+        closedTimelineAdapter = new DayTimelineAdapter(this);
+        weekAdapter = new WeekGroupAdapter(this, vm::expandDay, vm::toggleClosedDay);
         overdueAdapter = new TodoListAdapter(this, false);
         overdueSection.setOnClickListener(v -> vm.toggleOverdue());
         overdueMore.set(getString(R.string.today_view_all), "›");
         overdueMore.setVisible(false);
         overdueMore.setOnClickListener(v -> vm.onAllOverdueClick());
         listStateAdapter.setOnActionClickListener(v -> vm.retry());
+        closedSection.setVisible(false);
+        closedSection.setOnClickListener(v -> vm.toggleClosed());
+        openFooter.setOnActionClickListener(v -> {
+            TodoPagingAdapterRetry a = activeOpen();
+            if (a != null) a.retry();
+        });
+        closedFooter.setOnActionClickListener(v -> {
+            TodoPagingAdapterRetry a = activeClosed();
+            if (a != null) a.retry();
+        });
         concat = new ConcatAdapter(headerAdapter);
         binding.list.setItemAnimator(null);
         binding.list.setAdapter(concat);
 
-        dayAdapter.addLoadStateListener(states -> onLoadStates(states, dayAdapter.getItemCount()));
-        timelineAdapter.addLoadStateListener(states -> onLoadStates(states, timelineAdapter.getItemCount()));
+        dayAdapter.addLoadStateListener(states -> onOpenLoadStates(states, CalendarMode.MONTH));
+        timelineAdapter.addLoadStateListener(states -> onOpenLoadStates(states, CalendarMode.DAY));
+        closedDayAdapter.addLoadStateListener(states -> onClosedLoadStates(states, closedDayAdapter.getItemCount(),
+                CalendarMode.MONTH));
+        closedTimelineAdapter.addLoadStateListener(states -> onClosedLoadStates(states,
+                closedTimelineAdapter.getItemCount(), CalendarMode.DAY));
         observe();
     }
 
@@ -169,9 +195,11 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
         });
         vm.getTodayDate().observe(this, header.calendar::setToday);
         vm.getDayHeader().observe(this, text -> daySection.set(text,
-                getString(R.string.today_calendar_count, valueOr(vm.getDayTotal().getValue()))));
+                CalendarTexts.pendingCount(this, valueOr(vm.getDayTotal().getValue()))));
         vm.getDayTotal().observe(this, total -> daySection.set(vm.getDayHeader().getValue(),
-                getString(R.string.today_calendar_count, valueOr(total))));
+                CalendarTexts.pendingCount(this, valueOr(total))));
+        vm.getClosedTotal().observe(this, total -> renderClosed());
+        vm.getClosedExpanded().observe(this, expanded -> renderClosed());
         vm.getOverdueTotal().observe(this, total -> renderOverdue());
         vm.getOverdueItems().observe(this, items -> renderOverdue());
         vm.getOverdueExpanded().observe(this, expanded -> renderOverdue());
@@ -180,11 +208,16 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
         vm.getShowFarmTag().observe(this, show -> {
             boolean s = Boolean.TRUE.equals(show);
             dayAdapter.setShowFarmTag(s);
+            closedDayAdapter.setShowFarmTag(s);
             weekAdapter.setShowFarmTag(s);
         });
         vm.getDayPaging().observe(this, data -> {
             dayAdapter.submitData(getLifecycle(), data);
             timelineAdapter.submitData(getLifecycle(), data);
+        });
+        vm.getClosedPaging().observe(this, data -> {
+            closedDayAdapter.submitData(getLifecycle(), data);
+            closedTimelineAdapter.submitData(getLifecycle(), data);
         });
         vm.getListState().observe(this, this::renderListState);
         vm.getNavEvent().observe(this, this::open);
@@ -201,6 +234,18 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
         overdueAdapter.submitList(expanded ? vm.getOverdueItems().getValue() : java.util.Collections.emptyList());
         overdueAdapter.setShowFarmTag(CalendarViewModel.SCOPE_ALL.equals(vm.getScope().getValue()));
         overdueMore.setVisible(expanded && total > 5);
+    }
+
+    /** “已完成 / 已忽略 · M 项”折叠头：M 为 0 时不显示 */
+    private void renderClosed() {
+        int total = valueOr(vm.getClosedTotal().getValue());
+        boolean expanded = Boolean.TRUE.equals(vm.getClosedExpanded().getValue());
+        closedSection.set(getString(R.string.today_calendar_closed_title, total),
+                getString(expanded ? R.string.today_collapse : R.string.today_expand));
+        closedSection.setVisible(total > 0);
+        if (!expanded || total == 0) {
+            closedFooter.setState(ListStateAdapter.State.none());
+        }
     }
 
     private static int valueOr(@Nullable Integer v) {
@@ -231,29 +276,106 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
                 concat.addAdapter(daySection);
                 concat.addAdapter(listStateAdapter);
                 concat.addAdapter(timelineAdapter);
+                concat.addAdapter(openFooter);
                 concat.addAdapter(overdueSection);
                 concat.addAdapter(overdueAdapter);
                 concat.addAdapter(overdueMore);
+                concat.addAdapter(closedSection);
+                concat.addAdapter(closedTimelineAdapter);
+                concat.addAdapter(closedFooter);
                 break;
             case MONTH:
             default:
                 concat.addAdapter(daySection);
                 concat.addAdapter(listStateAdapter);
                 concat.addAdapter(dayAdapter);
+                concat.addAdapter(openFooter);
+                concat.addAdapter(closedSection);
+                concat.addAdapter(closedDayAdapter);
+                concat.addAdapter(closedFooter);
                 break;
         }
+        openFooter.setState(ListStateAdapter.State.none());
+        closedFooter.setState(ListStateAdapter.State.none());
         if (!first) {
             binding.list.setAlpha(0f);
             binding.list.animate().alpha(1f).setDuration(250).start();
         }
     }
 
-    private Unit onLoadStates(@NonNull CombinedLoadStates states, int count) {
+    /** 当前视图使用的“待处理”段适配器（周视图没有分页） */
+    @Nullable
+    private TodoPagingAdapterRetry activeOpen() {
+        if (shownMode == CalendarMode.WEEK || shownMode == null) {
+            return null;
+        }
+        return shownMode == CalendarMode.DAY ? timelineAdapter::retry : dayAdapter::retry;
+    }
+
+    @Nullable
+    private TodoPagingAdapterRetry activeClosed() {
+        if (shownMode == CalendarMode.WEEK || shownMode == null) {
+            return null;
+        }
+        return shownMode == CalendarMode.DAY ? closedTimelineAdapter::retry : closedDayAdapter::retry;
+    }
+
+    /** 分页适配器的 retry（PagingDataAdapter 两个子类共用） */
+    private interface TodoPagingAdapterRetry {
+        void retry();
+    }
+
+    /** “待处理”段：首屏失败交给列表状态；翻页中显示加载圈，翻页失败显示“没能加载更多待办 / 重试” */
+    private Unit onOpenLoadStates(@NonNull CombinedLoadStates states, @NonNull CalendarMode mode) {
+        if (!isActive(mode)) {
+            return Unit.INSTANCE;
+        }
         LoadState refresh = states.getRefresh();
         if (refresh instanceof LoadState.Error) {
             vm.onListError(ApiException.from(((LoadState.Error) refresh).getError()));
+            openFooter.setState(ListStateAdapter.State.none());
+            return Unit.INSTANCE;
+        }
+        LoadState append = states.getAppend();
+        if (refresh instanceof LoadState.NotLoading && append instanceof LoadState.Loading) {
+            openFooter.setState(ListStateAdapter.State.loading());
+        } else if (refresh instanceof LoadState.NotLoading && append instanceof LoadState.Error) {
+            openFooter.setState(ListStateAdapter.State.retry(getString(R.string.today_calendar_more_failed),
+                    getString(com.zhimu.slmp.base.R.string.base_action_retry)));
+        } else {
+            openFooter.setState(ListStateAdapter.State.none());
         }
         return Unit.INSTANCE;
+    }
+
+    /** “已完成 / 已忽略”段：展开后首屏与翻页都在段尾显示加载圈或失败重试 */
+    private Unit onClosedLoadStates(@NonNull CombinedLoadStates states, int count, @NonNull CalendarMode mode) {
+        if (!isActive(mode)) {
+            return Unit.INSTANCE;
+        }
+        if (!Boolean.TRUE.equals(vm.getClosedExpanded().getValue())) {
+            closedFooter.setState(ListStateAdapter.State.none());
+            return Unit.INSTANCE;
+        }
+        LoadState refresh = states.getRefresh();
+        LoadState append = states.getAppend();
+        if (refresh instanceof LoadState.Error) {
+            closedFooter.setState(ListStateAdapter.State.retry(getString(R.string.today_calendar_closed_failed),
+                    getString(com.zhimu.slmp.base.R.string.base_action_retry)));
+        } else if (append instanceof LoadState.Error) {
+            closedFooter.setState(ListStateAdapter.State.retry(getString(R.string.today_calendar_more_failed),
+                    getString(com.zhimu.slmp.base.R.string.base_action_retry)));
+        } else if ((refresh instanceof LoadState.Loading && count == 0) || append instanceof LoadState.Loading) {
+            closedFooter.setState(ListStateAdapter.State.loading());
+        } else {
+            closedFooter.setState(ListStateAdapter.State.none());
+        }
+        return Unit.INSTANCE;
+    }
+
+    /** 月视图用列表适配器，日视图用时间轴适配器；只处理当前视图的那一组 */
+    private boolean isActive(@NonNull CalendarMode mode) {
+        return (shownMode == null ? CalendarMode.MONTH : shownMode) == mode;
     }
 
     private void renderListState(@Nullable UiState state) {
@@ -265,8 +387,10 @@ public class CalendarActivity extends BaseActivity implements TodoPagingAdapter.
                 listStateAdapter.setState(ListStateAdapter.State.skeleton());
                 break;
             case EMPTY:
+                // 待处理为空但有已完成 / 已忽略：标题由 ViewModel 给出“今天的待办都处理完了”
                 listStateAdapter.setState(ListStateAdapter.State.empty(0, null,
-                        getString(vm.isStaff() ? R.string.today_calendar_day_empty_staff
+                        state.getTitle() != null ? state.getTitle()
+                                : getString(vm.isStaff() ? R.string.today_calendar_day_empty_staff
                                 : R.string.today_calendar_day_empty), null));
                 break;
             case ERROR: {
