@@ -49,6 +49,7 @@ export const useFarmStore = defineStore('farm', {
     async load(force = false): Promise<void> {
       if (this.loaded && !force) return
       const data = await http().get<PageVO<FarmBrief>>('/farms', { page: 1, size: 100 })
+      const previous = this.loaded ? this.current : undefined
       this.farms = data.list || []
       const saved = readNumber(FARM_KEY)
       const target =
@@ -56,7 +57,15 @@ export const useFarmStore = defineStore('farm', {
         this.farms.find((farm) => farm.is_current && farm.can_switch !== false) ||
         this.farms.find((farm) => farm.status === 'NORMAL' && farm.can_switch !== false) ||
         this.farms[0]
-      if (target) this.setCurrent(target.farm_id)
+      // 切回窗口时也会强制刷新：当前场、角色、状态都没变就不递增 revision，
+      // 否则各页面会按切场重新加载，正在生成的 AI 回答、填了一半的表单都会被打断。
+      const unchanged =
+        !!previous &&
+        !!target &&
+        previous.farm_id === target.farm_id &&
+        previous.role === target.role &&
+        previous.status === target.status
+      if (target && !unchanged) this.setCurrent(target.farm_id)
       if (!this.farms.some((farm) => farm.farm_id === this.currentFarmId)) this.viewAll = false
       this.loaded = true
     },
