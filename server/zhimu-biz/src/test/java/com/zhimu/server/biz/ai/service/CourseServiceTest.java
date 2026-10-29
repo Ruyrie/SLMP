@@ -338,6 +338,18 @@ class CourseServiceTest {
         assertThat(page.getList()).extracting(TopicVO::getId).containsExactly(7002L, 7001L);
     }
 
+    @Test
+    void topicsSkipTopicsWithoutOnShelfCourses() {
+        when(topicMapper.selectList(any())).thenReturn(List.of(AiFixtures.topic(7001L), topic(7002L, 2)));
+        when(courseMapper.selectList(any())).thenReturn(List.of(AiFixtures.course(6102L, 7001L, 2)));
+        when(progressMapper.selectByUserAndCourses(eq(10001L), any())).thenReturn(List.of());
+
+        PageVO<TopicVO> page = service.topics(10001L, new TopicQuery());
+
+        assertThat(page.getList()).extracting(TopicVO::getId).containsExactly(7001L);
+        assertThat(page.getTotal()).isEqualTo(1L);
+    }
+
     private static CourseProgressRequest request(String event, int position, int watched) {
         CourseProgressRequest request = new CourseProgressRequest();
         request.setPlayToken("token-1");

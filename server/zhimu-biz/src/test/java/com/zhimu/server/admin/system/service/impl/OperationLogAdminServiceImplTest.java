@@ -179,6 +179,32 @@ class OperationLogAdminServiceImplTest {
     }
 
     @Test
+    void 详情_直接写编码的变更与动作显示中文() {
+        AdminContext.set(AdminTestFixtures.login(2L, "吴昊", "AUDITOR",
+                AdminTestFixtures.codes("WA-S06:VIEW", "WA-C03:HANDLE")));
+        OperationLog row = log(1L, 9L, "COURSE");
+        row.setOpAction("TOPIC_OFF_SHELF");
+        row.setBeforeJson("{\"status\":\"ON_SHELF\",\"version_no\":2}");
+        row.setAfterJson("{\"status\":\"OFF_SHELF\",\"version_no\":3}");
+        when(queryMapper.selectLogById(1L)).thenReturn(row);
+        when(adminMapper.selectById(9L)).thenReturn(
+                AdminTestFixtures.admin(9L, "sunwei", "孙伟", 2L, "NORMAL"));
+
+        OperationLogDetailVO detail = service.detail(1L);
+
+        assertThat(detail.getOpActionText()).isEqualTo("下架专题");
+        assertThat(detail.getChanges()).anySatisfy(change -> {
+            assertThat(change.getFieldName()).isEqualTo("状态");
+            assertThat(change.getBefore()).isEqualTo("已上架");
+            assertThat(change.getAfter()).isEqualTo("已下架");
+        });
+        assertThat(detail.getChanges()).anySatisfy(change -> {
+            assertThat(change.getFieldName()).isEqualTo("版本号");
+            assertThat(change.getAfter()).isEqualTo("3");
+        });
+    }
+
+    @Test
     void 详情_解析变更对比与相关记录() {
         AdminContext.set(AdminTestFixtures.login(2L, "吴昊", "AUDITOR",
                 AdminTestFixtures.codes("WA-S06:VIEW", "WA-S05:HANDLE")));

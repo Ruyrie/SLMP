@@ -209,6 +209,8 @@ export function saveWeightDraft(id: number, payload: {
   effective_date?: string | null
   points: Array<{ day_age: number; std_weight: number | string }>
   version?: number
+  /** 暂存在草稿上的更新说明（发布时以发布请求为准） */
+  update_note?: string
 }) {
   return http().put<StdWeightData>(`/breeds/${id}/standards/weight/draft`, payload)
 }
@@ -227,6 +229,7 @@ export function saveFeedDraft(id: number, payload: {
     meal_times: string[]
   }>
   version?: number
+  update_note?: string
 }) {
   return http().put<FeedStdData>(`/breeds/${id}/standards/feed/draft`, payload)
 }

@@ -227,7 +227,19 @@ public class NoticeAdminService {
         NoticeVos.DetailVO vo = new NoticeVos.DetailVO();
         Map<Long, String> creatorNames = adminNames(List.of(notice.getCreatedBy() == null ? 0L : notice.getCreatedBy()));
         List<NoticeTarget> finalTargets = targets;
-        BeanUtils.copyProperties(toRow(notice, targets, creatorNames.get(notice.getCreatedBy()), Map.of(), Map.of()), vo);
+        // 接收范围文字要带上养殖场 / 品类名称，和列表一致
+        List<Long> targetCategoryIds = targets.stream().filter(t -> "CATEGORY".equals(t.getTargetType()))
+                .map(t -> parseLong(t.getTargetValue())).toList();
+        List<Long> targetFarmIds = targets.stream().filter(t -> "FARM".equals(t.getTargetType()))
+                .map(t -> parseLong(t.getTargetValue())).toList();
+        Map<Long, String> categoryNames = targetCategoryIds.isEmpty() ? Map.of()
+                : names(lookupMapper.selectCategoryNames(new ArrayList<>(targetCategoryIds)));
+        Map<Long, String> farmNames = new HashMap<>();
+        if (!targetFarmIds.isEmpty()) {
+            audienceService.farms(new ArrayList<>(targetFarmIds)).forEach(f -> farmNames.put(f.getFarmId(), f.getName()));
+        }
+        BeanUtils.copyProperties(toRow(notice, targets, creatorNames.get(notice.getCreatedBy()), categoryNames,
+                farmNames), vo);
         vo.setContent(notice.getContent());
         if (notice.getImageFileId() != null) {
             vo.setImage(fileService.fileVo(notice.getImageFileId()));

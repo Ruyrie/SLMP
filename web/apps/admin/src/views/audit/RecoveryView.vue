@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ApiError } from '@zmt/shared'
 import { useAdminStore } from '@/stores/admin'
@@ -215,6 +215,16 @@ async function copyTempPassword(): Promise<void> {
   } catch {
     ui.toast('复制失败，请手动选择复制', 'error')
   }
+}
+
+/** 通过 / 驳回前没填处理说明：把出错的输入框滚到抽屉可见处并聚焦 */
+async function openConfirm(action: 'approve' | 'reject'): Promise<void> {
+  store.openConfirm(action)
+  if (!store.noteError) return
+  await nextTick()
+  const item = document.querySelector('.recovery-note-item')
+  item?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  item?.querySelector('textarea')?.focus({ preventScroll: true })
 }
 
 /* ---------------- 客服代登记 ---------------- */
@@ -541,7 +551,7 @@ onMounted(() => {
               required
               hint="通过和驳回都要填写，记入操作日志"
               :error="store.noteError"
-              class="note-item"
+              class="note-item recovery-note-item"
             >
               <v-textarea
                 v-model="store.handleNote"
@@ -590,8 +600,8 @@ onMounted(() => {
           </span>
           <template v-if="detail.status === 'PENDING'">
             <template v-if="canHandle">
-              <v-btn variant="outlined" color="error" prepend-icon="block" @click="store.openConfirm('reject')">驳回</v-btn>
-              <v-btn color="primary" prepend-icon="check" @click="store.openConfirm('approve')">通过并生成临时密码</v-btn>
+              <v-btn variant="outlined" color="error" prepend-icon="block" @click="openConfirm('reject')">驳回</v-btn>
+              <v-btn color="primary" prepend-icon="check" @click="openConfirm('approve')">通过并生成临时密码</v-btn>
             </template>
             <span v-else class="zw-foot-note">你没有处理权限，仅可查看</span>
           </template>

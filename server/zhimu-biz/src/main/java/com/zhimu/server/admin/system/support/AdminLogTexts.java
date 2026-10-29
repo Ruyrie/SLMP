@@ -11,6 +11,7 @@ import com.zhimu.server.common.enums.OperatorType;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -99,6 +100,33 @@ public final class AdminLogTexts {
             texts.add(text != null ? text : trimmed);
         }
         return texts.isEmpty() ? null : String.join("、", texts);
+    }
+
+    /** 日志 before / after 里直接写编码的常见字段 → 中文名；未收录的原样返回 */
+    private static final Map<String, String> FIELD_TEXTS = Map.ofEntries(
+            Map.entry("status", "状态"), Map.entry("name", "名称"), Map.entry("title", "标题"),
+            Map.entry("version_no", "版本号"), Map.entry("rollback_from_no", "回退来源版本"),
+            Map.entry("sort_no", "排序"), Map.entry("category_id", "分类"), Map.entry("action", "操作"),
+            Map.entry("item_id", "项目"), Map.entry("item_ids", "项目顺序"), Map.entry("reason", "原因"),
+            Map.entry("vaccine_id", "疫苗"), Map.entry("dose_round", "剂次"), Map.entry("price", "价格"));
+
+    /** 日志 before / after 里直接写的状态 / 动作编码 → 中文；未收录的原样返回 */
+    private static final Map<String, String> VALUE_TEXTS = Map.ofEntries(
+            Map.entry("ON_SHELF", "已上架"), Map.entry("OFF_SHELF", "已下架"), Map.entry("DRAFT", "草稿"),
+            Map.entry("PUBLISHED", "已发布"), Map.entry("SUPERSEDED", "历史版本"), Map.entry("SCHEDULED", "待生效"),
+            Map.entry("ENABLED", "启用"), Map.entry("DISABLED", "停用"), Map.entry("PENDING", "待处理"),
+            Map.entry("PENDING_REVIEW", "待复核"), Map.entry("APPROVED", "已通过"), Map.entry("REJECTED", "已驳回"),
+            Map.entry("APPLIED", "已生效"), Map.entry("RETURNED", "已退回"), Map.entry("SENT", "已发送"),
+            Map.entry("REVOKED", "已撤回"), Map.entry("NORMAL", "正常"), Map.entry("FROZEN", "已冻结"),
+            Map.entry("ADD_ITEM", "新增项目"), Map.entry("UPDATE_ITEM", "修改项目"),
+            Map.entry("DELETE_ITEM", "删除项目"), Map.entry("SORT", "调整顺序"));
+
+    public static String fieldText(String key) {
+        return key == null ? null : FIELD_TEXTS.getOrDefault(key, key);
+    }
+
+    public static String valueText(String value) {
+        return value == null ? null : VALUE_TEXTS.getOrDefault(value, value);
     }
 
     public static String clientTypeText(String clientType) {

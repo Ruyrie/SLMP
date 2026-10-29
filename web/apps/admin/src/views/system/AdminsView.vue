@@ -245,8 +245,19 @@ onMounted(async () => {
             @update:model-value="store.formErrors.username = ''"
           />
         </zw-form-item>
-        <zw-form-item label="手机号" required :error="store.formErrors.phone" hint="用于联系管理员本人；临时密码不会以短信发送">
-          <v-text-field v-model="store.form.phone" placeholder="请输入 11 位手机号" maxlength="11" :error="!!store.formErrors.phone" />
+        <zw-form-item
+          label="手机号"
+          :required="store.isCreate"
+          :optional="!store.isCreate"
+          :error="store.formErrors.phone"
+          :hint="store.isCreate ? '用于联系管理员本人；临时密码不会以短信发送' : `当前 ${store.editing?.phone || '—'}；不改手机号请留空`"
+        >
+          <v-text-field
+            v-model="store.form.phone"
+            :placeholder="store.isCreate ? '请输入 11 位手机号' : '不改请留空，改号请输入新的 11 位手机号'"
+            maxlength="11"
+            :error="!!store.formErrors.phone"
+          />
         </zw-form-item>
         <zw-form-item label="角色" required :error="store.formErrors.role_id">
           <v-select v-model="store.form.role_id" :items="store.roleOptions" placeholder="请选择角色" :error="!!store.formErrors.role_id" />

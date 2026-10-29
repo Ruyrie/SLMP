@@ -327,17 +327,28 @@ public class ImmuneTemplateAdminServiceImpl implements ImmuneTemplateAdminServic
         List<ImmuneTemplateItem> items = items(draft.getId()).stream()
                 .filter(item -> !"DELETED".equals(item.getChangeType())).toList();
         Map<Long, ImmuneTemplateItem> byId = new HashMap<>();
+        Map<Long, ImmuneTemplateItem> bySource = new HashMap<>();
         for (ImmuneTemplateItem item : items) {
             byId.put(item.getId(), item);
+            if (item.getSourceItemId() != null) {
+                bySource.put(item.getSourceItemId(), item);
+            }
         }
-        Set<Long> requested = new HashSet<>(request.getItemIds());
-        if (requested.size() != request.getItemIds().size() || requested.size() != items.size()
-                || !byId.keySet().equals(requested)) {
+        // 没有草稿时页面拿的是线上项目 ID，自动建草稿后按 source_item_id 换成草稿项目
+        List<ImmuneTemplateItem> ordered = new ArrayList<>();
+        Set<Long> resolved = new HashSet<>();
+        for (Long id : request.getItemIds()) {
+            ImmuneTemplateItem item = id == null ? null : byId.getOrDefault(id, bySource.get(id));
+            if (item == null || !resolved.add(item.getId())) {
+                throw BaseErrors.field("item_ids", "请提交草稿全部未删除项目");
+            }
+            ordered.add(item);
+        }
+        if (resolved.size() != items.size()) {
             throw BaseErrors.field("item_ids", "请提交草稿全部未删除项目");
         }
         int sort = 1;
-        for (Long id : request.getItemIds()) {
-            ImmuneTemplateItem item = byId.get(id);
+        for (ImmuneTemplateItem item : ordered) {
             item.setSortNo(sort++);
             item.setUpdatedAt(BeijingTime.now());
             itemMapper.updateById(item);

@@ -386,7 +386,8 @@ public class FarmAuditReviewServiceImpl implements FarmAuditReviewService {
                 String actor = adminName(audit.getAuditedBy());
                 boolean approved = "APPROVED".equals(audit.getStatus());
                 history.add(FarmAuditDetailVO.History.builder()
-                        .event((approved ? "通过 · " : "驳回 · ") + nullSafe(actor))
+                        // 操作人放在 actor，页面拼成“驳回 · 周敏”，这里不再重复拼
+                        .event(approved ? "通过" : "驳回")
                         .time(audit.getAuditedAt())
                         .actor(actor)
                         .desc(approved ? audit.getAuditOpinion() : audit.getRejectReason())
@@ -472,10 +473,6 @@ public class FarmAuditReviewServiceImpl implements FarmAuditReviewService {
 
     private static String trimToNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
-    }
-
-    private static String nullSafe(String value) {
-        return value == null ? "" : value;
     }
 
     private record Target(FarmAudit audit, Farm farm, String ownerName) {

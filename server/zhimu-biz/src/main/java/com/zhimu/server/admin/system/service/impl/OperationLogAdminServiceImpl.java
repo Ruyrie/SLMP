@@ -352,7 +352,23 @@ public class OperationLogAdminServiceImpl implements OperationLogAdminService {
                 continue;
             }
             if (value.isTextual()) {
-                result.put(key, new FieldDisplay(key, value.asString()));
+                // 直接写编码的简单结构（例如 {"status":"ON_SHELF"}）：字段名、状态编码都转中文
+                result.put(key, new FieldDisplay(AdminLogTexts.fieldText(key),
+                        AdminLogTexts.valueText(value.asString())));
+            } else if (value.isNumber()) {
+                result.put(key, new FieldDisplay(AdminLogTexts.fieldText(key), value.asString()));
+            } else if (value.isBoolean()) {
+                result.put(key, new FieldDisplay(AdminLogTexts.fieldText(key), value.asBoolean() ? "是" : "否"));
+            } else if (value.isArray()) {
+                List<String> parts = new ArrayList<>();
+                for (JsonNode element : value) {
+                    if (element != null && element.isValueNode() && !element.isNull()) {
+                        parts.add(AdminLogTexts.valueText(element.asString()));
+                    }
+                }
+                if (!parts.isEmpty()) {
+                    result.put(key, new FieldDisplay(AdminLogTexts.fieldText(key), String.join("、", parts)));
+                }
             } else {
                 result.put(key, new FieldDisplay(text(value, "name"), text(value, "display")));
             }

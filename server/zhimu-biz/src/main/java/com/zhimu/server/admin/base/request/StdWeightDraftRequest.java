@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -41,6 +42,10 @@ public class StdWeightDraftRequest {
 
     /** 已有草稿时必填 */
     private Integer version;
+
+    /** 暂存在草稿上的更新说明（选填，发布时以发布请求为准） */
+    @Size(max = 100, message = "更新说明最多 100 个字")
+    private String updateNote;
 
     @Data
     public static class Point {

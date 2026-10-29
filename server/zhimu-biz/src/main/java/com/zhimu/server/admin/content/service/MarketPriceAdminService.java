@@ -577,6 +577,7 @@ public class MarketPriceAdminService {
             correction.setReviewedAt(now);
             correction.setReviewNote(note);
             correctionMapper.updateById(correction);
+            clearCorrectionPending(correction.getId());
             recalculateAfterConfig(price, price.getPriceDate());
         } else {
             correction.setStatus("RETURNED");
@@ -585,11 +586,19 @@ public class MarketPriceAdminService {
             correction.setReviewedAt(now);
             correction.setReviewNote(note);
             correctionMapper.updateById(correction);
+            clearCorrectionPending(correction.getId());
             notifyReturned(price, note, now);
         }
         log(price, "PASS".equals(result) ? "REVIEW_PASS" : "REVIEW_RETURN", adminId,
                 "复核更正 " + configLabel(price), note, correction.getStatus());
         return detail(price.getId());
+    }
+
+    /** updateById 会跳过 null，待复核标记要显式清空，否则同一条价格再更正会撞唯一键 */
+    private void clearCorrectionPending(Long correctionId) {
+        correctionMapper.update(null, Wrappers.<MarketPriceCorrection>lambdaUpdate()
+                .eq(MarketPriceCorrection::getId, correctionId)
+                .set(MarketPriceCorrection::getPendingFlag, null));
     }
 
     @Transactional
