@@ -77,6 +77,7 @@ const canSubmitCancel = computed(
 
 onMounted(async () => {
   void store.loadAgreement()
+  void farm.refreshList()
   await store.load()
 })
 

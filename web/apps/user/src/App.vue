@@ -30,6 +30,9 @@ watchEffect(() => {
 })
 
 setShellActions({
+  openFarmMenu() {
+    return farm.refreshList()
+  },
   async switchFarm(farmId: number) {
     const target = farm.farms.find((item: FarmBrief) => item.farm_id === farmId)
     try {

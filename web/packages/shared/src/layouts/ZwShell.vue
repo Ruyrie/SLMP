@@ -36,6 +36,9 @@ const isAllFarms = computed(() => props.allFarms ?? shellState.allFarms)
 const quick = computed(() => quickItems(role.value))
 const searchText = ref('')
 const farmMenu = ref(false)
+watch(farmMenu, (open) => {
+  if (open) void shellActions.openFarmMenu()
+})
 const userMenu = ref(false)
 const quickMenu = ref(false)
 

@@ -64,9 +64,12 @@ export interface ShellActions {
   searchBatch: (keyword: string) => void | Promise<void>
   openAccount: () => void | Promise<void>
   openMessages: () => void | Promise<void>
+  /** 打开养殖场切换器时刷新列表（存栏数会变） */
+  openFarmMenu: () => void | Promise<void>
 }
 
 export const shellActions: ShellActions = {
+  openFarmMenu: () => undefined,
   switchFarm: () => undefined,
   toggleAllFarms: () => undefined,
   logout: () => undefined,

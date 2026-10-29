@@ -60,6 +60,16 @@ export const useFarmStore = defineStore('farm', {
       if (!this.farms.some((farm) => farm.farm_id === this.currentFarmId)) this.viewAll = false
       this.loaded = true
     },
+    /** 只刷新列表里的存栏、状态等信息，不改当前养殖场（打开切换器、个人中心时用） */
+    async refreshList(): Promise<void> {
+      if (!this.loaded) return
+      try {
+        const data = await http().get<PageVO<FarmBrief>>('/farms', { page: 1, size: 100 })
+        if (data.list?.length) this.farms = data.list
+      } catch {
+        // 刷新失败保留原列表
+      }
+    },
     setCurrent(farmId: number): void {
       this.currentFarmId = farmId
       this.revision += 1
