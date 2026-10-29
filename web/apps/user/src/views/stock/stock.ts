@@ -115,8 +115,9 @@ export function lotStatusText(lot: { lot_status?: string; lot_status_text?: stri
   return lot.lot_status_text || lotStatusTag(lot.lot_status).text
 }
 
-export function allocationText(row: CostAllocationRow): string {
-  const head = row.head_count ? `存栏 ${formatNumber(row.head_count)} 头` : ''
+/** 成本分摊行：unit 传养殖场计数单位（猪场“头”、鸡场“只”） */
+export function allocationText(row: CostAllocationRow, unit = '头'): string {
+  const head = row.head_count ? `存栏 ${formatNumber(row.head_count)} ${unit}` : ''
   const ratio = row.ratio !== null && row.ratio !== undefined ? `${(Number(row.ratio) * 100).toFixed(1)}%` : ''
   return [head, ratio].filter(Boolean).join(' · ')
 }
@@ -134,11 +135,12 @@ export function monthDayText(value?: string): string {
   return d.year() === dayjs().year() ? d.format('M月D日') : d.format('YYYY年M月D日')
 }
 
+/** 流水时间：与 monthDayText 同规则，不是今年的带上年份 */
 export function flowTimeText(value?: string): string {
   if (!value) return '—'
   const d = dayjs(value)
   if (!d.isValid()) return String(value)
-  return `${d.format('M月D日 HH:mm')}`
+  return d.year() === dayjs().year() ? d.format('M月D日 HH:mm') : d.format('YYYY年M月D日 HH:mm')
 }
 
 export function datetimeText(value?: string): string {

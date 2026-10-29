@@ -103,9 +103,9 @@ export function formatCount(value?: number | null): string {
   return Number(value).toLocaleString('en-US')
 }
 
-export function batchPensText(batch?: Pick<BatchListItem, 'pens'> | Pick<BatchDetail, 'pens'> | null): string {
+export function batchPensText(batch?: Pick<BatchListItem, 'pens'> | Pick<BatchDetail, 'pens'> | null, unit = '头'): string {
   if (!batch?.pens?.length) return '—'
-  return batch.pens.map((pen) => `${pen.pen_name || '栏舍'} ${formatCount(pen.stock_count)} 头`).join(' · ')
+  return batch.pens.map((pen) => `${pen.pen_name || '栏舍'} ${formatCount(pen.stock_count)} ${unit}`).join(' · ')
 }
 
 export function batchPenNames(batch?: Pick<BatchListItem, 'pens'> | null): string {

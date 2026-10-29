@@ -6,7 +6,7 @@ import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
 import { useFarmReload } from '@/composables/useFarmReload'
 import { consumeRouteAction } from '@/composables/useRouteAction'
-import { formatMoney, formatNumber, formatPercent } from '@zmt/shared'
+import { formatMoney, formatNumber, formatPercent, withUnit } from '@zmt/shared'
 import { dateText, dateTimeText, monthRangeText, signedPercent, trendTone, type Tone } from '@/stores/finance/shared'
 
 const store = useReportsStore()
@@ -45,6 +45,10 @@ const farmItems = computed(() => {
 const report = computed(() => store.report)
 const stockMetric = computed(() => store.stockMetric)
 const extraStocks = computed(() => (report.value?.metrics?.stock || []).slice(1))
+/** 存栏单位：报表给出的品类单位，没有时按当前养殖场（猪场“头”、鸡场“只”） */
+const stockUnit = computed(() => stockMetric.value?.countUnitText || farm.countUnit)
+/** 死淘数量的单位：多个养殖场头、只混合时不写单位 */
+const deathUnit = computed(() => (extraStocks.value.length ? '' : stockUnit.value))
 const profitItems = computed(() => store.profitItems)
 const runningBatches = computed(() => report.value?.runningBatches || [])
 
@@ -73,9 +77,9 @@ const mortalityDelta = computed(() => {
   if (!mortality || mortality.rate === undefined || mortality.rate === null) return '暂无死淘数据'
   if (mortality.comparable && mortality.changePoint !== undefined && mortality.changePoint !== null) {
     const point = Number(mortality.changePoint) * 100
-    return `${point >= 0 ? '↑' : '↓'} ${Math.abs(point).toFixed(1)} 个百分点 · 死淘 ${formatNumber(mortality.deathCount)} 头`
+    return `${point >= 0 ? '↑' : '↓'} ${Math.abs(point).toFixed(1)} 个百分点 · 死淘 ${withUnit(formatNumber(mortality.deathCount), deathUnit.value)}`
   }
-  return `死淘 ${formatNumber(mortality.deathCount)} 头`
+  return `死淘 ${withUnit(formatNumber(mortality.deathCount), deathUnit.value)}`
 })
 
 const feedDelta = computed(() => {
@@ -259,9 +263,9 @@ onBeforeUnmount(() => window.clearTimeout(store.summaryTimer))
           >
             <div class="e07-check-main">
               <div class="zw-cell-main num">{{ item.batchNo }} · {{ item.penName }}</div>
-              <div class="zw-cell-sub">期初加变动 {{ item.expected }} {{ stockMetric?.countUnitText || '头' }} · 期末 {{ item.actual }} {{ stockMetric?.countUnitText || '头' }}</div>
+              <div class="zw-cell-sub">期初加变动 {{ formatNumber(item.expected) }} {{ stockUnit }} · 期末 {{ formatNumber(item.actual) }} {{ stockUnit }}</div>
             </div>
-            <zw-tag type="warning" size="small">差 {{ Math.abs(Number(item.diff || 0)) }} {{ stockMetric?.countUnitText || '头' }}</zw-tag>
+            <zw-tag type="warning" size="small">差 {{ formatNumber(Math.abs(Number(item.diff || 0))) }} {{ stockUnit }}</zw-tag>
             <zw-icon name="chevron_right" :size="18" color="text-3" />
           </div>
           <div v-if="(report.dataCheck.items || []).length > 3" class="e07-check-more">
@@ -397,7 +401,7 @@ onBeforeUnmount(() => window.clearTimeout(store.summaryTimer))
             @click="store.setMetric('STOCK')"
           >
             <div class="e07-metric-label"><zw-icon name="inventory_2" :size="18" />期末存栏</div>
-            <div class="e07-metric-v num">{{ formatNumber(stockMetric?.end) }} <span>{{ stockMetric?.countUnitText || '头' }}</span></div>
+            <div class="e07-metric-v num">{{ formatNumber(stockMetric?.end) }} <span>{{ stockUnit }}</span></div>
             <div class="e07-metric-foot">{{ stockDelta }}</div>
             <div v-if="extraStocks.length" class="e07-metric-foot">
               <template v-for="(item, index) in extraStocks" :key="item.countUnit">
@@ -463,7 +467,7 @@ onBeforeUnmount(() => window.clearTimeout(store.summaryTimer))
                 :labels="trendLabels"
                 :series="[{ name: metricLabels[store.metric], data: trendValues, area: true, color: 'chart-1' }]"
                 :height="230"
-                :unit="store.metric === 'STOCK' ? (extraStocks.length ? '头/只' : stockMetric?.countUnitText || '头') : store.metric === 'BALANCE' ? '元' : '%'"
+                :unit="store.metric === 'STOCK' ? (extraStocks.length ? '头/只' : stockUnit) : store.metric === 'BALANCE' ? '元' : '%'"
                 :ticks="4"
                 :x-every="Math.max(1, Math.round(trendLabels.length / 7))"
                 :legend="false"

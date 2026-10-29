@@ -4,6 +4,7 @@ import { dayjs, TZ } from '@zmt/shared'
 import type { CitationBrief } from '@/api/ai'
 import { useAiAssistantStore } from '@/stores/ai/assistant'
 import type { LocalAiMessage } from '@/stores/ai/assistant'
+import { isStreamingMessage } from '@/stores/ai/shared'
 import AiMessageBlock from './AiMessageBlock.vue'
 
 const store = useAiAssistantStore()
@@ -217,7 +218,7 @@ function retryDisabled(): boolean {
           v-else-if="item.message"
           :message="item.message"
           :active-citation-id="activeCitationId"
-          :streaming="store.streaming?.key === item.message.id"
+          :streaming="isStreamingMessage(store.streaming?.key, item.message)"
           :retry-disabled="retryDisabled()"
           @retry="onRetry"
           @rate="onRate"

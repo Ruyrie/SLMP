@@ -52,8 +52,8 @@ const registerSub = computed(() => {
     return `${store.registerRecord?.pen_name || ''} · ${store.registerRecord?.batch_no || ''}`
   }
   const plan = store.registerForm?.plan
-  if (plan) return `${plan.pen_name || ''} · ${plan.batch_no || ''} · 存栏 ${plan.current_count || 0} 头`
-  return store.currentBatch ? `${store.currentBatch.pens?.[0]?.pen_name || ''} · ${store.currentBatch.batch_no || ''} · 存栏 ${store.currentBatch.current_count || 0} 头` : ''
+  if (plan) return `${plan.pen_name || ''} · ${plan.batch_no || ''} · 存栏 ${formatNumber(plan.current_count || 0)} ${store.countUnit}`
+  return store.currentBatch ? `${store.currentBatch.pens?.[0]?.pen_name || ''} · ${store.currentBatch.batch_no || ''} · 存栏 ${formatNumber(store.currentBatch.current_count || 0)} ${store.countUnit}` : ''
 })
 
 const registerTitle = computed(() => {
@@ -106,7 +106,7 @@ const disabledLots = computed(() => store.registerLotItems.filter((item) => item
 const registerPlanHint = computed(() => {
   const form = store.registerForm
   if (!form?.plan) return ''
-  return `${form.plan.batch_no || ''} · 存栏 ${form.plan.current_count || 0} 头 · 计划日期 ${form.plan.plan_date_text || monthDay(form.plan.plan_date)}`
+  return `${form.plan.batch_no || ''} · 存栏 ${formatNumber(form.plan.current_count || 0)} ${store.countUnit} · 计划日期 ${form.plan.plan_date_text || monthDay(form.plan.plan_date)}`
 })
 
 const registerDeductionText = computed(() => {
@@ -126,7 +126,7 @@ const registerLotHint = computed(() => {
 
 const registerIsView = computed(() => store.registerMode === 'view')
 const registerIsEdit = computed(() => store.registerMode === 'edit')
-const registerQuantityUnit = computed(() => store.currentBatch?.unit_text || '头')
+const registerQuantityUnit = computed(() => store.countUnit)
 
 const canPostponeDialog = computed(() => !!store.postponeTarget)
 const batchOptions = computed(() => store.batchItems)
@@ -184,7 +184,7 @@ function dateCell(plan: ImmunePlan): string {
 
 function noteText(plan: ImmunePlan): string {
   if (plan.status === 'DONE') {
-    const parts = [monthDay(plan.record_date), plan.record_user_name, plan.record_quantity ? `${plan.record_quantity} 头` : '']
+    const parts = [monthDay(plan.record_date), plan.record_user_name, plan.record_quantity ? `${formatNumber(plan.record_quantity)} ${store.countUnit}` : '']
     return parts.filter(Boolean).join(' · ')
   }
   if (plan.status === 'MISSED') {
@@ -488,7 +488,7 @@ useFarmReload(async () => {
             <zw-desc-item label="库存批号">{{ store.registerRecord?.lot_no || '—' }}</zw-desc-item>
             <zw-desc-item label="接种方式">{{ store.registerRecord?.method_name || store.registerRecord?.method_code || '—' }}</zw-desc-item>
             <zw-desc-item label="剂量">{{ store.registerRecord?.dose ?? '—' }} {{ store.registerRecord?.dose_unit || '' }}</zw-desc-item>
-            <zw-desc-item label="接种数量">{{ store.registerRecord?.quantity ?? '—' }} 头</zw-desc-item>
+            <zw-desc-item label="接种数量">{{ store.registerRecord?.quantity !== undefined && store.registerRecord?.quantity !== null ? `${formatNumber(store.registerRecord.quantity)} ${store.countUnit}` : '—' }}</zw-desc-item>
             <zw-desc-item label="登记人">{{ store.registerRecord?.creator_name || '—' }}</zw-desc-item>
             <zw-desc-item label="实际执行人">{{ store.registerRecord?.executor_name || '—' }}</zw-desc-item>
             <zw-desc-item label="登记时间">{{ store.registerRecord?.created_at ? dateTimeText(store.registerRecord.created_at) : '—' }}</zw-desc-item>
@@ -581,7 +581,7 @@ useFarmReload(async () => {
               <zw-form-item label="剂量" required :error="store.registerErrors.dose" :hint="`模板剂量 ${store.registerForm?.template_dose ?? 1} ${store.registerForm?.dose_unit || '头份 / 头'}`">
                 <v-text-field v-model="store.registerModel.dose" type="number" :suffix="store.registerForm?.dose_unit || '头份 / 头'" @blur="store.loadRegisterLots()" />
               </zw-form-item>
-              <zw-form-item label="接种数量" required :error="store.registerErrors.quantity" :hint="`不能超过存栏 ${store.registerCurrentCount} ${registerQuantityUnit}`">
+              <zw-form-item label="接种数量" required :error="store.registerErrors.quantity" :hint="`不能超过存栏 ${formatNumber(store.registerCurrentCount)} ${registerQuantityUnit}`">
                 <v-text-field v-model="store.registerModel.quantity" type="number" :suffix="registerQuantityUnit" @blur="store.loadRegisterLots()" />
               </zw-form-item>
             </div>

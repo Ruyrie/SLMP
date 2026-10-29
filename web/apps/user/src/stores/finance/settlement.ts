@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
-import type { ApiError } from '@zmt/shared'
+import { formatNumber, type ApiError } from '@zmt/shared'
 import { financeApi, type BatchSettlement, type SettlementOption } from '@/api/finance'
 import { useUiStore } from '@/stores/ui'
-import type { PageStatus } from '@/stores/finance/shared'
+import { dateText, type PageStatus } from '@/stores/finance/shared'
+import { useFarmStore } from '@/stores/farm'
 import { claimFarmScope, currentFarmScope } from '@/stores/farmScope'
 
 export const useSettlementStore = defineStore('financeSettlement', {
@@ -20,7 +21,10 @@ export const useSettlementStore = defineStore('financeSettlement', {
     confirmError: '',
     farmScope: '',
     optionsRequestId: 0,
-    detailRequestId: 0
+    detailRequestId: 0,
+    /** 还没有出栏单的在养批次是否在休药期（取出栏单的批次选项），决定是否提示“休药期结束后可登记出栏” */
+    withdrawal: null as { batchId: number; inWithdrawal: boolean; sellableDate?: string } | null,
+    withdrawalRequestId: 0
   }),
   getters: {
     selectedOption(state): SettlementOption | undefined {
@@ -46,10 +50,20 @@ export const useSettlementStore = defineStore('financeSettlement', {
         }
       }))
     },
+    /** 计数单位：取批次品类（鸡“只”、猪“头”），没有时按当前养殖场 */
+    countUnit(): string {
+      return this.detail?.batch?.countUnitText || useFarmStore().countUnit
+    },
     costPerHeadNote(): string {
       const basis = this.detail?.perHeadBasis
-      const count = this.detail?.perHeadCount ?? 0
-      return basis === 'SOLD' ? `按出栏 ${count} 头平摊` : `截至今天按存栏 ${count} 头平摊`
+      const count = formatNumber(this.detail?.perHeadCount ?? 0)
+      return basis === 'SOLD' ? `按出栏 ${count} ${this.countUnit}平摊` : `截至今天按存栏 ${count} ${this.countUnit}平摊`
+    },
+    /** 只有休药中的批次才提示“休药期结束后可登记出栏” */
+    withdrawalHint(state): string {
+      const value = state.withdrawal
+      if (!value?.inWithdrawal || value.batchId !== state.batchId) return ''
+      return `休药期结束后可登记出栏${value.sellableDate ? `（${dateText(value.sellableDate)}起）` : ''}`
     },
     profitLabel(): string {
       return this.locked ? '批次盈亏' : '截至今天盈亏'
@@ -106,11 +120,29 @@ export const useSettlementStore = defineStore('financeSettlement', {
         if (requestId !== this.detailRequestId || scope !== currentFarmScope()) return
         this.detail = detail
         this.status = 'ready'
+        void this.loadWithdrawal()
       } catch (e) {
         if (requestId !== this.detailRequestId || scope !== currentFarmScope()) return
         const err = e as ApiError
         this.status = err.isForbidden ? 'forbidden' : 'error'
         this.error = err.message
+      }
+    },
+
+    async loadWithdrawal(): Promise<void> {
+      const batchId = this.batchId
+      const scope = this.farmScope
+      const requestId = ++this.withdrawalRequestId
+      this.withdrawal = null
+      // 已结算或已有出栏单时页面不显示这条提示，不必查询
+      if (!batchId || this.detail?.status === 'LOCKED' || this.detail?.saleOrders?.length) return
+      try {
+        const options = await financeApi.batchOptions()
+        if (requestId !== this.withdrawalRequestId || scope !== currentFarmScope()) return
+        const option = options.find((item) => Number(item.batchId) === batchId)
+        this.withdrawal = option ? { batchId, inWithdrawal: !!option.inWithdrawal, sellableDate: option.sellableDate } : null
+      } catch {
+        // 查询失败时不显示休药提示
       }
     },
 

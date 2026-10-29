@@ -36,6 +36,8 @@ const emit = defineEmits<{
 const ui = useUiStore()
 const farm = useFarmStore()
 const auth = useAuthStore()
+/** 计数单位随养殖场品类（猪场“头”、鸡场“只”） */
+const unit = computed(() => farm.countUnit)
 
 const loading = ref(false)
 const submitting = ref(false)
@@ -64,7 +66,7 @@ const penItems = computed(() => (context.value?.pens || []).map((pen) => ({ titl
 const selectedPen = computed(() => context.value?.pens.find((pen) => pen.pen_id === penId.value))
 const batchItems = computed(() =>
   (selectedPen.value?.batches || []).map((batch) => ({
-    title: `${batch.batch_no || '在栏批次'} · 存栏 ${formatNumber(batch.stock_count || 0)} 头`,
+    title: `${batch.batch_no || '在栏批次'} · 存栏 ${formatNumber(batch.stock_count || 0)} ${unit.value}`,
     value: batch.batch_id
   }))
 )
@@ -74,11 +76,11 @@ const batchHint = computed(() => {
   if (!selectedPen.value) return '选择栏舍后显示在栏批次'
   if (!selectedPen.value.batches?.length) return '这个栏舍没有在栏批次'
   if (selectedPen.value.batches.length === 1) return '栏舍只有一个在栏批次，已自动选中'
-  return `不能超过批次当前存栏 ${formatNumber(stockLimit.value)} 头`
+  return `不能超过批次当前存栏 ${formatNumber(stockLimit.value)} ${unit.value}`
 })
 const sickHint = computed(() => {
   if (!selectedBatch.value) return '选择批次后显示存栏上限'
-  return `不能超过批次当前存栏 ${formatNumber(stockLimit.value)} 头`
+  return `不能超过批次当前存栏 ${formatNumber(stockLimit.value)} ${unit.value}`
 })
 const subTitle = computed(() => {
   if (isInspectionSource.value) return `${selectedPen.value?.pen_name || ''} · 提交后 AI 诊断`
@@ -210,7 +212,7 @@ function onBatchSelected(value: unknown): void {
   delete errors.batch
   if (batchId.value) void loadSymptoms(batchId.value)
   if (sickCount.value && sickCount.value > stockLimit.value) {
-    errors.sick_count = `不能超过批次当前存栏 ${formatNumber(stockLimit.value)} 头`
+    errors.sick_count = `不能超过批次当前存栏 ${formatNumber(stockLimit.value)} ${unit.value}`
   } else {
     delete errors.sick_count
   }
@@ -237,8 +239,8 @@ function validate(): boolean {
   if (!penId.value) errors.pen = '请选择栏舍'
   if (!batchId.value) errors.batch = '请选择批次'
   if (!sickCount.value) errors.sick_count = '请填写发病数量'
-  else if (Number(sickCount.value) < 1) errors.sick_count = '发病数量至少为 1 头'
-  else if (Number(sickCount.value) > stockLimit.value) errors.sick_count = `不能超过批次当前存栏 ${formatNumber(stockLimit.value)} 头`
+  else if (Number(sickCount.value) < 1) errors.sick_count = `发病数量至少为 1 ${unit.value}`
+  else if (Number(sickCount.value) > stockLimit.value) errors.sick_count = `不能超过批次当前存栏 ${formatNumber(stockLimit.value)} ${unit.value}`
   if (!symptomIds.value.length && description.value.trim().length < 10) {
     errors.description = '请至少勾选一项症状，或描述不少于 10 个字'
   }
@@ -372,8 +374,8 @@ const previewItems = computed<PreviewItem[]>(() =>
             type="number"
             min="1"
             :max="stockLimit || undefined"
-            suffix="头"
-            placeholder="输入发病头数"
+            :suffix="unit"
+            placeholder="输入发病数量"
             :error="!!errors.sick_count"
             @update:model-value="errors.sick_count = ''"
           />
@@ -404,7 +406,7 @@ const previewItems = computed<PreviewItem[]>(() =>
       </div>
       <v-textarea
         v-model="description"
-        placeholder="描述发病情况，例如 12 头排水样稀粪，部分呕吐，采食比昨天明显减少。"
+        :placeholder="`描述发病情况，例如 12 ${unit}排水样稀粪，部分呕吐，采食比昨天明显减少。`"
         rows="3"
         counter="500"
         maxlength="500"

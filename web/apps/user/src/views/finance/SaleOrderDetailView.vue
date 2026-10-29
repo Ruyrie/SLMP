@@ -11,6 +11,8 @@ import { useUiStore } from '@/stores/ui'
 import { priceText, dateText, dateTimeText, dueTone, paymentIcon, paymentMethodText, paymentTone } from '@/stores/finance/shared'
 import SaleOrderFormDrawer from './components/SaleOrderFormDrawer.vue'
 import ReceiveDialog from './components/ReceiveDialog.vue'
+import { useFarmStore } from '@/stores/farm'
+import { useFarmReload } from '@/composables/useFarmReload'
 
 const store = useSaleOrderDetailStore()
 const formStore = useSaleOrderFormStore()
@@ -19,6 +21,9 @@ const ui = useUiStore()
 const route = useRoute()
 const router = useRouter()
 const { detail } = storeToRefs(store)
+const farm = useFarmStore()
+/** 计数单位：出栏单的批次品类（鸡“只”、猪“头”），没有时按当前养殖场 */
+const unit = computed(() => detail.value?.countUnitText || farm.countUnit)
 const moreMenu = ref(false)
 const pageRef = ref<HTMLElement | null>(null)
 
@@ -49,9 +54,9 @@ const priceLine = computed(() => {
   const value = detail.value
   if (!value) return ''
   if (value.pricingMethod === 'BY_HEAD') {
-    return `${formatNumber(value.quantity)} ${value.countUnitText || '头'} · 每头 ${priceText(value.unitPrice)} 元`
+    return `${formatNumber(value.quantity)} ${unit.value} · 每${unit.value} ${priceText(value.unitPrice)} 元`
   }
-  return `${formatNumber(value.quantity)} ${value.countUnitText || '头'} · ${formatNumber(
+  return `${formatNumber(value.quantity)} ${unit.value} · ${formatNumber(
     value.totalWeight,
     1
   )} 千克 · 每千克 ${priceText(value.unitPrice)} 元`
@@ -91,7 +96,7 @@ const timelineItems = computed(() => {
   items.push({
     title: '登记出栏单',
     time: dateTimeText(value.registeredAt),
-    desc: `${formatNumber(value.quantity)} ${value.countUnitText || '头'} · ${formatNumber(
+    desc: `${formatNumber(value.quantity)} ${unit.value} · ${formatNumber(
       value.totalWeight,
       1
     )} 千克 · ${value.registrant?.name || ''}`,
@@ -193,6 +198,8 @@ function openBatch(): void {
 }
 
 onMounted(() => void store.load(Number(route.params.id || 0)))
+// 切换养殖场：出栏单属于旧场，回到出栏单列表（见路由 farmScopedParent）
+useFarmReload(() => store.load(Number(route.params.id || 0)))
 watch(
   () => route.params.id,
   (id) => {
@@ -333,7 +340,7 @@ watch(
                 <span class="zw-faint body-s ml-1">{{ detail.batchStatus === 'ENDED' ? '· 已全部出栏' : '· 在养' }}</span>
               </zw-desc-item>
               <zw-desc-item label="计价方式">
-                {{ detail.pricingMethodText || '' }} · 每{{ detail.pricingMethod === 'BY_HEAD' ? '头' : '千克' }}
+                {{ detail.pricingMethodText || '' }} · 每{{ detail.pricingMethod === 'BY_HEAD' ? unit : '千克' }}
                 {{ priceText(detail.unitPrice) }} 元
               </zw-desc-item>
               <zw-desc-item label="平均体重">{{ formatNumber(detail.avgWeight, 1) }} 千克</zw-desc-item>
@@ -405,7 +412,7 @@ watch(
               <div class="e04-settle-v num">{{ formatMoney(settlement.costTotal) }} 元</div>
             </div>
             <div class="e04-settle-item">
-              <div class="zw-faint body-s">单头成本</div>
+              <div class="zw-faint body-s">单{{ unit }}成本</div>
               <div class="e04-settle-v num">{{ formatMoney(settlement.costPerHead) }} 元</div>
             </div>
             <div class="e04-settle-item">
@@ -426,7 +433,7 @@ watch(
 
       <zw-dialog v-model="store.voidOpen" title="作废这张出栏单？" icon="block" tone="error" width="480">
         <p>
-          作废后 {{ detail?.batchNo }} 存栏恢复 {{ formatNumber(detail?.quantity || 0) }} {{ detail?.countUnitText || '头' }}，批次回到在养状态。
+          作废后 {{ detail?.batchNo }} 存栏恢复 {{ formatNumber(detail?.quantity || 0) }} {{ unit }}，批次回到在养状态。
         </p>
         <zw-form-item label="作废原因" required :error="store.voidError">
           <v-textarea v-model="store.voidReason" rows="2" maxlength="200" counter="200" placeholder="写写作废原因，最多 200 字" />

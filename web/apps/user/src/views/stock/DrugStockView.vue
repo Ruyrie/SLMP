@@ -989,7 +989,7 @@ function statusTagText(item: DrugLotItem): { type: string; icon: string; text: s
             </div>
             <div v-if="allocation?.rows?.length" class="stock-alloc-rows">
               <div v-for="row in allocation.rows" :key="row.batch_id" class="stock-alloc-row">
-                <span>{{ row.batch_no }} · {{ allocationText(row) }}</span>
+                <span>{{ row.batch_no }} · {{ allocationText(row, farm.countUnit) }}</span>
                 <span class="num">{{ moneyText(row.amount) }}</span>
               </div>
             </div>

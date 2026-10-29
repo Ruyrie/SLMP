@@ -9,6 +9,7 @@ import { useNoticeStore } from '@/stores/notice'
 import { useUiStore } from '@/stores/ui'
 import { useRole } from '@/composables/useRole'
 import { formatFullDate, formatMonthDayWeek } from './accountForm'
+import { formatNumber } from '@zmt/shared'
 
 const router = useRouter()
 const store = useAccountStore()
@@ -142,14 +143,14 @@ function farmLine1(item: { role_text?: string; status?: string; main_category_na
   if (item.status === 'PENDING') return `${item.role_text || '所有者'} · 审核通过前只能修改注册信息`
   if (item.status === 'REJECTED') return `${item.role_text || '所有者'} · 审核未通过`
   if (item.current_stock !== undefined && item.current_stock !== null) {
-    return `${item.role_text || ''} · ${item.main_category_name || ''} · 存栏 ${item.current_stock} ${item.count_unit_text || ''}`
+    return `${item.role_text || ''} · ${item.main_category_name || ''} · 存栏 ${formatNumber(item.current_stock)} ${item.count_unit_text || ''}`
   }
   return item.role_text || ''
 }
 
 function cancelFarmLine1(item: { farm_status?: string; farm_status_text?: string; current_stock?: number; count_unit_text?: string }): string {
   if (item.farm_status === 'NORMAL' && item.current_stock !== undefined) {
-    return `所有者 · 存栏 ${item.current_stock} ${item.count_unit_text || ''}`
+    return `所有者 · 存栏 ${formatNumber(item.current_stock)} ${item.count_unit_text || ''}`
   }
   return `所有者 · ${item.farm_status_text || ''}`
 }

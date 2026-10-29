@@ -3,6 +3,7 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { adminMenus, filterMenus, isGroup, quickItems, userMenus, type MenuItem, type MenuNode } from '../menus'
 import { shellActions, shellState, toggleSider, missingRouteParams, menuRouteParams, type ShellSide } from './shell'
+import { formatNumber } from '../utils/format'
 
 const props = withDefaults(
   defineProps<{
@@ -194,7 +195,7 @@ function farmBadge(farm: { status: string }): string {
                 <zw-icon :name="farm.farm_id === shellState.farmId && !isAllFarms ? 'radio_button_checked' : 'radio_button_unchecked'" :size="18" class="zw-farm-radio" />
                 <div class="zw-farm-txt">
                   <div class="zw-farm-name">{{ farm.name }}</div>
-                  <div class="zw-farm-sub">{{ farm.role_text }} · {{ farm.main_category_name || farm.species_text || '' }}<template v-if="farm.current_stock !== undefined"> · 存栏 {{ farm.current_stock }} {{ farm.count_unit_text || '' }}</template></div>
+                  <div class="zw-farm-sub">{{ farm.role_text }} · {{ farm.main_category_name || farm.species_text || '' }}<template v-if="farm.current_stock !== undefined"> · 存栏 {{ formatNumber(farm.current_stock) }} {{ farm.count_unit_text || '' }}</template></div>
                 </div>
                 <zw-tag v-if="farmBadge(farm)" :type="farm.status === 'PENDING' ? 'warning' : 'neutral'" size="small">{{ farmBadge(farm) }}</zw-tag>
                 <zw-tag v-else-if="farm.farm_id === shellState.farmId && !isAllFarms" type="primary" size="small">当前</zw-tag>

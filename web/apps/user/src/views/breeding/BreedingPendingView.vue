@@ -101,14 +101,14 @@ function buildRows<T extends { group?: string | null; groupText?: string | null 
 }
 
 const rows = computed<any[]>(() => {
-  if (store.tab === 'due') return buildRows(store.dueList, '头')
+  if (store.tab === 'due') return buildRows(store.dueList, store.countUnit)
   return buildRows(store.hatchList, '批')
 })
 
 const cardTitle = computed(() => (store.tab === 'due' ? '待产' : '待出雏'))
 const cardSub = computed(() => {
   const count = store.tab === 'due' ? store.dueTotal : store.hatchTotal
-  const unit = store.tab === 'due' ? '头' : '批'
+  const unit = store.tab === 'due' ? store.countUnit : '批'
   return `${formatNumber(count)} ${unit}${isStaff.value ? ' · 只读' : ''}`
 })
 const reminderText = computed(() => {
@@ -124,7 +124,7 @@ const desc = computed(() => {
   }
   return `${farmName} · ${store.animalLabel}按耳号建档，预产期按品种妊娠期推算`
 })
-const pendingCheckTitle = computed(() => `待妊检 · ${store.pendingChecks.length} 头`)
+const pendingCheckTitle = computed(() => `待妊检 · ${store.pendingChecks.length} ${store.countUnit}`)
 
 function dueBadgeClass(days?: number | null): string {
   return `b02-day b02-day--${dueTone(days)}`

@@ -375,7 +375,7 @@ useFarmReload(async () => {
           <span class="zw-ico-tile zw-ico-tile--primary"><zw-icon name="scale" :size="18" /></span>
           <div>
             <div class="zw-cell-main"><span class="num">{{ store.form.batch?.batch_no }}</span> · {{ store.form.batch?.pen_names }}</div>
-            <div class="zw-cell-sub">{{ store.form.batch?.breed_name }} · {{ store.form.batch?.day_age }} 日龄 · 存栏 {{ formatNumber(store.form.batch?.current_count || 0) }} 头<template v-if="store.form.last_weigh"> · 上次称重 {{ monthDay(store.form.last_weigh.date) }} · 平均 {{ formatNumber(store.form.last_weigh.avg_weight || 0, growthWeightDigits(store.form.last_weigh.avg_weight)) }} 千克</template><template v-else> · 首次称重<template v-if="store.form.batch?.entry_avg_weight"> · 入栏平均 {{ formatNumber(store.form.batch.entry_avg_weight, growthWeightDigits(store.form.batch.entry_avg_weight)) }} 千克</template><template v-else> · 入栏未填平均体重</template></template></div>
+            <div class="zw-cell-sub">{{ store.form.batch?.breed_name }} · {{ store.form.batch?.day_age }} 日龄 · 存栏 {{ formatNumber(store.form.batch?.current_count || 0) }} {{ farm.countUnit }}<template v-if="store.form.last_weigh"> · 上次称重 {{ monthDay(store.form.last_weigh.date) }} · 平均 {{ formatNumber(store.form.last_weigh.avg_weight || 0, growthWeightDigits(store.form.last_weigh.avg_weight)) }} 千克</template><template v-else> · 首次称重<template v-if="store.form.batch?.entry_avg_weight"> · 入栏平均 {{ formatNumber(store.form.batch.entry_avg_weight, growthWeightDigits(store.form.batch.entry_avg_weight)) }} 千克</template><template v-else> · 入栏未填平均体重</template></template></div>
           </div>
         </div>
 

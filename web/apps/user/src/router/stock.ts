@@ -8,6 +8,7 @@ export const stockRoutes = [
     crumbs: ['物资库存', '兽药与疫苗']
   }),
   pageRoute('WU-M03', '/stock/lots/:lotId', '批号详情与出入库流水', () => import('@/views/stock/DrugLotView.vue'), {
-    crumbs: ['物资库存', '兽药与疫苗']
+    crumbs: ['物资库存', '兽药与疫苗'],
+    farmScopedParent: 'WU-M02'
   })
 ]

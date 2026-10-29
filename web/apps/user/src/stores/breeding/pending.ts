@@ -118,7 +118,7 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
       return this.overview?.animalLabel || '母猪'
     },
     countUnit(): string {
-      return this.overview?.countUnitText || '头'
+      return this.overview?.countUnitText || useFarmStore().countUnit
     },
     switchFarms(): NonNullable<BreedingOverview['switchFarms']> {
       return this.overview?.switchFarms || []
@@ -193,10 +193,10 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
         unit: pen.unit_text || '头'
       }
     },
-    checkDueText(state): string {
-      const checks = state.pendingChecks
+    checkDueText(): string {
+      const checks = this.pendingChecks
       if (!checks.length) return ''
-      return `待妊检 · ${checks.length} 头`
+      return `待妊检 · ${checks.length} ${this.countUnit}`
     }
   },
   actions: {

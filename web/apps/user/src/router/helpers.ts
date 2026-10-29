@@ -12,6 +12,8 @@ export interface PageMeta {
   layout?: 'shell' | 'blank'
   needsFarm?: boolean
   perm?: string
+  /** 页面参数指向当前养殖场的数据（批次、出栏单等）：切换养殖场后回到这个列表页 */
+  farmScopedParent?: string
   [key: string]: unknown
 }
 

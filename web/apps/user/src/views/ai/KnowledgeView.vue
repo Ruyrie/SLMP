@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { dayjs, formatDuration, TZ } from '@zmt/shared'
 import type { KnowledgeBlock } from '@/api/ai'
 import { useAiKnowledgeStore } from '@/stores/ai/knowledge'
-import { stripCitationMarkers } from '@/stores/ai/shared'
+import { hasCitation, stripCitationMarkers } from '@/stores/ai/shared'
 import { useUiStore } from '@/stores/ui'
 import { safeKnowledgeImageSrc, sanitizeKnowledgeHtml } from './knowledgeContent'
 
@@ -71,7 +71,7 @@ const answerExcerpt = computed(() => {
   if (seq) {
     const paragraph = raw
       .split(/\n{2,}/)
-      .find((item) => item.includes(`[^${seq}]`))
+      .find((item) => hasCitation(item, seq))
     if (paragraph) text = paragraph
   }
   if (!text) text = raw

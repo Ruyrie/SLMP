@@ -7,7 +7,7 @@ import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
 import { formatMonthDayTime } from '@/views/account/accountForm'
 import { financeApi, type ChangePreview } from '@/api/finance'
-import { formatMoney } from '@zmt/shared'
+import { formatMoney, formatNumber } from '@zmt/shared'
 
 const route = useRoute()
 const router = useRouter()
@@ -907,7 +907,7 @@ async function viewOriginalRecord(): Promise<void> {
                 <b class="num">{{ moneyOrDash(salePreview.profitBefore) }} → {{ moneyOrDash(salePreview.profitAfter) }}</b>
                 <zw-tag v-if="salePreview.turnToLoss" type="error" size="small">转为亏损</zw-tag>
               </div>
-              <div v-if="salePreview.restoreCount" class="u01-preview-row"><span>恢复存栏</span><b class="num">{{ salePreview.restoreCount }} 头</b></div>
+              <div v-if="salePreview.restoreCount" class="u01-preview-row"><span>恢复存栏</span><b class="num">{{ formatNumber(salePreview.restoreCount) }} {{ farm.countUnit }}</b></div>
               <div v-if="salePreview.voidReceiptCount" class="u01-preview-row"><span>作废收款</span><b class="num">{{ salePreview.voidReceiptCount }} 笔，共 {{ moneyOrDash(salePreview.voidReceiptAmount) }}</b></div>
             </template>
             <div v-else-if="!salePreviewLoading" class="zw-faint body-s">填写新值后显示修改后的销售金额、未收金额和批次利润。</div>
