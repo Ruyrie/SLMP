@@ -164,6 +164,11 @@ class KnowledgeAdminServiceImplTest {
         verify(versionMapper, org.mockito.Mockito.atLeastOnce()).update(org.mockito.ArgumentMatchers.isNull(),
                 updates.capture());
         assertThat(updates.getAllValues()).anySatisfy(wrapper -> assertThat(wrapper.getSqlSet()).contains("draft_flag"));
+        // 草稿关键词为空：条目上的关键词也要显式置空
+        org.mockito.ArgumentCaptor<com.baomidou.mybatisplus.core.conditions.Wrapper<AiKnowledge>> knowledgeSets =
+                org.mockito.ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.Wrapper.class);
+        verify(knowledgeMapper).update(org.mockito.ArgumentMatchers.isNull(), knowledgeSets.capture());
+        assertThat(knowledgeSets.getValue().getSqlSet()).contains("keywords");
         verify(paragraphService).replace(1L, 4, parsed, true);
         verify(taskService).completeForKnowledge(1L, 4);
     }

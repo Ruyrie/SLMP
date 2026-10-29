@@ -424,6 +424,9 @@ public class KnowledgeAdminServiceImpl implements KnowledgeAdminService {
         if (knowledgeMapper.updateById(knowledge) == 0) {
             throw ContentErrors.versionConflict();
         }
+        if (knowledge.getVersionNo() == null || knowledge.getVersionNo() <= 0) {
+            clearKeywordsIfEmpty(id, keywords);
+        }
         return knowledgeVO(knowledge, null);
     }
 
@@ -482,6 +485,7 @@ public class KnowledgeAdminServiceImpl implements KnowledgeAdminService {
         if (knowledgeMapper.updateById(knowledge) == 0) {
             throw ContentErrors.versionConflict();
         }
+        clearKeywordsIfEmpty(id, draft.getKeywords());
         boolean online = "ON_SHELF".equals(knowledge.getStatus());
         paragraphService.replace(id, next, parsed, online);
         syncApplicable(id, parseIds(draft.getApplicableCategoryIds()));
@@ -646,6 +650,7 @@ public class KnowledgeAdminServiceImpl implements KnowledgeAdminService {
         if (knowledgeMapper.updateById(knowledge) == 0) {
             throw ContentErrors.versionConflict();
         }
+        clearKeywordsIfEmpty(id, target.getKeywords());
         paragraphService.replace(id, next, parsed, "ON_SHELF".equals(knowledge.getStatus()));
         syncApplicable(id, parseIds(target.getApplicableCategoryIds()));
         writeLog("ROLLBACK", id, knowledge.getTitle(), request.getReason(),
@@ -783,6 +788,15 @@ public class KnowledgeAdminServiceImpl implements KnowledgeAdminService {
         version.setUpdatedBy(AdminContext.requireAdminId());
         versionMapper.insert(version);
         return version;
+    }
+
+    /** updateById 跳过 null：版本里关键词清空时，条目上的关键词要显式置空 */
+    private void clearKeywordsIfEmpty(Long knowledgeId, String keywords) {
+        if (keywords == null) {
+            knowledgeMapper.update(null, Wrappers.<AiKnowledge>lambdaUpdate()
+                    .eq(AiKnowledge::getId, knowledgeId)
+                    .set(AiKnowledge::getKeywords, null));
+        }
     }
 
     private boolean hasVideo(KnowledgeHtml.Parsed parsed) {

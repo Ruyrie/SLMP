@@ -1,5 +1,7 @@
 package com.zhimu.server.admin.base.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +19,11 @@ public class InspectItem extends AdminDetailEntity {
     private String changeType;
     private Integer sortNo;
     private String itemName;
+    /** 选填：清空检查说明要写 null，更新时始终写该列 */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String checkNote;
     private Boolean enabled;
+    /** 重新启用时置空，更新时始终写该列 */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String disableReason;
 }

@@ -1,5 +1,6 @@
 package com.zhimu.server.admin.content.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.zhimu.server.admin.content.request.MultipartCompleteRequest;
 import com.zhimu.server.admin.content.request.MultipartInitRequest;
 import com.zhimu.server.admin.content.service.AdminFileService;
@@ -308,6 +309,10 @@ public class AdminFileServiceImpl implements AdminFileService {
         file.setHeight(info.height() > 0 ? info.height() : null);
         file.setMultipartUploadId(file.getMultipartUploadId());
         fileMapper.updateById(file);
+        // updateById 跳过 null：上次失败留下的转码错误要显式清空
+        fileMapper.update(null, Wrappers.<FileEntity>lambdaUpdate()
+                .eq(FileEntity::getId, file.getId())
+                .set(FileEntity::getTranscodeError, null));
 
         resetVariants(file.getId(), false);
         writeLog("UPLOAD_COMPLETE", file.getId(), FileScene.valueOf(file.getScene()), file.getOriginalName());
@@ -462,6 +467,12 @@ public class AdminFileServiceImpl implements AdminFileService {
             variant.setStartedAt(null);
             variant.setFinishedAt(null);
             variantMapper.updateById(variant);
+            // 同上：重试时清掉上次的错误信息和起止时间
+            variantMapper.update(null, Wrappers.<FileVariant>lambdaUpdate()
+                    .eq(FileVariant::getId, variant.getId())
+                    .set(FileVariant::getErrorMessage, null)
+                    .set(FileVariant::getStartedAt, null)
+                    .set(FileVariant::getFinishedAt, null));
         }
     }
 

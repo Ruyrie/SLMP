@@ -56,6 +56,7 @@ class AdminAccountServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        com.zhimu.server.admin.system.AdminSystemTableInfo.ensure();
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-19T02:22:00Z"), ZoneId.of("Asia/Shanghai")));
         adminMapper = mock(AdminMapper.class);
         roleMapper = mock(AdminRoleMapper.class);
@@ -248,6 +249,12 @@ class AdminAccountServiceImplTest {
         assertThat(target.getLoginFailCount()).isZero();
         assertThat(target.getMustChangePassword()).isTrue();
         assertThat(target.getTempPasswordExpireAt()).isEqualTo(NOW.plusHours(24));
+        // updateById 跳过 null：锁定时间必须另写 UPDATE 置空，否则重置后仍被锁
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        ArgumentCaptor<com.baomidou.mybatisplus.core.conditions.Wrapper<Admin>> sets =
+                (ArgumentCaptor) ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.Wrapper.class);
+        verify(adminMapper, org.mockito.Mockito.atLeastOnce()).update(isNull(), sets.capture());
+        assertThat(com.zhimu.server.admin.system.AdminSystemTableInfo.sqlSets(sets.getAllValues())).contains("locked_until");
         verify(sessionService).invalidateAll(2L);
         verify(operationLogService).writeAdminLog(any(AdminLogCommand.class));
     }
@@ -328,6 +335,11 @@ class AdminAccountServiceImplTest {
         assertThat(service.enable(2L, new AdminStatusRequest("误停用", 0))).isEqualTo("吴昊");
         assertThat(target.getStatus()).isEqualTo("NORMAL");
         assertThat(target.getDisabledAt()).isNull();
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        ArgumentCaptor<com.baomidou.mybatisplus.core.conditions.Wrapper<Admin>> sets =
+                (ArgumentCaptor) ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.Wrapper.class);
+        verify(adminMapper, org.mockito.Mockito.atLeastOnce()).update(isNull(), sets.capture());
+        assertThat(com.zhimu.server.admin.system.AdminSystemTableInfo.sqlSets(sets.getAllValues())).contains("disabled_at");
     }
 
     @Test

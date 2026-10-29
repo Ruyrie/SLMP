@@ -78,6 +78,7 @@ class AdminAuthServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        com.zhimu.server.admin.system.AdminSystemTableInfo.ensure();
         BeijingTime.setClock(Clock.fixed(Instant.parse("2026-10-19T02:22:00Z"), ZoneId.of("Asia/Shanghai")));
         adminMapper = mock(AdminMapper.class);
         roleMapper = mock(AdminRoleMapper.class);
@@ -325,6 +326,12 @@ class AdminAuthServiceImplTest {
         assertThat(admin.getTokenVersion()).isEqualTo(1);
         assertThat(admin.getPasswordUpdatedAt()).isEqualTo(NOW);
         verify(adminMapper).updateById(admin);
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        ArgumentCaptor<com.baomidou.mybatisplus.core.conditions.Wrapper<Admin>> sets =
+                (ArgumentCaptor) ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.Wrapper.class);
+        verify(adminMapper, org.mockito.Mockito.atLeastOnce()).update(isNull(), sets.capture());
+        assertThat(com.zhimu.server.admin.system.AdminSystemTableInfo.sqlSets(sets.getAllValues()))
+                .contains("temp_password_expire_at");
         verify(sessionService).invalidateAll(1L);
         ArgumentCaptor<AdminLogCommand> captor = ArgumentCaptor.forClass(AdminLogCommand.class);
         verify(operationLogService).writeAdminLog(captor.capture());
