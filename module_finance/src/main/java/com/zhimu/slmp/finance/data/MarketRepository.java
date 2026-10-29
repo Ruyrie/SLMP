@@ -27,9 +27,9 @@ import io.reactivex.rxjava3.core.Single;
 @FeatureScope
 public class MarketRepository {
 
-    /** 轮询间隔与上限（技术准备文档 2.6.3：每 2 秒，90 秒上限；服务端 60 秒置 FAILED） */
+    /** 轮询间隔与上限：每 2 秒，150 秒上限（服务端生成最长 120 秒，Nginx 150 秒） */
     public static final long POLL_INTERVAL_SEC = 2;
-    public static final long POLL_MAX_SEC = 90;
+    public static final long POLL_MAX_SEC = 150;
 
     private final FinanceApi api;
 
@@ -83,7 +83,7 @@ public class MarketRepository {
     }
 
     /**
-     * API-E36 轮询：0 秒起每 2 秒一次，状态不为 GENERATING 时结束；90 秒后仍在生成则正常结束（最后一项仍为 GENERATING，
+     * API-E36 轮询：0 秒起每 2 秒一次，状态不为 GENERATING 时结束；150 秒后仍在生成则正常结束（最后一项仍为 GENERATING，
      * 由调用方按失败处理）。
      */
     @NonNull

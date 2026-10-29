@@ -147,6 +147,18 @@ public class StockUtilTest {
     }
 
     @Test
+    public void flowSubtitle_scrapDoesNotRepeatLotNo() {
+        StockFlowItemVO f = new StockFlowItemVO();
+        f.materialType = "DRUG";
+        f.lotNo = "2024118";
+        f.relatedDesc = "批号 2024118";
+        f.occurAt = "2026-10-19 07:40:00";
+        assertEquals("批号 2024118 · 今天 07:40", TestRules.plain(StockTexts.flowSubtitle(f, false)));
+        f.relatedDesc = "松山区康牧兽药店";
+        assertEquals("批号 2024118 · 松山区康牧兽药店 · 今天 07:40", TestRules.plain(StockTexts.flowSubtitle(f, false)));
+    }
+
+    @Test
     public void flowRouter_mapsBizTypes() {
         StockFlowItemVO f = new StockFlowItemVO();
         f.bizType = "FEED_RECORD";

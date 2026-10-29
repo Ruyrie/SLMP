@@ -60,6 +60,9 @@ import retrofit2.http.Query;
  */
 public interface FinanceApi {
 
+    /** 出栏建议生成（API-E33 / E34）的读取超时：服务端 120 秒内返回、Nginx 150 秒，客户端须 ≥ 150 秒 */
+    int ADVICE_READ_TIMEOUT_SEC = 160;
+
     // ===== 收支 =====
 
     /** API-E01 经营概览 */
@@ -217,12 +220,12 @@ public interface FinanceApi {
                                                              @Query("page") int page, @Query("size") int size);
 
     /** API-E33 批次最近一次建议 */
-    @retrofit2.http.Headers("X-Zmt-Read-Timeout: 90")
+    @retrofit2.http.Headers("X-Zmt-Read-Timeout: " + FinanceApi.ADVICE_READ_TIMEOUT_SEC)
     @GET("api/v1/sale-advices/latest")
     Single<ApiResponse<SaleAdviceVO>> getLatestAdvice(@Query("batch_id") long batchId);
 
     /** API-E34 重新生成出栏建议 */
-    @retrofit2.http.Headers("X-Zmt-Read-Timeout: 90")
+    @retrofit2.http.Headers("X-Zmt-Read-Timeout: " + FinanceApi.ADVICE_READ_TIMEOUT_SEC)
     @POST("api/v1/sale-advices")
     Single<ApiResponse<SaleAdviceVO>> regenerateAdvice(@Body SaleAdviceRequest body);
 

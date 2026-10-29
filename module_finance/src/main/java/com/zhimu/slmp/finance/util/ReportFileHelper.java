@@ -52,11 +52,18 @@ public class ReportFileHelper {
         public final int reason;
         @Nullable
         public final ExportedFile file;
+        /** 已下载字节数（RUNNING 时用于判断是否还有进展；系统下载在 PAUSED / PENDING 时不变） */
+        public final long bytes;
 
-        Status(int state, int reason, @Nullable ExportedFile file) {
+        public Status(int state, int reason, @Nullable ExportedFile file) {
+            this(state, reason, file, 0);
+        }
+
+        public Status(int state, int reason, @Nullable ExportedFile file, long bytes) {
             this.state = state;
             this.reason = reason;
             this.file = file;
+            this.bytes = bytes;
         }
     }
 
@@ -141,8 +148,19 @@ public class ReportFileHelper {
                 return new Status(Status.FAILED, c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON)),
                         null);
             }
-            return new Status(Status.RUNNING, 0, null);
+            long bytes = c.getLong(c.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+            return new Status(Status.RUNNING, 0, null, Math.max(bytes, 0));
         }
+    }
+
+    /** 长时间没有进展时取消系统下载（同时删除未完成的文件） */
+    @WorkerThread
+    public void cancel(long downloadId) {
+        if (downloadId == LOCAL_DONE) {
+            return;
+        }
+        DownloadManager dm = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+        dm.remove(downloadId);
     }
 
     /** CreateDocument 另存：复制到用户选择的位置 */

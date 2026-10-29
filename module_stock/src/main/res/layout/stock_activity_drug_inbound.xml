@@ -66,6 +66,7 @@
                                 android:enabled="@{FormMode.NEW.equals(vm.mode)}"
                                 android:hint="@string/stock_field_drug"
                                 app:endIconDrawable="@drawable/ic_arrow_drop_down"
+                                app:endIconContentDescription="@string/base_cd_pick_option"
                                 app:helperText="@string/stock_drug_helper"
                                 app:helperTextEnabled="true"
                                 app:stockError="@{vm.fieldErrors[`drug_id`]}">

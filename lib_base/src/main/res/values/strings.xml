@@ -19,6 +19,7 @@
     <string name="base_cd_messages">消息</string>
     <string name="base_cd_pick_date">选择日期</string>
     <string name="base_cd_pick_time">选择时间</string>
+    <string name="base_cd_pick_option">展开选项</string>
     <string name="base_cd_unread">未读</string>
     <string name="base_cd_loading">正在加载</string>
 

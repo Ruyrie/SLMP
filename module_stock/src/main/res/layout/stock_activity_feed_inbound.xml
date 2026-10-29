@@ -68,6 +68,7 @@
                                 android:enabled="@{FormMode.NEW.equals(vm.mode)}"
                                 android:hint="@string/stock_field_feed"
                                 app:endIconDrawable="@drawable/ic_arrow_drop_down"
+                                app:endIconContentDescription="@string/base_cd_pick_option"
                                 app:stockError="@{vm.fieldErrors[`feed_id`]}"
                                 app:stockHelper="@{vm.feedHint}">
 

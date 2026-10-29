@@ -19,6 +19,7 @@
         android:hint="@string/inspect_deadline_input"
         app:boxBackgroundColor="?attr/colorSurfaceContainerLow"
         app:endIconDrawable="@drawable/ic_schedule"
+        app:endIconContentDescription="@string/base_cd_pick_time"
         app:helperTextEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText

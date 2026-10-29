@@ -74,6 +74,26 @@ public class BreedFormRulesTest {
         assertTrue(BreedFormRules.pregCheck("2026-10-19", "2026-09-24", BreedCodes.POSITIVE).isEmpty());
     }
 
+    @Test
+    public void pregCheck_positiveNeedsEighteenDaysAfterMating() {
+        // 配种当天、第 17 天登记阳性被拦；满 18 天可以；阴性不限
+        assertEquals(BreedFormRules.MSG_POSITIVE_TOO_EARLY,
+                BreedFormRules.pregCheck("2026-10-01", "2026-10-01", BreedCodes.POSITIVE).get(BreedFormRules.F_RESULT));
+        assertEquals(BreedFormRules.MSG_POSITIVE_TOO_EARLY,
+                BreedFormRules.pregCheck("2026-10-18", "2026-10-01", BreedCodes.POSITIVE).get(BreedFormRules.F_RESULT));
+        assertTrue(BreedFormRules.pregCheck("2026-10-19", "2026-10-01", BreedCodes.POSITIVE).isEmpty());
+        assertTrue(BreedFormRules.pregCheck("2026-10-01", "2026-10-01", BreedCodes.NEGATIVE).isEmpty());
+    }
+
+    @Test
+    public void dueLine3_showsStaffNamesBeforeReminder() {
+        assertEquals("负责 李明、张伟 · 已提醒 10月16日、今天", BreedTextFormatter.dueLine3(
+                java.util.Arrays.asList("李明", "张伟"), "已提醒 10月16日、今天"));
+        assertEquals("负责 李明", BreedTextFormatter.dueLine3(java.util.Collections.singletonList("李明"), null));
+        assertEquals("10月25日提醒", BreedTextFormatter.dueLine3(java.util.Collections.emptyList(), "10月25日提醒"));
+        assertNull(BreedTextFormatter.dueLine3(null, null));
+    }
+
     // ===== 产仔 =====
 
     @Test

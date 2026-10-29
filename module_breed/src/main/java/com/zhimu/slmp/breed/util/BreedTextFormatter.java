@@ -260,6 +260,29 @@ public final class BreedTextFormatter {
         return sb.toString();
     }
 
+    /** 待产 / 待出雏第三行：“负责 李明、张伟 · 已提醒 10月16日、今天”；没有负责员工时只写提醒状态 */
+    @Nullable
+    public static String dueLine3(@Nullable List<String> staffNames, @Nullable String reminder) {
+        StringBuilder names = new StringBuilder();
+        if (staffNames != null) {
+            for (String n : staffNames) {
+                if (n == null || n.trim().isEmpty()) {
+                    continue;
+                }
+                if (names.length() > 0) {
+                    names.append('、');
+                }
+                names.append(n.trim());
+            }
+        }
+        boolean hasReminder = reminder != null && !reminder.trim().isEmpty();
+        if (names.length() == 0) {
+            return hasReminder ? reminder : null;
+        }
+        String staff = "负责 " + names;
+        return hasReminder ? staff + DOT + reminder : staff;
+    }
+
     /** 天数徽标文字：0 为“今天”，负数为“超 n”，其余为数字（下方另显示“天”） */
     @NonNull
     public static String badgeNumber(int days) {

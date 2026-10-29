@@ -216,7 +216,7 @@ public class FeedOtherOutViewModel extends StockFormViewModel {
     @Nullable
     static String destHintOf(@Nullable String dest) {
         if (StockEnums.DEST_RETURN_SUPPLIER.equals(dest) || StockEnums.DEST_SALE.equals(dest)) {
-            return "系统不会自动记账，收到退款或货款时请在 E03 记一笔中登记";
+            return "系统不会自动记账，收到退款或货款时请在“记一笔”中登记";
         }
         if (StockEnums.DEST_TRANSFER_FARM.equals(dest)) {
             return "对方养殖场不会自动入库，需要对方自行登记入库";
@@ -362,16 +362,13 @@ public class FeedOtherOutViewModel extends StockFormViewModel {
             case ErrorCodes.VERSION_CONFLICT: {
                 String cur = e.dataString("current_qty");
                 if (cur != null) {
+                    // 服务端带回当前结存：显示出来，并自动重拉选项 / 上限（取到新的 stock_version），核对后可直接重新提交
                     putFieldError(F_QTY, "库存已变化，当前结存 " + StockQtyFormatter.qty(StockCalc.parse(cur),
-                            unitText.getValue()) + "，请刷新后重试");
+                            unitText.getValue()) + "，已刷新，请核对后重新提交");
                     if (FormMode.NEW.equals(mode.getValue())) {
-                        launch(repository.listFeedOptions(StockEnums.PURPOSE_OTHER_OUT, null), list -> {
-                            feedOptions.setValue(list);
-                            FeedOptionVO f = selectedFeed.getValue();
-                            if (f != null) {
-                                onFeedPicked(f.feedId);
-                            }
-                        });
+                        reloadOptions();
+                    } else if (FormMode.EDIT.equals(mode.getValue())) {
+                        refreshEditLimit();
                     }
                 } else {
                     showMessage(UiMessage.withAction(MSG_VERSION, "刷新", ACTION_REFRESH));
@@ -456,6 +453,54 @@ public class FeedOtherOutViewModel extends StockFormViewModel {
             mode.setValue(FormMode.VIEW);
             launch(repository.getOutbound(recordId), this::applyRecord);
         }
+    }
+
+    /** 冲突提示里的“刷新”：新建时重拉饲料选项与结存（已填内容保留），查看 / 修改时重新取记录 */
+    public void refresh() {
+        if (FormMode.NEW.equals(mode.getValue())) {
+            reloadOptions();
+            showMessage(MSG_REFRESHED);
+        } else {
+            reloadRecord();
+        }
+    }
+
+    /** 新建：重拉饲料选项，已选饲料按最新结存、均价与 stock_version 重新选中；已不可出库时清空选择 */
+    @VisibleForTesting
+    void reloadOptions() {
+        launch(repository.listFeedOptions(StockEnums.PURPOSE_OTHER_OUT, null), list -> {
+            feedOptions.setValue(list);
+            FeedOptionVO f = selectedFeed.getValue();
+            if (f != null) {
+                onFeedPicked(f.feedId);
+                FeedOptionVO now = selectedFeed.getValue();
+                if (now == f) {
+                    clearFeed();
+                }
+            }
+            rebuildPicker();
+        });
+    }
+
+    private void clearFeed() {
+        selectedFeed.setValue(null);
+        feedName.setValue("");
+        feedHint.setValue(null);
+        maxQty.setValue(null);
+        maxText.setValue(null);
+        recomputeAmount();
+    }
+
+    /** 修改中库存变化：只更新记录版本与上限，留在修改状态、已填内容保留 */
+    private void refreshEditLimit() {
+        if (recordId == null) {
+            return;
+        }
+        launch(repository.getOutbound(recordId), r -> {
+            record.setValue(r);
+            maxQty.setValue(r.maxQty);
+            maxText.setValue("最多 " + StockQtyFormatter.qty(r.maxQty, unitText.getValue()));
+        });
     }
 
     /** “作废后保育料结存增加 200 千克。这条出库没有计入批次成本，作废不影响批次核算。” */

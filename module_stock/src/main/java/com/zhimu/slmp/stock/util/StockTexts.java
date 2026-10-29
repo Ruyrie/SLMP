@@ -221,16 +221,30 @@ public final class StockTexts {
      */
     @NonNull
     public static String flowSubtitle(@NonNull StockFlowItemVO f, boolean lotStyle) {
+        // 报废等流水的 related_desc 就是“批号 xxx”，与前面拼的批号重复时不再写
+        String related = isLotText(f.relatedDesc, f.lotNo) ? null : f.relatedDesc;
         if (lotStyle) {
             String date = DateFormatter.formatDate(f.bizDate != null ? f.bizDate : f.occurAt, false);
-            String target = f.penName != null ? f.penName : f.batchNo != null ? f.batchNo : f.relatedDesc;
+            String target = f.penName != null ? f.penName : f.batchNo != null ? f.batchNo : related;
             return join(DOT, date, target, f.operatorName);
         }
         String head = f.batchNo != null ? f.batchNo : f.relatedDesc;
         if (StockEnums.MATERIAL_DRUG.equals(f.materialType) && f.lotNo != null) {
-            head = join(DOT, "批号 " + f.lotNo, f.penName != null ? f.penName : f.relatedDesc);
+            head = join(DOT, "批号 " + f.lotNo, f.penName != null ? f.penName : related);
         }
         return join(DOT, head, DateFormatter.formatDateTime(f.occurAt));
+    }
+
+    /** related_desc 是否只是批号本身（“2024118”或“批号 2024118”） */
+    static boolean isLotText(@Nullable String related, @Nullable String lotNo) {
+        if (related == null || lotNo == null) {
+            return false;
+        }
+        String r = related.trim();
+        if (r.startsWith("批号")) {
+            r = r.substring(2).trim();
+        }
+        return r.equals(lotNo.trim());
     }
 
     /** 流水是否已作废（status 非 NORMAL） */

@@ -48,6 +48,8 @@ public abstract class StockFormViewModel extends BaseViewModel {
     public static final String MSG_NOT_SAVED = "提交没有成功，请重试";
     public static final String MSG_DRAFT = "上次没有提交的内容已保存为草稿";
     public static final String MSG_VERSION = "数据已被他人修改，请刷新后重试";
+    /** 新建表单点“刷新”后：已重拉选项与结存，已填内容保留 */
+    public static final String MSG_REFRESHED = "已刷新结存，已填内容保留，请核对后重新提交";
     public static final String ACTION_RETRY = "stock_retry";
     public static final String ACTION_RESTORE_DRAFT = "stock_restore_draft";
     public static final String ACTION_REFRESH = "stock_refresh";

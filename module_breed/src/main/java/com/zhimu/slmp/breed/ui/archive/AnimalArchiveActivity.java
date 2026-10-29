@@ -57,6 +57,8 @@ public class AnimalArchiveActivity extends BaseActivity implements PregCheckHost
             return;
         }
         if (result.getResultCode() == RESULT_OK) {
+            // 档案里登记过（断奶、产仔等）：返回列表时让列表刷新状态与计数
+            setResult(RESULT_OK);
             vm.onChildResult(msg);
         }
     });
@@ -122,6 +124,7 @@ public class AnimalArchiveActivity extends BaseActivity implements PregCheckHost
         vm.getDismissCheckSheet().observe(this, msg -> {
             PregCheckSheet.dismissIn(getSupportFragmentManager());
             if (msg != null) {
+                setResult(RESULT_OK);
                 showMessage(msg);
             }
         });

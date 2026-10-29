@@ -207,7 +207,8 @@ public class TodayFragment extends BaseFragment implements TodoPagingAdapter.Lis
     /** AI 推荐横幅：加粗“问问 AI 养殖助手”+ 推荐问题；显隐由布局按 ai_hint 绑定 */
     private void renderAiHint(@Nullable String hint) {
         if (header != null && hint != null) {
-            header.aiBanner.setNotice(getString(R.string.today_home_ai_default), hint);
+            // 标题与推荐问题之间加分隔“ · ”（否则显示成“养殖助手1 号育雏舍…”）
+            header.aiBanner.setNotice(getString(R.string.today_home_ai_default), " · " + hint);
         }
     }
 

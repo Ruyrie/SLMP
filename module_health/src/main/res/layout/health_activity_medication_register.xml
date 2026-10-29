@@ -136,6 +136,7 @@
                             android:layout_weight="2"
                             android:hint="@string/health_stock_lot"
                             app:endIconDrawable="@drawable/ic_arrow_drop_down"
+                            app:endIconContentDescription="@string/base_cd_pick_option"
                             app:helperTextEnabled="true">
 
                             <com.google.android.material.textfield.TextInputEditText

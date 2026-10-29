@@ -65,7 +65,7 @@ public class ReportRepository {
     }
 
     /**
-     * API-E40 轮询：0 秒起每 2 秒，状态不为 GENERATING 且不是旧内容（outdated）时结束，90 秒上限；
+     * API-E40 轮询：0 秒起每 2 秒，状态不为 GENERATING 且不是旧内容（outdated）时结束，150 秒上限；
      * outdated 为真时先显示旧内容并继续轮询。
      */
     @NonNull

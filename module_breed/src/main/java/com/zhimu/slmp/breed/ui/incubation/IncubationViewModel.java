@@ -379,6 +379,10 @@ public class IncubationViewModel extends BreedFormViewModel {
             capacityConfirmed.setValue(false);
         }
         capacity.setValue(c);
+        if (c == null) {
+            // 改小数量 / 换栏舍后不再超容量：“请先确认超出容量”随之消失
+            clearFieldError(BreedFormRules.F_CAPACITY);
+        }
     }
 
     @Nullable

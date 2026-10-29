@@ -109,7 +109,11 @@ public final class BreedFormRules {
         return e;
     }
 
-    /** 登记 / 修改妊检：日期不晚于今天、不早于首次配种日期；必须选结果 */
+    /** 妊检阳性最早可登记日：配种后满 18 天（服务端同一规则，阴性不限） */
+    public static final int POSITIVE_MIN_DAYS = 18;
+    public static final String MSG_POSITIVE_TOO_EARLY = "配种后满 18 天才能登记妊检阳性";
+
+    /** 登记 / 修改妊检：日期不晚于今天、不早于首次配种日期；必须选结果；阳性须在配种后满 18 天 */
     @NonNull
     public static Map<String, String> pregCheck(@Nullable String checkDate, @Nullable String firstMatingDate,
                                                 @Nullable String result) {
@@ -125,6 +129,9 @@ public final class BreedFormRules {
         }
         if (!BreedCodes.POSITIVE.equals(result) && !BreedCodes.NEGATIVE.equals(result)) {
             e.put(F_RESULT, "请选择妊检结果");
+        } else if (BreedCodes.POSITIVE.equals(result) && d != null && first != null && !d.isBefore(first)
+                && d.isBefore(first.plusDays(POSITIVE_MIN_DAYS))) {
+            e.put(F_RESULT, MSG_POSITIVE_TOO_EARLY);
         }
         return e;
     }

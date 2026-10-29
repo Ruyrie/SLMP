@@ -110,6 +110,7 @@
                             android:layout_marginTop="@dimen/base_space_5"
                             android:hint="@string/stock_field_name"
                             app:endIconDrawable="@drawable/ic_arrow_drop_down"
+                            app:endIconContentDescription="@string/base_cd_pick_option"
                             app:stockError="@{vm.fieldErrors[`catalog_id`]}"
                             app:stockHelper="@{vm.nameHelper}">
 
@@ -225,6 +226,7 @@
                             android:enabled="@{!safeUnbox(vm.locked) &amp;&amp; !safeUnbox(vm.banned)}"
                             android:hint="@string/stock_field_stock_unit"
                             app:endIconDrawable="@drawable/ic_arrow_drop_down"
+                            app:endIconContentDescription="@string/base_cd_pick_option"
                             app:stockError="@{vm.fieldErrors[`pack_unit`]}"
                             app:stockHelper="@{vm.unitHelper}">
 
