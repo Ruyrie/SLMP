@@ -352,11 +352,15 @@ function validateDrug(): boolean {
     for (const usage of form.usages) {
       if (!usage.applicable) continue
       if (!usage.recommended_dose || Number(usage.recommended_dose) <= 0) formErrors.usages = `请填写${usage.species_text}的推荐剂量`
-      if (!usage.course_days || usage.course_days < 1 || usage.course_days > 60) formErrors.usages = '推荐疗程必须在 1–60 天之间'
-      if (usage.withdrawal_days === null || usage.withdrawal_days === undefined || usage.withdrawal_days < 0 || usage.withdrawal_days > 999) formErrors.usages = '休药期必须在 0–999 天之间'
+      else if (!usage.course_days || usage.course_days < 1 || usage.course_days > 60) formErrors.usages = `${usage.species_text}的推荐疗程必须在 1–60 天之间`
+      else if (usage.withdrawal_days === null || usage.withdrawal_days === undefined || (usage.withdrawal_days as unknown) === '' || usage.withdrawal_days < 0 || usage.withdrawal_days > 999) formErrors.usages = `${usage.species_text}的休药期必须在 0–999 天之间`
+      if (formErrors.usages) break
     }
   }
-  return !Object.keys(formErrors).length
+  const first = Object.values(formErrors)[0]
+  // 用量表等没有挨着输入框的错误也要看得见：底部错误条显示第一条
+  if (first) formError.value = Object.keys(formErrors).length > 1 ? `${first}（另有 ${Object.keys(formErrors).length - 1} 处需要修改）` : first
+  return !first
 }
 
 function buildPayload() {
@@ -1075,6 +1079,7 @@ async function openRouteTarget(): Promise<boolean> {
               </tbody>
             </v-table>
           </div>
+          <div v-if="formErrors.usages" class="drug-form-error">{{ formErrors.usages }}</div>
         </template>
 
         <zw-notice v-if="!isDisinfectant" type="warning" title="休药期决定用户端的可出栏日期">

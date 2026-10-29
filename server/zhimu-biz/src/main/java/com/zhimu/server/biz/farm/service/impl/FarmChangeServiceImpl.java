@@ -32,7 +32,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -109,7 +111,7 @@ public class FarmChangeServiceImpl implements FarmChangeService {
             throw FarmValidations.invalid(FarmValidations.MSG_NO_CHANGE);
         }
         bizMedia.validateForBind(change.qualificationFileIds(), FileScene.FARM_QUAL, userId,
-                "qualification_file_ids", new BizRef(BizType.FARM, farmId));
+                "qualification_file_ids", allowedQualRefs(farmId));
         return nameLock.call(userId, () -> {
             if (nameChanged) {
                 nameGuard.assertUnique(userId, change.name(), farmId);
@@ -197,6 +199,23 @@ public class FarmChangeServiceImpl implements FarmChangeService {
                 .orderByDesc(FarmChange::getCreatedAt)
                 .orderByDesc(FarmChange::getId)
                 .last("LIMIT 1")));
+    }
+
+    /**
+     * 资质图可以沿用：养殖场当前资质图（FARM），以及本场已审核完的历史资料变更（通过 / 驳回 / 撤回）里用过的图。
+     * 历史变更的关联保留给审核记录查看，不算“用在其他记录中”。
+     */
+    private BizRef[] allowedQualRefs(Long farmId) {
+        List<BizRef> refs = new ArrayList<>();
+        refs.add(new BizRef(BizType.FARM, farmId));
+        List<FarmChange> history = TenantSkip.call(() -> changeMapper.selectList(Wrappers.<FarmChange>lambdaQuery()
+                .select(FarmChange::getId)
+                .eq(FarmChange::getFarmId, farmId)
+                .ne(FarmChange::getStatus, "PENDING")));
+        for (FarmChange change : history == null ? List.<FarmChange>of() : history) {
+            refs.add(new BizRef(BizType.FARM_CHANGE, change.getId()));
+        }
+        return refs.toArray(new BizRef[0]);
     }
 
     private FarmChange pendingChange(Long farmId) {

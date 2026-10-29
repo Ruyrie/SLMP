@@ -38,7 +38,8 @@ export interface AdminCreatePayload {
 
 export interface AdminUpdatePayload {
   name: string
-  phone: string
+  /** 不改手机号时不传（列表里是脱敏号码） */
+  phone?: string
   role_id: number
   reason: string
   version: number

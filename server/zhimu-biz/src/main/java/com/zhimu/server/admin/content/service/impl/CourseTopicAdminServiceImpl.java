@@ -74,7 +74,8 @@ public class CourseTopicAdminServiceImpl implements CourseTopicAdminService {
         topic.setIntro(blankToNull(request.getIntro()));
         topic.setCoverFileId(cover == null ? null : cover.getId());
         topic.setCoverUrl(cover == null ? null : media.publicUrl(cover));
-        topic.setStatus("ON_SHELF");
+        // 新建专题默认未上架：编排好至少 1 节已上架课程后再手动上架
+        topic.setStatus("OFF_SHELF");
         topic.setSortNo(request.getSortNo() == null ? nextSortNo() : request.getSortNo());
         topic.setUpdatedBy(AdminContext.requireAdminId());
         topic.setVersion(0);
@@ -142,14 +143,23 @@ public class CourseTopicAdminServiceImpl implements CourseTopicAdminService {
             if (request.getReason() == null || request.getReason().isBlank()) {
                 throw ContentErrors.reasonEmpty("请填写下架原因");
             }
-            topic.setOffReason(request.getReason());
+            topic.setOffReason(request.getReason().trim());
         } else {
+            if (onShelfCourseCount(id) == 0) {
+                throw ContentErrors.stateChanged("专题里还没有已上架的课程，请先编排至少 1 节已上架课程再上架");
+            }
             topic.setOffReason(null);
         }
         topic.setStatus(status);
         topic.setUpdatedBy(AdminContext.requireAdminId());
         if (topicMapper.updateById(topic) == 0) {
             throw ContentErrors.versionConflict();
+        }
+        if ("ON_SHELF".equals(status)) {
+            // updateById 跳过 null，下架原因要显式清空
+            topicMapper.update(null, Wrappers.<CourseTopic>lambdaUpdate()
+                    .eq(CourseTopic::getId, id)
+                    .set(CourseTopic::getOffReason, null));
         }
         writeLog("OFF_SHELF".equals(status) ? "TOPIC_OFF_SHELF" : "TOPIC_ON_SHELF", id, topic.getName(),
                 "OFF_SHELF".equals(status) ? request.getReason() : null, Map.of("status", old),
@@ -170,6 +180,9 @@ public class CourseTopicAdminServiceImpl implements CourseTopicAdminService {
             if (course.getTopicId() != null && !Objects.equals(course.getTopicId(), topic.getId())) {
                 throw ContentErrors.field("courses", "课程已属于其他专题");
             }
+            if (!Objects.equals(course.getTopicId(), topic.getId()) && !"ON_SHELF".equals(course.getStatus())) {
+                throw ContentErrors.field("courses", "只能编排已上架的课程：“" + course.getTitle() + "”还没有上架");
+            }
             keep.add(course.getId());
             course.setTopicId(topic.getId());
             course.setTopicName(topic.getName());
@@ -188,6 +201,13 @@ public class CourseTopicAdminServiceImpl implements CourseTopicAdminService {
                         .set(Course::getUpdatedBy, AdminContext.requireAdminId()));
             }
         }
+    }
+
+    private long onShelfCourseCount(Long topicId) {
+        Long count = courseMapper.selectCount(Wrappers.<Course>lambdaQuery()
+                .eq(Course::getTopicId, topicId)
+                .eq(Course::getStatus, "ON_SHELF"));
+        return count == null ? 0 : count;
     }
 
     private List<Course> coursesOf(Long topicId) {
@@ -241,7 +261,9 @@ public class CourseTopicAdminServiceImpl implements CourseTopicAdminService {
         vo.setCoverFileId(topic.getCoverFileId());
         vo.setCoverUrl(media.coverUrl(topic));
         vo.setStatus(topic.getStatus());
-        vo.setStatusText(ContentTexts.contentStatus(topic.getStatus()));
+        vo.setStatusText("OFF_SHELF".equals(topic.getStatus())
+                && (topic.getOffReason() == null || topic.getOffReason().isBlank())
+                ? "未上架" : ContentTexts.contentStatus(topic.getStatus()));
         vo.setOffReason(topic.getOffReason());
         vo.setSortNo(topic.getSortNo());
         vo.setVersion(topic.getVersion());

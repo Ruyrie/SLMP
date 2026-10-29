@@ -411,6 +411,12 @@ public class CourseAdminServiceImpl implements CourseAdminService {
         if (courseMapper.updateById(course) == 0) {
             throw ContentErrors.versionConflict();
         }
+        // updateById 跳过 null，下架信息要显式清空
+        courseMapper.update(null, Wrappers.<Course>lambdaUpdate()
+                .eq(Course::getId, id)
+                .set(Course::getOffShelfAt, null)
+                .set(Course::getOffShelfBy, null)
+                .set(Course::getOffReason, null));
         writeLog("ON_SHELF", id, course.getTitle(), null, Map.of("status", "OFF_SHELF"),
                 Map.of("status", "ON_SHELF"));
         return vo(course, 0);
@@ -452,6 +458,14 @@ public class CourseAdminServiceImpl implements CourseAdminService {
         media.markBound(course.getVideoFileId(), false);
         media.markBound(course.getCoverFileId(), false);
         applicableMapper.deleteByBiz(BIZ_COURSE, id);
+        if (course.getTopicId() != null) {
+            // 删除的草稿不再挂在专题编排里
+            courseMapper.update(null, Wrappers.<Course>lambdaUpdate()
+                    .eq(Course::getId, id)
+                    .set(Course::getTopicId, null)
+                    .set(Course::getTopicName, null)
+                    .set(Course::getSectionNo, null));
+        }
         courseMapper.deleteById(id);
         writeLog("DELETE", id, course.getTitle(), null, snapshot(course), null);
     }

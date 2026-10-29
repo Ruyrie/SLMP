@@ -459,6 +459,10 @@ public class KnowledgeAdminServiceImpl implements KnowledgeAdminService {
         if (versionMapper.updateById(draft) == 0) {
             throw ContentErrors.versionConflict();
         }
+        // updateById 会跳过 null 字段，草稿标记必须显式清空，否则下次存草稿会把这个线上版本改回草稿
+        versionMapper.update(null, Wrappers.<KnowledgeVersion>lambdaUpdate()
+                .eq(KnowledgeVersion::getId, draft.getId())
+                .set(KnowledgeVersion::getDraftFlag, null));
 
         knowledge.setTitle(draft.getTitle());
         knowledge.setCategoryId(draft.getCategoryId());

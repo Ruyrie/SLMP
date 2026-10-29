@@ -115,12 +115,16 @@ public class CourseServiceImpl implements CourseService {
         Map<Long, CourseProgress> progressByCourse = progressByCourse(userId, courses);
         List<TopicVO> all = new ArrayList<>();
         for (CourseTopic topic : topics) {
+            List<Course> topicCourses = byTopic.getOrDefault(topic.getId(), List.of());
+            if (topicCourses.isEmpty()) {
+                // 还没有已上架课程的专题不给用户端看
+                continue;
+            }
             TopicVO vo = new TopicVO();
             vo.setId(topic.getId());
             vo.setName(topic.getName());
             vo.setCategoryName(topic.getCategoryName());
             vo.setCoverUrl(convert.topicCover(topic));
-            List<Course> topicCourses = byTopic.getOrDefault(topic.getId(), List.of());
             vo.setCourseCount(topicCourses.size());
             vo.setTotalDurationSec(topicCourses.stream().mapToInt(c -> value(c.getDurationSec())).sum());
             int learned = 0;

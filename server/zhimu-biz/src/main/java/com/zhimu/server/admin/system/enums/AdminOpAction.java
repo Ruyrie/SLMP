@@ -42,7 +42,29 @@ public enum AdminOpAction implements CodeEnum {
     SAVE_PERMISSION("保存权限"),
     LOGIN("登录"),
     LOGOUT("退出"),
-    EXPORT("导出");
+    EXPORT("导出"),
+    DRAFT_SAVE("保存草稿"),
+    DISCARD("放弃修改"),
+    SORT("调整顺序"),
+    COPY("复制"),
+    RECALL("召回"),
+    BAN("列入禁用"),
+    CONFIG_SAVE("保存配置"),
+    REVOKE("撤回"),
+    REVIEW_PASS("复核通过"),
+    REVIEW_RETURN("复核退回"),
+    TASK_CLOSE("关闭任务"),
+    TOPIC_CREATE("新建专题"),
+    TOPIC_UPDATE("修改专题"),
+    TOPIC_ON_SHELF("上架专题"),
+    TOPIC_OFF_SHELF("下架专题"),
+    CATEGORY_CREATE("新增分类"),
+    CATEGORY_UPDATE("修改分类"),
+    CATEGORY_DISABLE("停用分类"),
+    CATEGORY_ORDER("调整分类顺序"),
+    UPLOAD("上传"),
+    UPLOAD_INIT("开始上传"),
+    UPLOAD_COMPLETE("上传完成");
 
     private final String text;
 

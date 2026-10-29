@@ -95,6 +95,44 @@ class ImmuneTemplateAdminServiceImplTest {
     }
 
     @Test
+    void orderAcceptsOnlineItemIdsAfterDraftAutoCreated() {
+        com.zhimu.server.admin.base.entity.ImmuneTemplateVersion draft =
+                new com.zhimu.server.admin.base.entity.ImmuneTemplateVersion();
+        draft.setId(2102L);
+        draft.setTemplateId(21L);
+        draft.setStatus("DRAFT");
+        draft.setDraftFlag(1);
+        draft.setVersion(0);
+        when(versionMapper.selectOne(any())).thenReturn(draft);
+        com.zhimu.server.admin.base.entity.ImmuneTemplateItem first = immuneItem(501L, 201L, 1);
+        com.zhimu.server.admin.base.entity.ImmuneTemplateItem second = immuneItem(502L, 202L, 2);
+        com.zhimu.server.admin.base.entity.ImmuneTemplateItem third = immuneItem(503L, 203L, 3);
+        when(itemMapper.selectList(any())).thenReturn(List.of(first, second, third));
+        com.zhimu.server.admin.base.request.TemplateItemOrderRequest request =
+                new com.zhimu.server.admin.base.request.TemplateItemOrderRequest();
+        request.setItemIds(List.of(202L, 201L, 203L));
+        request.setVersion(5);
+
+        service.order(21L, request);
+
+        assertThat(second.getSortNo()).isEqualTo(1);
+        assertThat(first.getSortNo()).isEqualTo(2);
+        assertThat(third.getSortNo()).isEqualTo(3);
+    }
+
+    private static com.zhimu.server.admin.base.entity.ImmuneTemplateItem immuneItem(Long id, Long sourceId, int sort) {
+        com.zhimu.server.admin.base.entity.ImmuneTemplateItem item =
+                new com.zhimu.server.admin.base.entity.ImmuneTemplateItem();
+        item.setId(id);
+        item.setTemplateId(21L);
+        item.setVersionId(2102L);
+        item.setSourceItemId(sourceId);
+        item.setChangeType("NONE");
+        item.setSortNo(sort);
+        return item;
+    }
+
+    @Test
     void publishWithoutDraftReturns40903() {
         when(versionMapper.selectOne(any())).thenReturn(null);
         assertThatThrownBy(() -> service.publish(21L, publishRequest(5)))

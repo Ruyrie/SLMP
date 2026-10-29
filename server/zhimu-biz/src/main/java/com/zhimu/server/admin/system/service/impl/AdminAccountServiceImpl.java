@@ -182,7 +182,8 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         String reason = AdminValidation.reason(request.reason(), "请填写修改原因");
         AdminRole newRole = requireRole(request.roleId());
         String name = AdminValidation.name(request.name());
-        String phone = request.phone().trim();
+        String phone = request.phone() == null || request.phone().isBlank()
+                ? target.getPhone() : request.phone().trim();
         Long currentAdminId = AdminContext.requireAdminId();
         boolean self = adminId.equals(currentAdminId);
         if (self && !target.getRoleId().equals(request.roleId())) {

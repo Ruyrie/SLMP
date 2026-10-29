@@ -53,8 +53,8 @@ const relatedItems = computed(() =>
 
 function actionTone(row: OperationLogItem): string {
   if (row.result === 'FAIL') return 'error'
-  if (['APPROVE', 'ENABLE', 'UNFREEZE', 'PUBLISH', 'SEND'].includes(row.op_action)) return 'success'
-  if (['REJECT', 'DISABLE', 'FREEZE', 'WITHDRAW', 'OFF_SHELF'].includes(row.op_action)) return 'warning'
+  if (['APPROVE', 'ENABLE', 'UNFREEZE', 'PUBLISH', 'SEND', 'ON_SHELF', 'TOPIC_ON_SHELF', 'REVIEW_PASS'].includes(row.op_action)) return 'success'
+  if (['REJECT', 'DISABLE', 'FREEZE', 'WITHDRAW', 'OFF_SHELF', 'TOPIC_OFF_SHELF', 'REVOKE', 'REVIEW_RETURN', 'CATEGORY_DISABLE'].includes(row.op_action)) return 'warning'
   return 'neutral'
 }
 

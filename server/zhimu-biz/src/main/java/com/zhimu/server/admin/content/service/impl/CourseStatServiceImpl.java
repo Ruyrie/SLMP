@@ -322,25 +322,25 @@ public class CourseStatServiceImpl implements CourseStatService {
         CourseStatsVO stats = stats(courseId);
         List<String> headers = List.of("项目", "数值");
         List<List<Object>> rows = new ArrayList<>();
-        rows.add(List.of("课程", course.getTitle()));
-        rows.add(List.of("播放次数", stats.getPlayCount()));
-        rows.add(List.of("观看人数", stats.getViewerCount()));
-        rows.add(List.of("学完人数", stats.getFinishCount()));
-        rows.add(List.of("完播率", stats.getFinishRate()));
-        rows.add(List.of("人均观看秒数", stats.getAvgWatchSec()));
-        rows.add(List.of("移动网络播放", stats.getMobilePlayCount()));
-        rows.add(List.of("点问 AI", stats.getAskAiCount()));
-        rows.add(List.of("点图文原文", stats.getKnowledgeClickCount()));
-        rows.add(List.of("统计到", stats.getStatAt()));
-        rows.add(List.of("", ""));
-        rows.add(List.of("日期", "播放次数"));
+        rows.add(row("课程", course.getTitle()));
+        rows.add(row("播放次数", stats.getPlayCount()));
+        rows.add(row("观看人数", stats.getViewerCount()));
+        rows.add(row("学完人数", stats.getFinishCount()));
+        rows.add(row("完播率", stats.getFinishRate()));
+        rows.add(row("人均观看秒数", stats.getAvgWatchSec()));
+        rows.add(row("移动网络播放", stats.getMobilePlayCount()));
+        rows.add(row("点问 AI", stats.getAskAiCount()));
+        rows.add(row("点图文原文", stats.getKnowledgeClickCount()));
+        rows.add(row("统计到", stats.getStatAt()));
+        rows.add(row("", ""));
+        rows.add(row("日期", "播放次数"));
         for (CourseStatsVO.Daily daily : stats.getDaily()) {
-            rows.add(List.of(daily.getDate(), daily.getPlays()));
+            rows.add(row(daily.getDate(), daily.getPlays()));
         }
-        rows.add(List.of("", ""));
-        rows.add(List.of("进度区间", "人数"));
+        rows.add(row("", ""));
+        rows.add(row("进度区间", "人数"));
         for (CourseStatsVO.Bucket bucket : stats.getProgressBuckets()) {
-            rows.add(List.of(bucket.getBucket(), bucket.getUsers()));
+            rows.add(row(bucket.getBucket(), bucket.getUsers()));
         }
         String fileName = "课程数据_" + course.getTitle() + "_" + BeijingTime.today().format(
                 java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"));
@@ -355,6 +355,14 @@ public class CourseStatServiceImpl implements CourseStatService {
                 .extraText("课程数据导出 " + export.getRowCount() + " 行")
                 .build());
         return export;
+    }
+
+    /** 导出行：没有播放记录时部分统计为 null（List.of 不收 null），缺的值写“—” */
+    private static List<Object> row(Object label, Object value) {
+        List<Object> row = new ArrayList<>(2);
+        row.add(label == null ? "" : label);
+        row.add(value == null ? "—" : value);
+        return row;
     }
 
     private Map<Long, StatAggregates.CoursePlayAgg> playAggAll() {

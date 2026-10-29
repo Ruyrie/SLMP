@@ -95,7 +95,10 @@ const headers = [
 ]
 const allTopics = computed(() => topics.value.filter((topic) => topic.status !== 'OFF_SHELF'))
 const categoryOptions = computed(() => categories.value.filter((c) => c.status === 'ENABLED').map((c) => ({ title: c.name, value: c.id })))
-const topicOptions = computed(() => [{ title: '不加入专题', value: null }, ...allTopics.value.map((t) => ({ title: t.name, value: t.id }))])
+const topicOptions = computed(() => [
+  { title: '不加入专题', value: null },
+  ...topics.value.map((t) => ({ title: t.status === 'ON_SHELF' ? t.name : `${t.name}（${t.status_text || '未上架'}）`, value: t.id }))
+])
 const applicableOptions = computed(() => applicableCategoryOptions(applicableCategories.value))
 
 function safeUrl(url?: string | null): string {
@@ -822,6 +825,7 @@ const courseToAdd = ref<number | null>(null)
 
 const arrangeOptions = computed(() => coursePool.value
   .filter((course) => !arrangingCourses.value.some((item) => item.course_id === course.id))
+  .filter((course) => course.status === 'ON_SHELF')
   .filter((course) => !course.topic_id || course.topic_id === arrangingTopicId.value)
   .map((course) => ({
     title: course.topic_name ? `${course.title}（${course.topic_name}）` : course.title,
@@ -853,7 +857,7 @@ async function addTopic(): Promise<void> {
     newTopic.name = ''
     newTopic.intro = ''
     await loadNav()
-    ui.toast('已保存专题')
+    ui.toast('已新建专题（未上架），编排课程后再上架')
   } catch (e) {
     manageError.value = e instanceof Error ? e.message : '保存失败'
   } finally {
@@ -861,19 +865,52 @@ async function addTopic(): Promise<void> {
   }
 }
 
+const topicOffOpen = ref(false)
+const topicOffTarget = ref<CourseTopic | null>(null)
+const topicOffReason = ref('')
+const topicOffError = ref('')
+
 async function toggleTopic(topic: CourseTopic): Promise<void> {
   if (manageSaving.value || topicCoverUploadingId.value) return
-  const status = topic.status === 'ON_SHELF' ? 'OFF_SHELF' : 'ON_SHELF'
-  const reason = status === 'OFF_SHELF' ? window.prompt('请填写下架专题的原因') || '' : ''
-  if (status === 'OFF_SHELF' && !reason.trim()) return
+  if (topic.status === 'ON_SHELF') {
+    topicOffTarget.value = topic
+    topicOffReason.value = ''
+    topicOffError.value = ''
+    topicOffOpen.value = true
+    return
+  }
+  if (!(topic.course_count || 0)) {
+    manageError.value = `“${topic.name}”还没有已上架的课程，请先编排至少 1 节已上架课程再上架`
+    return
+  }
+  await changeTopicStatus(topic, 'ON_SHELF', '')
+}
+
+async function submitTopicOff(): Promise<void> {
+  const topic = topicOffTarget.value
+  if (!topic) return
+  if (!topicOffReason.value.trim()) {
+    topicOffError.value = '请填写下架原因'
+    return
+  }
+  topicOffError.value = ''
+  const ok = await changeTopicStatus(topic, 'OFF_SHELF', topicOffReason.value.trim())
+  if (ok) topicOffOpen.value = false
+}
+
+async function changeTopicStatus(topic: CourseTopic, status: 'ON_SHELF' | 'OFF_SHELF', reason: string): Promise<boolean> {
   manageSaving.value = true
   manageError.value = ''
   try {
     await setCourseTopicStatus(topic.id, status, reason, topic.version)
     await loadNav()
     ui.toast(status === 'ON_SHELF' ? '已上架专题' : '已下架专题')
+    return true
   } catch (e) {
-    manageError.value = e instanceof Error ? e.message : '操作失败'
+    const message = e instanceof Error ? e.message : '操作失败'
+    if (status === 'OFF_SHELF') topicOffError.value = message
+    else manageError.value = message
+    return false
   } finally {
     manageSaving.value = false
   }
@@ -1502,6 +1539,19 @@ onMounted(async () => {
       </template>
     </zw-dialog>
 
+    <zw-dialog v-model="topicOffOpen" title="下架这个专题？" width="480" icon="unpublished" tone="error">
+      <p class="course-dialog-strong">{{ topicOffTarget?.name }}</p>
+      <p class="course-dialog-text">下架后用户端的养殖课堂不再显示这个专题；专题里的课程保持原状态，仍可单独观看。</p>
+      <zw-form-item label="下架原因" required hint="记入操作日志，用户端不显示">
+        <v-textarea v-model="topicOffReason" placeholder="请填写下架原因" :rows="2" maxlength="100" counter />
+      </zw-form-item>
+      <div v-if="topicOffError" class="course-form-error">{{ topicOffError }}</div>
+      <template #actions>
+        <v-btn variant="outlined" :disabled="manageSaving" @click="topicOffOpen = false">取消</v-btn>
+        <v-btn color="error" :loading="manageSaving" @click="submitTopicOff">下架</v-btn>
+      </template>
+    </zw-dialog>
+
     <zw-dialog v-model="deleteOpen" title="删除这个课程草稿？" width="440" icon="delete" tone="error">
       <p class="course-dialog-strong">{{ deleteTarget?.title }}</p>
       <p class="course-dialog-text">删除后不能恢复，原片与封面绑定会释放。</p>
@@ -1523,6 +1573,7 @@ onMounted(async () => {
           <v-select v-model="newTopic.category_id" :items="categoryOptions" placeholder="分类" density="compact" hide-details />
           <v-btn color="primary" :loading="manageSaving" @click="addTopic">新建专题</v-btn>
         </div>
+        <div class="zw-muted manage-topic-tip">新建的专题默认未上架；编排至少 1 节已上架课程后再点“上架”，用户端才会看到。</div>
         <div v-if="!topics.length" class="zw-empty manage-empty">还没有专题</div>
         <div v-for="(topic, index) in topics" :key="topic.id" class="manage-item">
           <div
@@ -1606,7 +1657,7 @@ onMounted(async () => {
               </div>
               <div v-if="arrangeError" class="course-form-error">{{ arrangeError }}</div>
               <div class="manage-arrange-foot">
-                <span class="zw-muted">从其他专题移入会被服务端拒绝，请先在原专题移除</span>
+                <span class="zw-muted">只能添加已上架的课程；从其他专题移入会被拒绝，请先在原专题移除</span>
                 <v-btn variant="text" :disabled="arrangeSaving" @click="arrangingTopicId = null">取消</v-btn>
                 <v-btn color="primary" :loading="arrangeSaving" :disabled="arrangeSaving" @click="saveArrange">保存编排</v-btn>
               </div>
@@ -1737,5 +1788,6 @@ onMounted(async () => {
 .manage-arrange-select { max-width: 380px; }
 .manage-arrange-foot { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
 .manage-arrange-foot .zw-muted { margin-right: auto; font-size: 12px; }
+.manage-topic-tip { margin: -4px 0 10px; font-size: 13px; }
 .manage-empty { padding: 24px 0; }
 </style>

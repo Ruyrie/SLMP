@@ -32,6 +32,10 @@ public class FeedStdDraftRequest {
     /** 已有草稿时必填 */
     private Integer version;
 
+    /** 暂存在草稿上的更新说明（选填，发布时以发布请求为准） */
+    @Size(max = 100, message = "更新说明最多 100 个字")
+    private String updateNote;
+
     @Data
     public static class Stage {
         @NotBlank(message = "请填写阶段名称")

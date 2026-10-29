@@ -138,6 +138,77 @@ class InspectTemplateAdminServiceImplTest {
                 .hasMessage("已有项目“粪便”");
     }
 
+    @Test
+    void orderAcceptsOnlineItemIdsAfterDraftAutoCreated() {
+        InspectTemplateVersion draft = version(1102L, null);
+        draft.setDraftFlag(1);
+        when(versionMapper.selectOne(any())).thenReturn(draft);
+        InspectItem first = draftItem(301L, 101L, "精神状态", 1);
+        InspectItem second = draftItem(302L, 102L, "采食", 2);
+        when(itemMapper.selectList(any())).thenReturn(List.of(first, second));
+        com.zhimu.server.admin.base.request.TemplateItemOrderRequest request =
+                new com.zhimu.server.admin.base.request.TemplateItemOrderRequest();
+        request.setItemIds(List.of(102L, 101L));
+        request.setVersion(2);
+
+        service.order(11L, request);
+
+        assertThat(second.getSortNo()).isEqualTo(1);
+        assertThat(first.getSortNo()).isEqualTo(2);
+    }
+
+    @Test
+    void updateItemWithOnlineOptionIdsDeletesStaleCopiesBeforeInsert() {
+        InspectTemplateVersion draft = version(1102L, null);
+        draft.setDraftFlag(1);
+        when(versionMapper.selectOne(any())).thenReturn(draft);
+        InspectItem copy = draftItem(301L, 101L, "粪便", 1);
+        when(itemMapper.selectById(101L)).thenReturn(null);
+        when(itemMapper.selectOne(any())).thenReturn(copy);
+        when(itemMapper.selectList(any())).thenReturn(List.of(copy));
+        com.zhimu.server.admin.base.entity.InspectOption normalCopy = optionRow(401L, 301L, "正常", false);
+        com.zhimu.server.admin.base.entity.InspectOption watery = optionRow(402L, 301L, "水样", true);
+        when(optionMapper.selectList(any())).thenReturn(List.of(normalCopy, watery));
+        when(optionMapper.selectById(1011L)).thenReturn(optionRow(1011L, 101L, "正常", false));
+        when(optionMapper.selectById(1012L)).thenReturn(optionRow(1012L, 101L, "水样", true));
+        InspectItemSaveRequest request = itemRequest();
+        InspectItemSaveRequest.Option keepNormal = option("正常", false);
+        keepNormal.setOptionId(1011L);
+        InspectItemSaveRequest.Option keepWatery = option("水样", true);
+        keepWatery.setOptionId(1012L);
+        request.setOptions(List.of(keepNormal, keepWatery, option("带血", true)));
+
+        service.updateItem(11L, 101L, request);
+
+        // 线上选项 ID 按名称对应到草稿副本：两条原样保留，只新增“带血”，不会先插同名再删
+        org.mockito.Mockito.verify(optionMapper, org.mockito.Mockito.never()).deleteById(any(Long.class));
+        org.mockito.Mockito.verify(optionMapper, org.mockito.Mockito.times(1))
+                .insert(any(com.zhimu.server.admin.base.entity.InspectOption.class));
+    }
+
+    private static InspectItem draftItem(Long id, Long sourceId, String name, int sort) {
+        InspectItem item = new InspectItem();
+        item.setId(id);
+        item.setTemplateId(11L);
+        item.setVersionId(1102L);
+        item.setSourceItemId(sourceId);
+        item.setItemName(name);
+        item.setChangeType("NONE");
+        item.setEnabled(true);
+        item.setSortNo(sort);
+        return item;
+    }
+
+    private static com.zhimu.server.admin.base.entity.InspectOption optionRow(Long id, Long itemId, String name,
+                                                                               boolean abnormal) {
+        com.zhimu.server.admin.base.entity.InspectOption option = new com.zhimu.server.admin.base.entity.InspectOption();
+        option.setId(id);
+        option.setItemId(itemId);
+        option.setOptionName(name);
+        option.setIsAbnormal(abnormal);
+        return option;
+    }
+
     private static InspectItemSaveRequest itemRequest() {
         InspectItemSaveRequest request = new InspectItemSaveRequest();
         request.setItemName("粪便");

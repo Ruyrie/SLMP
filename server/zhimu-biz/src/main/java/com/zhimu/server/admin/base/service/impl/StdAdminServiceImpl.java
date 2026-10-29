@@ -102,6 +102,13 @@ public class StdAdminServiceImpl implements StdAdminService {
             vo.setDraft(AdminBaseConvert.stdWeightVersion(draft, points(draft.getId()), draft.getToleranceRate(),
                     onlineWeights, true));
         }
+        Map<Long, String> names = adminNames();
+        if (online != null) {
+            vo.getOnline().setPublishedByName(names.get(online.getPublishedBy()));
+        }
+        if (scheduled != null) {
+            vo.getScheduled().setPublishedByName(names.get(scheduled.getPublishedBy()));
+        }
         return vo;
     }
 
@@ -119,6 +126,7 @@ public class StdAdminServiceImpl implements StdAdminService {
             }
             vo.setOnline(AdminBaseConvert.feedStdVersion(online, stages, null, false));
             vo.getOnline().setAppliedPlanCount(readMapper.countAppliedFeedPlansByVersion(online.getId()));
+            vo.getOnline().setPublishedByName(adminNames().get(online.getPublishedBy()));
         }
         FeedStdVersion draft = draftFeed(breedId);
         if (draft != null) {
@@ -132,20 +140,25 @@ public class StdAdminServiceImpl implements StdAdminService {
         requireBreed(breedId);
         String type = stdType(stdType);
         List<StdVersionVO> result = new ArrayList<>();
+        Map<Long, String> names = adminNames();
         if ("weight".equals(type)) {
             for (StdWeightVersion version : weightVersionMapper.selectList(Wrappers.<StdWeightVersion>lambdaQuery()
                     .eq(StdWeightVersion::getBreedId, breedId)
                     .isNotNull(StdWeightVersion::getVersionNo)
                     .orderByDesc(StdWeightVersion::getVersionNo))) {
-                result.add(AdminBaseConvert.stdWeightVersionRecord(version, points(version.getId()),
-                        version.getToleranceRate()));
+                StdVersionVO record = AdminBaseConvert.stdWeightVersionRecord(version, points(version.getId()),
+                        version.getToleranceRate());
+                record.setPublishedByName(names.get(version.getPublishedBy()));
+                result.add(record);
             }
         } else {
             for (FeedStdVersion version : feedVersionMapper.selectList(Wrappers.<FeedStdVersion>lambdaQuery()
                     .eq(FeedStdVersion::getBreedId, breedId)
                     .isNotNull(FeedStdVersion::getVersionNo)
                     .orderByDesc(FeedStdVersion::getVersionNo))) {
-                result.add(AdminBaseConvert.feedStdVersionRecord(version, stages(version.getId())));
+                StdVersionVO record = AdminBaseConvert.feedStdVersionRecord(version, stages(version.getId()));
+                record.setPublishedByName(names.get(version.getPublishedBy()));
+                result.add(record);
             }
         }
         return result;
@@ -255,6 +268,7 @@ public class StdAdminServiceImpl implements StdAdminService {
             draft.setSuggestedWeighTimes(request.getSuggestedWeighTimes());
             draft.setEffectiveMode(request.getEffectiveMode());
             draft.setEffectiveDate("ON_DATE".equals(request.getEffectiveMode()) ? request.getEffectiveDate() : null);
+            draft.setUpdateNote(draftNote(request.getUpdateNote()));
             draft.setUpdatedBy(adminId);
             draft.setVersion(0);
             weightVersionMapper.insert(draft);
@@ -268,6 +282,7 @@ public class StdAdminServiceImpl implements StdAdminService {
                     .set(StdWeightVersion::getEffectiveMode, request.getEffectiveMode())
                     .set(StdWeightVersion::getEffectiveDate,
                             "ON_DATE".equals(request.getEffectiveMode()) ? request.getEffectiveDate() : null)
+                    .set(StdWeightVersion::getUpdateNote, draftNote(request.getUpdateNote()))
                     .set(StdWeightVersion::getUpdatedBy, adminId)
                     .set(StdWeightVersion::getUpdatedAt, now)
                     .set(StdWeightVersion::getVersion, draft.getVersion() + 1));
@@ -306,6 +321,7 @@ public class StdAdminServiceImpl implements StdAdminService {
             draft.setStatus("DRAFT");
             draft.setDraftFlag(1);
             draft.setDeviationRate(request.getDeviationRate());
+            draft.setUpdateNote(draftNote(request.getUpdateNote()));
             draft.setUpdatedBy(adminId);
             draft.setVersion(0);
             feedVersionMapper.insert(draft);
@@ -315,6 +331,7 @@ public class StdAdminServiceImpl implements StdAdminService {
                     .eq(FeedStdVersion::getId, draft.getId())
                     .eq(FeedStdVersion::getVersion, draft.getVersion())
                     .set(FeedStdVersion::getDeviationRate, request.getDeviationRate())
+                    .set(FeedStdVersion::getUpdateNote, draftNote(request.getUpdateNote()))
                     .set(FeedStdVersion::getUpdatedBy, adminId)
                     .set(FeedStdVersion::getUpdatedAt, now)
                     .set(FeedStdVersion::getVersion, draft.getVersion() + 1));
@@ -816,6 +833,23 @@ public class StdAdminServiceImpl implements StdAdminService {
             throw BaseErrors.notFound();
         }
         return type;
+    }
+
+    /** 草稿上暂存的更新说明（发布时以发布请求里的为准）；超长截到 100 字 */
+    private static String draftNote(String note) {
+        if (!StringUtils.hasText(note)) {
+            return null;
+        }
+        String value = note.trim();
+        return value.length() > 100 ? value.substring(0, 100) : value;
+    }
+
+    private Map<Long, String> adminNames() {
+        Map<Long, String> names = new java.util.HashMap<>();
+        for (var row : readMapper.adminNames()) {
+            names.put(row.getId(), row.getName());
+        }
+        return names;
     }
 
     private static void requireDraftVersion(Integer requestVersion, Integer currentVersion) {

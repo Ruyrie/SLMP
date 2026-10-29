@@ -158,6 +158,12 @@ class KnowledgeAdminServiceImplTest {
         assertThat(draft.getVersionNo()).isEqualTo(4);
         assertThat(draft.getDraftFlag()).isNull();
         assertThat(draft.getPublishedAt()).isNotNull();
+        // updateById 跳过 null：发布后必须另写一条 UPDATE 把 draft_flag 置空（H9）
+        org.mockito.ArgumentCaptor<com.baomidou.mybatisplus.core.conditions.Wrapper<KnowledgeVersion>> updates =
+                org.mockito.ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.Wrapper.class);
+        verify(versionMapper, org.mockito.Mockito.atLeastOnce()).update(org.mockito.ArgumentMatchers.isNull(),
+                updates.capture());
+        assertThat(updates.getAllValues()).anySatisfy(wrapper -> assertThat(wrapper.getSqlSet()).contains("draft_flag"));
         verify(paragraphService).replace(1L, 4, parsed, true);
         verify(taskService).completeForKnowledge(1L, 4);
     }

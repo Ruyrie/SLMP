@@ -65,16 +65,25 @@ const compareRows = computed(() => {
   const rows = (detail.value?.compare || []).map((row) => ({
     label: row.field,
     before: row.before || '—',
-    after: row.after ?? row.before ?? '—'
+    after: row.after ?? row.before ?? '—',
+    changed: row.changed ?? (row.after !== undefined && row.after !== null && row.after !== row.before)
   }))
   if (detail.value && (detail.value.change_type === 'DELETE' || detail.value.change_type === 'VOID')) {
     const label = detail.value.change_type === 'DELETE' ? '已删除' : '已作废'
     if (!rows.some((row) => row.label.includes('状态'))) {
-      rows.unshift({ label: '记录状态', before: '有效', after: label })
+      rows.unshift({ label: '记录状态', before: '有效', after: label, changed: true })
     }
   }
   return rows
 })
+
+/** 驳回确认框只列真正改了的字段 */
+const changedSummary = computed(() =>
+  compareRows.value
+    .filter((row) => row.changed)
+    .map((row) => `${row.label} ${row.before} → ${row.after}`)
+    .join('；')
+)
 
 const actionLabel = computed(() => {
   if (detail.value?.change_type === 'DELETE') return '通过并删除记录'
@@ -366,7 +375,7 @@ onMounted(() => {
       <p class="dialog-p">驳回后原记录保持不变。驳回原因会显示在提交人的“我的修改申请”和消息中心，提交人可以修改后重新提交。</p>
       <zw-desc v-if="detail" :cols="1" bordered :label-width="96" class="reject-summary">
         <zw-desc-item label="申请">{{ detail.header.farm_name }} · {{ detail.header.title }}</zw-desc-item>
-        <zw-desc-item label="修改">{{ compareRows.map((row) => `${row.label} ${row.before} → ${row.after}`).join('；') || '—' }}</zw-desc-item>
+        <zw-desc-item label="修改">{{ changedSummary || '—' }}</zw-desc-item>
         <zw-desc-item label="提交人">{{ detail.header.submitter_name }}（{{ detail.header.submitter_role_text }}）· {{ fmtFull(detail.header.submitted_at) }}</zw-desc-item>
       </zw-desc>
       <zw-form-item label="常用原因" optional>

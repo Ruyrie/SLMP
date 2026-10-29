@@ -271,17 +271,28 @@ public class InspectTemplateAdminServiceImpl implements InspectTemplateAdminServ
         List<InspectItem> items = items(draft.getId()).stream()
                 .filter(item -> !"DELETED".equals(item.getChangeType())).toList();
         Map<Long, InspectItem> byId = new HashMap<>();
+        Map<Long, InspectItem> bySource = new HashMap<>();
         for (InspectItem item : items) {
             byId.put(item.getId(), item);
+            if (item.getSourceItemId() != null) {
+                bySource.put(item.getSourceItemId(), item);
+            }
         }
-        Set<Long> requested = new HashSet<>(request.getItemIds());
-        if (requested.size() != request.getItemIds().size() || requested.size() != items.size()
-                || !byId.keySet().equals(requested)) {
+        // 没有草稿时页面拿的是线上项目 ID，自动建草稿后按 source_item_id 换成草稿项目
+        List<InspectItem> ordered = new ArrayList<>();
+        Set<Long> resolved = new HashSet<>();
+        for (Long id : request.getItemIds()) {
+            InspectItem item = id == null ? null : byId.getOrDefault(id, bySource.get(id));
+            if (item == null || !resolved.add(item.getId())) {
+                throw BaseErrors.field("item_ids", "请提交草稿全部未删除项目");
+            }
+            ordered.add(item);
+        }
+        if (resolved.size() != items.size()) {
             throw BaseErrors.field("item_ids", "请提交草稿全部未删除项目");
         }
         int sort = 1;
-        for (Long id : request.getItemIds()) {
-            InspectItem item = byId.get(id);
+        for (InspectItem item : ordered) {
             item.setSortNo(sort++);
             item.setUpdatedAt(BeijingTime.now());
             itemMapper.updateById(item);
@@ -703,19 +714,48 @@ public class InspectTemplateAdminServiceImpl implements InspectTemplateAdminServ
     private void replaceOptions(InspectItem item, List<InspectItemSaveRequest.Option> requests, Long adminId) {
         List<InspectOption> existing = options(item.getId());
         Map<Long, InspectOption> byId = new LinkedHashMap<>();
+        Map<String, InspectOption> byName = new HashMap<>();
         for (InspectOption option : existing) {
             byId.put(option.getId(), option);
+            byName.put(option.getOptionName(), option);
         }
+        // 没有草稿时页面提交的是线上项目的选项 ID：自动建草稿后按名称对应到草稿副本
+        List<InspectOption> matched = new ArrayList<>();
         Set<Long> keep = new HashSet<>();
-        int sort = 1;
         for (InspectItemSaveRequest.Option request : requests) {
             InspectOption option = request.getOptionId() == null ? null : byId.get(request.getOptionId());
+            if (option == null && request.getOptionId() != null && item.getSourceItemId() != null) {
+                InspectOption source = optionMapper.selectById(request.getOptionId());
+                if (source != null && item.getSourceItemId().equals(source.getItemId())) {
+                    option = byName.get(source.getOptionName());
+                }
+            }
+            if (option != null && !keep.add(option.getId())) {
+                option = null;
+            }
+            matched.add(option);
+        }
+        // 先删不再保留的选项，保留项改名时先换临时名，再按顺序写入，避免撞 (item_id, option_name) 唯一键
+        for (InspectOption option : existing) {
+            if (!keep.contains(option.getId())) {
+                optionMapper.deleteById(option.getId());
+            }
+        }
+        for (int i = 0; i < requests.size(); i++) {
+            InspectOption option = matched.get(i);
+            if (option != null && !option.getOptionName().equals(requests.get(i).getOptionName().trim())) {
+                option.setOptionName("#" + (option.getId() % 100000));
+                optionMapper.updateById(option);
+            }
+        }
+        int sort = 1;
+        for (int i = 0; i < requests.size(); i++) {
+            InspectItemSaveRequest.Option request = requests.get(i);
+            InspectOption option = matched.get(i);
             if (option == null) {
                 option = new InspectOption();
                 option.setItemId(item.getId());
                 option.setCreatedBy(adminId);
-            } else {
-                keep.add(option.getId());
             }
             option.setSortNo(sort++);
             option.setOptionName(request.getOptionName().trim());
@@ -724,11 +764,6 @@ public class InspectTemplateAdminServiceImpl implements InspectTemplateAdminServ
                 optionMapper.insert(option);
             } else {
                 optionMapper.updateById(option);
-            }
-        }
-        for (InspectOption option : existing) {
-            if (!keep.contains(option.getId())) {
-                optionMapper.deleteById(option.getId());
             }
         }
     }

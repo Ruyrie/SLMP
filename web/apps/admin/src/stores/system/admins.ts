@@ -207,10 +207,11 @@ export const useAdminsStore = defineStore('admins', {
     },
     openEdit(row: AdminRow): void {
       this.editing = row
+      // 列表里的手机号是脱敏的，编辑时留空表示不改，填写才更新
       this.form = {
         name: row.name,
         username: row.username,
-        phone: row.phone || '',
+        phone: '',
         role_id: row.role_id || null,
         reason: ''
       }
@@ -220,7 +221,8 @@ export const useAdminsStore = defineStore('admins', {
     async submit(): Promise<void> {
       this.formErrors = {}
       if (!this.form.name.trim()) this.formErrors.name = '请输入姓名'
-      if (!this.form.phone.trim()) this.formErrors.phone = '请输入手机号'
+      if (this.isCreate && !this.form.phone.trim()) this.formErrors.phone = '请输入手机号'
+      else if (this.form.phone.trim() && !/^1\d{10}$/.test(this.form.phone.trim())) this.formErrors.phone = '请输入 11 位手机号'
       if (!this.form.role_id) this.formErrors.role_id = '请选择角色'
       if (!this.form.reason.trim()) this.formErrors.reason = '请填写原因'
       if (this.isCreate && !/^[A-Za-z0-9]{4,20}$/.test(this.form.username.trim())) {
@@ -247,7 +249,7 @@ export const useAdminsStore = defineStore('admins', {
         } else if (this.editing) {
           await updateAdmin(this.editing.admin_id, {
             name: this.form.name.trim(),
-            phone: this.form.phone.trim(),
+            phone: this.form.phone.trim() || undefined,
             role_id: this.form.role_id!,
             reason: this.form.reason.trim(),
             version: this.editing.version || 0
@@ -255,7 +257,8 @@ export const useAdminsStore = defineStore('admins', {
           this.drawer = false
           useUiStore().toast('管理员信息已保存')
         }
-        await this.fetchAdmins()
+        // 角色人数跟着管理员变化，一起刷新
+        await Promise.all([this.fetchAdmins(), this.fetchRoles().catch(() => undefined)])
       } catch (error) {
         if (error instanceof ApiError) {
           for (const item of error.fieldErrors) this.formErrors[item.field] = item.message
@@ -312,7 +315,7 @@ export const useAdminsStore = defineStore('admins', {
         await setAdminStatus(this.statusTarget.admin_id, this.statusAction, this.statusReason.trim(), this.statusTarget.version || 0)
         this.statusOpen = false
         useUiStore().toast(this.statusAction === 'disable' ? '已停用该管理员' : '已启用该管理员')
-        await this.fetchAdmins()
+        await Promise.all([this.fetchAdmins(), this.fetchRoles().catch(() => undefined)])
       } catch (error) {
         useUiStore().toast(error instanceof Error ? error.message : '操作失败', 'error')
       } finally {

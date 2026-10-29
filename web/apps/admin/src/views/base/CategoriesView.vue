@@ -174,7 +174,8 @@ const weightForm = reactive({
   effective_mode: 'IMMEDIATE',
   effective_date: '',
   update_note: '',
-  version: 0,
+  /** 草稿版本号；草稿第一次保存后就是 0，所以“还没有草稿”用 null 表示 */
+  version: null as number | null,
   points: [] as Array<{ day_age: number; std_weight: string; online_weight?: number | null; changed?: boolean }>
 })
 
@@ -186,8 +187,8 @@ async function openWeightEditor(): Promise<void> {
   weightForm.weighTimes = source?.suggested_weigh_times || 2
   weightForm.effective_mode = source?.effective_mode || 'IMMEDIATE'
   weightForm.effective_date = source?.effective_date || ''
-  weightForm.update_note = ''
-  weightForm.version = weight.value?.draft?.version || 0
+  weightForm.update_note = weight.value?.draft?.update_note || ''
+  weightForm.version = weight.value?.draft?.version ?? null
   weightForm.points = (source?.points || []).map((point) => ({
     day_age: point.day_age,
     std_weight: String(point.std_weight),
@@ -228,6 +229,10 @@ function validateWeight(): boolean {
     weightFormError.value = '建议每月称重次数必须在 1–8 之间'
     return false
   }
+  if (weightForm.effective_mode === 'ON_DATE' && !weightForm.effective_date) {
+    weightFormError.value = '请选择生效日期'
+    return false
+  }
   if (weightForm.points.length < 2) {
     weightFormError.value = '至少填写 2 个日龄点'
     return false
@@ -266,12 +271,13 @@ async function saveWeight(closeAfter = false): Promise<boolean> {
       tolerance_rate: weightForm.tolerance / 100,
       suggested_weigh_times: weightForm.weighTimes,
       effective_mode: weightForm.effective_mode,
-      effective_date: weightForm.effective_mode === 'SCHEDULED' ? weightForm.effective_date || null : null,
+      effective_date: weightForm.effective_mode === 'ON_DATE' ? weightForm.effective_date || null : null,
       points,
-      version: weightForm.version || undefined
+      version: weightForm.version ?? undefined,
+      update_note: weightForm.update_note.trim() || undefined
     })
     weight.value = data
-    weightForm.version = data.draft?.version || weightForm.version
+    weightForm.version = data.draft?.version ?? weightForm.version
     ui.toast('标准体重草稿已保存，发布后生效')
     if (closeAfter) weightDrawer.value = false
     void loadWeightImpact()
@@ -292,7 +298,7 @@ async function publishWeight(): Promise<void> {
   }
   const saved = await saveWeight(false)
   if (!saved) return
-  if (weightForm.version === 0) {
+  if (weightForm.version === null) {
     weightFormError.value = '草稿还没有保存成功，请重试'
     return
   }
@@ -319,7 +325,8 @@ const feedImpact = ref<StdImpact | null>(null)
 const feedForm = reactive({
   deviation: 10,
   update_note: '',
-  version: 0,
+  /** 同标准体重：草稿版本号从 0 开始，没有草稿用 null */
+  version: null as number | null,
   stages: [] as Array<{
     stage_name: string
     stage_short_name: string
@@ -348,8 +355,8 @@ async function openFeedEditor(): Promise<void> {
   const source = feed.value?.draft || feed.value?.online
   const deviation = Number(source?.deviation_rate || 0.1)
   feedForm.deviation = Number((deviation * 100).toFixed(2))
-  feedForm.update_note = ''
-  feedForm.version = feed.value?.draft?.version || 0
+  feedForm.update_note = feed.value?.draft?.update_note || ''
+  feedForm.version = feed.value?.draft?.version ?? null
   feedForm.stages = (source?.stages || []).map((stage) => ({
     stage_name: stage.stage_name,
     stage_short_name: stage.stage_short_name,
@@ -457,10 +464,11 @@ async function saveFeed(closeAfter = false): Promise<boolean> {
     const data = await saveFeedDraft(selectedBreedId.value, {
       deviation_rate: feedForm.deviation / 100,
       stages: buildFeedStages(),
-      version: feedForm.version || undefined
+      version: feedForm.version ?? undefined,
+      update_note: feedForm.update_note.trim() || undefined
     })
     feed.value = data
-    feedForm.version = data.draft?.version || feedForm.version
+    feedForm.version = data.draft?.version ?? feedForm.version
     ui.toast('饲喂标准草稿已保存，发布后生效')
     if (closeAfter) feedDrawer.value = false
     void loadFeedImpact()
@@ -481,7 +489,10 @@ async function publishFeed(): Promise<void> {
   }
   const saved = await saveFeed(false)
   if (!saved) return
-  if (!feedForm.version) return
+  if (feedForm.version === null) {
+    feedFormError.value = '草稿还没有保存成功，请重试'
+    return
+  }
   feedPublishing.value = true
   feedFormError.value = ''
   try {
@@ -618,6 +629,16 @@ const breedForm = reactive({
 const breedCategory = computed(() => tree.value.find((category) => category.id === breedForm.category_id) || null)
 const breedIsPoultry = computed(() => breedCategory.value?.species === 'POULTRY')
 const breedIsBreeding = computed(() => !!breedCategory.value?.is_breeding)
+/** 与服务端一致：只有改妊娠期 / 孵化期 / 待妊检天数（或停用）时修改原因必填 */
+const breedReasonRequired = computed(() => {
+  if (!breedForm.id || !detail.value) return false
+  const gestation = breedIsPoultry.value ? null : breedForm.gestation_days || null
+  const incubation = breedIsPoultry.value ? breedForm.incubation_days || null : null
+  const check = breedIsPoultry.value ? null : breedForm.pregnancy_check_days || null
+  return gestation !== (detail.value.gestation_days || null)
+    || incubation !== (detail.value.incubation_days || null)
+    || check !== (detail.value.pregnancy_check_days || null)
+})
 const offspringOptions = computed(() => {
   const species = breedCategory.value?.species
   return tree.value
@@ -676,8 +697,8 @@ function validateBreed(): boolean {
     breedError.value = '停用时请填写修改原因'
     return false
   }
-  if (breedForm.id && !breedForm.change_reason.trim() && breedForm.status !== 'DISABLED') {
-    breedError.value = '修改品种信息请填写修改原因，记入操作日志'
+  if (breedReasonRequired.value && !breedForm.change_reason.trim() && breedForm.status !== 'DISABLED') {
+    breedError.value = '修改妊娠期、孵化期或待妊检天数时请填写修改原因，记入操作日志'
     return false
   }
   return !Object.keys(breedFieldErrors).length
@@ -930,11 +951,12 @@ onMounted(async () => {
           <template v-else>
             <div class="category-version-bar">
               <zw-icon name="verified" :size="18" color="primary" />
-              <span v-if="activeWeightVersion">
-                当前为 <b>第 {{ weight?.online?.version_no || activeWeightVersion.version_no || 1 }} 版</b>
-                <template v-if="activeWeightVersion.published_at"> · {{ formatDate(activeWeightVersion.published_at) }} {{ activeWeightVersion.published_by_name || '' }}发布</template>
+              <span v-if="weight?.online">
+                当前为 <b>第 {{ weight.online.version_no }} 版</b>
+                <template v-if="weight.online.published_at"> · {{ formatDate(weight.online.published_at) }} {{ weight.online.published_by_name || '' }}发布</template>
                 · 允许偏差 <b>{{ weightTolerance }}</b>
               </span>
+              <span v-else-if="activeWeightVersion">还没有发布过标准体重，下面是未发布的草稿 · 允许偏差 <b>{{ weightTolerance }}</b></span>
               <span v-else>还没有标准体重，请先编辑并发布。</span>
               <span class="category-version-actions">
                 <v-btn variant="text" color="primary" size="small" prepend-icon="history" @click="openVersions('weight')">版本记录</v-btn>
@@ -983,7 +1005,12 @@ onMounted(async () => {
           <template v-else>
             <div class="category-version-bar">
               <zw-icon name="verified" :size="18" color="primary" />
-              <span v-if="activeFeedVersion">当前为 <b>第 {{ feed?.online?.version_no || activeFeedVersion.version_no || 1 }} 版</b> · 投喂异常判定 ±{{ Number((activeFeedVersion.deviation_rate || 0) * 100).toFixed(0) }}%</span>
+              <span v-if="feed?.online">
+                当前为 <b>第 {{ feed.online.version_no }} 版</b>
+                <template v-if="feed.online.published_at"> · {{ formatDate(feed.online.published_at) }} {{ feed.online.published_by_name || '' }}发布</template>
+                · 投喂异常判定 ±{{ Number((activeFeedVersion?.deviation_rate || 0) * 100).toFixed(0) }}%
+              </span>
+              <span v-else-if="activeFeedVersion">还没有发布过饲喂标准，下面是未发布的草稿 · 投喂异常判定 ±{{ Number((activeFeedVersion.deviation_rate || 0) * 100).toFixed(0) }}%</span>
               <span v-else>还没有饲喂标准，请先编辑并发布。</span>
               <span class="category-version-actions">
                 <v-btn variant="text" color="primary" size="small" prepend-icon="history" @click="openVersions('feed')">版本记录</v-btn>
@@ -1061,9 +1088,9 @@ onMounted(async () => {
           <v-text-field v-model.number="weightForm.weighTimes" type="number" min="1" max="8" suffix="次" />
         </zw-form-item>
         <zw-form-item label="生效时间" required>
-          <v-select v-model="weightForm.effective_mode" :items="[{ title: '发布后立即生效', value: 'IMMEDIATE' }, { title: '指定日期生效', value: 'SCHEDULED' }]" />
+          <v-select v-model="weightForm.effective_mode" :items="[{ title: '发布后立即生效', value: 'IMMEDIATE' }, { title: '指定日期生效', value: 'ON_DATE' }]" />
         </zw-form-item>
-        <zw-form-item v-if="weightForm.effective_mode === 'SCHEDULED'" label="指定日期" required>
+        <zw-form-item v-if="weightForm.effective_mode === 'ON_DATE'" label="指定日期" required>
           <v-text-field v-model="weightForm.effective_date" type="date" />
         </zw-form-item>
       </div>
@@ -1088,7 +1115,7 @@ onMounted(async () => {
       <zw-notice v-if="weightImpact" type="warning" :title="`发布后影响 ${formatNumber(weightImpact.active_batch_count || 0)} 个在养批次`">
         生长曲线和称重偏离按新标准重新计算，用户端提示“品种标准体重已更新，偏离情况已按新标准重新计算。”；分布 {{ formatNumber(weightImpact.farm_count || 0) }} 个养殖场。
       </zw-notice>
-      <zw-form-item label="更新说明" required hint="显示在版本记录中，记入操作日志">
+      <zw-form-item label="更新说明" required hint="保存草稿时一起暂存；发布后显示在版本记录中，记入操作日志">
         <v-text-field v-model="weightForm.update_note" placeholder="请说明这次调整的依据" maxlength="100" />
       </zw-form-item>
       <div v-if="weightFormError" class="category-inline-error">{{ weightFormError }}</div>
@@ -1127,7 +1154,7 @@ onMounted(async () => {
       <zw-notice v-if="feedImpact" type="warning" title="发布新版本的影响">
         发布新版本不会改动用户已保存的方案；{{ feedImpact.applied_plan_count || 0 }} 个饲喂方案可在用户端重新套用。
       </zw-notice>
-      <zw-form-item label="更新说明" required>
+      <zw-form-item label="更新说明" required hint="保存草稿时一起暂存；发布后显示在版本记录中，记入操作日志">
         <v-text-field v-model="feedForm.update_note" placeholder="请说明这次调整的依据" maxlength="100" />
       </zw-form-item>
       <div v-if="feedFormError" class="category-inline-error">{{ feedFormError }}</div>
@@ -1207,7 +1234,7 @@ onMounted(async () => {
       <zw-form-item v-if="breedForm.status === 'DISABLED'" label="停用原因" required>
         <v-textarea v-model="breedForm.change_reason" placeholder="停用后新建批次和种畜档案时不能再选这个品种" :rows="2" maxlength="100" counter />
       </zw-form-item>
-      <zw-form-item v-else label="修改原因" optional hint="修改妊娠期、孵化期或停用时必填">
+      <zw-form-item v-else label="修改原因" :required="breedReasonRequired" :optional="!breedReasonRequired" hint="修改妊娠期、孵化期、待妊检天数或停用时必填">
         <v-text-field v-model="breedForm.change_reason" placeholder="记入操作日志" maxlength="100" />
       </zw-form-item>
       <zw-notice>修改妊娠期只影响之后登记的配种；已推算的预产期不变，避免已安排的产房和待办被打乱。</zw-notice>
