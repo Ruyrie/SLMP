@@ -375,7 +375,8 @@ public class BatchSettlementServiceImpl implements BatchSettlementService {
         addCost(costs, FinanceConst.COST_FEED, settlement.getCostFeed(), total, null);
         addCost(costs, FinanceConst.COST_INTRO, settlement.getCostIntro(), total,
                 settlement.getIntroCount() == null || settlement.getIntroUnitPrice() == null ? null
-                        : settlement.getIntroCount() + " 头 × " + plain(settlement.getIntroUnitPrice()) + " 元");
+                        : String.format("%,d", settlement.getIntroCount()) + " " + support.countUnitText(batch.categoryId())
+                        + " × " + plain(settlement.getIntroUnitPrice()) + " 元");
         addCost(costs, FinanceConst.COST_DRUG, settlement.getCostDrug(), total, null);
         addCost(costs, FinanceConst.COST_OTHER, settlement.getCostOther(), total, "人工、水电等");
         vo.setCosts(costs);
