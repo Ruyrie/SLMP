@@ -17,6 +17,7 @@ import type {
 import { feedingApi } from '@/api/feeding'
 import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
+import { claimFarmScope, currentFarmScope, resetFarmCache } from '@/stores/farmScope'
 import {
   errorText,
   fieldErrorsOf,
@@ -159,7 +160,8 @@ export const useFeedPlanStore = defineStore('feedingPlan', {  state: () => ({
     attentionRecord: null as FeedRecordDetail | null,
     attentionRecordLoading: false,
 
-    loaded: false
+    loaded: false,
+    farmScope: ''
   }),
   getters: {
     selectedBatch(state): BatchChoice | undefined {
@@ -172,7 +174,7 @@ export const useFeedPlanStore = defineStore('feedingPlan', {  state: () => ({
       const batch = state.plan?.batch
       if (!batch) return '选择批次后设置饲喂方案'
       return [batch.pen_names, batch.breed_name, batch.day_age ? `${batch.day_age} 日龄` : '',
-        batch.current_count ? `存栏 ${batch.current_count} 头` : ''].filter(Boolean).join(' · ')
+        batch.current_count ? `存栏 ${batch.current_count.toLocaleString('en-US')} ${useFarmStore().countUnit}` : ''].filter(Boolean).join(' · ')
     },
     hasPlan(state): boolean {
       return !!state.plan?.has_plan
@@ -211,7 +213,7 @@ export const useFeedPlanStore = defineStore('feedingPlan', {  state: () => ({
       const count = Number(state.plan?.batch?.current_count || 0)
       if (!stage || !count) return ''
       const qty = Number(stage.dailyQtyPerHead || 0)
-      return `${qty} 千克 × 存栏 ${count} 头 · 分 ${stage.mealsPerDay} 餐`
+      return `${qty} 千克 × 存栏 ${count.toLocaleString('en-US')} ${useFarmStore().countUnit} · 分 ${stage.mealsPerDay} 餐`
     },
     dirty(state): boolean {
       return JSON.stringify(snapshotOf({
@@ -279,7 +281,12 @@ export const useFeedPlanStore = defineStore('feedingPlan', {  state: () => ({
         stages: this.stages
       })
     },
+    /** 页面未挂载时也可能切场：使用缓存前先核对归属，不是当前养殖场就清空。 */
+    prepareFarmScope(): string {
+      return claimFarmScope(this)
+    },
     async load(force = false): Promise<void> {
+      const scope = this.prepareFarmScope()
       const farm = useFarmStore()
       if (farm.role === 'staff') {
         this.status = 'forbidden'
@@ -291,19 +298,24 @@ export const useFeedPlanStore = defineStore('feedingPlan', {  state: () => ({
       this.error = ''
       try {
         if (!this.batchOptions.length) await this.loadBatchOptions()
+        if (scope !== currentFarmScope()) return
         if (!this.batchId && this.batchOptions.length) this.batchId = this.batchOptions[0].batchId
         await this.loadPlan()
+        if (scope !== currentFarmScope()) return
         this.loaded = true
         this.status = this.plan ? 'ready' : 'empty'
       } catch (error) {
+        if (scope !== currentFarmScope()) return
         this.status = statusForError(error)
         this.error = errorText(error, '饲喂方案加载失败')
       }
     },
     async loadBatchOptions(): Promise<void> {
+      const scope = this.farmScope
       this.batchOptionsLoading = true
       try {
         const list: FeedPlanBatchOption[] = await feedingApi.planBatchOptions()
+        if (scope !== this.farmScope) return
         this.batchOptions = list.map((item) => ({
           batchId: Number(item.batch_id || 0),
           batchNo: item.batch_no || '',
@@ -324,8 +336,11 @@ export const useFeedPlanStore = defineStore('feedingPlan', {  state: () => ({
       this.planLoading = true
       this.planError = ''
       this.stageErrors = {}
+      const scope = this.farmScope
+      const batchId = this.batchId
       try {
-        const plan = await feedingApi.feedPlan(this.batchId)
+        const plan = await feedingApi.feedPlan(batchId)
+        if (scope !== this.farmScope || batchId !== this.batchId) return
         this.plan = plan
         this.feedOptions = plan.feed_options || []
         this.stages = (plan.stages || []).map(stageForm)
@@ -334,6 +349,7 @@ export const useFeedPlanStore = defineStore('feedingPlan', {  state: () => ({
         this.savedSnapshot = JSON.stringify(this.snapshot())
         void this.loadLogs()
       } catch (error) {
+        if (scope !== this.farmScope || batchId !== this.batchId) return
         this.plan = null
         this.planError = errorText(error, '饲喂方案加载失败')
       } finally {
@@ -580,10 +596,12 @@ export const useFeedPlanStore = defineStore('feedingPlan', {  state: () => ({
           startDate: this.execStartDate || undefined,
           endDate: this.execEndDate || undefined
         }
+        const scope = this.farmScope
         const [summary, attention] = await Promise.all([
           feedingApi.execSummary(params),
           feedingApi.execAttention({ ...params, page: this.attentionPage, size: this.attentionSize })
         ])
+        if (scope !== this.farmScope) return
         this.execSummary = summary
         this.attention = attention.list || []
         this.attentionTotal = Number(attention.total || 0)
@@ -657,7 +675,7 @@ export const useFeedPlanStore = defineStore('feedingPlan', {  state: () => ({
       }
     },
     reset(): void {
-      this.$reset()
+      resetFarmCache(this)
     }
   }
 })

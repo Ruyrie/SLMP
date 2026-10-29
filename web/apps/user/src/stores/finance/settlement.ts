@@ -3,6 +3,7 @@ import type { ApiError } from '@zmt/shared'
 import { financeApi, type BatchSettlement, type SettlementOption } from '@/api/finance'
 import { useUiStore } from '@/stores/ui'
 import type { PageStatus } from '@/stores/finance/shared'
+import { claimFarmScope, currentFarmScope } from '@/stores/farmScope'
 
 export const useSettlementStore = defineStore('financeSettlement', {
   state: () => ({
@@ -16,7 +17,10 @@ export const useSettlementStore = defineStore('financeSettlement', {
     error: '',
     confirmOpen: false,
     confirmBusy: false,
-    confirmError: ''
+    confirmError: '',
+    farmScope: '',
+    optionsRequestId: 0,
+    detailRequestId: 0
   }),
   getters: {
     selectedOption(state): SettlementOption | undefined {
@@ -53,14 +57,18 @@ export const useSettlementStore = defineStore('financeSettlement', {
   },
   actions: {
     async loadOptions(): Promise<void> {
+      const scope = this.farmScope
+      const requestId = ++this.optionsRequestId
       this.optionsStatus = 'loading'
       this.optionsError = ''
       try {
         const page = await financeApi.settlementOptions({ page: 1, size: 100 })
+        if (requestId !== this.optionsRequestId || scope !== currentFarmScope()) return
         this.options = page.list
         this.farmPending = page.farmPendingSupplementCount || 0
         this.optionsStatus = page.list.length ? 'ready' : 'empty'
       } catch (e) {
+        if (requestId !== this.optionsRequestId || scope !== currentFarmScope()) return
         const err = e as ApiError
         this.optionsStatus = err.isForbidden ? 'forbidden' : 'error'
         this.optionsError = err.message
@@ -74,7 +82,10 @@ export const useSettlementStore = defineStore('financeSettlement', {
     },
 
     async load(batchId?: number): Promise<void> {
+      // 切场后上一个场的批次、核算明细都不能再用（页面未挂载时也可能切场）
+      const scope = claimFarmScope(this)
       await this.loadOptions()
+      if (scope !== currentFarmScope()) return
       const target = batchId || this.batchId || Number(this.options[0]?.batchId || 0)
       this.batchId = target
       if (target) await this.loadDetail()
@@ -88,10 +99,15 @@ export const useSettlementStore = defineStore('financeSettlement', {
       }
       this.status = this.detail ? this.status : 'loading'
       this.error = ''
+      const scope = this.farmScope
+      const requestId = ++this.detailRequestId
       try {
-        this.detail = await financeApi.settlementDetail(this.batchId)
+        const detail = await financeApi.settlementDetail(this.batchId)
+        if (requestId !== this.detailRequestId || scope !== currentFarmScope()) return
+        this.detail = detail
         this.status = 'ready'
       } catch (e) {
+        if (requestId !== this.detailRequestId || scope !== currentFarmScope()) return
         const err = e as ApiError
         this.status = err.isForbidden ? 'forbidden' : 'error'
         this.error = err.message

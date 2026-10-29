@@ -48,8 +48,11 @@ export function monthDayWeek(date?: string | null): string {
   return value.isValid() ? value.format('M月D日 ddd') : '—'
 }
 
+/** 按北京时间的“今天”判断（不用浏览器本地时区），与服务端校验一致。 */
 export function isFuture(date: string): boolean {
-  return !!date && dayjs(date).startOf('day').isAfter(dayjs().startOf('day'))
+  if (!date) return false
+  const value = dayjs(date)
+  return value.isValid() && value.format('YYYY-MM-DD') > todayISO()
 }
 
 export function animalStatusTone(status?: string | null): string {

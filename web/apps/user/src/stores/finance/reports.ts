@@ -3,6 +3,7 @@ import type { ApiError } from '@zmt/shared'
 import { financeApi, type BusinessReport, type ReportPeriod, type ReportSummary, type ReportTrend, type ReportExport } from '@/api/finance'
 import { useUiStore } from '@/stores/ui'
 import type { PageStatus } from '@/stores/finance/shared'
+import { currentFarmScope } from '@/stores/farmScope'
 
 export type ReportMetric = 'STOCK' | 'MORTALITY' | 'FEED' | 'BALANCE'
 
@@ -44,6 +45,8 @@ export const useReportsStore = defineStore('financeReports', {
     categories: [] as { id?: number; name?: string }[],
     batches: [] as { batchId?: number; batchNo?: string; penName?: string; batchStatus?: string }[],
     rangeOptionsLoaded: false,
+    /** 品类 / 批次范围选项属于哪个养殖场视角；切场后不能沿用上一场的批次 */
+    rangeFarmScope: '',
     exportOpen: false,
     exportFormat: 'XLSX',
     exportBusy: false,
@@ -91,6 +94,16 @@ export const useReportsStore = defineStore('financeReports', {
   actions: {
     async load(): Promise<void> {
       if (this.loading) return
+      const farmScope = currentFarmScope()
+      if (this.rangeFarmScope && this.rangeFarmScope !== farmScope) {
+        // 页面未挂载时也可能切场：上一场的品类 / 批次范围作废，回到全场
+        this.rangeType = 'FARM'
+        this.rangeRefId = 0
+        this.rangeOptionsLoaded = false
+        this.categories = []
+        this.batches = []
+      }
+      this.rangeFarmScope = farmScope
       this.loading = true
       try {
         await this.loadPeriods()
@@ -258,7 +271,7 @@ export const useReportsStore = defineStore('financeReports', {
       this.rangeRefId = refId
       this.report = null
       this.summary = null
-      if (type !== 'FARM' && !this.rangeOptionsLoaded) await this.loadRangeOptions()
+      if (type !== 'FARM' && (!this.rangeOptionsLoaded || this.rangeFarmScope !== currentFarmScope())) await this.loadRangeOptions()
       if (type === 'CATEGORY' && !this.rangeRefId) this.rangeRefId = Number(this.categories[0]?.id || 0)
       if (type === 'BATCH' && !this.rangeRefId) this.rangeRefId = Number(this.batches[0]?.batchId || 0)
       await this.loadReport()
@@ -266,6 +279,7 @@ export const useReportsStore = defineStore('financeReports', {
 
     async loadRangeOptions(): Promise<void> {
       this.rangeOptionsLoaded = true
+      this.rangeFarmScope = currentFarmScope()
       try {
         const [categories, batches] = await Promise.all([
           financeApi.baseCategories(),

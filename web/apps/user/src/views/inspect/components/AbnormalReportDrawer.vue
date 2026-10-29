@@ -12,6 +12,7 @@ import {
 } from '@/api/inspect'
 import { useUiStore } from '@/stores/ui'
 import { useFarmStore } from '@/stores/farm'
+import { useAuthStore } from '@/stores/auth'
 import MediaUpload, { type UploadItem } from './MediaUpload.vue'
 import MediaPreviewDialog, { type PreviewItem } from './MediaPreviewDialog.vue'
 
@@ -34,6 +35,7 @@ const emit = defineEmits<{
 
 const ui = useUiStore()
 const farm = useFarmStore()
+const auth = useAuthStore()
 
 const loading = ref(false)
 const submitting = ref(false)
@@ -97,7 +99,12 @@ const mediaHint = computed(() => {
 const notifyText = computed(() => {
   const names = context.value?.notify_names || []
   if (!names.length) return '提交后 AI 返回 1–3 个可能病因、紧急程度和处理建议。'
-  return `提交后 AI 返回 1–3 个可能病因、紧急程度和处理建议，结果同时通知你、${names.join('和')}。`
+  // 通知名单里包含上报人自己时不再重复列名（“你”就是本人）
+  const me = auth.user?.name || ''
+  const others = [...new Set(names)].filter((name) => !!name && name !== me)
+  const people = ['你', ...others]
+  const text = people.length > 1 ? `${people.slice(0, -1).join('、')}和${people[people.length - 1]}` : '你'
+  return `提交后 AI 返回 1–3 个可能病因、紧急程度和处理建议，结果同时通知${text}。`
 })
 const selectedSymptomText = computed(() => `可多选 · 已选 ${symptomIds.value.length} 项`)
 

@@ -317,7 +317,8 @@ function goMedication(): void {
                 <zw-desc-item label="诊断人">{{ handle.diagnostician || '—' }}</zw-desc-item>
                 <zw-desc-item label="处理方式">{{ handle.treatment || '—' }}</zw-desc-item>
                 <zw-desc-item label="用药">
-                  <template v-if="handle.used_drug">
+                  <!-- 已有关联用药记录时即使处理里没勾“使用药品”也显示，与服务端按真实用药记录返回的标记一致 -->
+                  <template v-if="handle.used_drug || handle.medication_converted">
                     使用了药品
                     <template v-if="handle.medication_converted">
                       · <a class="i04-link" @click="goMedication">已转为用药记录</a>

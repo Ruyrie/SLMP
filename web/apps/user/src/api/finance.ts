@@ -630,6 +630,9 @@ export interface ReportQueryPayload {
   [key: string]: unknown
 }
 
+/** AI 出栏建议生成：服务端 120s 内返回，Nginx 150s，客户端略高于网关，超时由网关先报出。 */
+export const SALE_ADVICE_TIMEOUT = 155_000
+
 export const financeApi = {
   overview(): Promise<BusinessOverview> {
     return http().get<unknown>('/business-overview').then((data) => camelize<BusinessOverview>(data))
@@ -791,13 +794,13 @@ export const financeApi = {
   },
 
   saleAdviceLatest(batchId: number): Promise<SaleAdvice> {
-    // 首次读取会同步生成：服务端允许 60s 推理及 10s 排队，不能沿用普通查询的 15s 超时。
-    return http().get<unknown>('/sale-advices/latest', { batch_id: batchId }, { timeout: 90_000 })
+    // 首次读取会同步生成：服务端最长 120s 内返回、Nginx 放到 150s，客户端不能沿用普通查询的 15s 超时。
+    return http().get<unknown>('/sale-advices/latest', { batch_id: batchId }, { timeout: SALE_ADVICE_TIMEOUT })
       .then((data) => camelize<SaleAdvice>(data))
   },
 
   regenerateSaleAdvice(batchId: number): Promise<SaleAdvice> {
-    return http().post<unknown>('/sale-advices', { batch_id: batchId }, { timeout: 90_000 })
+    return http().post<unknown>('/sale-advices', { batch_id: batchId }, { timeout: SALE_ADVICE_TIMEOUT })
       .then((data) => camelize<SaleAdvice>(data))
   },
 

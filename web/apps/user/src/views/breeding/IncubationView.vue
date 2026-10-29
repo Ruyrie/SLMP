@@ -141,6 +141,20 @@ function onHatchTransfer(value: unknown): void {
   if (!value) store.hatchForm.capacityConfirmed = false
 }
 
+// 换入栏鸡舍、改健雏数后，上一次的容量提示（含服务端返回的超容量信息）按新值重新判断
+watch(
+  () => [store.hatchForm.targetPenId, store.hatchForm.healthyCount],
+  (value, previous) => {
+    if (!previous || (value[0] === previous[0] && value[1] === previous[1])) return
+    store.hatchCapacity = null
+    store.hatchForm.capacityConfirmed = false
+    const errors = { ...store.hatchErrors }
+    delete errors.capacity
+    if (value[0] !== previous[0]) delete errors.target_pen_id
+    store.hatchErrors = errors
+  }
+)
+
 function closeForm(): void {
   store.formDrawer = false
 }
@@ -323,7 +337,7 @@ watch(() => route.query.action, (value) => {
                 </div>
                 <div v-if="store.hatchForm.transferToBatch" class="b03-batch-body">
                   <zw-form-item label="入栏鸡舍" required :error="fieldError(store.hatchErrors, 'target_pen_id')" :hint="`${store.detail.offspringBreedName || store.detail.breedName} · 批次号提交后由系统生成`">
-                    <v-select v-model="store.hatchForm.targetPenId" :items="store.penItems" item-title="title" item-value="value" placeholder="请选择入栏鸡舍" :error="!!fieldError(store.hatchErrors, 'target_pen_id')">
+                    <v-select :model-value="store.hatchForm.targetPenId || null" :items="store.penItems" item-title="title" item-value="value" placeholder="请选择入栏鸡舍" :error="!!fieldError(store.hatchErrors, 'target_pen_id')" @update:model-value="store.hatchForm.targetPenId = Number($event || 0)">
                       <template #item="{ props: itemProps, item }">
                         <v-list-item v-bind="itemProps" :subtitle="item.raw.hint" />
                       </template>
@@ -418,7 +432,7 @@ watch(() => route.query.action, (value) => {
           <BreedingDateField v-model="store.form.setDate" :max="today" :error="!!fieldError(store.formErrors, 'set_date')" />
         </zw-form-item>
         <zw-form-item label="种禽群" required :error="fieldError(store.formErrors, 'breeding_batch_id')" :hint="store.formMode === 'edit' ? '种禽群入孵后不能修改' : '列出本场用途为种用的在栏禽类批次'">
-          <v-select v-model="store.form.breedingBatchId" :items="store.batchItems" item-title="title" item-value="value" :disabled="store.formMode === 'edit'" :error="!!fieldError(store.formErrors, 'breeding_batch_id')">
+          <v-select :model-value="store.form.breedingBatchId || null" :items="store.batchItems" item-title="title" item-value="value" placeholder="请选择种禽群" :disabled="store.formMode === 'edit'" :error="!!fieldError(store.formErrors, 'breeding_batch_id')" @update:model-value="store.form.breedingBatchId = Number($event || 0)">
             <template #item="{ props: itemProps, item }">
               <v-list-item v-bind="itemProps" :subtitle="item.raw.hint" />
             </template>

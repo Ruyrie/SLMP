@@ -113,8 +113,11 @@ describe('market sale advice lifecycle', () => {
     api.saleAdviceDetail.mockResolvedValue({ id: 71, batchId: 301, status: 'GENERATING' })
     const store = useMarketStore()
     await store.load()
+    // 仍在生成时继续等待（服务端最长 120s），不在 20s 内提前判失败
     await vi.advanceTimersByTimeAsync(20_000)
-    expect(api.saleAdviceDetail).toHaveBeenCalledTimes(10)
+    expect(store.adviceStatus).toBe('loading')
+    await vi.advanceTimersByTimeAsync(140_000)
+    expect(api.saleAdviceDetail.mock.calls.length).toBeGreaterThan(10)
     expect(store.adviceStatus).toBe('error')
     expect(store.adviceError).toContain('稍后重试')
     expect(store.pollTimer).toBeUndefined()

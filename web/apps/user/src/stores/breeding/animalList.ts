@@ -15,6 +15,7 @@ import type {
 } from '@/api/breeding'
 import { breedingApi } from '@/api/breeding'
 import { useUiStore } from '@/stores/ui'
+import { claimFarmScope, currentFarmScope, resetFarmCache } from '@/stores/farmScope'
 import {
   animalStatusText,
   errorText,
@@ -66,6 +67,7 @@ export const useBreedingAnimalStore = defineStore('breedingAnimalList', {
     },
     showExited: false,
     loaded: false,
+    farmScope: '',
     requestId: 0,
 
     categories: [] as BaseCategory[],
@@ -202,15 +204,24 @@ export const useBreedingAnimalStore = defineStore('breedingAnimalList', {
     }
   },
   actions: {
+    /** 页面未挂载时也可能切场：使用缓存前先核对归属，不是当前养殖场就清空。 */
+    prepareFarmScope(): string {
+      return claimFarmScope(this)
+    },
     async load(force = false): Promise<void> {
+      this.prepareFarmScope()
       if (this.loaded && !force) return
       await this.loadOverview()
       await this.loadList(force)
     },
     async loadOverview(): Promise<void> {
+      const scope = this.farmScope
       try {
-        this.overview = await breedingApi.overview()
+        const overview = await breedingApi.overview()
+        if (scope !== currentFarmScope()) return
+        this.overview = overview
       } catch (error) {
+        if (scope !== currentFarmScope()) return
         if (this.status !== 'forbidden') {
           this.status = statusForError(error)
           this.error = errorText(error, '繁育概况加载失败')
@@ -220,6 +231,7 @@ export const useBreedingAnimalStore = defineStore('breedingAnimalList', {
     async loadList(force = false): Promise<void> {
       if (this.showExited) this.query.status = 'EXITED'
       const requestId = ++this.requestId
+      const scope = this.farmScope
       if (!force && !this.list.length) this.status = 'loading'
       this.error = ''
       try {
@@ -230,7 +242,7 @@ export const useBreedingAnimalStore = defineStore('breedingAnimalList', {
           keyword: this.query.keyword.trim() || undefined,
           penId: this.query.penId || undefined
         })
-        if (requestId !== this.requestId) return
+        if (requestId !== this.requestId || scope !== currentFarmScope()) return
         this.list = data.list || []
         this.total = Number(data.total || 0)
         this.loaded = true
@@ -242,7 +254,7 @@ export const useBreedingAnimalStore = defineStore('breedingAnimalList', {
         const maxPage = Math.max(1, Math.ceil(this.total / this.query.size))
         if (this.query.page > maxPage) this.query.page = maxPage
       } catch (error) {
-        if (requestId !== this.requestId) return
+        if (requestId !== this.requestId || scope !== currentFarmScope()) return
         this.status = statusForError(error)
         this.error = errorText(error, '种畜档案加载失败，请稍后重新加载')
       }
@@ -250,8 +262,10 @@ export const useBreedingAnimalStore = defineStore('breedingAnimalList', {
     async loadFormOptions(): Promise<void> {
       if (this.optionsLoaded || this.optionsLoading) return
       this.optionsLoading = true
+      const scope = this.farmScope
       try {
         const [categories, pens] = await Promise.all([herdApi.baseCategories(), herdApi.penOptions()])
+        if (scope !== this.farmScope) return
         this.categories = categories || []
         this.pens = pens || []
         this.optionsLoaded = true
@@ -528,7 +542,7 @@ export const useBreedingAnimalStore = defineStore('breedingAnimalList', {
       }
     },
     reset(): void {
-      this.$reset()
+      resetFarmCache(this)
     }
   }
 })

@@ -462,7 +462,7 @@ async function exportCsv(): Promise<void> {
             <v-text-field v-model="store.form.earTag" placeholder="例如 0161" maxlength="20" :error="!!fieldError('ear_tag')" />
           </zw-form-item>
           <zw-form-item label="品种" required :error="fieldError('breed_id')" hint="来自平台品类品种字典">
-            <v-select v-model="store.form.breedId" :items="store.breedItems" item-title="title" item-value="value" :error="!!fieldError('breed_id')" />
+            <v-select :model-value="store.form.breedId || null" :items="store.breedItems" item-title="title" item-value="value" placeholder="请选择品种" :error="!!fieldError('breed_id')" @update:model-value="store.form.breedId = Number($event || 0)" />
           </zw-form-item>
           <zw-form-item label="出生日期" :error="fieldError('birth_date')" optional>
             <BreedingDateField v-model="store.form.birthDate" :error="!!fieldError('birth_date')" />
@@ -471,7 +471,7 @@ async function exportCsv(): Promise<void> {
             <zw-seg v-model="store.form.source" :items="[{ label: '外购', value: 'PURCHASED' }, { label: '自繁', value: 'SELF_BRED' }]" />
           </zw-form-item>
           <zw-form-item label="所在栏舍" required :error="fieldError('pen_id')">
-            <v-select v-model="store.form.penId" :items="store.penOptions" item-title="title" item-value="value" :error="!!fieldError('pen_id')" />
+            <v-select :model-value="store.form.penId || null" :items="store.penOptions" item-title="title" item-value="value" placeholder="请选择栏舍" :error="!!fieldError('pen_id')" @update:model-value="store.form.penId = Number($event || 0)" />
           </zw-form-item>
           <zw-form-item label="建档时胎次" required :error="fieldError('initial_parity')" hint="0–30 胎">
             <v-text-field v-model.number="store.form.initialParity" type="number" min="0" max="30" suffix="胎" :error="!!fieldError('initial_parity')" />

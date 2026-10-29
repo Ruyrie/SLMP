@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { formatMoney, formatNumber, formatPercent } from '@zmt/shared'
 import { useSettlementStore } from '@/stores/finance/settlement'
+import { useFarmReload } from '@/composables/useFarmReload'
 import { dateText, dateTimeText, paymentIcon, paymentTone, priceText } from '@/stores/finance/shared'
 
 const store = useSettlementStore()
@@ -156,6 +157,11 @@ function goSaleOrder(id?: number): void {
 }
 
 onMounted(() => void store.load(Number(route.query.batchId || 0)))
+// 在本页切换养殖场：批次下拉与核算明细换成新场的（地址里的批次属于旧场，不再沿用）
+useFarmReload(() => {
+  if (route.query.batchId) void router.replace({ query: { ...route.query, batchId: undefined } })
+  void store.load()
+})
 watch(
   () => route.query.batchId,
   (value) => {

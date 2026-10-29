@@ -33,9 +33,11 @@ const desc = computed(() => {
   const name = farm.farmName || '当前养殖场'
   return `${name} · 栏舍编号本场内唯一，保存后不能修改；负责员工在成员管理中分配`
 })
+/** 计数单位跟养殖场品类走（猪场“头”、鸡场“只”），服务端随栏舍返回 */
+const unitText = computed(() => store.pens.find((pen) => pen.unit_text)?.unit_text || store.detail?.unit_text || '头')
 const summaryText = computed(() => {
   const value = store.summary
-  return `在用 ${value.inUse} 个 · 空栏 ${value.empty} 个${value.disabled ? ` · 已停用 ${value.disabled} 个` : ''} · 总容量 ${formatNumber(value.capacity)} 头`
+  return `在用 ${value.inUse} 个 · 空栏 ${value.empty} 个${value.disabled ? ` · 已停用 ${value.disabled} 个` : ''} · 总容量 ${formatNumber(value.capacity)} ${unitText.value}`
 })
 const detailSub = computed(() => {
   const detail = store.detail
@@ -51,7 +53,7 @@ const capacityWarning = computed(() => {
   const capacity = Number(store.form.capacity || 0)
   const over = editingStock.value - capacity
   if (over <= 0) return ''
-  return `当前在栏 ${formatNumber(editingStock.value)} 头，超过新容量 ${formatNumber(over)} 头`
+  return `当前在栏 ${formatNumber(editingStock.value)} ${unitText.value}，超过新容量 ${formatNumber(over)} ${unitText.value}`
 })
 const editBreedingPen = computed(() => !!store.details[store.form.penId]?.is_breeding_pen)
 const canDisableDetail = computed(() => {
@@ -187,9 +189,9 @@ watch(() => [route.query.action, route.query.penId], () => {
             <template #item.pen_name="{ item }"><span class="zw-cell-main">{{ item.pen_name }}</span></template>
             <template #item.pen_type_text="{ item }">{{ item.pen_type_text || '—' }}</template>
             <template #item.category_name="{ item }">{{ item.category_name || '—' }}</template>
-            <template #item.capacity="{ item }"><span class="num">{{ item.capacity ? `${formatNumber(item.capacity)} 头` : '' }}</span></template>
+            <template #item.capacity="{ item }"><span class="num">{{ item.capacity ? `${formatNumber(item.capacity)} ${item.unit_text || unitText}` : '' }}</span></template>
             <template #item.stock_count="{ item }">
-              <span v-if="!item.is_breeding_pen" class="num" :class="{ 'zw-faint': !item.stock_count }">{{ formatNumber(item.stock_count || 0) }} 头</span>
+              <span v-if="!item.is_breeding_pen" class="num" :class="{ 'zw-faint': !item.stock_count }">{{ formatNumber(item.stock_count || 0) }} {{ item.unit_text || unitText }}</span>
               <span v-else class="zw-faint body-s">在繁育中查看</span>
             </template>
             <template #item.occupancy="{ item }">
@@ -257,8 +259,8 @@ watch(() => [route.query.action, route.query.penId], () => {
             class="mt-3"
           />
           <div v-if="store.detail.display_status !== 'DISABLED'" class="zw-faint body-s mt-2">
-            <template v-if="Number(store.detail.over_capacity_count || 0) > 0">已超出容量 {{ formatNumber(store.detail.over_capacity_count) }} 头</template>
-            <template v-else>还可转入 {{ formatNumber(store.detail.remaining_capacity || 0) }} 头，超过容量时需要确认后才能保存</template>
+            <template v-if="Number(store.detail.over_capacity_count || 0) > 0">已超出容量 {{ formatNumber(store.detail.over_capacity_count) }} {{ store.detail.unit_text || unitText }}</template>
+            <template v-else>还可转入 {{ formatNumber(store.detail.remaining_capacity || 0) }} {{ store.detail.unit_text || unitText }}，超过容量时需要确认后才能保存</template>
           </div>
         </div>
 

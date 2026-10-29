@@ -41,6 +41,8 @@ export const useFarmStore = defineStore('farm', {
       return this.role !== 'staff'
     },
     farmName: (state): string => state.farms.find((farm) => farm.farm_id === state.currentFarmId)?.name || '',
+    /** 当前养殖场的计数单位（猪场“头”、鸡场“只”），没有时按“头” */
+    countUnit: (state): string => state.farms.find((farm) => farm.farm_id === state.currentFarmId)?.count_unit_text || '头',
     switchableFarms: (state): FarmBrief[] => state.farms.filter((farm) => farm.can_switch !== false)
   },
   actions: {
@@ -64,7 +66,12 @@ export const useFarmStore = defineStore('farm', {
       if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(FARM_KEY, String(farmId))
     },
     async switchTo(farmId: number): Promise<void> {
-      if (this.switching || farmId === this.currentFarmId) return
+      if (this.switching) return
+      if (farmId === this.currentFarmId) {
+        // “全部养殖场”视角下点当前场：退回单场视角
+        if (this.viewAll) this.setViewAll(false)
+        return
+      }
       this.switching = true
       try {
         await http().post(`/farms/${farmId}/switch`)
