@@ -16,7 +16,7 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 
 /**
- * 流水查询实现：按发生时间倒序（同一时刻按 id 倒序）；不含被更正替换（CORRECTED）的流水，
+ * 流水查询实现：按业务日期倒序、同日按发生时间倒序（同一时刻按 id 倒序）；不含被更正替换（CORRECTED）的流水，
  * 来源已作废的流水照常返回并带“已作废”。
  */
 @Service
@@ -47,7 +47,8 @@ public class StockFlowServiceImpl implements StockFlowService {
         int pageNo = Math.max(page, 1);
         int pageSize = size <= 0 ? 20 : Math.min(size, 100);
         Long total = flowMapper.selectCount(wrapper);
-        wrapper.orderByDesc(StockFlow::getOccurAt).orderByDesc(StockFlow::getId)
+        // 按业务日期倒序、同日按发生时间倒序（客户端按业务日期分组，补登的流水落在所属日期里）
+        wrapper.orderByDesc(StockFlow::getBizDate).orderByDesc(StockFlow::getOccurAt).orderByDesc(StockFlow::getId)
                 .last("LIMIT " + pageSize + " OFFSET " + (long) (pageNo - 1) * pageSize);
         List<StockFlow> flows = flowMapper.selectList(wrapper);
         return PageVO.of(assembler.toVos(flows), total == null ? 0 : total, pageNo, pageSize);

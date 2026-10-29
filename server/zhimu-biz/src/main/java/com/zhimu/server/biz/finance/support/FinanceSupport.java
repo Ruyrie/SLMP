@@ -165,6 +165,12 @@ public class FinanceSupport {
         return cmp > 0 ? "UP" : cmp < 0 ? "DOWN" : "FLAT";
     }
 
+    /** 给客户端直接展示的金额文字：千分位、最多 2 位小数（88,160 / 1,234.5） */
+    public static String moneyText(BigDecimal value) {
+        return new java.text.DecimalFormat("#,##0.##", java.text.DecimalFormatSymbols.getInstance(java.util.Locale.ROOT))
+                .format(scale2(nz(value)));
+    }
+
     public static String format(LocalDate date) {
         return date == null ? null : date.format(BeijingTime.DATE);
     }

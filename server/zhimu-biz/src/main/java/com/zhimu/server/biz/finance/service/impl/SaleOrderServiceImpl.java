@@ -8,14 +8,12 @@ import com.zhimu.server.biz.finance.entity.BatchSettlement;
 import com.zhimu.server.biz.finance.entity.BatchSettlementSupplement;
 import com.zhimu.server.biz.finance.entity.FinanceCategory;
 import com.zhimu.server.biz.finance.entity.FinanceRecord;
-import com.zhimu.server.biz.finance.entity.SaleAdvice;
 import com.zhimu.server.biz.finance.entity.SaleOrder;
 import com.zhimu.server.biz.finance.entity.SaleReceipt;
 import com.zhimu.server.biz.finance.mapper.BatchSettlementMapper;
 import com.zhimu.server.biz.finance.mapper.BatchSettlementSupplementMapper;
 import com.zhimu.server.biz.finance.mapper.FinanceCategoryMapper;
 import com.zhimu.server.biz.finance.mapper.FinanceRecordMapper;
-import com.zhimu.server.biz.finance.mapper.SaleAdviceMapper;
 import com.zhimu.server.biz.finance.mapper.SaleOrderMapper;
 import com.zhimu.server.biz.finance.mapper.SaleReceiptMapper;
 import com.zhimu.server.biz.finance.query.FinanceQueries;
@@ -30,6 +28,7 @@ import com.zhimu.server.biz.finance.support.ReceivableTodos;
 import com.zhimu.server.biz.finance.vo.SaleOrderVos;
 import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.herd.api.BatchQueryService;
+import com.zhimu.server.biz.health.api.WithdrawalQueryService;
 import com.zhimu.server.biz.today.api.TodoSourceWriteService;
 import com.zhimu.server.common.context.UserContext;
 import com.zhimu.server.common.error.BizException;
@@ -73,7 +72,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     private final FinanceCategoryMapper categoryMapper;
     private final BatchSettlementMapper settlementMapper;
     private final BatchSettlementSupplementMapper supplementMapper;
-    private final SaleAdviceMapper adviceMapper;
+    private final WithdrawalQueryService withdrawalQueryService;
     private final BatchSalePort batchSalePort;
     private final BatchQueryService batchQueryService;
     private final MarketPriceService marketPriceService;
@@ -89,6 +88,10 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     public List<SaleOrderVos.BatchOptionVO> batchOptions() {
         Long farmId = support.farmId();
         List<BatchInfo> batches = batchQueryService.listActive(farmId);
+        LocalDate today = BeijingTime.today();
+        // 与生产页“休药中”、健康模块同源：按有效用药记录算出的可出栏日期
+        Map<Long, WithdrawalQueryService.WithdrawalStatus> withdrawals =
+                withdrawalQueryService.statusesOfFarm(farmId, today);
         List<SaleOrderVos.BatchOptionVO> result = new ArrayList<>();
         for (BatchInfo batch : batches) {
             if (batch.currentCount() == null || batch.currentCount() <= 0) {
@@ -112,14 +115,12 @@ public class SaleOrderServiceImpl implements SaleOrderService {
             vo.setPenName(pens.stream().max(Comparator.comparing(SaleOrderVos.PenStock::getStockCount))
                     .map(SaleOrderVos.PenStock::getPenName).orElse(null));
             vo.setInWithdrawal(false);
-            SaleAdvice withdrawal = withdrawalOf(batch.batchId());
-            if (withdrawal != null && withdrawal.getSellableDate() != null
-                    && !withdrawal.getSellableDate().isBefore(BeijingTime.today())) {
+            WithdrawalQueryService.WithdrawalStatus withdrawal = withdrawals.get(batch.batchId());
+            if (withdrawal != null && withdrawal.releaseDate() != null) {
                 vo.setInWithdrawal(true);
-                vo.setSellableDate(FinanceSupport.format(withdrawal.getSellableDate()));
-                vo.setWithdrawalDaysLeft(FinanceSupport.daysBetween(BeijingTime.today(),
-                        withdrawal.getSellableDate()));
-                vo.setWithdrawalDrugName(drugName(withdrawal.getReasonWithdrawal()));
+                vo.setSellableDate(FinanceSupport.format(withdrawal.releaseDate()));
+                vo.setWithdrawalDaysLeft(FinanceSupport.daysBetween(today, withdrawal.releaseDate()));
+                vo.setWithdrawalDrugName(withdrawal.drugName());
             }
             result.add(vo);
         }
@@ -783,6 +784,8 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         vo.setPaymentStatusText(FinanceConst.paymentStatusText(order.getPaymentStatus()));
         vo.setHasPendingChange(order.getPendingChangeRequestId() != null);
         vo.setEffectiveDueDate(FinanceSupport.format(order.getEffectiveDueDate()));
+        // 约定收款日期：登记时填写的日期（未填为 null，客户端按 effective_due_date 提示）；修改页据此回填
+        vo.setDueDate(FinanceSupport.format(order.getDueDate()));
         vo.setVoidByReview("CHANGE_REQUEST".equals(order.getVoidSource()));
         vo.setCreatedAt(FinanceSupport.format(order.getCreatedAt()));
         vo.setPaymentStatus(order.getPaymentStatus());
@@ -985,43 +988,23 @@ public class SaleOrderServiceImpl implements SaleOrderService {
         }
     }
 
+    /**
+     * 休药期拦截：出栏日期当天仍在休药期（按有效用药记录算出的可出栏日期）不能登记 / 修改。
+     * 今天仍在休药期时给 43001 与可出栏日期；补登早于可出栏日期的历史出栏给字段错误。
+     */
     private void checkWithdrawal(BatchInfo batch, LocalDate saleDate) {
-        SaleAdvice withdrawal = withdrawalOf(batch.batchId());
-        if (withdrawal == null || withdrawal.getSellableDate() == null) {
+        WithdrawalQueryService.WithdrawalStatus withdrawal =
+                withdrawalQueryService.statusOf(batch.farmId(), batch.batchId(), saleDate);
+        if (withdrawal == null || withdrawal.releaseDate() == null || !saleDate.isBefore(withdrawal.releaseDate())) {
             return;
         }
-        if (saleDate.isBefore(withdrawal.getSellableDate())) {
-            if (BeijingTime.today().isBefore(withdrawal.getSellableDate())) {
-                throw new BizException(ErrorCode.WITHDRAWAL_PERIOD,
-                        batch.batchNo() + " 在休药期内，可出栏日期" + cnDate(withdrawal.getSellableDate()),
-                        Map.of("sellable_date", FinanceSupport.format(withdrawal.getSellableDate())));
-            }
-            throw FinanceErrors.field("sale_date",
-                    "出栏日期不能早于可出栏日期" + cnDate(withdrawal.getSellableDate()));
+        LocalDate sellable = withdrawal.releaseDate();
+        if (BeijingTime.today().isBefore(sellable)) {
+            throw new BizException(ErrorCode.WITHDRAWAL_PERIOD,
+                    batch.batchNo() + " 在休药期内，" + cnDate(sellable) + "后才能出栏",
+                    Map.of("sellable_date", FinanceSupport.format(sellable)));
         }
-    }
-
-    private SaleAdvice withdrawalOf(Long batchId) {
-        List<SaleAdvice> advices = adviceMapper.selectList(Wrappers.<SaleAdvice>lambdaQuery()
-                .eq(SaleAdvice::getBatchId, batchId)
-                .eq(SaleAdvice::getStatus, FinanceConst.ADVICE_SUCCESS)
-                .eq(SaleAdvice::getInWithdrawal, true)
-                .isNotNull(SaleAdvice::getSellableDate)
-                .orderByDesc(SaleAdvice::getGeneratedAt)
-                .last("LIMIT 1"));
-        return advices.isEmpty() ? null : advices.get(0);
-    }
-
-    private static String drugName(String reason) {
-        if (reason == null) {
-            return null;
-        }
-        int index = reason.indexOf("次用药");
-        if (index > 0) {
-            String name = reason.substring(0, index);
-            return name.endsWith("粉末") ? name.substring(0, name.length() - 1) : name;
-        }
-        return null;
+        throw FinanceErrors.field("sale_date", "出栏日期不能早于可出栏日期" + cnDate(sellable));
     }
 
     private static int validateQuantity(Integer quantity, int max) {
@@ -1181,7 +1164,7 @@ public class SaleOrderServiceImpl implements SaleOrderService {
     }
 
     private static String money(BigDecimal value) {
-        return FinanceSupport.scale2(value).stripTrailingZeros().toPlainString();
+        return FinanceSupport.moneyText(value);
     }
 
     private static boolean contains(String text, String keyword) {

@@ -110,10 +110,11 @@ public class StockOutboundServiceImpl implements StockOutboundService {
         if (request.getOutDate().isAfter(today)) {
             throw StockErrors.field("out_date", "出库日期不能晚于今天");
         }
-        requireStockVersion(request.getStockVersion(), feed.getVersion(),
-                StockQty.plain(feed.getStockQty()) + " 千克");
-        BigDecimal inputQty = request.getInputQty();
         String inputUnit = normalizeMeasureUnit(request.getInputUnit());
+        requireStockVersion(request.getStockVersion(), feed.getVersion(),
+                StockQty.plain(feed.getStockQty()) + " 千克",
+                StockQty.inInputUnit(feed.getStockQty(), inputUnit, feed.getPackSize()));
+        BigDecimal inputQty = request.getInputQty();
         BigDecimal qty = StockCodes.INPUT_PACK.equals(inputUnit)
                 ? StockQty.qty(inputQty.multiply(requirePackSize(feed.getPackUnit(), feed.getPackSize())))
                 : StockQty.qty(inputQty);
@@ -189,12 +190,13 @@ public class StockOutboundServiceImpl implements StockOutboundService {
             throw StockErrors.field("out_date", "领用日期不能早于该批号的入库日期 "
                     + monthDay(lot.getFirstInboundDate()));
         }
-        requireStockVersion(request.getStockVersion(), lot.getVersion(), packQty(lot, drug));
         String inputUnit = StringUtils.hasText(request.getInputUnit())
                 ? request.getInputUnit().trim().toUpperCase() : StockCodes.INPUT_PACK;
         if (!StockCodes.INPUT_PACK.equals(inputUnit) && !StockCodes.INPUT_MEASURE.equals(inputUnit)) {
             throw StockErrors.field("input_unit", "录入单位只能是 MEASURE 或 PACK");
         }
+        requireStockVersion(request.getStockVersion(), lot.getVersion(), packQty(lot, drug),
+                StockQty.inInputUnit(lot.getStockQty(), inputUnit, drug.getPackSize()));
         BigDecimal qty = StockCodes.INPUT_PACK.equals(inputUnit)
                 ? StockQty.qty(request.getInputQty().multiply(requirePackSize(drug.getPackUnit(), drug.getPackSize())))
                 : StockQty.qty(request.getInputQty());
@@ -285,7 +287,7 @@ public class StockOutboundServiceImpl implements StockOutboundService {
                 use ? StockCodes.FLOW_MANUAL_USE : StockCodes.FLOW_RETURN, move, request.getOutDate());
         flow.setBatchId(batchId);
         flow.setPenId(penId);
-        flow.setOperatorId(use ? receiverId : null);
+        flow.setOperatorId(use && receiverId != null ? receiverId : outbound.getCreatedBy());
         flow.setIsBatchCost(use);
         flowMapper.updateById(flow);
         if (use) {
@@ -623,6 +625,8 @@ public class StockOutboundServiceImpl implements StockOutboundService {
         flow.setStockAmountAfter(StockQty.amount(move.amountAfter()));
         flow.setBizType(StockCodes.BIZ_OUTBOUND);
         flow.setBizId(outbound.getId());
+        // 经办人默认是登记人；领用另以领用人覆盖
+        flow.setOperatorId(outbound.getCreatedBy());
         flow.setOccurAt(BeijingTime.now());
         flow.setBizDate(bizDate);
         flow.setIsBatchCost(false);
@@ -702,9 +706,10 @@ public class StockOutboundServiceImpl implements StockOutboundService {
         }
     }
 
-    private static void requireStockVersion(Integer requestVersion, Integer version, String currentQtyText) {
+    private static void requireStockVersion(Integer requestVersion, Integer version, String currentQtyText,
+                                            BigDecimal currentQty) {
         if (requestVersion == null || !requestVersion.equals(version)) {
-            throw StockErrors.stockChanged(currentQtyText);
+            throw StockErrors.stockChanged(currentQtyText, currentQty);
         }
     }
 
@@ -727,7 +732,9 @@ public class StockOutboundServiceImpl implements StockOutboundService {
             int count = qty.divide(drug.getPackSize(), 0, RoundingMode.DOWN).intValue();
             BigDecimal rest = qty.subtract(drug.getPackSize().multiply(BigDecimal.valueOf(count)));
             if (rest.signum() > 0) {
-                return StockQty.plain(rest) + " " + StockCodes.unitText(drug.getUnit());
+                // 不足一包的零头：写成“10 袋 200 克”，不能只剩零头（原来 5200 克显示成“200 克”）
+                String restText = StockQty.plain(rest) + " " + StockCodes.unitText(drug.getUnit());
+                return count > 0 ? count + " " + drug.getPackUnit() + " " + restText : restText;
             }
             return count + " " + drug.getPackUnit();
         }

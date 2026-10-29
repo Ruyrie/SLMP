@@ -38,12 +38,19 @@ public final class StockErrors {
         return new BizException(ErrorCode.VERSION_CONFLICT, "数据已被他人修改，请刷新后重试");
     }
 
-    /** 40902 库存已变化（手工登记类接口，带当前结存） */
-    public static BizException stockChanged(String currentQtyText) {
+    /**
+     * 40902 库存已变化（手工登记类出库、领用、报废、报损接口，带当前结存）。
+     * data.current_qty 为数值字符串（按请求的录入单位，不带千分位与单位），客户端据此显示当前结存并重拉选项。
+     *
+     * @param currentQtyText 消息里的结存写法（带单位）
+     * @param currentQty     录入单位下的当前结存；null 时不带 data
+     */
+    public static BizException stockChanged(String currentQtyText, BigDecimal currentQty) {
         String message = currentQtyText == null
                 ? "库存已变化，请刷新后重试"
                 : "库存已变化，当前结存 " + currentQtyText + "，请刷新后重试";
-        return new BizException(ErrorCode.VERSION_CONFLICT, message);
+        return new BizException(ErrorCode.VERSION_CONFLICT, message,
+                currentQty == null ? null : Map.of("current_qty", StockQty.number(currentQty)));
     }
 
     /** 40903 单据已作废 */

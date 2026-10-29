@@ -11,7 +11,6 @@ import com.zhimu.server.biz.finance.mapper.BatchSettlementMapper;
 import com.zhimu.server.biz.finance.mapper.BatchSettlementSupplementMapper;
 import com.zhimu.server.biz.finance.mapper.FinanceCategoryMapper;
 import com.zhimu.server.biz.finance.mapper.FinanceRecordMapper;
-import com.zhimu.server.biz.finance.mapper.SaleAdviceMapper;
 import com.zhimu.server.biz.finance.mapper.SaleOrderMapper;
 import com.zhimu.server.biz.finance.mapper.SaleReceiptMapper;
 import com.zhimu.server.biz.finance.request.FinanceRequests;
@@ -57,7 +56,7 @@ class SaleOrderReceiptServiceImplTest {
     @Mock private FinanceCategoryMapper categoryMapper;
     @Mock private BatchSettlementMapper settlementMapper;
     @Mock private BatchSettlementSupplementMapper supplementMapper;
-    @Mock private SaleAdviceMapper adviceMapper;
+    @Mock private com.zhimu.server.biz.health.api.WithdrawalQueryService withdrawalQueryService;
     @Mock private BatchSalePort batchSalePort;
     @Mock private BatchQueryService batchQueryService;
     @Mock private MarketPriceService marketPriceService;

@@ -257,6 +257,8 @@ public class StocktakeServiceImpl implements StocktakeService {
         flow.setStockAmountAfter(StockQty.amount(move.amountAfter()));
         flow.setBizType(StockCodes.BIZ_STOCKTAKE);
         flow.setBizId(stocktake.getId());
+        // 经办人：盘点人
+        flow.setOperatorId(stocktake.getCreatedBy());
         flow.setOccurAt(BeijingTime.now());
         flow.setBizDate(stocktake.getStocktakeDate());
         flow.setIsBatchCost(false);

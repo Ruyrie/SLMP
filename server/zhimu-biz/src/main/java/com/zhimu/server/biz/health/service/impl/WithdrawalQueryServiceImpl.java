@@ -35,4 +35,28 @@ public class WithdrawalQueryServiceImpl implements WithdrawalQueryService {
         }
         return result;
     }
+
+    @Override
+    public Map<Long, WithdrawalStatus> statusesOfFarm(Long farmId, LocalDate date) {
+        if (farmId == null || date == null) {
+            return Map.of();
+        }
+        Map<Long, MedicationRecord> decisive = new LinkedHashMap<>();
+        for (MedicationRecord record : recordMapper.selectList(Wrappers.<MedicationRecord>lambdaQuery()
+                .eq(MedicationRecord::getFarmId, farmId)
+                .gt(MedicationRecord::getWithdrawalEndDate, date))) {
+            LocalDate started = record.getFirstDate() != null ? record.getFirstDate() : record.getLastDate();
+            if (record.getBatchId() == null || record.getWithdrawalEndDate() == null
+                    || !record.getWithdrawalEndDate().isAfter(date) || (started != null && started.isAfter(date))) {
+                continue;
+            }
+            decisive.merge(record.getBatchId(), record, (first, second) ->
+                    second.getWithdrawalEndDate().isAfter(first.getWithdrawalEndDate()) ? second : first);
+        }
+        Map<Long, WithdrawalStatus> result = new LinkedHashMap<>();
+        decisive.forEach((batchId, record) -> result.put(batchId, new WithdrawalStatus(batchId,
+                record.getWithdrawalEndDate(), record.getDrugName(), record.getLastDate(),
+                record.getWithdrawalDays())));
+        return result;
+    }
 }

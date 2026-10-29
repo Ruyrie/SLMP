@@ -576,7 +576,8 @@ public class BusinessReportServiceImpl implements BusinessReportService {
                     .message(AiMessage.system("你是养殖场经营分析助手，只输出 JSON。"))
                     .message(AiMessage.user(prompt))
                     .jsonMode(true)
-                    .maxTokens(800)
+                    // 推理模型的推理过程计入输出长度，800 时备用模型常被截断成空答案（与出栏建议同一问题）
+                    .maxTokens(SaleAdviceServiceImpl.AI_MAX_TOKENS)
                     .build());
             JsonNode node = JSON.readTree(result.getContent());
             summary.setHighlight(limit(node.path("highlight").asText(""), 100));

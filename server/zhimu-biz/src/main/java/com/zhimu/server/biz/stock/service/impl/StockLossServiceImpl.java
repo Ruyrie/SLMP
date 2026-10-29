@@ -63,7 +63,8 @@ public class StockLossServiceImpl implements StockLossService {
             throw StockErrors.field("remark", "请写明报损原因");
         }
         if (request.getStockVersion() == null || !request.getStockVersion().equals(feed.getVersion())) {
-            throw StockErrors.stockChanged(StockQty.plain(feed.getStockQty()) + " 千克");
+            throw StockErrors.stockChanged(StockQty.plain(feed.getStockQty()) + " 千克",
+                    StockQty.zeroIfNull(feed.getStockQty()));
         }
         BigDecimal qty = StockQty.qty(request.getInputQty());
         StockLedger.Move move = ledger.outFeed(feed, qty);
@@ -115,12 +116,13 @@ public class StockLossServiceImpl implements StockLossService {
         if (StockQty.zeroIfNull(lot.getStockQty()).signum() <= 0) {
             throw StockErrors.notEnough("批号 " + lot.getLotNo() + " 结存已为 0，不能报废");
         }
-        if (request.getStockVersion() == null || !request.getStockVersion().equals(lot.getVersion())) {
-            throw StockErrors.stockChanged(packText(lot, drug));
-        }
-        LocalDateHolder date = scrapDate(request, lot);
         String inputUnit = StringUtils.hasText(request.getInputUnit())
                 ? request.getInputUnit().trim().toUpperCase(java.util.Locale.ROOT) : StockCodes.INPUT_MEASURE;
+        if (request.getStockVersion() == null || !request.getStockVersion().equals(lot.getVersion())) {
+            throw StockErrors.stockChanged(packText(lot, drug),
+                    StockQty.inInputUnit(lot.getStockQty(), inputUnit, drug.getPackSize()));
+        }
+        LocalDateHolder date = scrapDate(request, lot);
         BigDecimal qty = scrapQuantity(request.getInputQty(), inputUnit, drug);
         StockLedger.Move move = ledger.outLot(lot, qty, StockCodes.unitText(drug.getUnit()));
 
@@ -219,6 +221,8 @@ public class StockLossServiceImpl implements StockLossService {
         flow.setStockAmountAfter(StockQty.amount(move.amountAfter()));
         flow.setBizType(StockCodes.BIZ_LOSS);
         flow.setBizId(loss.getId());
+        // 经办人：登记报损 / 报废的人
+        flow.setOperatorId(loss.getCreatedBy());
         flow.setOccurAt(BeijingTime.now());
         flow.setBizDate(bizDate);
         flow.setIsBatchCost(false);
