@@ -67,7 +67,7 @@ final class ViewerPageAdapter extends ListAdapter<ViewerItem, ViewerPageAdapter.
 
     @Override
     public void onViewRecycled(@NonNull Holder holder) {
-        Glide.with(holder.b.mediaImage).clear(holder.b.mediaImage);
+        MediaGlide.clear(holder.b.mediaImage);
         holder.b.mediaPlayer.setPlayer(null);
         super.onViewRecycled(holder);
     }

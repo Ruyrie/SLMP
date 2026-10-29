@@ -119,7 +119,7 @@ final class MediaGridAdapter extends ListAdapter<MediaGridAdapter.Cell, Recycler
     public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
         if (holder instanceof MediaHolder) {
             MediaHolder h = (MediaHolder) holder;
-            Glide.with(h.b.mediaThumb).clear(h.b.mediaThumb);
+            MediaGlide.clear(h.b.mediaThumb);
         }
         super.onViewRecycled(holder);
     }

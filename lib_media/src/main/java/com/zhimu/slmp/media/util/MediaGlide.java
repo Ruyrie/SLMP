@@ -1,10 +1,15 @@
 package com.zhimu.slmp.media.util;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.net.Uri;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.bumptech.glide.Glide;
 import com.zhimu.slmp.base.glide.FileGlideUrl;
 import com.zhimu.slmp.media.upload.UploadItem;
 
@@ -19,6 +24,21 @@ import java.io.File;
 public final class MediaGlide {
 
     private MediaGlide() {
+    }
+
+    /**
+     * 列表回收时清除图片加载。页面关闭时 RecyclerView 结束条目动画会在 Activity 已销毁后回收条目，
+     * 此时 Glide.with 会抛“You cannot start a load for a destroyed activity”；页面销毁时 Glide 已释放其请求，直接跳过。
+     */
+    public static void clear(@NonNull View view) {
+        Context ctx = view.getContext();
+        while (ctx instanceof ContextWrapper && !(ctx instanceof Activity)) {
+            ctx = ((ContextWrapper) ctx).getBaseContext();
+        }
+        if (ctx instanceof Activity && ((Activity) ctx).isDestroyed()) {
+            return;
+        }
+        Glide.with(view).clear(view);
     }
 
     /** 原图 */
