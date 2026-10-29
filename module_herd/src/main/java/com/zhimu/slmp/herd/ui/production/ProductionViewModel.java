@@ -16,18 +16,16 @@ import com.zhimu.slmp.herd.HerdExtras;
 import com.zhimu.slmp.herd.data.StockRepository;
 import com.zhimu.slmp.herd.model.vo.ProductionBadges;
 import com.zhimu.slmp.herd.model.vo.ProductionOverviewVO;
-import com.zhimu.slmp.herd.model.vo.ProductionReminderItemVO;
 import com.zhimu.slmp.herd.ui.common.HerdFormat;
 import com.zhimu.slmp.herd.ui.common.NavTarget;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 import javax.inject.Inject;
 
 /**
- * L01 生产页：今日生产概况（存栏 / 在养批次 / 生产提醒三张卡）、生产提醒列表、功能入口。
+ * L01 生产页：今日生产概况（存栏 / 在养批次 / 生产提醒三张卡）、功能入口。生产提醒列表不铺在本页，
+ * 点“生产提醒”卡进入生产提醒页（{@link ProductionReminderActivity}）。
  * 今日待办与预警只在首页（T01）展示，生产页不再出现。员工视图同样三张卡，数字由服务端按可见栏舍给出。
  */
 public class ProductionViewModel extends BaseViewModel {
@@ -35,7 +33,7 @@ public class ProductionViewModel extends BaseViewModel {
     public static final String METRIC_STOCK = "STOCK";
     /** 在养批次卡：与功能入口“批次档案”同一目标 */
     public static final String METRIC_BATCH = "BATCH";
-    /** 生产提醒卡：滚动到下方生产提醒列表 */
+    /** 生产提醒卡：进入生产提醒页（0 项也可进入，页面显示空状态） */
     public static final String METRIC_REMINDER = "REMINDER";
     /** 字段缺失（老服务端）时的占位 */
     public static final String PLACEHOLDER = "—";
@@ -50,14 +48,13 @@ public class ProductionViewModel extends BaseViewModel {
     private final LiveData<String> batchValueText;
     private final LiveData<String> penOccupancyText;
     private final LiveData<Integer> reminderCount;
-    private final LiveData<List<ProductionReminderItemVO>> reminders;
     private final LiveData<Boolean> showNoPenNotice;
     private final LiveData<Boolean> showAuditNotice;
     private final LiveData<ProductionBadges> badges;
     private final LiveData<Long> currentFarmId;
     private final SingleLiveEvent<NavTarget> navEvent = new SingleLiveEvent<>();
-    /** 生产提醒卡点击：滚动到提醒列表 */
-    private final SingleLiveEvent<Boolean> scrollToReminders = new SingleLiveEvent<>();
+    /** 生产提醒卡点击：打开生产提醒页 */
+    private final SingleLiveEvent<Boolean> openReminders = new SingleLiveEvent<>();
 
     @Nullable
     private Long loadedFarmId;
@@ -72,8 +69,6 @@ public class ProductionViewModel extends BaseViewModel {
         batchValueText = Transformations.map(overview, ProductionViewModel::batchValueOf);
         penOccupancyText = Transformations.map(overview, ProductionViewModel::penOccupancyOf);
         reminderCount = Transformations.map(overview, o -> o == null ? 0 : o.getReminderTotal());
-        reminders = Transformations.map(overview, o -> o == null || isAuditPending(o)
-                ? Collections.emptyList() : o.getReminders());
         showNoPenNotice = Transformations.map(overview, o -> o != null && !isAuditPending(o) && !o.isHasPen());
         showAuditNotice = Transformations.map(overview, o -> o != null && isAuditPending(o));
         badges = Transformations.map(overview, ProductionOverviewVO::getBadges);
@@ -131,13 +126,9 @@ public class ProductionViewModel extends BaseViewModel {
         return reminderCount;
     }
 
-    /** 生产提醒卡点击后滚动到提醒列表（一次性事件） */
-    public SingleLiveEvent<Boolean> getScrollToReminders() {
-        return scrollToReminders;
-    }
-
-    public LiveData<List<ProductionReminderItemVO>> getReminders() {
-        return reminders;
+    /** 生产提醒卡点击后打开生产提醒页（一次性事件） */
+    public SingleLiveEvent<Boolean> getOpenReminders() {
+        return openReminders;
     }
 
     public LiveData<Boolean> getShowNoPenNotice() {
@@ -190,29 +181,8 @@ public class ProductionViewModel extends BaseViewModel {
     // ===== 点击 =====
 
     /**
-     * 提醒项：未处理异常上报 → I06 诊断详情（带 report_id；缺 report_id 时退回 T04 待办详情）；
-     * 其余按 route 打开 D05（带 batch_id）、M01 等。
-     */
-    public void onReminderClick(@NonNull ProductionReminderItemVO item) {
-        if (ProductionReminderItemVO.TYPE_ABNORMAL_REPORT.equals(item.getReminderType())) {
-            if (item.getReportId() != null) {
-                navEvent.setValue(NavTarget.of(RouterPath.I06).put(RouterPath.EXTRA_REPORT_ID, item.getReportId()));
-            } else if (item.getTodoId() != null) {
-                navEvent.setValue(NavTarget.of(RouterPath.T04).put(RouterPath.EXTRA_TODO_ID, item.getTodoId()));
-            }
-            return;
-        }
-        NavTarget t = NavTarget.ofPage(item.getRoute());
-        if (t == null) {
-            return;
-        }
-        navEvent.setValue(t.put(RouterPath.EXTRA_BATCH_ID, item.getBatchId())
-                .put(RouterPath.EXTRA_TODO_ID, item.getTodoId()));
-    }
-
-    /**
      * 指标卡：存栏 → L03 栏舍视图；在养批次 → L03 批次视图（与功能入口“批次档案”相同）；
-     * 生产提醒 → 滚动到提醒列表（0 项时不响应）。
+     * 生产提醒 → 生产提醒页（0 项也进入，页面显示空状态）。
      */
     public void onMetricClick(@NonNull String metric) {
         switch (metric) {
@@ -223,10 +193,7 @@ public class ProductionViewModel extends BaseViewModel {
                 onEntryClick(ENTRY_BATCH_ARCHIVE);
                 break;
             case METRIC_REMINDER:
-                ProductionOverviewVO o = overview.getValue();
-                if (o != null && o.getReminderTotal() > 0) {
-                    scrollToReminders.setValue(Boolean.TRUE);
-                }
+                openReminders.setValue(Boolean.TRUE);
                 break;
             default:
                 break;

@@ -1,5 +1,6 @@
 package com.zhimu.slmp.herd.ui.production;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,11 +12,9 @@ import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.zhimu.slmp.base.ui.BaseFragment;
 import com.zhimu.slmp.base.util.ClickThrottle;
-import com.zhimu.slmp.base.widget.GroupedListDecoration;
 import com.zhimu.slmp.base.widget.StatCardView;
 import com.zhimu.slmp.herd.R;
 import com.zhimu.slmp.herd.databinding.HerdFragmentProductionBinding;
@@ -30,7 +29,8 @@ import java.util.List;
 
 /**
  * L01 生产页：所有者、场长底部导航“生产”（TabRegistry.PRODUCTION）。顶部状态栏 insets 由 MainActivity 处理。
- * 三张指标卡：存栏（→ L03 栏舍）、在养批次 + 栏舍占用（→ 批次档案）、生产提醒 N 项（滚动到提醒列表，0 项不可点）。
+ * 三张指标卡：存栏（→ L03 栏舍）、在养批次 + 栏舍占用（→ 批次档案）、生产提醒 N 项（→ 生产提醒页，0 项也可点）。
+ * 提醒列表不铺在本页，指标卡下面直接是生产 / 防疫 / 物资入口。
  */
 public class ProductionFragment extends BaseFragment {
 
@@ -82,17 +82,10 @@ public class ProductionFragment extends BaseFragment {
         binding.herdRefresh.setOnRefreshListener(vm::refresh);
         vm.getCurrentFarmId().observe(getViewLifecycleOwner(), vm::onFarmChanged);
 
-        ReminderAdapter adapter = new ReminderAdapter(vm::onReminderClick);
-        binding.herdReminders.setLayoutManager(new LinearLayoutManager(requireContext()));
-        binding.herdReminders.addItemDecoration(new GroupedListDecoration(requireContext()));
-        binding.herdReminders.setAdapter(adapter);
-        vm.getReminders().observe(getViewLifecycleOwner(), list -> {
-            adapter.submitList(list);
-            binding.herdReminders.setVisibility(list == null || list.isEmpty() ? View.GONE : View.VISIBLE);
-        });
-
         ClickThrottle.setOnClickListener(binding.herdCardStock, v -> vm.onMetricClick(ProductionViewModel.METRIC_STOCK));
         ClickThrottle.setOnClickListener(binding.herdCardBatch, v -> vm.onMetricClick(ProductionViewModel.METRIC_BATCH));
+        ClickThrottle.setOnClickListener(binding.herdCardReminder,
+                v -> vm.onMetricClick(ProductionViewModel.METRIC_REMINDER));
         allowSubtitleWrap(binding.herdCardBatch);
         binding.herdAuditNotice.setAction(getString(R.string.herd_production_audit_action),
                 v -> vm.onAuditResultClick());
@@ -109,7 +102,8 @@ public class ProductionFragment extends BaseFragment {
                 text == null ? null : getString(R.string.herd_production_pen_occupancy, text),
                 StatCardView.TREND_NEUTRAL, StatCardView.DIRECTION_NONE));
         vm.getReminderCount().observe(getViewLifecycleOwner(), this::renderReminderCard);
-        vm.getScrollToReminders().observe(getViewLifecycleOwner(), v -> scrollToReminders());
+        vm.getOpenReminders().observe(getViewLifecycleOwner(),
+                v -> startActivity(new Intent(requireContext(), ProductionReminderActivity.class)));
         vm.getBadges().observe(getViewLifecycleOwner(), this::renderBadges);
         vm.getNavEvent().observe(getViewLifecycleOwner(), t -> HerdNav.open(requireActivity(), null, t));
     }
@@ -122,28 +116,10 @@ public class ProductionFragment extends BaseFragment {
         binding.herdCardStock.setValue(HerdFormat.number(o.getStockTotal()), unit);
     }
 
-    /** 生产提醒 N 项：N &gt; 0 时整卡可点（滚动到提醒列表），N = 0 时显示“0 项”且不可点 */
+    /** 生产提醒 N 项（整卡始终可点，进入生产提醒页；0 项时页面显示空状态） */
     private void renderReminderCard(@Nullable Integer count) {
         int n = count == null ? 0 : count;
         binding.herdCardReminder.setValue(HerdFormat.number(n), getString(R.string.herd_unit_item));
-        ClickThrottle.setOnClickListener(binding.herdCardReminder, n > 0
-                ? v -> vm.onMetricClick(ProductionViewModel.METRIC_REMINDER) : null);
-    }
-
-    /** 把生产提醒列表滚到可见区域顶部（列表在指标卡下方，偏移按其到滚动内容根的累计 top 计算） */
-    private void scrollToReminders() {
-        View target = binding.herdReminders;
-        if (target.getVisibility() != View.VISIBLE) {
-            return;
-        }
-        int y = 0;
-        View v = target;
-        while (v != null && v.getParent() != binding.herdScroll) {
-            y += v.getTop();
-            v = v.getParent() instanceof View ? (View) v.getParent() : null;
-        }
-        int margin = getResources().getDimensionPixelSize(com.zhimu.slmp.base.R.dimen.base_space_2);
-        binding.herdScroll.smoothScrollTo(0, Math.max(0, y - margin));
     }
 
     /** “栏舍占用 a/b”在窄屏上允许折成两行，避免数字被省略号截掉（StatCardView 默认单行） */

@@ -112,6 +112,8 @@ public class DrugOutboundViewModel extends StockFormViewModel {
     private final MutableLiveData<String> unitText = new MutableLiveData<>("");
     private final MutableLiveData<String> maxText = new MutableLiveData<>();
     private final MutableLiveData<String> inputQty = new MutableLiveData<>("");
+    /** 数量真的改了才清除数量错误（重拉批号结存后的绑定回写不算） */
+    private final TextChange qtyChange = new TextChange();
     private final MutableLiveData<String> remark = new MutableLiveData<>("");
     private final MutableLiveData<String> returnTo = new MutableLiveData<>("");
     private final MutableLiveData<String> outDate = new MutableLiveData<>(DateFormatter.todayString());
@@ -168,7 +170,7 @@ public class DrugOutboundViewModel extends StockFormViewModel {
         this.farmContext = farmContext;
         this.session = session;
         returnAmount.setValue("—");
-        returnAmount.addSource(inputQty, v -> onQtyChanged());
+        returnAmount.addSource(inputQty, this::onQtyChanged);
         returnAmount.addSource(remark, v -> clearFieldError(F_REMARK));
         returnAmount.addSource(returnTo, v -> clearFieldError(F_RETURN_TO));
         disposables.add(previewTrigger
@@ -664,8 +666,10 @@ public class DrugOutboundViewModel extends StockFormViewModel {
         returnToQuery.onNext(keyword == null ? "" : keyword.trim());
     }
 
-    private void onQtyChanged() {
-        clearFieldError(F_QTY);
+    private void onQtyChanged(@Nullable String qty) {
+        if (qtyChange.update(qty)) {
+            clearFieldError(F_QTY);
+        }
         recomputeAmounts();
         trigger();
     }

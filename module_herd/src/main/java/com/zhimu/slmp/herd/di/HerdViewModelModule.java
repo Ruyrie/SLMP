@@ -11,6 +11,7 @@ import com.zhimu.slmp.herd.ui.entry.BatchEntryViewModel;
 import com.zhimu.slmp.herd.ui.mypens.MyPensViewModel;
 import com.zhimu.slmp.herd.ui.pendetail.PenDetailViewModel;
 import com.zhimu.slmp.herd.ui.penedit.PenEditViewModel;
+import com.zhimu.slmp.herd.ui.production.ProductionReminderViewModel;
 import com.zhimu.slmp.herd.ui.production.ProductionViewModel;
 import com.zhimu.slmp.herd.ui.scan.BatchScanViewModel;
 import com.zhimu.slmp.herd.ui.trace.BatchTraceViewModel;
@@ -31,6 +32,11 @@ public abstract class HerdViewModelModule {
     @IntoMap
     @ViewModelKey(ProductionViewModel.class)
     abstract ViewModel bindProduction(ProductionViewModel vm);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(ProductionReminderViewModel.class)
+    abstract ViewModel bindProductionReminder(ProductionReminderViewModel vm);
 
     @Binds
     @IntoMap

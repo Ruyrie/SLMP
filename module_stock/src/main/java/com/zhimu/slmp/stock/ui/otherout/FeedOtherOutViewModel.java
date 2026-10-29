@@ -99,6 +99,8 @@ public class FeedOtherOutViewModel extends StockFormViewModel {
     private final SingleLiveEvent<Long> openRequest = new SingleLiveEvent<>();
     private final SingleLiveEvent<Long> openChangeLog = new SingleLiveEvent<>();
     private final SingleLiveEvent<Void> edited = new SingleLiveEvent<>();
+    /** 数量真的改了才清除数量错误（重拉结存后的绑定回写不算） */
+    private final TextChange qtyChange = new TextChange();
 
     @Nullable
     private Long recordId;
@@ -110,7 +112,9 @@ public class FeedOtherOutViewModel extends StockFormViewModel {
         this.farmContext = farmContext;
         amountText.setValue("—");
         amountText.addSource(inputQty, v -> {
-            clearFieldError(F_QTY);
+            if (qtyChange.update(v)) {
+                clearFieldError(F_QTY);
+            }
             recomputeAmount();
         });
         amountText.addSource(remark, v -> clearFieldError(F_REMARK));

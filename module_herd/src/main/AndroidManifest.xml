@@ -8,6 +8,11 @@
             android:name=".ui.trace.BatchTraceActivity"
             android:exported="false" />
 
+        <!-- 生产提醒（L01“生产提醒”卡进入，本组件内显式启动） -->
+        <activity
+            android:name=".ui.production.ProductionReminderActivity"
+            android:exported="false" />
+
         <!-- L03 存栏总览 -->
         <activity
             android:name=".ui.stock.StockOverviewActivity"

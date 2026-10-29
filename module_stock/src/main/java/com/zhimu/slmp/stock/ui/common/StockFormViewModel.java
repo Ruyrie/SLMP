@@ -112,6 +112,28 @@ public abstract class StockFormViewModel extends BaseViewModel {
 
     // ===================== 字段错误 =====================
 
+    /**
+     * 输入框文字是否真的变了（与上次记下的比较，null 与空串视为相同）。双向绑定在程序设值后会把同样的文字再回写一次，
+     * 不能当作用户修改去清除错误：库存冲突提示“库存已变化，当前结存…”要一直显示到用户改数量或重新提交。
+     */
+    protected static final class TextChange {
+        @NonNull
+        private String last = "";
+
+        public TextChange() {
+        }
+
+        /** 记下新文字；与上次不同时返回 true */
+        public boolean update(@Nullable String now) {
+            String v = now == null ? "" : now;
+            if (v.equals(last)) {
+                return false;
+            }
+            last = v;
+            return true;
+        }
+    }
+
     protected void setErrors(@NonNull Map<String, String> errors) {
         fieldErrors.setValue(new LinkedHashMap<>(errors));
         if (!errors.isEmpty()) {

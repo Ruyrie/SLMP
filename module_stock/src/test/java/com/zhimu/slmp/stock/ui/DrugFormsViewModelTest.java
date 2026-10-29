@@ -241,6 +241,24 @@ public class DrugFormsViewModelTest {
         assertEquals(StockEnums.SCRAP_EXPIRED, vm.getReason().getValue());
     }
 
+    @Test
+    public void scrap_conflictMessageSurvivesBindingEchoUntilQtyEdited() throws IOException {
+        DrugScrapViewModel vm = scrap(6103);
+        DrugLotDetailVO fresh = TestRules.mock("lot_6103.json", DrugLotDetailVO.class);
+        fresh.stockVersion++;
+        when(repo.getDrugLot(fresh.lotId)).thenReturn(Single.just(fresh));
+        when(repo.createDrugScrap(any(), anyString())).thenReturn(Single.error(
+                new ApiException(ErrorCodes.VERSION_CONFLICT, "库存已变化")));
+        vm.doScrap();
+        String err = vm.getFieldErrors().getValue().get(DrugScrapViewModel.F_QTY);
+        assertTrue(err.contains("已刷新结存"));
+        // 按最新结存重填数量后，输入框双向绑定会把同样的文字回写一次：不算用户修改，提示保留
+        vm.getInputQty().setValue(vm.getInputQty().getValue());
+        assertEquals(err, vm.getFieldErrors().getValue().get(DrugScrapViewModel.F_QTY));
+        vm.getInputQty().setValue("1");
+        assertNull(vm.getFieldErrors().getValue().get(DrugScrapViewModel.F_QTY));
+    }
+
     // ===================== M08 =====================
 
     private DrugInboundViewModel drugInbound() throws IOException {
@@ -282,6 +300,33 @@ public class DrugFormsViewModelTest {
     }
 
     // ===================== M10 =====================
+
+    @Test
+    public void otherOut_conflictMessageStaysUntilQtyEditedOrResubmitted() throws IOException {
+        List<FeedOptionVO> options = TestRules.mock("feed_options_other_out.json",
+                new TypeToken<List<FeedOptionVO>>() {
+                }.getType());
+        when(repo.listFeedOptions(eq("OTHER_OUT"), isNull())).thenReturn(Single.just(options));
+        FeedOtherOutViewModel vm = new FeedOtherOutViewModel(repo, TestRules.noDrafts(), farm);
+        vm.getAmountText().observeForever(v -> {
+        });
+        vm.attachSavedState(new SavedStateHandle());
+        vm.onFeedPicked(5102L);
+        vm.getInputQty().setValue("200");
+        vm.onDestinationPicked(StockEnums.DEST_SALE);
+        when(repo.createFeedOtherOut(any(), anyString())).thenReturn(Single.error(new ApiException(
+                ErrorCodes.VERSION_CONFLICT, "库存已变化", "t",
+                com.google.gson.JsonParser.parseString("{\"current_qty\":\"1800\"}"), null, null)));
+        vm.submit();
+        String err = vm.getFieldErrors().getValue().get(FeedOtherOutViewModel.F_QTY);
+        assertTrue(TestRules.plain(err).startsWith("库存已变化，当前结存 1,800"));
+        // 自动重拉选项并重新选中饲料后，双向绑定回写同样的数量：提示保留
+        vm.getInputQty().setValue("200");
+        assertEquals(err, vm.getFieldErrors().getValue().get(FeedOtherOutViewModel.F_QTY));
+        // 用户改数量才清除
+        vm.getInputQty().setValue("150");
+        assertNull(vm.getFieldErrors().getValue().get(FeedOtherOutViewModel.F_QTY));
+    }
 
     @Test
     public void otherOut_validationAndAmount() throws IOException {

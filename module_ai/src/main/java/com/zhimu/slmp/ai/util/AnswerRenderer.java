@@ -21,11 +21,10 @@ import com.zhimu.slmp.ai.model.vo.CitationBriefVO;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * K01 回答正文的 Span（技术文档 2.6.1 第 12 步）：完成后 [^n] 转为 18 dp 圆形可点角标（按 seq_no 对应引用，点击区 32 dp），
+ * K01 回答正文的 Span（技术文档 2.6.1 第 12 步）：完成后 [^n] 转为 18 dp 圆形可点角标（按 seq_no 对应引用，点击区 32 dp；
+ * 服务端漏改的 [^P3] 等原始写法按 {@link AiText#citationMarks} 换算，对应不上的只去掉不显示），
  * 来源不足说明独立展示；生成中末尾挂 2 × 20 dp 闪烁光标（{@link CursorSpan}）。
  */
 public final class AnswerRenderer {
@@ -33,8 +32,6 @@ public final class AnswerRenderer {
     public interface OnCitationClick {
         void onCitation(@NonNull CitationBriefVO citation);
     }
-
-    private static final Pattern CITATION = Pattern.compile("\\[\\^(\\d+)]");
 
     private AnswerRenderer() {
     }
@@ -49,13 +46,14 @@ public final class AnswerRenderer {
             bySeq.put(c.getSeqNo(), c);
         }
         SpannableStringBuilder sb = new SpannableStringBuilder();
-        Matcher matcher = CITATION.matcher(text);
         int last = 0;
-        while (matcher.find()) {
-            sb.append(text, last, matcher.start());
-            int seq = Integer.parseInt(matcher.group(1));
-            CitationBriefVO c = bySeq.get(seq);
-            if (c != null) {
+        for (AiText.CitationMark mark : AiText.citationMarks(text)) {
+            sb.append(text, last, mark.start);
+            for (int seq : mark.seqs) {
+                CitationBriefVO c = bySeq.get(seq);
+                if (c == null) {
+                    continue;
+                }
                 int start = sb.length();
                 // 被角标覆盖的文字用“[n]”而不是对象占位符 U+FFFC：读屏与界面文字导出时读到的是引用序号
                 sb.append("[").append(String.valueOf(seq)).append("]");
@@ -75,7 +73,7 @@ public final class AnswerRenderer {
                     }, start, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
             }
-            last = matcher.end();
+            last = mark.end;
         }
         sb.append(text.substring(last));
         return sb;

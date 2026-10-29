@@ -14,6 +14,12 @@ import com.zhimu.slmp.base.util.DateFormatter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -76,8 +82,15 @@ public final class AiText {
     public static final String MSG_PEN_FORBIDDEN = "你已不负责这个批次所在的栏舍，之后的提问不再带上该批次的数据";
     public static final String CONTEXT_DIVIDER = "以下为最近 10 轮，更早的问答不再参与回答";
 
-    private static final Pattern CITATION = Pattern.compile("\\[\\^\\d+]");
-    private static final Pattern PARTIAL_TAIL = Pattern.compile("\\[(\\^\\d*)?$");
+    /**
+     * 引用标记：服务端约定的 [^n]，以及服务端漏改时的模型原始写法 [^P3]、[^p3]、[^P1, P2]、[^1、2]、全角［＾P3］，
+     * 都不能把原始标记显示给用户。
+     */
+    private static final Pattern CITATION = Pattern.compile(
+            "[\\[［]\\s*[\\^＾]\\s*([Pp]?\\s*\\d+(?:\\s*[,，、;；]\\s*[Pp]?\\s*\\d+)*)\\s*[\\]］]");
+    private static final Pattern CITATION_REF = Pattern.compile("([Pp]?)\\s*(\\d+)");
+    /** 流式末尾未闭合的“[”“[^”“[^12”“[^P”“[^P1,” */
+    private static final Pattern PARTIAL_TAIL = Pattern.compile("[\\[［]([\\^＾][\\sPp\\d,，、;；]*)?$");
 
     private AiText() {
     }
@@ -154,17 +167,90 @@ public final class AiText {
 
     // ===== 回答正文 =====
 
-    /** 去掉 [^n] 引用标记 */
+    /** 去掉引用标记（[^n] 与 [^P3] 等原始写法） */
     @NonNull
     public static String stripCitations(@Nullable String text) {
         return text == null ? "" : CITATION.matcher(text).replaceAll("");
     }
 
-    /** 流式显示：去掉完整的 [^n]，末尾未闭合的“[”“[^”“[^12”暂缓到下一段 */
+    /** 流式显示：去掉完整的引用标记，末尾未闭合的“[”“[^”“[^12”“[^P3”暂缓到下一段 */
     @NonNull
     public static String streamingVisible(@NonNull String raw) {
         String s = CITATION.matcher(raw).replaceAll("");
         return PARTIAL_TAIL.matcher(s).replaceAll("");
+    }
+
+    /** 正文中的一个引用标记：在原文中的位置与对应的 seq_no（一个标记可含多个，也可能一个都没有） */
+    public static final class CitationMark {
+        public final int start;
+        public final int end;
+        @NonNull
+        public final List<Integer> seqs;
+
+        CitationMark(int start, int end, @NonNull List<Integer> seqs) {
+            this.start = start;
+            this.end = end;
+            this.seqs = Collections.unmodifiableList(seqs);
+        }
+    }
+
+    /**
+     * 解析正文里的引用标记（按出现顺序）。[^n] 对应 seq_no n；[^Pn] 是服务端漏改的模型原始写法：正文里只有这种写法时
+     * 按服务端同一规则（各 P 编号按首次出现顺序编为 1、2…）换成 seq_no；与 [^n] 混在一起时对应不上，只去掉、不显示角标。
+     */
+    @NonNull
+    public static List<CitationMark> citationMarks(@Nullable String text) {
+        List<CitationMark> marks = new ArrayList<>();
+        if (text == null || text.isEmpty()) {
+            return marks;
+        }
+        List<int[]> spans = new ArrayList<>();
+        List<List<int[]>> refs = new ArrayList<>();
+        boolean hasPlain = false;
+        Matcher m = CITATION.matcher(text);
+        while (m.find()) {
+            List<int[]> list = new ArrayList<>();
+            Matcher r = CITATION_REF.matcher(m.group(1));
+            while (r.find()) {
+                boolean p = !r.group(1).isEmpty();
+                hasPlain |= !p;
+                list.add(new int[]{p ? 1 : 0, parseIntOr(r.group(2))});
+            }
+            spans.add(new int[]{m.start(), m.end()});
+            refs.add(list);
+        }
+        Map<Integer, Integer> seqByP = new LinkedHashMap<>();
+        for (int i = 0; i < spans.size(); i++) {
+            List<Integer> seqs = new ArrayList<>();
+            for (int[] ref : refs.get(i)) {
+                int seq;
+                if (ref[0] == 0) {
+                    seq = ref[1];
+                } else if (hasPlain || ref[1] <= 0) {
+                    continue;
+                } else {
+                    Integer mapped = seqByP.get(ref[1]);
+                    if (mapped == null) {
+                        mapped = seqByP.size() + 1;
+                        seqByP.put(ref[1], mapped);
+                    }
+                    seq = mapped;
+                }
+                if (seq > 0 && !seqs.contains(seq)) {
+                    seqs.add(seq);
+                }
+            }
+            marks.add(new CitationMark(spans.get(i)[0], spans.get(i)[1], seqs));
+        }
+        return marks;
+    }
+
+    private static int parseIntOr(@NonNull String s) {
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 
     /** 复制内容：去掉角标，末尾附固定声明 */

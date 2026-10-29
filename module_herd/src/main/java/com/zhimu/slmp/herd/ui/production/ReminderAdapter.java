@@ -18,7 +18,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * L01 生产提醒列表：40 dp warning-container 图标块 + 标题 + 次行 + warning 标签。
+ * 生产提醒页列表（{@link ProductionReminderActivity}）：40 dp warning-container 图标块 + 标题 + 次行 + warning 标签。
  */
 public class ReminderAdapter extends ListAdapter<ProductionReminderItemVO, ReminderAdapter.Holder> {
 
