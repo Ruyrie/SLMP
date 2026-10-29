@@ -94,7 +94,7 @@ class IntegrationConfigTest {
         assertThat(ai.getFallback().getName()).isEqualTo("deepseek");
         assertThat(ai.getFallback().getChatModel()).isEqualTo("deepseek-flash");
         assertThat(ai.getFallback().getVisionModel()).isEqualTo("deepseek-flash");
-        assertThat(ai.getDiagnosisTimeout()).isEqualTo(Duration.ofSeconds(60));
+        assertThat(ai.getDiagnosisTimeout()).isEqualTo(Duration.ofSeconds(120));
         assertThat(ai.getChatTimeout()).isEqualTo(Duration.ofSeconds(120));
         assertThat(ai.getAsrTimeout()).isEqualTo(Duration.ofSeconds(15));
         assertThat(ai.getAdviceTimeout()).isEqualTo(Duration.ofSeconds(60));

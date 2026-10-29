@@ -171,6 +171,12 @@ public class FinanceSupport {
                 .format(scale2(nz(value)));
     }
 
+    /** 修改记录里的金额：千分位、固定两位小数（18.00、88,160.00） */
+    public static String moneyTextFixed(BigDecimal value) {
+        return new java.text.DecimalFormat("#,##0.00", java.text.DecimalFormatSymbols.getInstance(java.util.Locale.ROOT))
+                .format(scale2(nz(value)));
+    }
+
     public static String format(LocalDate date) {
         return date == null ? null : date.format(BeijingTime.DATE);
     }

@@ -543,7 +543,7 @@ public class FinanceRecordServiceImpl implements FinanceRecordService {
         values.put("category_id", auditValue("分类", record.getCategoryId(), category == null ? null : category.getName()));
         values.put("subcategory_id", auditValue("支出子类", record.getSubcategoryId(), subcategory == null ? null : subcategory.getName()));
         values.put("amount", auditValue("金额", FinanceSupport.scale2(record.getAmount()).toPlainString(),
-                FinanceSupport.moneyText(record.getAmount()) + " 元"));
+                FinanceSupport.moneyTextFixed(record.getAmount()) + " 元"));
         values.put("record_date", auditValue("日期", record.getRecordDate(), FinanceSupport.format(record.getRecordDate())));
         values.put("batch_id", auditValue("关联批次", record.getBatchId(), batchNo(record.getBatchId())));
         values.put("note", auditValue("说明", record.getNote(), record.getNote()));
