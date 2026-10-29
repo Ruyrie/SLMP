@@ -21,6 +21,21 @@ export function fieldErrorsOf(error: unknown): Record<string, string> {
   return result
 }
 
+/** 妊检阳性须在首次配种后满 18 天登记（与服务端 MIN_POSITIVE_CHECK_DAYS 一致） */
+export const PREG_CHECK_MIN_DAYS = 18
+
+/**
+ * 待妊检但配种还不满 18 天：不给“登记妊检”入口，返回置灰提示（“7 天后可妊检”）；可以登记时返回空串。
+ * 优先用服务端的 pending_check（是否已进入待妊检清单），没有时按配种天数判断。
+ */
+export function checkNotDueText(item?: { nextAction?: string | null; pendingCheck?: boolean | null; daysSinceMating?: number | null } | null): string {
+  if (!item || String(item.nextAction || '').toUpperCase() !== 'PREG_CHECK') return ''
+  const days = Number(item.daysSinceMating ?? 0)
+  const due = item.pendingCheck ?? days >= PREG_CHECK_MIN_DAYS
+  if (due) return ''
+  return `${Math.max(1, PREG_CHECK_MIN_DAYS - days)} 天后可妊检`
+}
+
 export function todayISO(): string {
   return beijingToday()
 }

@@ -311,7 +311,7 @@ function goHistory(): void {
                         </span>
                         <div>
                           <div class="zw-cell-main">{{ row.pen_name }}</div>
-                          <div class="zw-cell-sub num">{{ row.pen_code }} · 存栏 {{ formatNumber(row.stock_count || 0) }} 头</div>
+                          <div class="zw-cell-sub num">{{ row.pen_code }} · 存栏 {{ formatNumber(row.stock_count || 0) }} {{ farm.countUnit }}</div>
                         </div>
                       </div>
                     </td>

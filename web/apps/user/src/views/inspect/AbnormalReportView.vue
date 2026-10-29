@@ -314,7 +314,7 @@ function urgencyTag(row: { urgency?: string; urgency_text?: string }): { type: s
                   <div class="zw-cell-sub num">{{ row.batch_no }}</div>
                 </td>
                 <td v-if="!isStaff">
-                  <div class="num">{{ formatNumber(row.sick_count) }} 头</div>
+                  <div class="num">{{ formatNumber(row.sick_count) }} {{ farm.countUnit }}</div>
                   <div class="zw-cell-sub num">发病率 {{ rateText(row.sick_rate, row.sick_count, row.stock_snapshot) }}</div>
                 </td>
                 <td v-if="!isStaff" class="i03-symptoms">{{ row.symptom_names.join('、') || '—' }}</td>

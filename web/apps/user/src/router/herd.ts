@@ -12,6 +12,8 @@ export const herdRoutes = [
     crumbs: ['生产管理', '栏舍管理'], roles: ['owner', 'manager']
   }),
   pageRoute('WU-L03', '/herd/batches', '批次列表与查询', () => import('@/views/herd/BatchListView.vue'), { crumbs: ['生产管理', '批次档案'] }),
-  pageRoute('WU-L04', '/herd/batches/:batchId', '批次档案', () => import('@/views/herd/BatchDetailView.vue'), { crumbs: ['生产管理', '批次档案'] }),
+  pageRoute('WU-L04', '/herd/batches/:batchId', '批次档案', () => import('@/views/herd/BatchDetailView.vue'), {
+    crumbs: ['生产管理', '批次档案'], farmScopedParent: 'WU-L03'
+  }),
   pageRoute('WU-L05', '/herd/entries', '批次入栏、转栏与死淘', () => import('@/views/herd/BatchEntryView.vue'), { crumbs: ['生产管理', '登记'] })
 ]

@@ -21,6 +21,8 @@ import type { DiagnosisDetail, MediaItem } from '@/api/inspect'
 
 const store = useDiagnosisStore()
 const farm = useFarmStore()
+/** 计数单位随养殖场品类（猪场“头”、鸡场“只”） */
+const unit = computed(() => farm.countUnit)
 const route = useRoute()
 const router = useRouter()
 const ui = useUiStore()
@@ -81,8 +83,8 @@ const timelineItems = computed(() => {
     let desc = step.desc || ''
     if (step.code === 'PENDING') {
       desc = info.report.source === 'INSPECTION'
-        ? `从 ${timeOnly(info.report.inspection_registered_at)} 的巡检转上报 · 发病 ${formatNumber(info.report.sick_count || 0)} 头`
-        : `直接上报 · 发病 ${formatNumber(info.report.sick_count || 0)} 头`
+        ? `从 ${timeOnly(info.report.inspection_registered_at)} 的巡检转上报 · 发病 ${formatNumber(info.report.sick_count || 0)} ${unit.value}`
+        : `直接上报 · 发病 ${formatNumber(info.report.sick_count || 0)} ${unit.value}`
     } else if (step.code === 'DIAGNOSED') {
       desc = info.diagnosis
         ? `紧急程度“${info.diagnosis.urgency_text || '一般'}” · 已通知${(info.notified_names || []).join('、') || '上报人和场长'}`
@@ -328,18 +330,18 @@ function goMedication(): void {
                 </zw-desc-item>
                 <zw-desc-item label="转归">
                   <div class="i04-outcome">
-                    <zw-tag type="success" icon="check" size="small">治愈 {{ formatNumber(handle.cured_count || 0) }} 头</zw-tag>
-                    <zw-tag type="neutral" size="small">死淘 {{ formatNumber(handle.culled_count || 0) }} 头</zw-tag>
+                    <zw-tag type="success" icon="check" size="small">治愈 {{ formatNumber(handle.cured_count || 0) }} {{ unit }}</zw-tag>
+                    <zw-tag type="neutral" size="small">死淘 {{ formatNumber(handle.culled_count || 0) }} {{ unit }}</zw-tag>
                   </div>
                   <div class="i04-outcome-bar">
                     <v-progress-linear :model-value="handledProgress" height="6" rounded />
-                    <span class="num">合计 {{ formatNumber((handle.cured_count || 0) + (handle.culled_count || 0)) }} / {{ formatNumber(report?.sick_count || 0) }} 头</span>
+                    <span class="num">合计 {{ formatNumber((handle.cured_count || 0) + (handle.culled_count || 0)) }} / {{ formatNumber(report?.sick_count || 0) }} {{ unit }}</span>
                   </div>
                 </zw-desc-item>
                 <zw-desc-item label="AI 诊断">{{ handle.ai_match_text || '—' }}</zw-desc-item>
               </zw-desc>
               <div class="i04-handle-note">
-                治愈和死淘合计达到 {{ formatNumber(report?.sick_count || 0) }} 头后自动结案，结案后不能再修改；死淘需另行登记，本模块不扣减存栏。
+                治愈和死淘合计达到 {{ formatNumber(report?.sick_count || 0) }} {{ unit }}后自动结案，结案后不能再修改；死淘需另行登记，本模块不扣减存栏。
               </div>
             </template>
           </zw-card>
@@ -350,11 +352,11 @@ function goMedication(): void {
             <div class="i04-metrics">
               <div class="i04-metric">
                 <span class="i04-metric-label">存栏</span>
-                <span class="i04-metric-value num">{{ formatNumber(report?.stock_snapshot || 0) }}<small>头</small></span>
+                <span class="i04-metric-value num">{{ formatNumber(report?.stock_snapshot || 0) }}<small>{{ unit }}</small></span>
               </div>
               <div class="i04-metric">
                 <span class="i04-metric-label">发病</span>
-                <span class="i04-metric-value num">{{ formatNumber(report?.sick_count || 0) }}<small>头</small></span>
+                <span class="i04-metric-value num">{{ formatNumber(report?.sick_count || 0) }}<small>{{ unit }}</small></span>
               </div>
               <div class="i04-metric">
                 <span class="i04-metric-label">发病率</span>

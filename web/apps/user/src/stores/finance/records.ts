@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import type { ApiError, FieldError } from '@zmt/shared'
-import { formatMoney, today } from '@zmt/shared'
+import { formatMoney, formatNumber, today } from '@zmt/shared'
+import { useFarmStore } from '@/stores/farm'
 import {
   financeApi,
   newRequestKey,
@@ -132,7 +133,7 @@ export const useFinanceRecordsStore = defineStore('financeRecords', {
     },
     batchSelectItems(state): { title: string; value: number }[] {
       const active = state.batchOptions.map((batch) => ({
-        title: `${batch.batchNo || ''} · ${batch.penName || ''} · 存栏 ${batch.currentCount ?? 0}${batch.countUnitText || '头'}`,
+        title: `${batch.batchNo || ''} · ${batch.penName || ''} · 存栏 ${formatNumber(batch.currentCount ?? 0)} ${batch.countUnitText || useFarmStore().countUnit}`,
         value: Number(batch.batchId || 0)
       }))
       const ended = state.endedBatches

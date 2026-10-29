@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import type { ApiError, FieldError } from '@zmt/shared'
-import { formatMoney, today } from '@zmt/shared'
+import { formatMoney, formatNumber, today } from '@zmt/shared'
+import { useFarmStore } from '@/stores/farm'
 import {
   financeApi,
   newRequestKey,
@@ -67,7 +68,7 @@ export const useSaleOrderFormStore = defineStore('financeSaleOrderForm', {
       return (state.batches.find((item) => Number(item.batchId) === Number(state.form.batchId))?.pens?.length || 0) > 1
     },
     unitText(): string {
-      return this.selectedBatch?.countUnitText || '头'
+      return this.selectedBatch?.countUnitText || useFarmStore().countUnit
     },
     priceUnit(): string {
       return this.form.pricingMethod === 'BY_HEAD' ? `元/${this.unitText}` : '元/千克'
@@ -113,7 +114,7 @@ export const useSaleOrderFormStore = defineStore('financeSaleOrderForm', {
         title: `${batch.batchNo || ''} · ${batch.penName || ''}`,
         value: Number(batch.batchId || 0),
         props: {
-          subtitle: `存栏 ${batch.currentCount ?? 0} ${batch.countUnitText || '头'}${batch.inWithdrawal ? ' · 休药中' : ''}`
+          subtitle: `存栏 ${formatNumber(batch.currentCount ?? 0)} ${batch.countUnitText || useFarmStore().countUnit}${batch.inWithdrawal ? ' · 休药中' : ''}`
         }
       }))
     },
@@ -278,7 +279,7 @@ export const useSaleOrderFormStore = defineStore('financeSaleOrderForm', {
       } else if (!Number.isInteger(quantity)) {
         this.errors.push({ field: 'quantity', message: '数量必须为整数' })
       } else if (quantity > this.maxQuantity) {
-        this.errors.push({ field: 'quantity', message: `不能超过批次当前存栏 ${this.maxQuantity} ${this.unitText}` })
+        this.errors.push({ field: 'quantity', message: `不能超过批次当前存栏 ${formatNumber(this.maxQuantity)} ${this.unitText}` })
       }
       if (this.form.totalWeight === '' || this.form.totalWeight === null) {
         this.errors.push({ field: 'total_weight', message: '请输入总重' })
@@ -319,7 +320,7 @@ export const useSaleOrderFormStore = defineStore('financeSaleOrderForm', {
           if (Number(row.quantity || 0) > row.stockCount) {
             this.errors.push({
               field: 'pen_quantities',
-              message: `${row.penName}本批次在栏 ${row.stockCount} ${this.unitText}，不能超过`
+              message: `${row.penName}本批次在栏 ${formatNumber(row.stockCount)} ${this.unitText}，不能超过`
             })
           }
         }
@@ -359,7 +360,7 @@ export const useSaleOrderFormStore = defineStore('financeSaleOrderForm', {
         ui.toast(
           created.batchEnded
             ? `已登记出栏单，${created.batchNo || ''} 已全部出栏`
-            : `已登记出栏单，${created.batchNo || ''} 存栏剩 ${created.remainingCount ?? 0} ${created.countUnitText || '头'}`
+            : `已登记出栏单，${created.batchNo || ''} 存栏剩 ${formatNumber(created.remainingCount ?? 0)} ${created.countUnitText || this.unitText}`
         )
         this.open = false
         return { created, detail: null }

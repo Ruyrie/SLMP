@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
-import { ApiError, appConfig, dayjs, type FileVO } from '@zmt/shared'
+import { ApiError, appConfig, dayjs, formatNumber, type FileVO } from '@zmt/shared'
 import { useMessagesStore } from '@/stores/today/messages'
 import { useFarmStore } from '@/stores/farm'
 import { useRole } from '@/composables/useRole'
@@ -89,6 +89,15 @@ const farmId = computed({
   set: (value: number | null) => store.setFarm(value ?? null)
 })
 const unreadMode = computed(() => (store.query.unreadOnly ? 'unread' : 'all'))
+/** 消息所属养殖场的计数单位（消息可能来自别的养殖场，鸡场“只”、猪场“头”） */
+const detailCountUnit = computed(() => {
+  const farmId = detail.value?.farm?.farm_id
+  return (
+    (detail.value ? payloadStr(detail.value, 'count_unit_text') : '') ||
+    farm.farms.find((item) => item.farm_id === farmId)?.count_unit_text ||
+    farm.countUnit
+  )
+})
 
 const farmItems = computed(() => {
   const map = new Map<number, string>()
@@ -619,7 +628,7 @@ onBeforeUnmount(() => {
               <zw-desc-item label="批次"><span class="num">{{ payloadStr(detail, 'batch_no') || '—' }}</span></zw-desc-item>
               <zw-desc-item label="上报人">{{ payloadStr(detail, 'reporter_name') || '—' }}</zw-desc-item>
               <zw-desc-item label="上报时间">{{ momentText(payloadStr(detail, 'reported_at')) }}</zw-desc-item>
-              <zw-desc-item label="发病数量">{{ payloadNum(detail, 'sick_count') !== null ? `${payloadNum(detail, 'sick_count')} 头` : '—' }}</zw-desc-item>
+              <zw-desc-item label="发病数量">{{ payloadNum(detail, 'sick_count') !== null ? `${formatNumber(payloadNum(detail, 'sick_count'))} ${detailCountUnit}` : '—' }}</zw-desc-item>
               <zw-desc-item label="紧急程度">
                 <zw-tag v-if="payloadStr(detail, 'urgency_text')" :type="payloadStr(detail, 'urgency') === 'URGENT' ? 'error' : payloadStr(detail, 'urgency') === 'ATTENTION' ? 'warning' : 'neutral'" :icon="payloadStr(detail, 'urgency') === 'ATTENTION' ? 'priority_high' : undefined">
                   {{ payloadStr(detail, 'urgency_text') }}

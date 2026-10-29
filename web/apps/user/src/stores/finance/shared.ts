@@ -139,6 +139,15 @@ export function countUnitText(value: number | string | null | undefined, unit = 
   return `${formatNumber(value ?? 0)} ${unit}`
 }
 
+/**
+ * 核算成本说明（服务端拼的“9500 头 × 3.2 元”）：数量加千分位，“头”换成批次的计数单位（鸡场“只”）。
+ * 其它说明原样返回。
+ */
+export function costNoteText(note: string | null | undefined, unit = '头'): string {
+  if (!note) return ''
+  return note.replace(/(\d+)\s*头(?=\s*×)/g, (_match, count: string) => `${formatNumber(count)} ${unit}`)
+}
+
 export function daysText(days?: number): string {
   if (days === null || days === undefined) return ''
   if (days === 0) return '今天'

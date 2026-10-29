@@ -5,7 +5,7 @@ import { storeToRefs } from 'pinia'
 import { formatMoney, formatNumber, formatPercent } from '@zmt/shared'
 import { useSettlementStore } from '@/stores/finance/settlement'
 import { useFarmReload } from '@/composables/useFarmReload'
-import { dateText, dateTimeText, paymentIcon, paymentTone, priceText } from '@/stores/finance/shared'
+import { costNoteText, dateText, dateTimeText, paymentIcon, paymentTone, priceText } from '@/stores/finance/shared'
 
 const store = useSettlementStore()
 const route = useRoute()
@@ -15,17 +15,21 @@ const { detail } = storeToRefs(store)
 const batch = computed(() => detail.value?.batch)
 const locked = computed(() => detail.value?.status === 'LOCKED')
 
+const unit = computed(() => store.countUnit)
+
 const desc = computed(() => {
   const value = batch.value
   if (!value) return ''
+  // 接口的 batch 没有结束日期时用结算锁定时间（全部出栏后自动结算）；都没有就不写日期
+  const endDay = value.endDate || detail.value?.settledAt
   const state = locked.value
-    ? `${dateText(value.endDate)}全部出栏`
+    ? endDay ? `${dateText(endDay)}全部出栏` : '已全部出栏'
     : `在养 ${value.dayAge || 0} 日龄`
   return `${value.penName || ''} · ${value.breedName || ''}${value.categoryName || ''} · ${state} · 入栏 ${formatNumber(
     value.entryCount
-  )} ${value.countUnitText || '头'} · 死淘 ${formatNumber(value.deathCount)} · ${
+  )} ${unit.value} · 死淘 ${formatNumber(value.deathCount)} · ${
     locked.value ? '出栏' : '存栏'
-  } ${formatNumber(locked.value ? value.soldCount : value.currentCount)} ${value.countUnitText || '头'}`
+  } ${formatNumber(locked.value ? value.soldCount : value.currentCount)} ${unit.value}`
 })
 
 const batchItems = computed(() => store.batchSelectItems)
@@ -106,7 +110,7 @@ const timelineItems = computed(() => {
       title: '全部出栏，自动结算并锁定',
       time: dateTimeText(value.settledAt),
       desc: `销售金额 ${formatMoney(value.saleIncome)} 元 · ${formatNumber(value.saleOrders?.reduce((sum, order) => sum + Number(order.quantity || 0), 0))} ${
-        value.batch?.countUnitText || '头'
+        unit.value
       }`,
       tone: 'success',
       icon: 'lock'
@@ -244,7 +248,7 @@ watch(
         </zw-stat>
 
         <zw-stat
-          label="单头成本"
+          :label="`单${unit}成本`"
           icon="payments"
           :value="detail.costPerHead !== undefined && detail.costPerHead !== null ? formatMoney(detail.costPerHead) : '无数据'"
           :unit="detail.costPerHead !== undefined && detail.costPerHead !== null ? '元' : ''"
@@ -253,7 +257,7 @@ watch(
         </zw-stat>
 
         <zw-stat
-          label="单头盈亏"
+          :label="`单${unit}盈亏`"
           icon="trending_up"
           :value="detail.profitPerHead !== undefined && detail.profitPerHead !== null
             ? `${Number(detail.profitPerHead) > 0 ? '+' : Number(detail.profitPerHead) < 0 ? '−' : ''}${formatMoney(Math.abs(Number(detail.profitPerHead)))}`
@@ -309,7 +313,7 @@ watch(
               <div class="e05-sale-main">
                 <div class="zw-cell-main">出栏单 {{ order.saleDate ? dateText(order.saleDate) : '' }}</div>
                 <div class="zw-cell-sub num">
-                  {{ formatNumber(order.quantity) }} {{ batch?.countUnitText || '头' }} ·
+                  {{ formatNumber(order.quantity) }} {{ unit }} ·
                   {{ formatNumber(order.totalWeight, 1) }} 千克 · 每千克 {{ priceText(order.unitPrice) }} 元
                 </div>
               </div>
@@ -320,7 +324,7 @@ watch(
             </div>
             <div v-if="!detail.saleOrders?.length" class="e05-sale-empty">
               <div class="zw-faint">还没有出栏单</div>
-              <div class="zw-faint body-s">休药期结束后可登记出栏</div>
+              <div v-if="store.withdrawalHint" class="zw-faint body-s">{{ store.withdrawalHint }}</div>
             </div>
           </div>
 
@@ -344,7 +348,7 @@ watch(
               <li v-for="item in costItems" :key="item.costGroup" class="e05-cost-row" @click="goRecords(item.costGroup)">
                 <i class="e05-cost-dot" :style="{ background: `var(--${item.color})` }" />
                 <span class="e05-cost-name">{{ item.costGroupText }}</span>
-                <span class="e05-cost-note">{{ item.note || (item.costGroup === 'FEED' ? `${formatNumber(detail.feedKg)} 千克` : '') }}</span>
+                <span class="e05-cost-note">{{ costNoteText(item.note, unit) || (item.costGroup === 'FEED' ? `${formatNumber(detail.feedKg)} 千克` : '') }}</span>
                 <span class="e05-cost-amount num">{{ formatMoney(item.amountValue) }} 元</span>
                 <span class="e05-cost-pct num">{{ item.percent }}</span>
               </li>

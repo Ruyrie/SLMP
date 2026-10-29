@@ -7,7 +7,7 @@ import { useBreedingAnimalStore } from '@/stores/breeding/animalList'
 import { useFarmStore } from '@/stores/farm'
 import { useFarmReload } from '@/composables/useFarmReload'
 import { useRole } from '@/composables/useRole'
-import { animalStatusText, animalStatusTone, monthDay, monthDayWeek } from '@/stores/breeding/shared'
+import { animalStatusText, animalStatusTone, checkNotDueText, monthDay, monthDayWeek, PREG_CHECK_MIN_DAYS } from '@/stores/breeding/shared'
 import type { BreedingAnimalItem, BreedingRecord } from '@/api/breeding'
 import BreedingDateField from './components/BreedingDateField.vue'
 
@@ -93,6 +93,8 @@ function goDue(): void {
 }
 
 function openRegister(item: BreedingAnimalItem): void {
+  // 配种不满 18 天不能登记妊检（入口已置灰）
+  if (checkNotDueText(item)) return
   const action = String(item.nextAction || '').toLowerCase()
   if (action === 'preg_check') {
     void router.push({ name: 'WU-B02', query: { action: 'check', animalId: String(item.animalId || '') } })
@@ -103,7 +105,7 @@ function openRegister(item: BreedingAnimalItem): void {
 
 function openRegisterFromDetail(): void {
   const detail = store.detail
-  if (!detail) return
+  if (!detail || checkNotDueText(detail)) return
   const action = String(detail.nextAction || '').toLowerCase()
   store.detailDrawer = false
   if (action === 'preg_check') {
@@ -338,7 +340,10 @@ async function exportCsv(): Promise<void> {
           <template #item.exitReason="{ item }">{{ item.exitReason || '—' }}</template>
           <template #item.actions="{ item }">
             <span class="zw-cell-actions">
-              <a v-if="!store.showExited && item.nextActionText" @click="openRegister(item)">{{ item.nextActionText }}</a>
+              <template v-if="!store.showExited && item.nextActionText">
+                <span v-if="checkNotDueText(item)" class="zw-faint" :title="`配种满 ${PREG_CHECK_MIN_DAYS} 天后再登记妊检`">{{ checkNotDueText(item) }}</span>
+                <a v-else @click="openRegister(item)">{{ item.nextActionText }}</a>
+              </template>
               <a @click="store.openDetail(Number(item.animalId))">档案</a>
             </span>
           </template>
@@ -374,8 +379,14 @@ async function exportCsv(): Promise<void> {
             <div class="b01-head-sub">{{ store.detailSubtitle }}</div>
           </div>
           <div v-if="canManage && store.detail.nextAction" class="b01-head-act">
-            <v-btn color="primary" :prepend-icon="store.detail.nextAction === 'MATING' ? 'favorite' : undefined" @click="openRegisterFromDetail">
-              {{ store.detail.nextActionText }}
+            <v-btn
+              color="primary"
+              :prepend-icon="store.detail.nextAction === 'MATING' ? 'favorite' : undefined"
+              :disabled="!!checkNotDueText(store.detail)"
+              :title="checkNotDueText(store.detail) ? `配种满 ${PREG_CHECK_MIN_DAYS} 天后再登记妊检` : undefined"
+              @click="openRegisterFromDetail"
+            >
+              {{ checkNotDueText(store.detail) || store.detail.nextActionText }}
             </v-btn>
             <v-menu location="bottom end">
               <template #activator="{ props: activatorProps }">

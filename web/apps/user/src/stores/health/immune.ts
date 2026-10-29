@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { dayjs, type ApiError } from '@zmt/shared'
+import { dayjs, formatNumber, type ApiError } from '@zmt/shared'
 import {
   healthApi,
   type BatchOption,
@@ -16,6 +16,7 @@ import {
   type VaccineOption
 } from '@/api/health'
 import { useUiStore } from '@/stores/ui'
+import { useFarmStore } from '@/stores/farm'
 import {
   batchLabel,
   batchOverviewText,
@@ -145,6 +146,10 @@ export const useImmunePlanStore = defineStore('healthImmunePlan', {
     },
     currentBatch(state): BatchOption | null {
       return state.batches.find((batch) => Number(batch.batch_id) === state.batchId) || null
+    },
+    /** 计数单位：优先取当前批次品类，没有时按养殖场（猪场“头”、鸡场“只”） */
+    countUnit(): string {
+      return this.currentBatch?.unit_text || useFarmStore().countUnit
     },
     batchItems(state): Array<{ title: string; value: number }> {
       return state.batches.map((batch) => ({
@@ -277,10 +282,10 @@ export const useImmunePlanStore = defineStore('healthImmunePlan', {
     addTitle(state): string {
       return state.addMode === 'edit' ? '修改免疫项目' : '添加免疫项目'
     },
-    addSub(state): string {
-      const overview = state.overview
+    addSub(): string {
+      const overview = this.overview
       if (!overview) return ''
-      return `${overview.pen_name || ''} · ${overview.batch_no || ''} · ${overview.breed_name || ''} · ${overview.day_age || 0} 日龄 · 存栏 ${overview.current_count || 0} 头`
+      return `${overview.pen_name || ''} · ${overview.batch_no || ''} · ${overview.breed_name || ''} · ${overview.day_age || 0} 日龄 · 存栏 ${formatNumber(overview.current_count || 0)} ${this.countUnit}`
     },
     postponeHint(state): string {
       const overview = state.overview
@@ -640,7 +645,7 @@ export const useImmunePlanStore = defineStore('healthImmunePlan', {
       const quantity = Number(this.registerModel.quantity)
       if (!Number.isInteger(quantity) || quantity <= 0) errors.quantity = '接种数量需大于 0'
       else if (quantity > this.registerCurrentCount) {
-        errors.quantity = `不能超过存栏 ${this.registerCurrentCount} 头`
+        errors.quantity = `不能超过存栏 ${formatNumber(this.registerCurrentCount)} ${this.countUnit}`
       }
       if (!this.registerModel.methodCode) errors.method_code = '请选择接种方式'
       const date = this.registerModel.vaccinateDate

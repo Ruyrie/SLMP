@@ -18,7 +18,8 @@ export const financeRoutes = [
   }),
   pageRoute('WU-E04', '/finance/sales/:id', '出栏单详情与收款', () => import('@/views/finance/SaleOrderDetailView.vue'), {
     ...managerOnly,
-    crumbs: ['经营管理', '出栏单']
+    crumbs: ['经营管理', '出栏单'],
+    farmScopedParent: 'WU-E03'
   }),
   pageRoute('WU-E05', '/finance/settlements', '批次核算', () => import('@/views/finance/SettlementView.vue'), {
     ...managerOnly,

@@ -15,6 +15,7 @@ import type {
 } from '@/api/breeding'
 import { breedingApi } from '@/api/breeding'
 import { useUiStore } from '@/stores/ui'
+import { useFarmStore } from '@/stores/farm'
 import { claimFarmScope, currentFarmScope, resetFarmCache } from '@/stores/farmScope'
 import {
   animalStatusText,
@@ -141,7 +142,7 @@ export const useBreedingAnimalStore = defineStore('breedingAnimalList', {
       const list = state.overview?.dueSoon || []
       if (!list.length) return ''
       const total = Number(state.overview?.dueSoonTotal || list.length)
-      if (total > 2) return `今天和 3 天内共有 ${total} 头${state.overview?.animalLabel || '母猪'}预产。`
+      if (total > 2) return `今天和 3 天内共有 ${total} ${state.overview?.countUnitText || useFarmStore().countUnit}${state.overview?.animalLabel || '母猪'}预产。`
       return list.map((item) => {
         const days = Number(item.daysToDue || 0)
         if (days <= 0) return `${item.earTag || ''} 今天预产。`

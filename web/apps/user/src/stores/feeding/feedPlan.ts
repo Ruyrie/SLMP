@@ -499,7 +499,7 @@ export const useFeedPlanStore = defineStore('feedingPlan', {  state: () => ({
         if (!stage.editable) return
         if (!stage.feedId) this.stageErrors[`${index}-feed`] = '请选择饲料'
         if (stage.dailyQtyPerHead === null || !Number.isFinite(stage.dailyQtyPerHead) || stage.dailyQtyPerHead <= 0) {
-          this.stageErrors[`${index}-qty`] = '每头日投喂量要大于 0 千克'
+          this.stageErrors[`${index}-qty`] = `每${useFarmStore().countUnit}日投喂量要大于 0 千克`
         }
         const times = stage.mealTimes.map((time) => String(time || '').slice(0, 5))
         if (times.some((time) => !/^\d{2}:\d{2}$/.test(time))) {

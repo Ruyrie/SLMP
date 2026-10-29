@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { ApiError } from '@zmt/shared'
+import { formatNumber, type ApiError } from '@zmt/shared'
 import {
   healthApi,
   type BatchOption,
@@ -14,6 +14,7 @@ import {
   type Withdrawal
 } from '@/api/health'
 import { useUiStore } from '@/stores/ui'
+import { useFarmStore } from '@/stores/farm'
 import {
   batchLabel,
   dateText,
@@ -133,7 +134,7 @@ export const useMedicationStore = defineStore('healthMedication', {
     batchOverview(): string {
       const batch = this.currentBatch
       if (!batch) return ''
-      return `存栏 ${batch.current_count || 0} ${batch.unit_text || '头'}`
+      return `存栏 ${formatNumber(batch.current_count || 0)} ${batch.unit_text || useFarmStore().countUnit}`
     },
     withdrawalKind(state): 'NONE' | 'IN_WITHDRAWAL' | 'ENDED' {
       const status = state.withdrawal?.status
@@ -170,23 +171,26 @@ export const useMedicationStore = defineStore('healthMedication', {
     targetHelper(): string {
       const target = this.selectedTarget
       if (!target) return ''
-      if (this.model.targetType === 'BATCH') return `存栏 ${target.current_count || 0} 头`
+      const unit = useFarmStore().countUnit
+      if (this.model.targetType === 'BATCH') return `存栏 ${formatNumber(target.current_count || 0)} ${unit}`
       if (!target.batches?.length) return `${target.pen_name || '栏舍'}没有在栏批次，不能登记用药`
-      return target.batches.map((batch) => `${batch.batch_no || ''}（${batch.stock_count || 0} 头）`).join('、')
+      return target.batches.map((batch) => `${batch.batch_no || ''}（${formatNumber(batch.stock_count || 0)} ${unit}）`).join('、')
     },
     batchTargetItems(state): Array<{ title: string; value: number; subtitle: string }> {
+      const unit = useFarmStore().countUnit
       return state.targetsBatch.map((item) => ({
         title: `${item.batch_no || ''} · ${item.pen_name || ''}`,
         value: Number(item.batch_id || 0),
-        subtitle: `存栏 ${item.current_count || 0} 头`
+        subtitle: `存栏 ${formatNumber(item.current_count || 0)} ${unit}`
       }))
     },
     penTargetItems(state): Array<{ title: string; value: number; subtitle: string }> {
+      const unit = useFarmStore().countUnit
       return state.targetsPen.map((item) => ({
         title: item.pen_name || '',
         value: Number(item.pen_id || 0),
         subtitle: item.batches?.length
-          ? `在栏批次 ${item.batches.map((batch) => `${batch.batch_no || ''}（${batch.stock_count || 0} 头）`).join('、')}`
+          ? `在栏批次 ${item.batches.map((batch) => `${batch.batch_no || ''}（${formatNumber(batch.stock_count || 0)} ${unit}）`).join('、')}`
           : '没有在栏批次'
       }))
     },

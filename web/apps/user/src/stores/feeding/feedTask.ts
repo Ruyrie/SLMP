@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ApiError, dayjs } from '@zmt/shared'
+import { ApiError, dayjs, formatNumber } from '@zmt/shared'
 import type {
   FeedRecordDetail,
   FeedTaskForm,
@@ -8,6 +8,7 @@ import type {
 } from '@/api/feeding'
 import { feedingApi } from '@/api/feeding'
 import { useUiStore } from '@/stores/ui'
+import { useFarmStore } from '@/stores/farm'
 import { claimFarmScope, currentFarmScope, resetFarmCache } from '@/stores/farmScope'
 import {
   errorText,
@@ -143,8 +144,9 @@ export const useFeedTaskStore = defineStore('feedingTask', {
       const head = Number(formula?.head_count ?? this.form?.head_count ?? 0)
       const perHead = Number(formula?.daily_qty_per_head ?? this.form?.daily_qty_per_head ?? 0)
       const meals = Number(formula?.meals_per_day ?? this.form?.meals_per_day ?? 0)
+      const unit = useFarmStore().countUnit
       const base = head && perHead && meals
-        ? `${head} 头 × 每头日投喂 ${perHead} 千克 ÷ ${meals} 餐`
+        ? `${formatNumber(head)} ${unit} × 每${unit}日投喂 ${perHead} 千克 ÷ ${meals} 餐`
         : ''
       const deviation = this.deviation
       const suffix = deviation === null ? '' : ` · 偏差 ${(deviation * 100).toFixed(1)}%`

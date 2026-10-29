@@ -469,7 +469,7 @@ onBeforeUnmount(clearDocument)
         <div class="stock-doc-section-title">成本分摊</div>
         <div v-for="row in outbound.allocations" :key="row.batch_id" class="stock-doc-alloc">
           <span>
-            {{ row.batch_no || `#${row.batch_id}` }}<template v-if="allocationText(row)"> · {{ allocationText(row) }}</template>
+            {{ row.batch_no || `#${row.batch_id}` }}<template v-if="allocationText(row, farm.countUnit)"> · {{ allocationText(row, farm.countUnit) }}</template>
           </span>
           <span class="num">{{ moneyText(row.amount) }}</span>
         </div>

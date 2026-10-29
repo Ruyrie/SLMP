@@ -101,7 +101,7 @@ function stageAge(stage: { dayAgeStart: number; dayAgeEnd?: number }): string {
 function stageSummary(stage: { feedName: string; dailyQtyPerHead: number | null; mealsPerDay: number; lowStock: boolean }): string {
   return [
     stage.feedName || '未选择饲料',
-    stage.dailyQtyPerHead === null ? '未设置投喂量' : `每头 ${stage.dailyQtyPerHead} 千克`,
+    stage.dailyQtyPerHead === null ? '未设置投喂量' : `每${farm.countUnit} ${stage.dailyQtyPerHead} 千克`,
     `${stage.mealsPerDay} 餐`,
     stage.lowStock ? '库存不足' : ''
   ].filter(Boolean).join(' · ')
@@ -318,7 +318,7 @@ watch(() => store.tab, (tab) => {
                       </template>
                     </v-select>
                   </zw-form-item>
-                  <zw-form-item label="每头日投喂量" required :error="stageError(index, 'qty')" :hint="stage.stdDailyQty === null ? '平台没有该阶段的标准值' : `品种标准 ${stage.stdDailyQty} 千克`">
+                  <zw-form-item :label="`每${farm.countUnit}日投喂量`" required :error="stageError(index, 'qty')" :hint="stage.stdDailyQty === null ? '平台没有该阶段的标准值' : `品种标准 ${stage.stdDailyQty} 千克`">
                     <v-text-field :model-value="stage.dailyQtyPerHead" type="number" min="0" step="0.1" suffix="千克" :error="!!stageError(index, 'qty')" @update:model-value="(value: unknown) => onStageQty(stage, value)" />
                   </zw-form-item>
                   <zw-form-item label="餐次" required>

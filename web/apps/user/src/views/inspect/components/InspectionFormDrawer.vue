@@ -15,6 +15,7 @@ import {
   type MediaItem
 } from '@/api/inspect'
 import { useUiStore } from '@/stores/ui'
+import { useFarmStore } from '@/stores/farm'
 import MediaUpload, { type UploadItem } from './MediaUpload.vue'
 import MediaPreviewDialog, { type PreviewItem } from './MediaPreviewDialog.vue'
 
@@ -52,6 +53,7 @@ const emit = defineEmits<{
 }>()
 
 const ui = useUiStore()
+const farm = useFarmStore()
 const router = useRouter()
 
 const loading = ref(false)
@@ -664,7 +666,7 @@ function onDateSelected(value: unknown): void {
             />
           </zw-form-item>
           <zw-form-item v-else label="巡检对象">
-            <div class="zw-readonly">{{ penName }} · {{ formatNumber(context.stock_count || 0) }} 头</div>
+            <div class="zw-readonly">{{ penName }} · {{ formatNumber(context.stock_count || 0) }} {{ farm.countUnit }}</div>
           </zw-form-item>
         </div>
 

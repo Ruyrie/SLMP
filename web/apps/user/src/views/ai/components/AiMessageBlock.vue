@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import type { CitationBrief } from '@/api/ai'
 import type { LocalAiMessage } from '@/stores/ai/assistant'
+import { citationPattern } from '@/stores/ai/shared'
 
 const props = defineProps<{
   message: LocalAiMessage
@@ -75,7 +76,7 @@ const paragraphs = computed<Segment[][]>(() => {
   blocks.forEach((block) => {
     const rest = block
     const segments: Segment[] = []
-    const pattern = /\[\^(\d+)]/g
+    const pattern = citationPattern()
     let last = 0
     let match: RegExpExecArray | null
     while ((match = pattern.exec(rest))) {

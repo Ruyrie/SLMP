@@ -11,6 +11,7 @@ export const inspectRoutes = [
     crumbs: ['防疫健康', '异常与诊断']
   }),
   pageRoute('WU-I04', '/inspect/reports/:id', '诊断详情', () => import('@/views/inspect/DiagnosisDetailView.vue'), {
-    crumbs: ['防疫健康', '异常与诊断']
+    crumbs: ['防疫健康', '异常与诊断'],
+    farmScopedParent: 'WU-I03'
   })
 ]

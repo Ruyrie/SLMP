@@ -5,6 +5,7 @@ import { ApiError, formatNumber } from '@zmt/shared'
 import type { DiagnosisDetail, HandleSavePayload, HandleSaveResult } from '@/api/inspect'
 import { useDiagnosisStore } from '@/stores/inspect/diagnosis'
 import { useUiStore } from '@/stores/ui'
+import { useFarmStore } from '@/stores/farm'
 
 const props = withDefaults(
   defineProps<{
@@ -20,6 +21,9 @@ const emit = defineEmits<{
 }>()
 
 const ui = useUiStore()
+const farm = useFarmStore()
+/** 计数单位随养殖场品类（猪场“头”、鸡场“只”） */
+const unit = computed(() => farm.countUnit)
 const router = useRouter()
 const store = useDiagnosisStore()
 
@@ -44,7 +48,7 @@ const closed = computed(() => props.detail?.status === 'CLOSED')
 const title = computed(() => (handle.value ? '修改处理结果' : '登记处理结果'))
 const subTitle = computed(() => {
   const parts = [report.value?.pen_name || '', report.value?.batch_no || '']
-  parts.push(`发病 ${formatNumber(sickCount.value)} 头`)
+  parts.push(`发病 ${formatNumber(sickCount.value)} ${unit.value}`)
   parts.push('只有所有者和场长可以登记')
   return parts.filter(Boolean).join(' · ')
 })
@@ -62,7 +66,7 @@ const convertHint = computed(() => {
 })
 const closeHint = computed(() => {
   if (!willClose.value) return ''
-  return `治愈和死淘合计已达到发病数量 ${formatNumber(sickCount.value)} 头，保存后记录自动结案，不能再修改。`
+  return `治愈和死淘合计已达到发病数量 ${formatNumber(sickCount.value)} ${unit.value}，保存后记录自动结案，不能再修改。`
 })
 const matchOptions: Array<{ label: string; value: 'MATCH' | 'NOT_MATCH' }> = [
   { label: '相符', value: 'MATCH' },
@@ -105,7 +109,7 @@ function validate(): boolean {
   if (form.usedDrug === null) errors.used_drug = '请选择是否使用药品'
   if (hasDiagnosis.value && !form.aiMatch) errors.ai_match = '请选择 AI 诊断是否相符'
   if (Number(form.curedCount) < 0 || Number(form.culledCount) < 0) errors.count = '治愈和死淘数量不能为负数'
-  else if (total.value > sickCount.value) errors.count = `治愈和死淘合计不能超过发病数量 ${formatNumber(sickCount.value)} 头`
+  else if (total.value > sickCount.value) errors.count = `治愈和死淘合计不能超过发病数量 ${formatNumber(sickCount.value)} ${unit.value}`
   return Object.keys(errors).length === 0
 }
 
@@ -235,7 +239,7 @@ async function save(toMedication = false): Promise<void> {
     <div class="handle-section">
       <div class="handle-section-head">
         <span class="zw-section-title">转归</span>
-        <span class="handle-section-hint">合计达到 {{ formatNumber(sickCount) }} 头后自动结案</span>
+        <span class="handle-section-hint">合计达到 {{ formatNumber(sickCount) }} {{ unit }}后自动结案</span>
       </div>
       <div class="zw-form-2">
         <zw-form-item label="治愈" :error="errors.count">
@@ -243,7 +247,7 @@ async function save(toMedication = false): Promise<void> {
             v-model.number="form.curedCount"
             type="number"
             min="0"
-            suffix="头"
+            :suffix="unit"
             :disabled="closed"
             :error="!!errors.count"
           />
@@ -253,7 +257,7 @@ async function save(toMedication = false): Promise<void> {
             v-model.number="form.culledCount"
             type="number"
             min="0"
-            suffix="头"
+            :suffix="unit"
             :disabled="closed"
             :error="!!errors.count"
           />
@@ -261,7 +265,7 @@ async function save(toMedication = false): Promise<void> {
       </div>
       <div class="handle-progress">
         <v-progress-linear :model-value="percent" height="6" rounded />
-        <span class="num">合计 {{ formatNumber(total) }} / {{ formatNumber(sickCount) }} 头</span>
+        <span class="num">合计 {{ formatNumber(total) }} / {{ formatNumber(sickCount) }} {{ unit }}</span>
       </div>
       <div v-if="errors.count" class="handle-error">{{ errors.count }}</div>
     </div>

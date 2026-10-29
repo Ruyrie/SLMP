@@ -116,7 +116,7 @@ function goEntry(): void {
               <span class="zw-faint body-s ml-2">{{ item.raw.penName }}</span>
             </template>
             <template #item="{ props: itemProps, item }">
-              <v-list-item v-bind="itemProps" :subtitle="`${item.raw.penName} · 存栏 ${item.raw.currentCount} ${item.raw.countUnitText}`">
+              <v-list-item v-bind="itemProps" :subtitle="`${item.raw.penName} · 存栏 ${formatNumber(item.raw.currentCount ?? 0)} ${item.raw.countUnitText || store.unitText}`">
                 <template #title>
                   <span class="fin-batch-option">
                     <span class="num">{{ item.raw.batchNo }}</span>
@@ -140,7 +140,7 @@ function goEntry(): void {
               :model-value="store.form.pricingMethod"
               :items="[
                 { label: '按重量', value: 'BY_WEIGHT' },
-                { label: '按头', value: 'BY_HEAD' }
+                { label: `按${store.unitText}`, value: 'BY_HEAD' }
               ]"
               @update:model-value="store.setPricingMethod($event as 'BY_WEIGHT' | 'BY_HEAD')"
             />

@@ -3,12 +3,15 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAiAssistantStore } from '@/stores/ai/assistant'
 import { useFarmReload } from '@/composables/useFarmReload'
+import { useFarmStore } from '@/stores/farm'
+import { formatNumber } from '@zmt/shared'
 import AiHistoryPanel from './components/AiHistoryPanel.vue'
 import AiChatThread from './components/AiChatThread.vue'
 import AiComposer from './components/AiComposer.vue'
 import AiReferencePanel from './components/AiReferencePanel.vue'
 
 const store = useAiAssistantStore()
+const farm = useFarmStore()
 const route = useRoute()
 const router = useRouter()
 const batchMenu = ref(false)
@@ -21,7 +24,7 @@ const batchLabel = computed(() => {
     batch.batch_no || '',
     batch.stage_name || batch.category_name || '',
     batch.day_age ? `${batch.day_age} 日龄` : '',
-    batch.current_count !== undefined ? `存栏 ${batch.current_count} ${batch.count_unit_text || '头'}` : ''
+    batch.current_count !== undefined ? `存栏 ${formatNumber(batch.current_count)} ${batch.count_unit_text || farm.countUnit}` : ''
   ]
   return parts.filter(Boolean).join(' · ')
 })
@@ -147,7 +150,7 @@ function clearContextCourse(): void {
                   <span class="k01-btxt">
                     <span class="k01-bmain"><span class="num">{{ batch.batch_no }}</span> · {{ batch.breed_name || batch.stage_name }}</span>
                     <span class="k01-bsub">
-                      {{ batch.pen_name || '' }}<template v-if="batch.day_age"> · {{ batch.day_age }} 日龄</template><template v-if="batch.current_count !== undefined"> · 存栏 {{ batch.current_count }} {{ batch.count_unit_text || '头' }}</template>
+                      {{ batch.pen_name || '' }}<template v-if="batch.day_age"> · {{ batch.day_age }} 日龄</template><template v-if="batch.current_count !== undefined"> · 存栏 {{ formatNumber(batch.current_count) }} {{ batch.count_unit_text || farm.countUnit }}</template>
                     </span>
                   </span>
                   <zw-tag v-if="store.currentBatchId === batch.batch_id" type="primary" size="small">当前</zw-tag>
