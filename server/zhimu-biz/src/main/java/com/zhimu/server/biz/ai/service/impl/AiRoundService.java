@@ -152,6 +152,7 @@ public class AiRoundService {
             message.setHandleStatus("PENDING");
         }
         messageMapper.updateById(message);
+        clearNullable(message, false);
 
         citationMapper.deleteByMessageId(message.getId());
         if (citations != null) {
@@ -192,6 +193,7 @@ public class AiRoundService {
             message.setAnsweredAt(BeijingTime.now());
         }
         messageMapper.updateById(message);
+        clearNullable(message, false);
     }
 
     /**
@@ -215,6 +217,7 @@ public class AiRoundService {
         message.setStartedAt(BeijingTime.now());
         message.setRetryCount((message.getRetryCount() == null ? 0 : message.getRetryCount()) + 1);
         messageMapper.updateById(message);
+        clearNullable(message, true);
         citationMapper.deleteByMessageId(messageId);
         AiSession session = sessionMapper.selectById(message.getSessionId());
         if (session == null || AiCodes.LINK_DELETED.equals(session.getBatchLinkState())) {
@@ -227,6 +230,35 @@ public class AiRoundService {
                 session.getBatchLinkState() == null ? AiCodes.LINK_NONE : session.getBatchLinkState(),
                 message.getQuestionText(), imageFileIds, message.getBatchId(), message.getBatchNo(),
                 message.getContextCourseId(), message.getContextCourseTitle(), message.getContextKnowledgeId());
+    }
+
+    /**
+     * updateById 会跳过 null 字段：显式把本次应为空的列置空（错误信息、上次回答），
+     * 否则重新生成成功后仍留着“已停止生成”，或停止时残留上一次的回答。
+     */
+    private void clearNullable(AiMessage message, boolean resetAnswer) {
+        var update = com.baomidou.mybatisplus.core.toolkit.Wrappers.<AiMessage>lambdaUpdate()
+                .eq(AiMessage::getId, message.getId());
+        boolean any = false;
+        if (message.getErrorCode() == null) {
+            update.set(AiMessage::getErrorCode, null);
+            any = true;
+        }
+        if (message.getErrorMessage() == null) {
+            update.set(AiMessage::getErrorMessage, null);
+            any = true;
+        }
+        if (message.getAnswerText() == null) {
+            update.set(AiMessage::getAnswerText, null);
+            any = true;
+        }
+        if (resetAnswer) {
+            update.set(AiMessage::getAnswerType, null).set(AiMessage::getAnsweredAt, null);
+            any = true;
+        }
+        if (any) {
+            messageMapper.update(null, update);
+        }
     }
 
     public AiMessage loadMessage(Long messageId) {

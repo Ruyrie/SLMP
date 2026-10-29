@@ -109,8 +109,8 @@ public class DiagnosisNotifier {
                     .msgType(MsgType.AI_DIAGNOSIS)
                     .farmId(report.getFarmId())
                     .receiverUserIds(recipients.keySet())
-                    .title(title)
-                    .summary(summary)
+                    .title(cut(title, 60))
+                    .summary(cut(summary, 100))
                     .bizType(BizType.ABNORMAL_REPORT)
                     .bizId(report.getId())
                     .route(ROUTE)
@@ -119,5 +119,10 @@ public class DiagnosisNotifier {
         } catch (RuntimeException e) {
             log.warn("AI 诊断消息发送失败 reportId={}", report.getId(), e);
         }
+    }
+
+    /** t_message.title 60 字、summary 100 字 */
+    private static String cut(String value, int max) {
+        return value == null || value.length() <= max ? value : value.substring(0, max - 1) + "…";
     }
 }
