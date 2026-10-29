@@ -247,6 +247,10 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         target.setLoginFailCount(0);
         target.setLockedUntil(null);
         adminMapper.updateById(target);
+        // updateById 跳过 null：锁定时间要显式清空，否则重置密码后仍被锁着
+        adminMapper.update(null, com.baomidou.mybatisplus.core.toolkit.Wrappers.<Admin>lambdaUpdate()
+                .eq(Admin::getId, target.getId())
+                .set(Admin::getLockedUntil, null));
 
         operationLogService.writeAdminLog(AdminLogCommand.builder()
                 .opType("ADMIN_RBAC")
@@ -313,6 +317,9 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         if (adminMapper.updateById(target) == 0) {
             throw new BizException(ErrorCode.VERSION_CONFLICT, MSG_VERSION_CONFLICT);
         }
+        adminMapper.update(null, com.baomidou.mybatisplus.core.toolkit.Wrappers.<Admin>lambdaUpdate()
+                .eq(Admin::getId, adminId)
+                .set(Admin::getDisabledAt, null));
         operationLogService.writeAdminLog(AdminLogCommand.builder()
                 .opType("ADMIN_RBAC")
                 .opAction("ENABLE")

@@ -1,5 +1,7 @@
 package com.zhimu.server.admin.base.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.zhimu.server.framework.mybatis.BaseEntity;
 import lombok.Getter;
@@ -28,13 +30,21 @@ public class ImmuneTemplateItem extends BaseEntity {
     private String doseRound;
     /** SCHEDULE_TYPE：BY_DAY_AGE / BY_DATE */
     private String scheduleType;
+    /** 按日龄 / 按日期切换时另一组字段要清空，下面几个可选字段更新时始终写入 */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private Integer dayAge;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private Integer planMonth;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private Integer planDay;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private Integer advanceDays;
     private BigDecimal dose;
     /** VACCINE_DOSE_UNIT：DOSE_PER_HEAD / ML_PER_HEAD / DOSE_PER_BIRD */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String doseUnit;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String vaccinateMethodCode;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String remark;
 }

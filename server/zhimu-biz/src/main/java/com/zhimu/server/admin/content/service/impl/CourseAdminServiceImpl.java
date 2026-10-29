@@ -316,6 +316,13 @@ public class CourseAdminServiceImpl implements CourseAdminService {
                     .set(Course::getTopicName, null)
                     .set(Course::getSectionNo, null));
         }
+        if (course.getIntro() == null || course.getKnowledgeId() == null) {
+            // 同上：清空简介、取消关联知识也要显式置空
+            courseMapper.update(null, Wrappers.<Course>lambdaUpdate()
+                    .eq(Course::getId, id)
+                    .set(course.getIntro() == null, Course::getIntro, null)
+                    .set(course.getKnowledgeId() == null, Course::getKnowledgeId, null));
+        }
         if (video != null && !Objects.equals(oldVideo, video.getId())) {
             media.markBound(oldVideo, false);
             media.markBound(video.getId(), true);

@@ -1,5 +1,7 @@
 package com.zhimu.server.admin.content.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.zhimu.server.framework.mybatis.AuditEntity;
 import lombok.Getter;
@@ -25,7 +27,10 @@ public class KnowledgeVersion extends AuditEntity {
     private Long categoryId;
     private String displayType;
     private Integer isMajorEpidemic;
+    /** 空为全部品类；清空时要写 null，更新时始终写该列 */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String applicableCategoryIds;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String keywords;
     private String content;
     private String contentText;

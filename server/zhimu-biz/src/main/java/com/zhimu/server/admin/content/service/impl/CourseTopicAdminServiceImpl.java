@@ -115,6 +115,12 @@ public class CourseTopicAdminServiceImpl implements CourseTopicAdminService {
         if (topicMapper.updateById(topic) == 0) {
             throw ContentErrors.versionConflict();
         }
+        if (topic.getIntro() == null) {
+            // updateById 跳过 null，清空简介要显式置空
+            topicMapper.update(null, Wrappers.<CourseTopic>lambdaUpdate()
+                    .eq(CourseTopic::getId, id)
+                    .set(CourseTopic::getIntro, null));
+        }
         applyCourses(topic, request.getCourses());
         if (cover != null && !Objects.equals(oldCover, cover.getId())) {
             media.markBound(oldCover, false);

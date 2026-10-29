@@ -171,6 +171,10 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         admin.setPasswordUpdatedAt(now);
         admin.setTokenVersion(tokenVersion + 1);
         adminMapper.updateById(admin);
+        // 临时密码已换掉，有效期一并清空（updateById 跳过 null）
+        adminMapper.update(null, com.baomidou.mybatisplus.core.toolkit.Wrappers.<Admin>lambdaUpdate()
+                .eq(Admin::getId, admin.getId())
+                .set(Admin::getTempPasswordExpireAt, null));
 
         operationLogService.writeAdminLog(AdminLogCommand.builder()
                 .opType("LOGIN")
