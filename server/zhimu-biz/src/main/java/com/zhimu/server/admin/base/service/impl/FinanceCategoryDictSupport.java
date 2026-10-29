@@ -9,6 +9,7 @@ import com.zhimu.server.admin.base.request.DictStatusRequest;
 import com.zhimu.server.admin.base.request.ItemOrderRequest;
 import com.zhimu.server.admin.base.support.BaseErrors;
 import com.zhimu.server.admin.base.support.BaseLogs;
+import com.zhimu.server.admin.system.support.AdminDiffs;
 import com.zhimu.server.admin.base.support.DictTypes;
 import com.zhimu.server.admin.base.vo.DictItemVO;
 import com.zhimu.server.biz.finance.entity.FinanceCategory;
@@ -126,10 +127,15 @@ class FinanceCategoryDictSupport {
             throw BaseErrors.versionConflict();
         }
         DictItemVO vo = toVO(mapper.selectById(id), null, null);
+        // 只记有变化的字段（不再整份写 VO）
+        AdminDiffs.Diff diff = AdminDiffs.diff()
+                .field("name", "名称", before.getName(), vo.getName())
+                .field("icon", "图标", before.getIcon(), vo.getIcon())
+                .field("sort_no", "排序", before.getSortNo(), vo.getSortNo());
         logs.record(OperationLogEntry.builder()
                 .opType("BASE_DICT").opAction("UPDATE").bizType("FINANCE_CATEGORY").bizId(id)
                 .targetName(DictTypes.displayName(type) + " · " + name).searchText(name)
-                .before(before).after(vo).build());
+                .before(diff.before()).after(diff.after()).build());
         published(type);
         return vo;
     }

@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 管理员维护（ADM-S20–S26）。
@@ -209,6 +210,16 @@ public class AdminAccountServiceImpl implements AdminAccountService {
             throw new BizException(ErrorCode.VERSION_CONFLICT, MSG_VERSION_CONFLICT);
         }
 
+        // 只记有变化的字段；手机号按原值比较，打码后再写
+        AdminDiffs.Diff diff = AdminDiffs.diff()
+                .field("name", "姓名", oldName, name);
+        if (!Objects.equals(oldPhone, phone)) {
+            String oldMasked = Masks.phone(oldPhone);
+            String newMasked = Masks.phone(phone);
+            diff.field("phone", "手机号", oldMasked,
+                    Objects.equals(oldMasked, newMasked) ? newMasked + "（已更换）" : newMasked);
+        }
+        diff.field("role", "角色", oldRoleName, newRole.getRoleName());
         operationLogService.writeAdminLog(AdminLogCommand.builder()
                 .opType("ADMIN_RBAC")
                 .opAction("UPDATE")
@@ -216,14 +227,8 @@ public class AdminAccountServiceImpl implements AdminAccountService {
                 .bizId(adminId)
                 .targetName(name + "（" + target.getUsername() + "）")
                 .reason(reason)
-                .before(AdminDiffs.put(AdminDiffs.put(AdminDiffs.put(new LinkedHashMap<>(),
-                                "name", "姓名", oldName),
-                        "phone", "手机号", Masks.phone(oldPhone)),
-                        "role", "角色", oldRoleName))
-                .after(AdminDiffs.put(AdminDiffs.put(AdminDiffs.put(new LinkedHashMap<>(),
-                                "name", "姓名", name),
-                        "phone", "手机号", Masks.phone(phone)),
-                        "role", "角色", newRole.getRoleName()))
+                .before(diff.before())
+                .after(diff.after())
                 .build());
         return name;
     }

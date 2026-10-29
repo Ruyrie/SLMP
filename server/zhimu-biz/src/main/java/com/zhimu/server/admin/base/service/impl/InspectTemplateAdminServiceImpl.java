@@ -335,6 +335,12 @@ public class InspectTemplateAdminServiceImpl implements InspectTemplateAdminServ
                 itemMapper.deleteById(deleted.getId());
             }
         }
+        // 发布后这一版就是线上版：草稿里的“新增 / 已修改”标记不带到线上
+        itemMapper.update(null, Wrappers.<InspectItem>lambdaUpdate()
+                .eq(InspectItem::getVersionId, draft.getId())
+                .ne(InspectItem::getChangeType, "NONE")
+                .set(InspectItem::getChangeType, "NONE"));
+        active.forEach(item -> item.setChangeType("NONE"));
         LocalDateTime now = BeijingTime.now();
         int versionNo = nextVersionNo(templateId);
         versionMapper.update(null, Wrappers.<InspectTemplateVersion>lambdaUpdate()
@@ -832,15 +838,27 @@ public class InspectTemplateAdminServiceImpl implements InspectTemplateAdminServ
         InspectTemplateVersion draft = draftVersion(template.getId());
         List<InspectItem> items = items(draft != null ? draft.getId()
                 : online == null ? -1L : online.getId());
-        vo.setItems(fillItems(items));
+        List<InspectItemVO> itemVOs = fillItems(items);
         if (draft != null) {
             vo.setDraftChanges(draftChanges(items, online));
+        } else {
+            // 没有草稿时显示的是线上版：不带草稿对比标记（早先发布的版本库里可能残留 ADDED / MODIFIED）
+            asOnline(itemVOs);
         }
+        vo.setItems(itemVOs);
         List<InspectItem> preview = online == null ? List.of() : items(online.getId()).stream()
                 .filter(item -> Boolean.TRUE.equals(item.getEnabled())).toList();
-        vo.setPreviewItems(fillItems(preview));
+        vo.setPreviewItems(asOnline(fillItems(preview)));
         vo.setVersion(template.getVersion());
         return vo;
+    }
+
+    private static List<InspectItemVO> asOnline(List<InspectItemVO> items) {
+        items.forEach(item -> {
+            item.setChangeType("NONE");
+            item.setBefore(null);
+        });
+        return items;
     }
 
     private List<InspectItemVO> fillItems(List<InspectItem> items) {

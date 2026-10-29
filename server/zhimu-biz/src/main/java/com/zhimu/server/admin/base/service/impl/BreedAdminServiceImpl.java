@@ -11,6 +11,7 @@ import com.zhimu.server.admin.base.request.BreedSaveRequest;
 import com.zhimu.server.admin.base.service.BreedAdminService;
 import com.zhimu.server.admin.base.support.BaseErrors;
 import com.zhimu.server.admin.base.support.BaseLogs;
+import com.zhimu.server.admin.system.support.AdminDiffs;
 import com.zhimu.server.admin.base.vo.BreedVO;
 import com.zhimu.server.common.context.AdminContext;
 import com.zhimu.server.common.enums.Species;
@@ -114,11 +115,27 @@ public class BreedAdminServiceImpl implements BreedAdminService {
         }
         String action = disabling ? "DISABLE"
                 : "ENABLED".equals(values.status) && !"ENABLED".equals(breed.getStatus()) ? "ENABLE" : "UPDATE";
+        // 只记有变化的字段，品类 / 子代品种写名称
+        AdminDiffs.Diff diff = AdminDiffs.diff()
+                .field("name", "名称", breed.getName(), request.getName().trim())
+                .field("category", "品类", oldCategory == null ? null : oldCategory.getName(), category.getName())
+                .field("description", "说明", breed.getDescription(), trimToNull(request.getDescription()))
+                .field("gestation_days", "妊娠期（天）", breed.getGestationDays(), values.gestationDays)
+                .field("incubation_days", "孵化期（天）", breed.getIncubationDays(), values.incubationDays)
+                .field("pregnancy_check_days", "妊检天数", breed.getPregnancyCheckDays(),
+                        values.pregnancyCheckDays)
+                .field("offspring_breed", "子代品种", breedName(breed.getOffspringBreedId()),
+                        breedName(values.offspringBreedId))
+                .field("sort_no", "排序", breed.getSortNo(),
+                        request.getSortNo() == null ? breed.getSortNo() : request.getSortNo())
+                .field("status", "状态", AdminBaseConvert.statusText(breed.getStatus()),
+                        AdminBaseConvert.statusText(values.status))
+                .field("disable_reason", "停用原因", breed.getDisableReason(), values.disableReason);
         logs.record(OperationLogEntry.builder()
                 .opType("BASE_BREED").opAction(action).bizType("BREED").bizId(id)
                 .targetName(request.getName().trim()).searchText(request.getName().trim())
                 .reason(request.getChangeReason())
-                .before(AdminBaseConvert.breed(breed, oldCategory)).build());
+                .before(diff.before()).after(diff.after()).build());
         AfterCommit.run(() -> eventPublisher.publishEvent(BaseDataChangedEvent.category()));
         breed.setCategoryId(category.getId());
         breed.setName(request.getName().trim());
@@ -236,6 +253,11 @@ public class BreedAdminServiceImpl implements BreedAdminService {
 
     private static String trimToNull(String value) {
         return StringUtils.hasText(value) ? value.trim() : null;
+    }
+
+    private String breedName(Long breedId) {
+        Breed breed = breedId == null ? null : breedMapper.selectById(breedId);
+        return breed == null ? null : breed.getName();
     }
 
     private record Values(Integer gestationDays, Integer incubationDays, Integer pregnancyCheckDays,

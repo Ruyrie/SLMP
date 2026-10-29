@@ -22,6 +22,7 @@ import com.zhimu.server.admin.content.vo.CourseVO;
 import com.zhimu.server.admin.content.vo.CoverCandidateVO;
 import com.zhimu.server.admin.content.vo.TranscodeStateVO;
 import com.zhimu.server.admin.content.vo.VideoInfoVO;
+import com.zhimu.server.admin.system.support.AdminDiffs;
 import com.zhimu.server.biz.ai.entity.AiKnowledge;
 import com.zhimu.server.biz.ai.entity.Course;
 import com.zhimu.server.biz.ai.entity.CourseCategory;
@@ -183,6 +184,7 @@ public class CourseAdminServiceImpl implements CourseAdminService {
     }
 
     private static final String BIZ_COURSE = "COURSE";
+    private static final String NO_TOPIC = "未加入专题";
 
     @Override
     @Transactional
@@ -266,10 +268,19 @@ public class CourseAdminServiceImpl implements CourseAdminService {
                 ? fileMapper.selectById(course.getCoverFileId())
                 : resolveCover(request, effectiveVideo, submit);
 
-        Map<String, Object> before = snapshot(course);
         Long oldVideo = course.getVideoFileId();
         Long oldCover = course.getCoverFileId();
+        String oldStatus = course.getStatus();
+        String oldApplicable = applicableNames(id);
         Integer section = topic == null ? null : request.getSectionNo();
+        AdminDiffs.Diff diff = AdminDiffs.diff()
+                .field("title", "标题", course.getTitle(), title)
+                .field("intro", "简介", course.getIntro(), blankToNull(request.getIntro()))
+                .field("category", "分类", categoryName(course), category.getName())
+                .field("topic", "所属专题", topicName(course), topic == null ? NO_TOPIC : topic.getName())
+                .field("section_no", "节次", course.getSectionNo(), section)
+                .field("knowledge", "关联知识", knowledgeTitle(course.getKnowledgeId()),
+                        knowledge == null ? null : knowledge.getTitle());
         boolean sectionChanged = !Objects.equals(course.getTopicId(), topic == null ? null : topic.getId())
                 || !Objects.equals(course.getSectionNo(), section);
         int shifted = sectionChanged ? shiftSections(topic == null ? null : topic.getId(), section, id) : 0;
@@ -332,7 +343,14 @@ public class CourseAdminServiceImpl implements CourseAdminService {
             media.markBound(cover.getId(), true);
         }
         syncApplicable(id, request.getApplicableCategoryIds());
-        writeLog("UPDATE", id, title, null, before, snapshot(course));
+        diff.field("video", "视频", "原视频",
+                        video != null && !Objects.equals(oldVideo, video.getId()) ? "已更换" : "原视频")
+                .field("cover", "封面", "原封面",
+                        cover != null && !Objects.equals(oldCover, cover.getId()) ? "已更换" : "原封面")
+                .field("applicable", "适用品类", oldApplicable, applicableNames(id))
+                .field("status", "状态", ContentTexts.contentStatus(oldStatus),
+                        ContentTexts.contentStatus(course.getStatus()));
+        writeLog("UPDATE", id, title, null, diff.before(), diff.after());
         return vo(course, shifted);
     }
 
@@ -867,15 +885,48 @@ public class CourseAdminServiceImpl implements CourseAdminService {
         return vo;
     }
 
+    /** 删除留痕的原记录：外键写名称、状态写中文（不再写 5101 这类编号） */
     private Map<String, Object> snapshot(Course course) {
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put("title", course.getTitle());
-        map.put("category_id", course.getCategoryId());
-        map.put("topic_id", course.getTopicId());
-        map.put("section_no", course.getSectionNo());
-        map.put("status", course.getStatus());
-        map.put("transcode_status", course.getTranscodeStatus());
+        AdminDiffs.put(map, "title", "标题", course.getTitle());
+        AdminDiffs.put(map, "category", "分类", categoryName(course));
+        AdminDiffs.put(map, "topic", "所属专题", topicName(course));
+        if (course.getSectionNo() != null) {
+            AdminDiffs.put(map, "section_no", "节次", course.getSectionNo());
+        }
+        AdminDiffs.put(map, "status", "状态", ContentTexts.contentStatus(course.getStatus()));
         return map;
+    }
+
+    private String categoryName(Course course) {
+        String current = course.getCategoryId() == null ? null : categoryService.nameOf(course.getCategoryId());
+        return current != null ? current : course.getCategoryName();
+    }
+
+    private static String topicName(Course course) {
+        return course.getTopicId() == null ? NO_TOPIC
+                : course.getTopicName() == null ? "专题 " + course.getTopicId() : course.getTopicName();
+    }
+
+    private String knowledgeTitle(Long knowledgeId) {
+        if (knowledgeId == null) {
+            return null;
+        }
+        AiKnowledge knowledge = knowledgeMapper.selectById(knowledgeId);
+        return knowledge == null ? null : knowledge.getTitle();
+    }
+
+    private String applicableNames(Long courseId) {
+        List<Long> ids = applicableMapper.selectByBiz(BIZ_COURSE, courseId).stream()
+                .map(ContentApplicable::getCategoryId).filter(Objects::nonNull).toList();
+        if (ids.isEmpty()) {
+            return "全部品类";
+        }
+        List<String> names = new ArrayList<>();
+        for (var ref : statMapper.selectProductCategories(ids)) {
+            names.add(ref.getName());
+        }
+        return String.join("、", names);
     }
 
     private void writeLog(String action, Long id, String title, String reason,

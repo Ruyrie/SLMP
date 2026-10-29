@@ -3,6 +3,7 @@ package com.zhimu.server.admin.audit.service.impl;
 import com.zhimu.server.admin.audit.mapper.AuditAdminQueryMapper;
 import com.zhimu.server.admin.audit.request.ChangeRequestApproveRequest;
 import com.zhimu.server.admin.audit.vo.ApproveResultVO;
+import com.zhimu.server.admin.audit.vo.CompareRowVO;
 import com.zhimu.server.biz.common.api.ChangeRequestAdminService;
 import com.zhimu.server.biz.common.change.ChangeRequestHandlerRegistry;
 import com.zhimu.server.biz.common.entity.ChangeRequest;
@@ -18,6 +19,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -75,6 +77,33 @@ class ChangeRequestReviewServiceImplTest {
 
         assertThatThrownBy(() -> service.approve(8L, request))
                 .isInstanceOfSatisfying(BizException.class, e -> assertThat(e.getCode()).isEqualTo(40902));
+    }
+
+    @Test
+    void 对比只把after里写了的字段算作修改() {
+        ChangeRequest request = request("PENDING");
+        request.setFieldName("出栏数量");
+        request.setBeforeJson("""
+                {"before": {"qty": {"name": "数量", "display": "98 头"},
+                            "weight": {"name": "总重", "display": "11,200 千克"},
+                            "remark": {"name": "备注", "display": "按批次出栏"}},
+                 "after": {}}""");
+        request.setAfterJson("""
+                {"before": {"qty": {"name": "数量", "display": "98 头"},
+                            "weight": {"name": "总重", "display": "11,200 千克"},
+                            "remark": {"name": "备注", "display": "按批次出栏"}},
+                 "after": {"weight": {"name": "总重", "display": "11,500 千克"},
+                           "remark": {"name": "备注"}}}""");
+        when(mapper.selectChangeRequest(8L)).thenReturn(request);
+
+        List<CompareRowVO> rows = service.detail(8L).getCompare();
+
+        assertThat(rows).extracting(CompareRowVO::getField, CompareRowVO::getBefore, CompareRowVO::getAfter,
+                        CompareRowVO::getChanged)
+                .containsExactly(
+                        tuple("总重", "11,200 千克", "11,500 千克", true),
+                        tuple("备注", "按批次出栏", "未填写", true),
+                        tuple("数量", "98 头", "98 头", false));
     }
 
     private static ChangeRequest request(String status) {

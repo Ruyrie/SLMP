@@ -17,6 +17,7 @@ import com.zhimu.server.admin.base.service.DictAdminService;
 import com.zhimu.server.admin.base.support.BaseDataReadSupport;
 import com.zhimu.server.admin.base.support.BaseErrors;
 import com.zhimu.server.admin.base.support.BaseLogs;
+import com.zhimu.server.admin.system.support.AdminDiffs;
 import com.zhimu.server.admin.base.support.DictScopes;
 import com.zhimu.server.admin.base.support.DictTypes;
 import com.zhimu.server.admin.base.vo.DictItemVO;
@@ -195,9 +196,18 @@ public class DictAdminServiceImpl implements DictAdminService {
         replaceScopes(id, scopes);
         DictItem updated = dictItemMapper.selectById(id);
         DictItemVO vo = toVO(updated);
+        // 只记有变化的字段（不再整份写 VO：编号、版本号、使用次数等不是修改内容）
+        AdminDiffs.Diff diff = AdminDiffs.diff()
+                .field("name", "名称", before.getName(), vo.getName())
+                .field("description", "说明", before.getDescription(), vo.getDescription())
+                .field("icon", "图标", before.getIcon(), vo.getIcon())
+                .field("remark_required", "需填写备注", Boolean.TRUE.equals(before.getRemarkRequired()),
+                        Boolean.TRUE.equals(vo.getRemarkRequired()))
+                .field("scopes", "适用范围", scopeText(before), scopeText(vo))
+                .field("sort_no", "排序", before.getSortNo(), vo.getSortNo());
         logs.record(OperationLogEntry.builder()
                 .opType("BASE_DICT").opAction("UPDATE").bizType("DICT_ITEM").bizId(id)
-                .targetName(name).searchText(name).before(before).after(vo).build());
+                .targetName(name).searchText(name).before(diff.before()).after(diff.after()).build());
         AfterCommit.run(() -> eventPublisher.publishEvent(BaseDataChangedEvent.dict(type)));
         return vo;
     }
@@ -490,6 +500,19 @@ public class DictAdminServiceImpl implements DictAdminService {
 
     private static String trimToNull(String value) {
         return StringUtils.hasText(value) ? value.trim() : null;
+    }
+
+    /** 留痕里的适用范围：品类写名称，畜种写中文，没有范围记“全部” */
+    private static String scopeText(DictItemVO vo) {
+        List<String> parts = new ArrayList<>();
+        for (DictScopeVO scope : vo.getScopes() == null ? List.<DictScopeVO>of() : vo.getScopes()) {
+            if (scope.getCategoryName() != null) {
+                parts.add(scope.getCategoryName());
+            } else if (scope.getSpecies() != null) {
+                parts.add(AdminBaseConvert.speciesText(scope.getSpecies()));
+            }
+        }
+        return parts.isEmpty() ? "全部" : String.join("、", parts);
     }
 
     private record ScopeValue(String scopeType, String species, Long categoryId) {

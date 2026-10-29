@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -318,6 +319,10 @@ public class OperationLogAdminServiceImpl implements OperationLogAdminService {
             String beforeText = b == null ? null : b.display;
             String afterText = a == null ? null : a.display;
             if (name == null && beforeText == null && afterText == null) {
+                continue;
+            }
+            if (b != null && a != null && Objects.equals(beforeText, afterText)) {
+                // 早先的“修改”日志整份写快照：前后相同的字段不是修改内容，不列出
                 continue;
             }
             changes.add(OperationLogDetailVO.Change.builder()

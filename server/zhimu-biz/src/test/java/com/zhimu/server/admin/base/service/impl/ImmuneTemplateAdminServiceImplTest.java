@@ -158,10 +158,13 @@ class ImmuneTemplateAdminServiceImplTest {
         when(versionMapper.selectOne(any())).thenReturn(draft, online, online);
         when(versionMapper.selectById(211L)).thenReturn(published);
         ImmuneTemplateItem item = item();
+        item.setChangeType("ADDED");
         when(itemMapper.selectList(any())).thenReturn(List.of(item), List.of(item));
 
         TemplateVersionVO<ImmuneItemVO> result = service.publish(21L, publishRequest(5));
 
+        assertThat(result.getItems().get(0).getChangeType()).isEqualTo("NONE");
+        verify(itemMapper).update(org.mockito.ArgumentMatchers.isNull(), any());
         assertThat(result.getVersionNo()).isEqualTo(5);
         assertThat(result.getStatus()).isEqualTo("PUBLISHED");
         assertThat(result.getPublishedByName()).isEqualTo("周敏");
@@ -172,6 +175,25 @@ class ImmuneTemplateAdminServiceImplTest {
         assertThat(template.getVersion()).isEqualTo(6);
         verify(versionMapper, org.mockito.Mockito.times(2)).update(any(), any());
         verify(eventPublisher).publishEvent(any(com.zhimu.server.admin.base.event.ImmuneTemplatePublishedEvent.class));
+    }
+
+    @Test
+    void detailWithoutDraftShowsOnlineItemsWithoutChangeTags() {
+        template.setHasDraft(false);
+        ImmuneTemplateVersion online = version(210L, 4, "PUBLISHED", null);
+        when(versionMapper.selectOne(any())).thenReturn(online, null);
+        ImmuneTemplateItem added = item();
+        added.setChangeType("ADDED");
+        ImmuneTemplateItem modified = item();
+        modified.setId(2102L);
+        modified.setChangeType("MODIFIED");
+        modified.setSourceItemId(2101L);
+        when(itemMapper.selectList(any())).thenReturn(List.of(added, modified));
+
+        List<ImmuneItemVO> items = service.detail(21L).getItems();
+
+        assertThat(items).extracting(ImmuneItemVO::getChangeType).containsExactly("NONE", "NONE");
+        assertThat(items).extracting(ImmuneItemVO::getBefore).containsOnlyNulls();
     }
 
     @Test

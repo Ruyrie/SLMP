@@ -23,4 +23,59 @@ public final class AdminDiffs {
     public static Map<String, Object> of(String code, String name, Object display) {
         return put(new LinkedHashMap<>(), code, name, display);
     }
+
+    public static Diff diff() {
+        return new Diff();
+    }
+
+    /**
+     * “修改”类留痕：只收显示文本有变化的字段；外键传名称、编码传中文，空值记“未填写”。
+     * before() / after() 没有变化时返回 null。
+     */
+    public static final class Diff {
+
+        private static final String EMPTY = "未填写";
+
+        private final Map<String, Object> before = new LinkedHashMap<>();
+        private final Map<String, Object> after = new LinkedHashMap<>();
+
+        private Diff() {
+        }
+
+        public Diff field(String code, String name, Object beforeDisplay, Object afterDisplay) {
+            String b = text(beforeDisplay);
+            String a = text(afterDisplay);
+            if (!b.equals(a)) {
+                put(before, code, name, b);
+                put(after, code, name, a);
+            }
+            return this;
+        }
+
+        public boolean isEmpty() {
+            return after.isEmpty();
+        }
+
+        public Map<String, Object> before() {
+            return before.isEmpty() ? null : before;
+        }
+
+        public Map<String, Object> after() {
+            return after.isEmpty() ? null : after;
+        }
+
+        private static String text(Object value) {
+            if (value == null) {
+                return EMPTY;
+            }
+            if (value instanceof Boolean flag) {
+                return flag ? "是" : "否";
+            }
+            if (value instanceof java.math.BigDecimal decimal) {
+                return decimal.stripTrailingZeros().toPlainString();
+            }
+            String text = String.valueOf(value).trim();
+            return text.isEmpty() ? EMPTY : text;
+        }
+    }
 }

@@ -205,6 +205,27 @@ class OperationLogAdminServiceImplTest {
     }
 
     @Test
+    void 详情_旧的整份快照只列前后不同的字段() {
+        AdminContext.set(AdminTestFixtures.login(2L, "吴昊", "AUDITOR",
+                AdminTestFixtures.codes("WA-S06:VIEW", "WA-C03:HANDLE")));
+        OperationLog row = log(1L, 9L, "COURSE");
+        row.setOpAction("TOPIC_UPDATE");
+        row.setBeforeJson("{\"name\":\"RTW测试专题\",\"status\":\"OFF_SHELF\",\"sort_no\":3,\"category_id\":5101}");
+        row.setAfterJson("{\"name\":\"RTW测试专题\",\"status\":\"OFF_SHELF\",\"sort_no\":4,\"category_id\":5101}");
+        when(queryMapper.selectLogById(1L)).thenReturn(row);
+        when(adminMapper.selectById(9L)).thenReturn(
+                AdminTestFixtures.admin(9L, "sunwei", "孙伟", 2L, "NORMAL"));
+
+        OperationLogDetailVO detail = service.detail(1L);
+
+        assertThat(detail.getChanges()).singleElement().satisfies(change -> {
+            assertThat(change.getFieldName()).isEqualTo("排序");
+            assertThat(change.getBefore()).isEqualTo("3");
+            assertThat(change.getAfter()).isEqualTo("4");
+        });
+    }
+
+    @Test
     void 详情_解析变更对比与相关记录() {
         AdminContext.set(AdminTestFixtures.login(2L, "吴昊", "AUDITOR",
                 AdminTestFixtures.codes("WA-S06:VIEW", "WA-S05:HANDLE")));

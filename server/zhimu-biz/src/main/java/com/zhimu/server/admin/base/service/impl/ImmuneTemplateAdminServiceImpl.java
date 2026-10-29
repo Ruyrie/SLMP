@@ -388,6 +388,12 @@ public class ImmuneTemplateAdminServiceImpl implements ImmuneTemplateAdminServic
         itemMapper.delete(Wrappers.<ImmuneTemplateItem>lambdaQuery()
                 .eq(ImmuneTemplateItem::getVersionId, draft.getId())
                 .eq(ImmuneTemplateItem::getChangeType, "DELETED"));
+        // 发布后这一版就是线上版：草稿里的“新增 / 已修改”标记不带到线上
+        itemMapper.update(null, Wrappers.<ImmuneTemplateItem>lambdaUpdate()
+                .eq(ImmuneTemplateItem::getVersionId, draft.getId())
+                .ne(ImmuneTemplateItem::getChangeType, "NONE")
+                .set(ImmuneTemplateItem::getChangeType, "NONE"));
+        active.forEach(item -> item.setChangeType("NONE"));
         LocalDateTime now = BeijingTime.now();
         int versionNo = nextVersionNo(templateId);
         versionMapper.update(null, Wrappers.<ImmuneTemplateVersion>lambdaUpdate()
@@ -822,10 +828,17 @@ public class ImmuneTemplateAdminServiceImpl implements ImmuneTemplateAdminServic
         ImmuneTemplateVersion draft = draftVersion(template.getId());
         List<ImmuneTemplateItem> items = items(draft != null ? draft.getId()
                 : online == null ? -1L : online.getId());
-        vo.setItems(fillItems(items, online));
+        List<ImmuneItemVO> itemVOs = fillItems(items, online);
         if (draft != null) {
             vo.setDraftChanges(draftChanges(items, online));
+        } else {
+            // 没有草稿时显示的是线上版：不带草稿对比标记（早先发布的版本库里可能残留 ADDED / MODIFIED）
+            itemVOs.forEach(item -> {
+                item.setChangeType("NONE");
+                item.setBefore(null);
+            });
         }
+        vo.setItems(itemVOs);
         vo.setVersion(template.getVersion());
         return vo;
     }
