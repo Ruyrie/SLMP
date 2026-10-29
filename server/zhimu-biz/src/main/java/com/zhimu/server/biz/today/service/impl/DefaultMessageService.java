@@ -83,7 +83,7 @@ public class DefaultMessageService implements MessageService {
             message.setTitle(command.getTitle());
             message.setSummary(command.getSummary());
             message.setTagCode(tagCode(command));
-            message.setTagText(tagText(message.getTagCode()));
+            message.setTagText(tagText(command, message.getTagCode()));
             message.setBizType(command.getBizType() == null ? null : command.getBizType().name());
             message.setBizId(command.getBizId());
             Map<String, Object> extras = command.getExtras() == null ? Map.of() : command.getExtras();
@@ -322,6 +322,11 @@ public class DefaultMessageService implements MessageService {
     }
 
     private static String tagCode(MessageCommand command) {
+        // AI 诊断：标签为紧急程度（与示例数据一致：ATTENTION 关注 / URGENT 紧急 / GENERAL 一般）
+        if (command.getMsgType() == MsgType.AI_DIAGNOSIS && command.getExtras() != null
+                && command.getExtras().get("urgency") != null) {
+            return String.valueOf(command.getExtras().get("urgency"));
+        }
         if (command.getMsgType() == MsgType.LOT_RECALLED) {
             return "RECALLED";
         }
@@ -339,6 +344,14 @@ public class DefaultMessageService implements MessageService {
             return "REJECTED";
         }
         return null;
+    }
+
+    private static String tagText(MessageCommand command, String tagCode) {
+        if (command.getMsgType() == MsgType.AI_DIAGNOSIS && command.getExtras() != null
+                && command.getExtras().get("urgency_text") != null) {
+            return String.valueOf(command.getExtras().get("urgency_text"));
+        }
+        return tagText(tagCode);
     }
 
     private static String tagText(String tagCode) {

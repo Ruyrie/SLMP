@@ -1,6 +1,8 @@
 package com.zhimu.server.biz.feeding.service;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.zhimu.server.admin.base.api.BaseDataQueryService;
+import com.zhimu.server.admin.base.api.CategoryInfo;
 import com.zhimu.server.admin.base.api.StdQueryService;
 import com.zhimu.server.admin.base.vo.BreedStandardsVO;
 import com.zhimu.server.biz.feeding.api.FeedStockPort;
@@ -21,8 +23,11 @@ import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.today.api.TodoSource;
 import com.zhimu.server.common.context.FarmContext;
 import com.zhimu.server.common.context.UserContext;
+import com.zhimu.server.common.enums.BizType;
 import com.zhimu.server.common.util.BeijingTime;
 import com.zhimu.server.common.vo.UserBriefVO;
+import com.zhimu.server.framework.oplog.OperationLogEntry;
+import com.zhimu.server.framework.oplog.OperationLogRecorder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +57,8 @@ public class FeedPlanService {
     private final FeedTodoSource todoSource;
     private final FeedLookup lookup;
     private final StdQueryService stdQueryService;
+    private final BaseDataQueryService baseDataQueryService;
+    private final OperationLogRecorder operationLogRecorder;
 
     /** G09 方案批次选择：当前养殖场在养批次，按栏舍编号排序 */
     public List<FeedPlanVO.BatchOption> batchOptions() {
@@ -133,6 +140,8 @@ public class FeedPlanService {
         validateStages(stages, FeedCalc.dayAge(batch, BeijingTime.today()));
         FeedPlan plan = plan(batchId);
         boolean firstSave = plan == null;
+        String unitText = unitText(batch);
+        Map<String, Map<String, Object>> before = firstSave ? null : snapshot(plan, stages(plan.getId()), unitText);
         if (plan != null) {
             if (request.getVersion() == null) {
                 throw FeedErrors.field("version", "缺少版本号");
@@ -213,6 +222,9 @@ public class FeedPlanService {
                 stageMapper.deleteById(old.getId());
             }
         }
+        if (!firstSave) {
+            logChanges(plan, batch, before, snapshot(plan, saved, unitText));
+        }
         if (firstSave) {
             taskService.generateForBatch(batch, plan, saved);
             // 首次保存方案可能补生成当天的任务，同步补当天的饲喂待办（幂等，已存在只刷新展示字段）
@@ -223,6 +235,104 @@ public class FeedPlanService {
                     .build());
         }
         return toPlan(batch);
+    }
+
+    // ===== 修改记录（API-U14，biz_type FEED_PLAN，biz_id plan_id） =====
+
+    /** 方案的可读快照：字段编码 → {name, display}；阶段按顺序编号 */
+    private Map<String, Map<String, Object>> snapshot(FeedPlan plan, List<FeedPlanStage> stages, String unitText) {
+        Map<String, Map<String, Object>> result = new LinkedHashMap<>();
+        result.put("abnormal_threshold", field("投喂异常阈值", percentText(plan.getAbnormalThreshold())));
+        Map<Long, List<FeedPlanMeal>> meals = meals(stages);
+        List<FeedPlanStage> ordered = new ArrayList<>(stages);
+        ordered.sort(Comparator.comparing(FeedPlanStage::getSortNo, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(FeedPlanStage::getId, Comparator.nullsLast(Comparator.naturalOrder())));
+        int index = 0;
+        for (FeedPlanStage stage : ordered) {
+            index++;
+            result.put("stage_" + index, field("第 " + index + " 阶段",
+                    stageText(stage, meals.getOrDefault(stage.getId(), List.of()), unitText)));
+        }
+        return result;
+    }
+
+    private String stageText(FeedPlanStage stage, List<FeedPlanMeal> meals, String unitText) {
+        FeedStockPort.FeedBrief feed = lookup.feed(stage.getFeedId());
+        String ages = stage.getDayAgeEnd() == null ? stage.getDayAgeStart() + " 日龄起"
+                : stage.getDayAgeStart() + "–" + stage.getDayAgeEnd() + " 日龄";
+        List<String> times = new ArrayList<>();
+        for (FeedPlanMeal meal : meals) {
+            if (meal.getFeedTime() != null) {
+                times.add(meal.getFeedTime().format(BeijingTime.TIME));
+            }
+        }
+        String qty = stage.getDailyQtyPerHead() == null ? "—"
+                : stage.getDailyQtyPerHead().stripTrailingZeros().toPlainString();
+        return stage.getStageName() + " · " + ages + " · " + (feed == null ? "未选饲料" : feed.feedName())
+                + " · 每" + unitText + "每天 " + qty + " 千克 · " + stage.getMealsPerDay() + " 餐"
+                + (times.isEmpty() ? "" : "（" + String.join("、", times) + "）");
+    }
+
+    private static Map<String, Object> field(String name, String display) {
+        Map<String, Object> value = new LinkedHashMap<>();
+        value.put("name", name);
+        value.put("display", display);
+        return value;
+    }
+
+    private static String percentText(BigDecimal ratio) {
+        if (ratio == null) {
+            return null;
+        }
+        return ratio.multiply(BigDecimal.valueOf(100)).stripTrailingZeros().toPlainString() + "%";
+    }
+
+    /** 只记有变化的字段；没有变化（原样保存）不写修改记录 */
+    private void logChanges(FeedPlan plan, BatchInfo batch, Map<String, Map<String, Object>> before,
+                            Map<String, Map<String, Object>> after) {
+        if (before == null) {
+            return;
+        }
+        Map<String, Object> beforeChanged = new LinkedHashMap<>();
+        Map<String, Object> afterChanged = new LinkedHashMap<>();
+        Set<String> keys = new LinkedHashSet<>(before.keySet());
+        keys.addAll(after.keySet());
+        for (String key : keys) {
+            Map<String, Object> b = before.get(key);
+            Map<String, Object> a = after.get(key);
+            Object bd = b == null ? null : b.get("display");
+            Object ad = a == null ? null : a.get("display");
+            if (java.util.Objects.equals(bd, ad)) {
+                continue;
+            }
+            String name = String.valueOf((a != null ? a : b).get("name"));
+            beforeChanged.put(key, field(name, bd == null ? "无" : String.valueOf(bd)));
+            afterChanged.put(key, field(name, ad == null ? "已删除" : String.valueOf(ad)));
+        }
+        if (afterChanged.isEmpty()) {
+            return;
+        }
+        operationLogRecorder.record(OperationLogEntry.builder()
+                .operatorType("USER")
+                .opType("RECORD_EDIT")
+                .opAction("UPDATE")
+                .bizType(BizType.FEED_PLAN.name())
+                .bizId(plan.getId())
+                .targetName(batch.batchNo() + " 饲喂方案")
+                .farmId(plan.getFarmId())
+                .searchText(batch.batchNo())
+                .before(beforeChanged)
+                .after(afterChanged)
+                .build());
+    }
+
+    private String unitText(BatchInfo batch) {
+        try {
+            CategoryInfo category = batch.categoryId() == null ? null : baseDataQueryService.getCategory(batch.categoryId());
+            return category == null || category.countUnitText() == null ? "头" : category.countUnitText();
+        } catch (RuntimeException e) {
+            return "头";
+        }
     }
 
     private void validateThreshold(BigDecimal threshold) {

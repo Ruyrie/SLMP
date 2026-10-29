@@ -17,6 +17,7 @@ import com.zhimu.server.biz.inspect.mapper.InspectionItemResultMapper;
 import com.zhimu.server.biz.inspect.mapper.InspectionMapper;
 import com.zhimu.server.biz.inspect.service.DiagnosisService;
 import com.zhimu.server.biz.inspect.support.DiagnosisInput;
+import com.zhimu.server.biz.inspect.support.DiagnosisNotifier;
 import com.zhimu.server.biz.inspect.support.DiagnosisParser;
 import com.zhimu.server.biz.inspect.support.DiagnosisPromptBuilder;
 import com.zhimu.server.biz.inspect.support.InspectSupport;
@@ -40,6 +41,7 @@ import org.springframework.stereotype.Service;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /** AI 诊断执行（查询、提示词、调用网关、结果写库）。 */
 @Service
@@ -59,6 +61,7 @@ public class DiagnosisServiceImpl implements DiagnosisService {
     private final InspectSupport support;
     private final DiagnosisWriter writer;
     private final ObjectProvider<BannedDrugGuard> bannedDrugGuard;
+    private final DiagnosisNotifier notifier;
 
     @Override
     public AiDiagnosis createAttempt(AbnormalReport report, String triggerType, Long requestedBy) {
@@ -103,12 +106,17 @@ public class DiagnosisServiceImpl implements DiagnosisService {
         }
         long startedAt = System.currentTimeMillis();
         String raw = null;
+        // 诊断完成 / 失败后通知的人，与诊断详情“已通知 xx”同源
+        Map<Long, String> recipients = notifier.recipients(report);
+        String names = DiagnosisNotifier.names(recipients);
+        DiagnosisInput input = null;
         try {
             if (!aiGateway.isEnabled()) {
-                writer.failure(diagnosisId, "SERVICE_UNAVAILABLE", 0, null);
+                notifyFailure(writer.failure(diagnosisId, "SERVICE_UNAVAILABLE", 0, null, names), recipients,
+                        null);
                 return;
             }
-            DiagnosisInput input = buildInput(report);
+            input = buildInput(report);
             List<String> images = images(report.getId());
             String text = DiagnosisPromptBuilder.userPrompt(input);
             AiMessage user = images.isEmpty() ? AiMessage.user(text) : AiMessage.user(text, images);
@@ -125,15 +133,37 @@ public class DiagnosisServiceImpl implements DiagnosisService {
                     report.getSickRate(), report.getSameDaySeq() == null ? 1 : report.getSameDaySeq());
             parsed = filterBanned(parsed);
             long elapsed = System.currentTimeMillis() - startedAt;
-            String names = String.join("、", writer.notificationNames(report));
             String model = result.getModel() == null ? "qwen3.8-max" : result.getModel();
-            writer.success(diagnosisId, model, elapsed, parsed, raw, names);
+            AbnormalReport done = writer.success(diagnosisId, model, elapsed, parsed, raw, names);
+            if (done != null) {
+                notifier.diagnosed(done, recipients, input.penName(), input.batchNo(),
+                        parsed.causes().isEmpty() ? null : parsed.causes().get(0).diseaseName());
+            }
         } catch (DiagnosisParser.InvalidDiagnosisOutputException e) {
-            writer.failure(diagnosisId, "INVALID_OUTPUT", System.currentTimeMillis() - startedAt, raw);
+            notifyFailure(writer.failure(diagnosisId, "INVALID_OUTPUT", System.currentTimeMillis() - startedAt, raw,
+                    names), recipients, input);
         } catch (RuntimeException e) {
             String reason = isTimeout(e) ? "TIMEOUT" : "SERVICE_UNAVAILABLE";
-            writer.failure(diagnosisId, reason, System.currentTimeMillis() - startedAt, raw);
+            notifyFailure(writer.failure(diagnosisId, reason, System.currentTimeMillis() - startedAt, raw, names),
+                    recipients, input);
         }
+    }
+
+    /** 失败结果写库后通知（已被其他线程收尾时 report 为 null，不重复通知） */
+    private void notifyFailure(AbnormalReport report, Map<Long, String> recipients, DiagnosisInput input) {
+        if (report == null) {
+            return;
+        }
+        String penName = input == null ? null : input.penName();
+        String batchNo = input == null ? null : input.batchNo();
+        if (penName == null) {
+            try {
+                penName = support.penName(report.getPenId());
+            } catch (RuntimeException ignored) {
+                // 取不到栏舍名时消息摘要不带栏舍
+            }
+        }
+        notifier.failed(report, recipients, penName, batchNo, lastFailureText(report));
     }
 
     @Override

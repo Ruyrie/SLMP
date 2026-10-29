@@ -374,12 +374,12 @@ public class BatchStockCommandServiceImpl implements BatchStockCommandService {
         row.setBizId(command.bizId());
         row.setBizDate(saleDate);
         row.setOccurredAt(now);
-        row.setTitle("出栏 " + total + " 头");
+        row.setTitle("出栏 " + support.countText(batch, total));
         row.setSubtitle(String.join("、", penNames) + " · " + support.userName(operatorId));
         row.setDetailJson(toJson(detail("登记人", support.userName(operatorId),
                 "出栏日期", BeijingTime.format(saleDate),
                 "出栏栏舍", String.join("、", penNames),
-                "数量", total + " 头")));
+                "数量", support.countText(batch, total))));
         row.setOperatorUserId(operatorId);
         row.setDeleted(false);
         timelineMapper.upsertSaleTimeline(row);

@@ -277,6 +277,28 @@ public class HerdSupport {
         return "BIRD".equals(unit) ? "只" : "头";
     }
 
+    /** 批次的数量单位文字：按批次品类（头 / 只），取不到时按养殖场主品类 */
+    public String batchUnitText(Batch batch) {
+        if (batch == null) {
+            return "头";
+        }
+        CategoryInfo info = category(batch.getCategoryId());
+        if (info != null && info.countUnitText() != null && !info.countUnitText().isBlank()) {
+            return info.countUnitText();
+        }
+        return unitText(farmUnit(batch.getFarmId()));
+    }
+
+    /** 批次数量文字（千分位 + 品类单位），例：4,600 只 */
+    public String countText(Batch batch, int count) {
+        return groupDigits(count) + " " + batchUnitText(batch);
+    }
+
+    /** 千分位：4600 → 4,600 */
+    public static String groupDigits(long value) {
+        return String.format(java.util.Locale.ROOT, "%,d", value);
+    }
+
     /** 死亡率：四位小数，分母为 0 返回 null */
     public static BigDecimal mortality(Integer deathCount, Integer entryCount) {
         if (entryCount == null || entryCount <= 0) {

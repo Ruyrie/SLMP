@@ -569,7 +569,7 @@ public class BatchServiceImpl implements BatchService {
 
         penMapper.addStock(pen.getId(), count, BeijingTime.now());
         writeTimeline(batch, pen.getId(), "ENTRY", BizType.BATCH_ENTRY.name(), event.getId(), entryDate,
-                "入栏 " + count + " 头", sourceText(source) + " · 入栏日龄 " + age + " 天 · " + member.farmName(),
+                "入栏 " + support.countText(batch, count), sourceText(source) + " · 入栏日龄 " + age + " 天 · " + member.farmName(),
                 detail("登记人", support.userName(member.userId()), "登记时间", BeijingTime.format(entryDate),
                         "入栏平均体重", weight == null ? null : weight.stripTrailingZeros().toPlainString() + " 千克"),
                 member.userId());
@@ -704,7 +704,7 @@ public class BatchServiceImpl implements BatchService {
                     .set(BatchEvent::getUpdatedAt, BeijingTime.now()));
             updateEntryTimeline(batch, entry.getId(), newPen.getId(), entryDate, newCount);
             logRecord("UPDATE", BizType.BATCH_ENTRY.name(), batch, entry.getId(), batch.getBatchNo(),
-                    "修改入栏记录为 " + newCount + " 头");
+                    "修改入栏记录为 " + support.countText(batch, newCount));
         }
         return detail(batchId);
     }
@@ -802,7 +802,7 @@ public class BatchServiceImpl implements BatchService {
         event.setDeleted(false);
         eventMapper.insert(event);
         writeTimeline(batch, fromPen.getId(), "TRANSFER", BizType.BATCH_TRANSFER.name(), event.getId(), eventDate,
-                "转栏 · " + quantity + " 头", fromPen.getPenName() + " → " + toPen.getPenName() + " · "
+                "转栏 · " + support.countText(batch, quantity), fromPen.getPenName() + " → " + toPen.getPenName() + " · "
                         + support.userName(member.userId()),
                 detail("登记人", support.userName(member.userId()), "登记时间", BeijingTime.format(eventDate)),
                 member.userId());
@@ -888,10 +888,10 @@ public class BatchServiceImpl implements BatchService {
                 .set(BatchEvent::getUpdatedAt, BeijingTime.now()));
         bumpBatchVersion(batch);
         updateTimeline(batch.getId(), BizType.BATCH_TRANSFER.name(), eventId, fromPen.getId(), eventDate,
-                "转栏 · " + quantity + " 头", fromPen.getPenName() + " → " + toPen.getPenName() + " · "
+                "转栏 · " + support.countText(batch, quantity), fromPen.getPenName() + " → " + toPen.getPenName() + " · "
                         + support.userName(member.userId()));
         logRecord("UPDATE", BizType.BATCH_TRANSFER.name(), batch, eventId, batch.getBatchNo(),
-                "修改转栏记录为 " + quantity + " 头");
+                "修改转栏记录为 " + support.countText(batch, quantity));
         return transferResult(batch, event, fromPen.getPenName(), toPen.getPenName(),
                 newFromStock - quantity, toBefore + quantity);
     }
@@ -958,7 +958,7 @@ public class BatchServiceImpl implements BatchService {
             bizMediaService.replace(BizType.BATCH_DEATH, event.getId(), member.farmId(), fileIds);
         }
         writeTimeline(batch, penId, "DEATH", BizType.BATCH_DEATH.name(), event.getId(), eventDate,
-                deathTitle(quantity, reason), penName(penId) + " · " + executionText(executorId, member.userId()),
+                deathTitle(batch, quantity, reason), penName(penId) + " · " + executionText(executorId, member.userId()),
                 detail("登记人", support.userName(member.userId()), "实际执行人", support.userName(executorId),
                         "登记时间", BeijingTime.format(eventDate), "说明", request.getRemark()),
                 member.userId());
@@ -1029,9 +1029,9 @@ public class BatchServiceImpl implements BatchService {
                 .set(BatchEvent::getUpdatedAt, BeijingTime.now()));
         bizMediaService.replace(BizType.BATCH_DEATH, eventId, member.farmId(), fileIds);
         updateTimeline(batch.getId(), BizType.BATCH_DEATH.name(), eventId, penId, eventDate,
-                deathTitle(quantity, reason), penName(penId) + " · " + executionText(executorId, member.userId()));
+                deathTitle(batch, quantity, reason), penName(penId) + " · " + executionText(executorId, member.userId()));
         logRecord("UPDATE", BizType.BATCH_DEATH.name(), batch, eventId, batch.getBatchNo(),
-                "修改死淘记录为 " + quantity + " 头");
+                "修改死淘记录为 " + support.countText(batch, quantity));
         return deathResult(batch, event, quantity);
     }
 
@@ -1268,7 +1268,7 @@ public class BatchServiceImpl implements BatchService {
         to.setStockCount(toStock);
         vo.setFromPen(from);
         vo.setToPen(to);
-        vo.setMessage("已转栏 " + event.getQuantity() + " 头到 " + toName);
+        vo.setMessage("已转栏 " + support.countText(batch, event.getQuantity()) + "到 " + toName);
         return vo;
     }
 
@@ -1281,7 +1281,7 @@ public class BatchServiceImpl implements BatchService {
         vo.setDeathCount(batch.getDeathCount());
         vo.setMortalityRate(HerdSupport.mortality(batch.getDeathCount(), batch.getEntryCount()));
         vo.setBatchStatus(batch.getStatus());
-        vo.setMessage("已登记死淘 " + quantity + " 头，存栏已更新");
+        vo.setMessage("已登记死淘 " + support.countText(batch, quantity) + "，存栏已更新");
         vo.setBatchEnded("ENDED".equals(batch.getStatus()));
         return vo;
     }
@@ -1326,7 +1326,7 @@ public class BatchServiceImpl implements BatchService {
                 .eq(BatchTimeline::getBizId, eventId)
                 .set(BatchTimeline::getPenId, penId)
                 .set(BatchTimeline::getBizDate, entryDate)
-                .set(BatchTimeline::getTitle, "入栏 " + count + " 头")
+                .set(BatchTimeline::getTitle, "入栏 " + support.countText(batch, count))
                 .set(BatchTimeline::getUpdatedAt, BeijingTime.now()));
     }
 
@@ -1352,8 +1352,8 @@ public class BatchServiceImpl implements BatchService {
         return result;
     }
 
-    private static String deathTitle(int quantity, String reason) {
-        return "死淘 · " + quantity + " 头 · " + switch (reason) {
+    private String deathTitle(Batch batch, int quantity, String reason) {
+        return "死淘 · " + support.countText(batch, quantity) + " · " + switch (reason) {
             case "SICK" -> "病死";
             case "CULL" -> "淘汰";
             case "ACCIDENT" -> "意外";
@@ -1422,7 +1422,7 @@ public class BatchServiceImpl implements BatchService {
             vo.setOverCapacityCount(event.getOverCapacityCount());
             vo.setFromPen(penItem(event.getPenId(), null));
             vo.setToPen(penItem(event.getToPenId(), null));
-            vo.setMessage("已转栏 " + event.getQuantity() + " 头到 "
+            vo.setMessage("已转栏 " + support.countText(batch, event.getQuantity()) + "到 "
                     + (vo.getToPen() == null ? "转入栏舍" : vo.getToPen().getPenName()));
             return vo;
         }
@@ -1436,7 +1436,7 @@ public class BatchServiceImpl implements BatchService {
         vo.setDeathCount(death);
         vo.setMortalityRate(HerdSupport.mortality(death, batch.getEntryCount()));
         vo.setBatchStatus(batch.getStatus());
-        vo.setMessage("已登记死淘 " + event.getQuantity() + " 头，存栏已更新");
+        vo.setMessage("已登记死淘 " + support.countText(batch, event.getQuantity()) + "，存栏已更新");
         vo.setBatchEnded("ENDED".equals(batch.getStatus()));
         return vo;
     }

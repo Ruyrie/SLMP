@@ -207,7 +207,7 @@ public class BatchTransferChangeHandler implements ChangeRequestHandler {
         }
         change.bumpBatchVersion(batch);
         change.updateTimeline(batch.getId(), BizType.BATCH_TRANSFER.name(), event.getId(), fromPenId, eventDate,
-                "转栏 · " + after + " 头", fromName + " → " + toName + " · " + change.userName(event.getCreatedBy()));
+                "转栏 · " + change.countText(batch, after), fromName + " → " + toName + " · " + change.userName(event.getCreatedBy()));
         Map<String, Object> beforeValues = new LinkedHashMap<>();
         Map<String, Object> afterValues = new LinkedHashMap<>();
         beforeValues.put(FIELD_TRANSFER_COUNT, HerdChangeSupport.value(FIELD_NAME, before + " " + UNIT));

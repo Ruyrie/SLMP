@@ -68,7 +68,8 @@ class AiControllerMockMvcTest {
     void setUp() {
         mvc = TestMvc.builder(
                 new AiSessionController(sessionService),
-                new AiMessageController(askService, messageService, speechService),
+                new AiMessageController(messageService, speechService),
+                new AiStreamController(askService),
                 new KnowledgeController(knowledgeService),
                 new CourseController(courseService)).build();
         UserContext.set(new UserContext.LoginUser(10001L, ClientType.APP_ANDROID, 0, "jti"));

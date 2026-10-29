@@ -115,6 +115,14 @@ public class InspectSupport {
         return pen;
     }
 
+    /** 这条异常上报是否已转成用药记录（按真实用药记录判断，作废/删除的不算） */
+    public boolean medicationConverted(Long farmId, Long reportId) {
+        if (farmId == null || reportId == null) {
+            return false;
+        }
+        return referenceMapper.countMedicationByReport(farmId, reportId) > 0;
+    }
+
     public String penName(Long penId) {
         if (penId == null) {
             return null;

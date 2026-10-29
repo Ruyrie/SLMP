@@ -194,7 +194,10 @@ public class AiRoundService {
         messageMapper.updateById(message);
     }
 
-    /** 重新生成：条件更新状态并清空回答与引用 */
+    /**
+     * 重新生成：清空回答与引用后重新进入 ANSWERING。
+     * 仍在生成中的消息由调用方先取消旧生成（停止后立即重新生成），这里不再拒绝。
+     */
     @Transactional
     public AiRound reset(Long userId, Long messageId, String clientMsgId) {
         personalDataGuard.requireActive(userId);
@@ -202,9 +205,6 @@ public class AiRoundService {
         if (message == null || !userId.equals(message.getUserId())
                 || AiCodes.STATUS_DELETED.equals(message.getStatus())) {
             throw AiErrors.notFound();
-        }
-        if (AiCodes.STATUS_ANSWERING.equals(message.getStatus())) {
-            throw AiErrors.stateChanged("回答还在生成中，请稍后");
         }
         message.setStatus(AiCodes.STATUS_ANSWERING);
         message.setAnswerType(null);

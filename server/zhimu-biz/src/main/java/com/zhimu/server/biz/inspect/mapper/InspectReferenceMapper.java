@@ -49,4 +49,8 @@ public interface InspectReferenceMapper {
 
     @Select("SELECT pen_name FROM t_pen WHERE id = #{penId}")
     String selectPenName(@Param("penId") Long penId);
+
+    /** 由这条异常上报转成的有效用药记录数（t_medication_record.report_id，未删除） */
+    @Select("SELECT COUNT(*) FROM t_medication_record WHERE farm_id = #{farmId} AND report_id = #{reportId} AND deleted = 0")
+    int countMedicationByReport(@Param("farmId") Long farmId, @Param("reportId") Long reportId);
 }

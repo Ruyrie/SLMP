@@ -187,7 +187,7 @@ public class BatchDeathChangeHandler implements ChangeRequestHandler {
         }
         String reason = HerdChangeSupport.deathReasonText(event.getReasonCode());
         change.updateTimeline(batch.getId(), BizType.BATCH_DEATH.name(), event.getId(), penId, eventDate,
-                "死淘 · " + after + " " + UNIT + " · " + reason, penName + " · "
+                "死淘 · " + change.countText(batch, after) + " · " + reason, penName + " · "
                         + change.userName(event.getExecutorUserId()));
         Map<String, Object> beforeValues = new LinkedHashMap<>();
         Map<String, Object> afterValues = new LinkedHashMap<>();

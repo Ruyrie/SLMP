@@ -262,6 +262,7 @@ public class BreedingRecordServiceImpl implements BreedingRecordService {
         if (result == null || !List.of("POSITIVE", "NEGATIVE").contains(result)) {
             throw BreedingErrors.invalid("result", "请选择妊检结果");
         }
+        checkPositiveInterval(result, checkDate, cycle);
         String method = request.getCheckMethod() == null ? "ULTRASOUND" : request.getCheckMethod();
         if (!List.of("ULTRASOUND", "OBSERVATION", "OTHER").contains(method)) {
             throw BreedingErrors.invalid("check_method", "请选择妊检方式");
@@ -308,6 +309,18 @@ public class BreedingRecordServiceImpl implements BreedingRecordService {
                 null, "POSITIVE".equals(result) ? cycle.getExpectedDueDate() : null, null, null, null);
     }
 
+    /** 妊检阳性须在首次配种后满 18 天登记（阴性不限） */
+    static final int MIN_POSITIVE_CHECK_DAYS = 18;
+
+    private static void checkPositiveInterval(String result, LocalDate checkDate, BreedingCycle cycle) {
+        if (!"POSITIVE".equals(result) || checkDate == null || cycle.getFirstMatingDate() == null) {
+            return;
+        }
+        if (checkDate.isBefore(cycle.getFirstMatingDate().plusDays(MIN_POSITIVE_CHECK_DAYS))) {
+            throw BreedingErrors.invalid("check_date", "配种后满 18 天才能登记妊检阳性");
+        }
+    }
+
     @Override
     @Transactional
     public BreedingRecordVO updateCheck(Long recordId, PregnancyCheckUpdateRequest request) {
@@ -318,6 +331,8 @@ public class BreedingRecordServiceImpl implements BreedingRecordService {
             throw BreedingErrors.stateChanged("本胎已登记产仔，妊检记录不能修改");
         }
         BreedingValidations.checkVersion(request.getVersion(), record.getVersion());
+        LocalDate oldCheckDate = record.getCheckDate();
+        String oldResult = record.getResult();
         Long userId = UserContext.requireUserId();
         if (request.getCheckDate() != null) {
             LocalDate checkDate = BreedingValidations.date("check_date", request.getCheckDate(),
@@ -370,6 +385,11 @@ public class BreedingRecordServiceImpl implements BreedingRecordService {
             if (animalMapper.updateById(animal) == 0 || cycleMapper.updateById(cycle) == 0) {
                 throw BreedingErrors.versionConflict();
             }
+        }
+        // 只在日期或结果有变化时校验，旧记录只改妊检方式不受影响
+        if (!java.util.Objects.equals(oldCheckDate, record.getCheckDate())
+                || !java.util.Objects.equals(oldResult, record.getResult())) {
+            checkPositiveInterval(record.getResult(), record.getCheckDate(), cycle);
         }
         record.setUpdatedBy(userId);
         if (checkMapper.updateById(record) == 0) {

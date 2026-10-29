@@ -117,6 +117,11 @@ public class HerdChangeSupport {
         return name == null || name.isBlank() ? "" : name;
     }
 
+    /** 时间线标题用的数量文字（千分位 + 批次品类单位） */
+    public String countText(Batch batch, int count) {
+        return support.countText(batch, count);
+    }
+
     public String userName(Long userId) {
         String name = support.userName(userId);
         return name == null || name.isBlank() ? "" : name;
