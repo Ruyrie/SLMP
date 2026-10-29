@@ -54,6 +54,7 @@ public class ChangeRequestReviewServiceImpl implements ChangeRequestReviewServic
 
     private static final String MSG_NOT_FOUND = "这条修改申请不存在，列表已刷新";
     private static final String MSG_NOTIFIED = "结果发到提交人的消息中心，并显示在“我的修改申请”";
+    private static final String EMPTY_DISPLAY = "未填写";
 
     private final AuditAdminQueryMapper queryMapper;
     private final ChangeRequestAdminService changeRequestAdminService;
@@ -313,6 +314,15 @@ public class ChangeRequestReviewServiceImpl implements ChangeRequestReviewServic
             String afterText = a == null ? null : a.display;
             if (beforeText == null && afterText == null) {
                 continue;
+            }
+            if (a == null) {
+                // after 快照只写改动项：没写进 after 的字段就是没改，原值照列但不算修改
+                rows.add(new CompareRowVO(name, beforeText, beforeText, false));
+                continue;
+            }
+            if (afterText == null) {
+                // 改动项清空了值（display 缺省），显示“未填写”而不是回落成原值
+                afterText = EMPTY_DISPLAY;
             }
             rows.add(CompareRowVO.of(name, beforeText, afterText));
         }

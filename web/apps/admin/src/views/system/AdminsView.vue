@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { routeQueryId, routeQueryText } from '@/utils/routeQuery'
 import { formatDateTime } from '@zmt/shared'
+import { adminStatus } from '@/views/system/shared'
 import { useAdminsStore } from '@/stores/system/admins'
 import { useUiStore } from '@/stores/ui'
 import type { AdminRow, PermissionCell, PermissionRow } from '@/api/system'
@@ -133,7 +134,7 @@ onMounted(async () => {
               <span class="num">{{ item.last_login_at ? formatDateTime(item.last_login_at) : '—' }}</span>
             </template>
             <template #item.status="{ item }">
-              <zw-tag :type="item.status === 'NORMAL' ? 'success' : 'error'" size="small">{{ item.status_text || (item.status === 'NORMAL' ? '正常' : '已停用') }}</zw-tag>
+              <zw-tag :type="adminStatus(item).tone" size="small">{{ adminStatus(item).text }}</zw-tag>
             </template>
             <template #item.actions="{ item }">
               <div class="zw-cell-actions">

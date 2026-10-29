@@ -14,12 +14,14 @@ import com.zhimu.server.biz.ai.mapper.CourseMapper;
 import com.zhimu.server.biz.ai.mapper.CourseTopicMapper;
 import com.zhimu.server.common.context.AdminContext;
 import com.zhimu.server.common.error.BizException;
+import com.zhimu.server.framework.oplog.OperationLogEntry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +39,7 @@ class CourseTopicAdminServiceImplTest {
     private final CourseTopicMapper topicMapper = mock(CourseTopicMapper.class);
     private final CourseMapper courseMapper = mock(CourseMapper.class);
     private final ContentCategoryAdminService categoryService = mock(ContentCategoryAdminService.class);
+    private final ContentLogs logs = mock(ContentLogs.class);
     private CourseTopicAdminServiceImpl service;
     private CourseTopic topic;
 
@@ -45,7 +48,7 @@ class CourseTopicAdminServiceImplTest {
         ContentTableInfo.ensure();
         AdminContext.set(new AdminContext.LoginAdmin(1L, "周敏", Set.of("SUPER_ADMIN"), Set.of(), 0, "t"));
         service = new CourseTopicAdminServiceImpl(topicMapper, courseMapper, categoryService,
-                mock(ContentMediaSupport.class), mock(ContentLogs.class));
+                mock(ContentMediaSupport.class), logs);
         CourseCategory category = new CourseCategory();
         category.setId(5101L);
         category.setName("饲养管理");
@@ -107,5 +110,31 @@ class CourseTopicAdminServiceImplTest {
         ArgumentCaptor<Wrapper<CourseTopic>> sets = (ArgumentCaptor) ArgumentCaptor.forClass(Wrapper.class);
         verify(topicMapper, atLeastOnce()).update(isNull(), sets.capture());
         assertThat(sets.getAllValues()).anySatisfy(w -> assertThat(w.getSqlSet()).contains("intro"));
+    }
+
+    @Test
+    void updateLogKeepsOnlyChangedFieldsWithCategoryName() {
+        topic.setCategoryName("饲养管理");
+        topic.setSortNo(3);
+        when(categoryService.nameOf(5101L)).thenReturn("饲养管理");
+        CourseTopicSaveRequest request = new CourseTopicSaveRequest();
+        request.setName("母猪产前护理");
+        request.setCategoryId(5101L);
+        request.setIntro("新简介");
+        request.setVersion(3);
+
+        service.update(7001L, request);
+
+        ArgumentCaptor<OperationLogEntry> entry = ArgumentCaptor.forClass(OperationLogEntry.class);
+        verify(logs).record(entry.capture());
+        assertThat(entry.getValue().getOpAction()).isEqualTo("TOPIC_UPDATE");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> before = (Map<String, Object>) entry.getValue().getBefore();
+        @SuppressWarnings("unchecked")
+        Map<String, Object> after = (Map<String, Object>) entry.getValue().getAfter();
+        assertThat(before).containsOnlyKeys("intro")
+                .containsEntry("intro", Map.of("name", "简介", "display", "旧简介"));
+        assertThat(after).containsOnlyKeys("intro")
+                .containsEntry("intro", Map.of("name", "简介", "display", "新简介"));
     }
 }

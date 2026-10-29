@@ -42,6 +42,24 @@ export function fmtLastLogin(value?: string | null, client?: string): string {
   return `${prefix} ${d.format('HH:mm')}${client ? ` · ${client}` : ''}`
 }
 
+export interface AdminStatusLike {
+  status?: string
+  status_text?: string
+  locked?: boolean
+  locked_until?: string | null
+}
+
+/** 管理员列表状态：停用优先；正常但输错密码被锁定的显示“已锁定（至 HH:mm）”，不是今天的带日期 */
+export function adminStatus(row: AdminStatusLike): { text: string; tone: 'success' | 'warning' | 'error' } {
+  if (row.status && row.status !== 'NORMAL') return { text: row.status_text || '已停用', tone: 'error' }
+  if (row.locked) {
+    const until = row.locked_until ? dayjs(row.locked_until) : null
+    if (!until || !until.isValid()) return { text: '已锁定', tone: 'warning' }
+    return { text: `已锁定（至 ${until.format(until.isSame(dayjs(), 'day') ? 'HH:mm' : 'M月D日 HH:mm')}）`, tone: 'warning' }
+  }
+  return { text: row.status_text || '正常', tone: 'success' }
+}
+
 export function fmtApproved(value?: string | null): string {
   if (!value) return '—'
   const d = dayjs(value)

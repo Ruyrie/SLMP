@@ -10,6 +10,7 @@ import com.zhimu.server.admin.content.support.ContentLogs;
 import com.zhimu.server.admin.content.support.ContentMediaSupport;
 import com.zhimu.server.admin.content.support.ContentTexts;
 import com.zhimu.server.admin.content.vo.CourseTopicVO;
+import com.zhimu.server.admin.system.support.AdminDiffs;
 import com.zhimu.server.biz.ai.entity.Course;
 import com.zhimu.server.biz.ai.entity.CourseCategory;
 import com.zhimu.server.biz.ai.entity.CourseTopic;
@@ -98,7 +99,12 @@ public class CourseTopicAdminServiceImpl implements CourseTopicAdminService {
         CourseCategory category = categoryService.requireEnabled(request.getCategoryId());
         FileEntity cover = request.getCoverFileId() == null ? null
                 : media.requireCover(request.getCoverFileId(), FileScene.TOPIC_COVER);
-        Map<String, Object> before = snapshot(topic);
+        AdminDiffs.Diff diff = AdminDiffs.diff()
+                .field("name", "名称", topic.getName(), name)
+                .field("category", "分类", categoryName(topic), category.getName())
+                .field("intro", "简介", topic.getIntro(), blankToNull(request.getIntro()));
+        Integer oldSort = topic.getSortNo();
+        String oldCourses = courseTitles(coursesOf(id));
         Long oldCover = topic.getCoverFileId();
         topic.setName(name);
         topic.setCategoryId(category.getId());
@@ -126,8 +132,27 @@ public class CourseTopicAdminServiceImpl implements CourseTopicAdminService {
             media.markBound(oldCover, false);
             media.markBound(cover.getId(), true);
         }
-        writeLog("TOPIC_UPDATE", id, name, null, before, snapshot(topic));
-        return toVO(topic, coursesOf(id));
+        List<Course> courses = coursesOf(id);
+        diff.field("cover", "封面", "原封面",
+                        cover != null && !Objects.equals(oldCover, cover.getId()) ? "已更换" : "原封面")
+                .field("sort_no", "排序", oldSort, topic.getSortNo())
+                .field("courses", "课程编排", oldCourses, courseTitles(courses));
+        writeLog("TOPIC_UPDATE", id, name, null, diff.before(), diff.after());
+        return toVO(topic, courses);
+    }
+
+    /** 留痕里的分类用名称：优先按编号查当前名称，查不到用专题上的名称快照 */
+    private String categoryName(CourseTopic topic) {
+        String current = topic.getCategoryId() == null ? null : categoryService.nameOf(topic.getCategoryId());
+        return current != null ? current : topic.getCategoryName();
+    }
+
+    private static String courseTitles(List<Course> courses) {
+        List<String> titles = new ArrayList<>();
+        for (Course course : courses) {
+            titles.add(course.getTitle());
+        }
+        return titles.isEmpty() ? null : String.join("、", titles);
     }
 
     @Override
@@ -293,15 +318,6 @@ public class CourseTopicAdminServiceImpl implements CourseTopicAdminService {
         vo.setTotalDurationSec(duration);
         vo.setDurationText(ContentTexts.durationText(duration));
         return vo;
-    }
-
-    private Map<String, Object> snapshot(CourseTopic topic) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("name", topic.getName());
-        map.put("category_id", topic.getCategoryId());
-        map.put("status", topic.getStatus());
-        map.put("sort_no", topic.getSortNo());
-        return map;
     }
 
     private static String blankToNull(String value) {

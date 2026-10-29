@@ -11,6 +11,7 @@ import com.zhimu.server.admin.base.request.CategorySaveRequest;
 import com.zhimu.server.admin.base.service.CategoryAdminService;
 import com.zhimu.server.admin.base.support.BaseErrors;
 import com.zhimu.server.admin.base.support.BaseLogs;
+import com.zhimu.server.admin.system.support.AdminDiffs;
 import com.zhimu.server.admin.base.vo.CategoryVO;
 import com.zhimu.server.common.context.AdminContext;
 import com.zhimu.server.common.enums.Species;
@@ -120,10 +121,22 @@ public class CategoryAdminServiceImpl implements CategoryAdminService {
         }
         String action = "DISABLED".equals(status) && !"DISABLED".equals(category.getStatus()) ? "DISABLE"
                 : "ENABLED".equals(status) && !"ENABLED".equals(category.getStatus()) ? "ENABLE" : "UPDATE";
+        // 只记有变化的字段，编码写中文
+        AdminDiffs.Diff diff = AdminDiffs.diff()
+                .field("name", "名称", category.getName(), name)
+                .field("species", "畜种", AdminBaseConvert.speciesText(category.getSpecies()),
+                        AdminBaseConvert.speciesText(species))
+                .field("is_breeding", "种畜品类", Boolean.TRUE.equals(category.getIsBreeding()), breeding)
+                .field("sort_no", "排序", category.getSortNo(),
+                        request.getSortNo() == null ? category.getSortNo() : request.getSortNo())
+                .field("status", "状态", AdminBaseConvert.statusText(category.getStatus()),
+                        AdminBaseConvert.statusText(status))
+                .field("disable_reason", "停用原因", category.getDisableReason(),
+                        "DISABLED".equals(status) ? reason : null);
         logs.record(OperationLogEntry.builder()
                 .opType("BASE_CATEGORY").opAction(action).bizType("CATEGORY").bizId(id)
                 .targetName(name).searchText(name).reason(reason)
-                .before(AdminBaseConvert.category(category)).build());
+                .before(diff.before()).after(diff.after()).build());
         AfterCommit.run(() -> eventPublisher.publishEvent(BaseDataChangedEvent.category()));
         category.setName(name);
         category.setSpecies(species);

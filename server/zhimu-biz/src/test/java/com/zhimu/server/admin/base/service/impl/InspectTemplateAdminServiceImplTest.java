@@ -101,6 +101,22 @@ class InspectTemplateAdminServiceImplTest {
     }
 
     @Test
+    void detailWithoutDraftShowsOnlineItemsWithoutChangeTags() {
+        InspectTemplateVersion online = version(1101L, 2);
+        when(versionMapper.selectOne(any())).thenReturn(online, null);
+        InspectItem added = draftItem(101L, null, "精神状态", 1);
+        added.setVersionId(1101L);
+        added.setChangeType("ADDED");
+        added.setEnabled(true);
+        when(itemMapper.selectList(any())).thenReturn(List.of(added));
+
+        var detail = service.detail(11L);
+
+        assertThat(detail.getItems()).extracting(item -> item.getChangeType()).containsExactly("NONE");
+        assertThat(detail.getPreviewItems()).extracting(item -> item.getChangeType()).containsExactly("NONE");
+    }
+
+    @Test
     void addItemRejectsOptionsWithoutNormalFirst() {
         InspectItemSaveRequest request = itemRequest();
         InspectItemSaveRequest.Option abnormal = new InspectItemSaveRequest.Option();
