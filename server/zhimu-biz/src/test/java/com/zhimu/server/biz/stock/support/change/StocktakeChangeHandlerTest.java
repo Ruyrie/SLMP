@@ -78,6 +78,7 @@ class StocktakeChangeHandlerTest {
 
     @BeforeEach
     void setUp() {
+        com.zhimu.server.biz.common.support.TableInfos.ensure(com.zhimu.server.biz.stock.entity.StocktakeItem.class);
         BeijingTime.setClock(CLOCK);
         StockChangeSupport support = new StockChangeSupport(feedMapper, drugMapper, drugLotMapper,
                 accountQueryService, operationLogRecorder);

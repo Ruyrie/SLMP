@@ -58,6 +58,7 @@ class PenServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        com.zhimu.server.biz.common.support.TableInfos.ensure(com.zhimu.server.biz.herd.entity.Pen.class);
         service = new PenServiceImpl(support, farmLookup, baseDataQueryService, penMapper, operationLogRecorder);
         FarmContext.set(new FarmContext.FarmMember(1001L, "东山猪场", 10001L, 5001L, FarmRole.OWNER,
                 Set.of(), FarmStatus.NORMAL));

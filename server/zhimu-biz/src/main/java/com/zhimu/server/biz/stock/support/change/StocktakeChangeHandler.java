@@ -232,6 +232,11 @@ public class StocktakeChangeHandler implements ChangeRequestHandler {
             flowWriter.voidFlow(flow, StockCodes.VOID_CORRECTED);
             item.setFlowId(null);
             itemMapper.updateById(item);
+            // updateById 跳过 null：差异改为 0、流水已作废时显式解除关联
+            itemMapper.update(null, com.baomidou.mybatisplus.core.toolkit.Wrappers
+                    .<StocktakeItem>lambdaUpdate()
+                    .eq(StocktakeItem::getId, item.getId())
+                    .set(StocktakeItem::getFlowId, null));
             return;
         }
         if (flow != null) {

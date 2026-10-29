@@ -1,5 +1,7 @@
 package com.zhimu.server.biz.inspect.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.Version;
@@ -39,6 +41,7 @@ public class AbnormalReport extends AuditEntity {
     /** AI_STATE：DIAGNOSING / UNAVAILABLE / FAILED / DONE */
     private String aiState;
     private Boolean autoRetryUsed;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private LocalDateTime unavailableSince;
     private Long currentDiagnosisId;
     /** URGENCY：NORMAL / ATTENTION / URGENT */

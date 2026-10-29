@@ -75,6 +75,7 @@ class SaleOrderChangeHandlerTest {
 
     @BeforeEach
     void setUp() {
+        com.zhimu.server.biz.common.support.TableInfos.ensure(com.zhimu.server.biz.finance.entity.SaleOrder.class);
         BeijingTime.setClock(CLOCK);
         handler = new SaleOrderChangeHandler(orderMapper, receiptMapper, financeRecordMapper,
                 batchQueryService, batchSalePort, accountQueryService, operationLogRecorder, batchSettlementService,
@@ -350,6 +351,13 @@ class SaleOrderChangeHandlerTest {
         order.setPendingChangeRequestId(9202L);
         handler.onClosed(request);
         assertThat(order.getPendingChangeRequestId()).isNull();
+        // updateById 跳过 null：必须显式写 pending_change_request_id = NULL，且只清本申请
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper<SaleOrder>> clear =
+                ArgumentCaptor.forClass(com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper.class);
+        verify(orderMapper).update(org.mockito.ArgumentMatchers.isNull(), clear.capture());
+        assertThat(clear.getValue().getSqlSet()).contains("pending_change_request_id=");
+        assertThat(clear.getValue().getSqlSegment()).contains("pending_change_request_id");
     }
 
     private static ChangeRequest request(String changeType, String fieldCode, String afterJson) {

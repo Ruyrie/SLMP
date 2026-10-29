@@ -260,6 +260,10 @@ public class ImmuneRecordChangeHandler implements ChangeRequestHandler {
         plan.setStatus(HealthCodes.PLAN_PENDING);
         plan.setRecordId(null);
         planMapper.updateById(plan);
+        // updateById 跳过 null：作废接种记录后解除计划与记录的关联
+        planMapper.update(null, com.baomidou.mybatisplus.core.toolkit.Wrappers.<ImmunePlan>lambdaUpdate()
+                .eq(ImmunePlan::getId, plan.getId())
+                .set(ImmunePlan::getRecordId, null));
     }
 
     private ImmuneRecord load(Long bizId) {

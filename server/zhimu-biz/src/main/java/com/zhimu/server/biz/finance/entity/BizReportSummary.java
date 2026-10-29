@@ -1,5 +1,7 @@
 package com.zhimu.server.biz.finance.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.zhimu.server.framework.mybatis.AuditEntity;
 import lombok.Getter;
@@ -28,6 +30,7 @@ public class BizReportSummary extends AuditEntity {
     private String suggestion;
     private String dataHash;
     private String status;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String errorMessage;
     private String aiModel;
     private String promptVersion;

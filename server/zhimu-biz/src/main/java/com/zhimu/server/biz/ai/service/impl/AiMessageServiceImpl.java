@@ -61,6 +61,20 @@ public class AiMessageServiceImpl implements AiMessageService {
             message.setHandleStatus(null);
         }
         messageMapper.updateById(message);
+        boolean clearRating = normalized == null;
+        boolean clearHandle = handle != null && message.getHandleStatus() == null;
+        if (clearRating || clearHandle) {
+            // updateById 跳过 null：取消评价、撤回待处理标记要显式写 NULL
+            var clear = com.baomidou.mybatisplus.core.toolkit.Wrappers.<AiMessage>lambdaUpdate()
+                    .eq(AiMessage::getId, message.getId());
+            if (clearRating) {
+                clear.set(AiMessage::getRating, null).set(AiMessage::getRatedAt, null);
+            }
+            if (clearHandle) {
+                clear.set(AiMessage::getHandleStatus, null);
+            }
+            messageMapper.update(null, clear);
+        }
         RatingResultVO vo = new RatingResultVO();
         vo.setRating(normalized);
         vo.setRatedAt(BeijingTime.format(message.getRatedAt()));

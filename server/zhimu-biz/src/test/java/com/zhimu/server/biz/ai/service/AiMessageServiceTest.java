@@ -29,6 +29,11 @@ class AiMessageServiceTest {
 
     @BeforeEach
     void setUp() {
+        if (com.baomidou.mybatisplus.core.metadata.TableInfoHelper.getTableInfo(AiMessage.class) == null) {
+            com.baomidou.mybatisplus.core.metadata.TableInfoHelper.initTableInfo(
+                    new org.apache.ibatis.builder.MapperBuilderAssistant(
+                            new com.baomidou.mybatisplus.core.MybatisConfiguration(), ""), AiMessage.class);
+        }
         service = new AiMessageServiceImpl(messageMapper, messageConvert);
     }
 
@@ -70,6 +75,13 @@ class AiMessageServiceTest {
         assertThat(vo.getRating()).isNull();
         assertThat(vo.getRatedAt()).isNull();
         assertThat(message.getRating()).isNull();
+        // updateById 跳过 null：取消评价必须显式写 rating / rated_at = NULL
+        @SuppressWarnings("unchecked")
+        org.mockito.ArgumentCaptor<com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper<AiMessage>> clear =
+                org.mockito.ArgumentCaptor.forClass(
+                        com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper.class);
+        verify(messageMapper).update(org.mockito.ArgumentMatchers.isNull(), clear.capture());
+        assertThat(clear.getValue().getSqlSet()).contains("rating=", "rated_at=");
     }
 
     @Test

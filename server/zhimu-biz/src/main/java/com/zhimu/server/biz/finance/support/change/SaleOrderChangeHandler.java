@@ -269,6 +269,7 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
                 order.setContentVersion((order.getContentVersion() == null ? 0 : order.getContentVersion()) + 1);
                 order.setUpdatedBy(adminId);
                 if (orderMapper.updateById(order) == 0) throw new BizException(ErrorCode.VERSION_CONFLICT);
+                clearPaidOffIfUnpaid(order);
                 before.put(FIELD_UNIT_PRICE, Map.of("name", "单价",
                         "display", priceText(oldPrice) + " 元/千克"));
                 before.put("sale_amount", Map.of("name", "销售金额", "display", amountText(oldAmount) + " 元"));
@@ -294,6 +295,7 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
                 order.setContentVersion((order.getContentVersion() == null ? 0 : order.getContentVersion()) + 1);
                 order.setUpdatedBy(adminId);
                 if (orderMapper.updateById(order) == 0) throw new BizException(ErrorCode.VERSION_CONFLICT);
+                clearPaidOffIfUnpaid(order);
                 Map<Long, Integer> delta = new LinkedHashMap<>();
                 delta.put(primaryPen(order, allocations), change.quantity() - oldQuantity);
                 batchSalePort.adjustSale(order.getFarmId(), order.getBatchId(), order.getSaleDate(), delta,
@@ -337,7 +339,21 @@ public class SaleOrderChangeHandler implements ChangeRequestHandler {
             return;
         }
         order.setPendingChangeRequestId(null);
-        orderMapper.updateById(order);
+        // updateById 会跳过 null：显式清掉“修改审核中”标记，只清本申请留下的
+        orderMapper.update(null, com.baomidou.mybatisplus.core.toolkit.Wrappers.<SaleOrder>lambdaUpdate()
+                .eq(SaleOrder::getId, order.getId())
+                .eq(SaleOrder::getPendingChangeRequestId, request.getId())
+                .set(SaleOrder::getPendingChangeRequestId, null));
+    }
+
+    /** 审批改价 / 改数量后又有未收金额：显式清掉结清日期（updateById 不写 null） */
+    private void clearPaidOffIfUnpaid(SaleOrder order) {
+        if (order.getPaidOffDate() != null) {
+            return;
+        }
+        orderMapper.update(null, com.baomidou.mybatisplus.core.toolkit.Wrappers.<SaleOrder>lambdaUpdate()
+                .eq(SaleOrder::getId, order.getId())
+                .set(SaleOrder::getPaidOffDate, null));
     }
 
     /** 按审批后的销售额冲减最近登记的收款，保留原始金额的审核留痕。 */

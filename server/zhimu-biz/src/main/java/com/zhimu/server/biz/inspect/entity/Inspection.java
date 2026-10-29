@@ -1,5 +1,7 @@
 package com.zhimu.server.biz.inspect.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.Version;
@@ -44,12 +46,18 @@ public class Inspection extends AuditEntity {
     private Integer distanceM;
     private Boolean isAbnormal;
     /** ABNORMAL_SOURCE：CHECK / MANUAL */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String abnormalSource;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String abnormalSummary;
     private Boolean isManualMarked;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String manualReason;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private Long manualMarkedBy;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private LocalDateTime manualMarkedAt;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String remark;
     private Long reportId;
 

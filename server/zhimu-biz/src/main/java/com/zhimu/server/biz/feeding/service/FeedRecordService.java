@@ -237,6 +237,10 @@ public class FeedRecordService {
         if (updated == 0) {
             throw FeedErrors.versionConflict();
         }
+        // updateById 跳过 null：作废后必须释放 active_task_id（唯一索引），否则这餐无法重新登记
+        recordMapper.update(null, Wrappers.<FeedRecord>lambdaUpdate()
+                .eq(FeedRecord::getId, record.getId())
+                .set(FeedRecord::getActiveTaskId, null));
         if (record.getStockFlowId() != null) {
             feedStockPort.rollbackForFeeding(record.getId());
         }
@@ -444,6 +448,9 @@ public class FeedRecordService {
         task.setStatus(status);
         task.setRecordId(null);
         taskMapper.updateById(task);
+        taskMapper.update(null, Wrappers.<FeedTask>lambdaUpdate()
+                .eq(FeedTask::getId, task.getId())
+                .set(FeedTask::getRecordId, null));
         if (FeedCalc.TASK_MISSED.equals(status)) {
             todoWriter.ignoreFromSource(record.getFarmId(), FeedTodoSource.TODO_TYPE,
                     FeedTodoSource.dedupKey(task.getId()), FeedCalc.CLOSE_REASON_BACKFILL_EXPIRED);

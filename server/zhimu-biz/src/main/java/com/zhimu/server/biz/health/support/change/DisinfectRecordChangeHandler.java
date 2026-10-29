@@ -254,6 +254,14 @@ public class DisinfectRecordChangeHandler implements ChangeRequestHandler {
         task.setOverdueAt(task.getTaskDate() != null && task.getTaskDate().isBefore(today)
                 ? BeijingTime.now() : null);
         taskMapper.updateById(task);
+        // updateById 跳过 null：作废消毒记录后解除任务关联；未逾期时清掉逾期时间
+        var clear = com.baomidou.mybatisplus.core.toolkit.Wrappers.<DisinfectTask>lambdaUpdate()
+                .eq(DisinfectTask::getId, task.getId())
+                .set(DisinfectTask::getRecordId, null);
+        if (task.getOverdueAt() == null) {
+            clear.set(DisinfectTask::getOverdueAt, null);
+        }
+        taskMapper.update(null, clear);
     }
 
     private DisinfectRecord load(Long bizId) {

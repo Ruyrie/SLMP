@@ -311,6 +311,13 @@ public class StockDrugServiceImpl implements StockDrugService {
         }
         drug.setUpdatedBy(lookups.userId());
         drugMapper.updateById(drug);
+        if (drug.getMinStock() == null) {
+            // updateById 跳过 null：清空库存下限要显式写 NULL
+            drugMapper.update(null, Wrappers.<Drug>lambdaUpdate()
+                    .eq(Drug::getId, drug.getId())
+                    .set(Drug::getMinStock, null)
+                    .set(Drug::getMinStockUnit, null));
+        }
         lookups.log("UPDATE", "DRUG_UPDATE", StockCodes.BIZ_DRUG, drug.getId(), drug.getName(), null,
                 drug.getMinStock());
         return detail(drug.getId());

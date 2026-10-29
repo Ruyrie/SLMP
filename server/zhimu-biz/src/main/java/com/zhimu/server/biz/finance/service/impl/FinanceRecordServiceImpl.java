@@ -454,6 +454,7 @@ public class FinanceRecordServiceImpl implements FinanceRecordService {
         if (recordMapper.updateById(record) == 0) {
             throw new BizException(ErrorCode.VERSION_CONFLICT);
         }
+        clearRecordNulls(record);
         if (validated.fileIds() != null) {
             bizMediaService.replace(BizType.FINANCE_RECORD, record.getId(), farmId, validated.fileIds());
         }
@@ -1017,6 +1018,25 @@ public class FinanceRecordServiceImpl implements FinanceRecordService {
 
     private static String normalizeKey(String key) {
         return key == null || key.isBlank() ? null : key.trim();
+    }
+
+    /** updateById 跳过 null：修改时清空的子类、备注、关联批次要显式写 NULL */
+    private void clearRecordNulls(FinanceRecord record) {
+        if (record.getSubcategoryId() != null && record.getNote() != null && record.getBatchId() != null) {
+            return;
+        }
+        var clear = com.baomidou.mybatisplus.core.toolkit.Wrappers.<FinanceRecord>lambdaUpdate()
+                .eq(FinanceRecord::getId, record.getId());
+        if (record.getSubcategoryId() == null) {
+            clear.set(FinanceRecord::getSubcategoryId, null);
+        }
+        if (record.getNote() == null) {
+            clear.set(FinanceRecord::getNote, null);
+        }
+        if (record.getBatchId() == null) {
+            clear.set(FinanceRecord::getBatchId, null);
+        }
+        recordMapper.update(null, clear);
     }
 
     private static String blankToNull(String value) {
