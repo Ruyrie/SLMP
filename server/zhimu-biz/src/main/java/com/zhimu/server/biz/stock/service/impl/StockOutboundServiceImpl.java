@@ -478,6 +478,7 @@ public class StockOutboundServiceImpl implements StockOutboundService {
             }
         }
         outboundMapper.updateById(outbound);
+        clearOutboundNulls(outbound);
         if (outbound.getFlowId() != null) {
             StockFlow flow = flowMapper.selectById(outbound.getFlowId());
             if (flow != null) {
@@ -494,6 +495,7 @@ public class StockOutboundServiceImpl implements StockOutboundService {
                     flow.setOperatorId(outbound.getReceiverId());
                 }
                 flowMapper.updateById(flow);
+                clearFlowNulls(flow, use);
                 flowWriter.voidCostsByFlow(flow.getId());
                 if (use) {
                     flowWriter.writeCosts(flow, StockCodes.MATERIAL_DRUG, outbound.getPenId(), allocations,
@@ -571,6 +573,38 @@ public class StockOutboundServiceImpl implements StockOutboundService {
     }
 
     // ------------------------------------------------------------------ 内部
+
+    /**
+     * updateById 跳过 null：领用对象在批次 / 栏舍之间切换后另一边要置空，备注清空也要写 NULL。
+     */
+    private void clearOutboundNulls(StockOutbound outbound) {
+        if (outbound.getBatchId() != null && outbound.getPenId() != null && outbound.getRemark() != null) {
+            return;
+        }
+        var update = Wrappers.<StockOutbound>lambdaUpdate().eq(StockOutbound::getId, outbound.getId());
+        if (outbound.getBatchId() == null) {
+            update.set(StockOutbound::getBatchId, null);
+        }
+        if (outbound.getPenId() == null) {
+            update.set(StockOutbound::getPenId, null);
+        }
+        if (outbound.getRemark() == null) {
+            update.set(StockOutbound::getRemark, null);
+        }
+        outboundMapper.update(null, update);
+    }
+
+    private void clearFlowNulls(StockFlow flow, boolean use) {
+        var update = Wrappers.<StockFlow>lambdaUpdate().eq(StockFlow::getId, flow.getId())
+                .set(StockFlow::getRelatedDesc, null);
+        if (use && flow.getBatchId() == null) {
+            update.set(StockFlow::getBatchId, null);
+        }
+        if (use && flow.getPenId() == null) {
+            update.set(StockFlow::getPenId, null);
+        }
+        flowMapper.update(null, update);
+    }
 
     private void applyUseTarget(StockOutbound outbound, OutboundUpdateRequest request) {
         String targetType = request.getTargetType() == null ? outbound.getTargetType() : request.getTargetType();

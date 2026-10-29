@@ -1,5 +1,7 @@
 package com.zhimu.server.biz.breeding.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.Version;
 import com.zhimu.server.framework.mybatis.AuditEntity;
@@ -33,8 +35,10 @@ public class BreedingCycle extends AuditEntity {
     private Long weaningId;
     private LocalDateTime remindBeforeSentAt;
     private LocalDateTime remindDueSentAt;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private LocalDate endDate;
     /** CYCLE_END_REASON：NEGATIVE / WEANED / NO_LIVE / EXIT */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String endReason;
 
     @Version

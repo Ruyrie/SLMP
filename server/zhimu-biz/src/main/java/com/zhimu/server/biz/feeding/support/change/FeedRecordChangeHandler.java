@@ -241,6 +241,10 @@ public class FeedRecordChangeHandler implements ChangeRequestHandler {
             if (feedRecordMapper.updateById(fresh) == 0) {
                 throw versionConflict();
             }
+            // updateById 跳过 null：作废后释放 active_task_id（唯一索引）
+            TenantSkip.run(() -> feedRecordMapper.update(null, com.baomidou.mybatisplus.core.toolkit.Wrappers.<FeedRecord>lambdaUpdate()
+                    .eq(FeedRecord::getId, fresh.getId())
+                    .set(FeedRecord::getActiveTaskId, null)));
             if (fresh.getStockFlowId() != null) {
                 feedStockPort.rollbackForFeeding(fresh.getStockFlowId());
             }
@@ -328,6 +332,9 @@ public class FeedRecordChangeHandler implements ChangeRequestHandler {
         task.setStatus(status);
         task.setRecordId(null);
         TenantSkip.run(() -> feedTaskMapper.updateById(task));
+        TenantSkip.run(() -> feedTaskMapper.update(null, com.baomidou.mybatisplus.core.toolkit.Wrappers.<FeedTask>lambdaUpdate()
+                .eq(FeedTask::getId, task.getId())
+                .set(FeedTask::getRecordId, null)));
     }
 
     private BigDecimal needQty(FeedRecord fresh, ChangeRequest request) {

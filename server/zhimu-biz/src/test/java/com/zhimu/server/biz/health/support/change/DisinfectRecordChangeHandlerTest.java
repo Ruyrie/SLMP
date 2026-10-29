@@ -68,6 +68,7 @@ class DisinfectRecordChangeHandlerTest {
 
     @BeforeEach
     void setUp() {
+        com.zhimu.server.biz.common.support.TableInfos.ensure(com.zhimu.server.biz.health.entity.DisinfectTask.class);
         BeijingTime.setClock(CLOCK);
         handler = new DisinfectRecordChangeHandler(recordMapper, taskMapper, drugMapper, drugLotMapper,
                 drugStockPort, drugCatalogQueryService, support);

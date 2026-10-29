@@ -1,5 +1,7 @@
 package com.zhimu.server.biz.breeding.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.Version;
 import com.zhimu.server.framework.mybatis.AuditEntity;
@@ -29,15 +31,23 @@ public class BreedingAnimal extends AuditEntity {
     private Integer parity;
     /** BREEDING_STATUS：EMPTY / MATED / PREGNANT / LACTATING / CULLED / DEAD */
     private String status;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private Long currentCycleId;
     private LocalDate lastWeanDate;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private LocalDate lastCycleEndDate;
     /** EXIT_TYPE：CULL / DEATH */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String exitType;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private LocalDate exitDate;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String exitReason;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private String statusBeforeExit;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private Long exitBy;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private LocalDateTime exitAt;
 
     @Version

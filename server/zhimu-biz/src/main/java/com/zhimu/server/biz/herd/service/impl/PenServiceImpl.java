@@ -403,6 +403,11 @@ public class PenServiceImpl implements PenService {
         if (penMapper.updateById(pen) == 0) {
             throw HerdErrors.versionConflict();
         }
+        // updateById 跳过 null：启用后显式清掉停用时间与停用人
+        penMapper.update(null, com.baomidou.mybatisplus.core.toolkit.Wrappers.<Pen>lambdaUpdate()
+                .eq(Pen::getId, pen.getId())
+                .set(Pen::getDisabledAt, null)
+                .set(Pen::getDisabledBy, null));
         logPen("ENABLE", pen, Map.of("status", logField("栏舍状态", "停用")),
                 Map.of("status", logField("栏舍状态", "启用")));
         return toDetail(pen, member);

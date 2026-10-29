@@ -102,10 +102,12 @@ public class TranscodeServiceImpl implements TranscodeService {
             variant.setStartedAt(null);
             variant.setFinishedAt(null);
             variantMapper.updateById(variant);
+            clearVariant(variant.getId(), true, true, true);
         }
         file.setTranscodeStatus(TranscodeStatus.WAITING.name());
         file.setTranscodeError(null);
         fileMapper.updateById(file);
+        clearTranscodeError(fileId);
         AfterCommit.run(() -> submit(fileId));
     }
 
@@ -138,6 +140,7 @@ public class TranscodeServiceImpl implements TranscodeService {
                     variant.setProgress(BigDecimal.ZERO);
                     variant.setStartedAt(null);
                     variantMapper.updateById(variant);
+                    clearVariant(variant.getId(), false, true, false);
                 }
                 file.setTranscodeStatus(TranscodeStatus.WAITING.name());
                 fileMapper.updateById(file);
@@ -204,6 +207,7 @@ public class TranscodeServiceImpl implements TranscodeService {
                     variant.setBitrateKbps(800);
                 }
                 variantMapper.updateById(variant);
+                clearVariant(variant.getId(), true, false, false);
             }
 
             file.setTranscodeStatus(TranscodeStatus.SUCCESS.name());
@@ -214,6 +218,7 @@ public class TranscodeServiceImpl implements TranscodeService {
             file.setCoverFileId(covers.isEmpty() ? null : covers.get(0).getId());
             file.setExpireAt(BeijingTime.now().plusDays(7));
             fileMapper.updateById(file);
+            clearTranscodeError(fileId);
             eventPublisher.publishEvent(new FileTranscodeFinishedEvent(fileId, true, null));
             log.info("转码完成 file_id={} duration_ms={}", fileId, info.durationMs());
         } catch (Exception e) {
@@ -260,7 +265,32 @@ public class TranscodeServiceImpl implements TranscodeService {
             variant.setStartedAt(BeijingTime.now());
             variant.setFinishedAt(null);
             variantMapper.updateById(variant);
+            clearVariant(variant.getId(), true, false, true);
         }
+    }
+
+    /** updateById 会跳过 null：重试 / 重新开始时把上次的错误、起止时间显式置空 */
+    private void clearVariant(Long variantId, boolean error, boolean started, boolean finished) {
+        if (variantId == null || !(error || started || finished)) {
+            return;
+        }
+        var update = Wrappers.<FileVariant>lambdaUpdate().eq(FileVariant::getId, variantId);
+        if (error) {
+            update.set(FileVariant::getErrorMessage, null);
+        }
+        if (started) {
+            update.set(FileVariant::getStartedAt, null);
+        }
+        if (finished) {
+            update.set(FileVariant::getFinishedAt, null);
+        }
+        variantMapper.update(null, update);
+    }
+
+    private void clearTranscodeError(Long fileId) {
+        fileMapper.update(null, Wrappers.<FileEntity>lambdaUpdate()
+                .eq(FileEntity::getId, fileId)
+                .set(FileEntity::getTranscodeError, null));
     }
 
     private void onProgress(Long fileId, HlsVariant hls, double progress) {
@@ -371,6 +401,9 @@ public class TranscodeServiceImpl implements TranscodeService {
                 variant.setStartedAt(null);
             }
             variantMapper.updateById(variant);
+            if (!finalFailure) {
+                clearVariant(variant.getId(), false, true, false);
+            }
         }
         file.setTranscodeStatus(finalFailure ? TranscodeStatus.FAILED.name() : TranscodeStatus.WAITING.name());
         file.setTranscodeError(truncate(reason, 500));

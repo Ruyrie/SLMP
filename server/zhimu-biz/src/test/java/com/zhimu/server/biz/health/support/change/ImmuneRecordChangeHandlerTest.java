@@ -72,6 +72,7 @@ class ImmuneRecordChangeHandlerTest {
 
     @BeforeEach
     void setUp() {
+        com.zhimu.server.biz.common.support.TableInfos.ensure(com.zhimu.server.biz.health.entity.ImmunePlan.class);
         BeijingTime.setClock(CLOCK);
         handler = new ImmuneRecordChangeHandler(recordMapper, planMapper, drugMapper, drugLotMapper,
                 drugStockPort, drugCatalogQueryService, support);

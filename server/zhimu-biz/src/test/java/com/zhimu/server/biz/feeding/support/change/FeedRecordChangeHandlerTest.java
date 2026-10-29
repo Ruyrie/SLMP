@@ -56,6 +56,7 @@ class FeedRecordChangeHandlerTest {
 
     @BeforeEach
     void setUp() {
+        com.zhimu.server.biz.common.support.TableInfos.ensure(com.zhimu.server.biz.feeding.entity.FeedRecord.class, com.zhimu.server.biz.feeding.entity.FeedTask.class);
         handler = new FeedRecordChangeHandler(change, feedRecordMapper, feedTaskMapper, feedStockPort);
         BeijingTime.setClock(Clock.fixed(LocalDateTime.of(2026, 10, 19, 10, 0)
                 .atZone(BeijingTime.ZONE).toInstant(), BeijingTime.ZONE));
