@@ -27,6 +27,9 @@
     <string name="herd_production_batch_unit">批</string>
     <string name="herd_production_pen_occupancy">栏舍占用 %1$s</string>
     <string name="herd_production_reminder">生产提醒</string>
+    <string name="herd_reminder_empty_title">暂无生产提醒</string>
+    <string name="herd_reminder_empty_message">休药中的批次、待处理的 AI 诊断和待诊断的异常上报会显示在这里。</string>
+    <string name="herd_reminder_error_title">生产提醒加载失败</string>
     <string name="herd_production_audit_notice">这个养殖场还没有通过审核，审核通过后才能使用栏舍和批次功能。</string>
     <string name="herd_production_audit_action">查看审核结果</string>
     <string name="herd_production_no_pen_notice">还没有栏舍。先新增栏舍，再登记批次入栏。</string>

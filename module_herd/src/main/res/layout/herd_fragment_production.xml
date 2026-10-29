@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- L01 生产页：一级页顶部栏 + 今日生产概况（存栏 / 在养批次 / 生产提醒）+ 生产提醒列表 + 生产 / 防疫 / 物资入口 -->
+<!-- L01 生产页：一级页顶部栏 + 今日生产概况（存栏 / 在养批次 / 生产提醒，点生产提醒进入提醒页）+ 生产 / 防疫 / 物资入口 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -131,14 +131,6 @@
                                     app:noticeText="@string/herd_production_no_pen_notice"
                                     app:noticeActionText="@string/herd_production_add_pen"
                                     app:visibleIf="@{vm.showNoPenNotice}" />
-
-                                <androidx.recyclerview.widget.RecyclerView
-                                    android:id="@+id/herd_reminders"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="@dimen/base_space_2"
-                                    android:nestedScrollingEnabled="false"
-                                    android:overScrollMode="never" />
 
                                 <LinearLayout
                                     android:id="@+id/herd_entry_groups"

@@ -10,7 +10,6 @@ import com.zhimu.slmp.herd.HerdExtras;
 import com.zhimu.slmp.herd.TestRules;
 import com.zhimu.slmp.herd.data.StockRepository;
 import com.zhimu.slmp.herd.model.vo.ProductionOverviewVO;
-import com.zhimu.slmp.herd.model.vo.ProductionReminderItemVO;
 import com.zhimu.slmp.herd.ui.common.NavTarget;
 import io.reactivex.rxjava3.core.Single;
 import org.junit.Rule;
@@ -19,7 +18,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-/** L01 三张卡：存栏 / 在养批次（栏舍占用）/ 生产提醒；提醒行异常上报进 I06。 */
+/** L01 三张卡：存栏 / 在养批次（栏舍占用）/ 生产提醒（进入生产提醒页）。 */
 public class ProductionViewModelTest {
     @Rule public InstantTaskExecutorRule instant = new InstantTaskExecutorRule();
     @Rule public TestRules schedulers = new TestRules();
@@ -89,49 +88,17 @@ public class ProductionViewModelTest {
         assertEquals(target.getExtras(), entry.getExtras());
     }
 
-    @Test public void reminderCardScrollsToListOnlyWhenThereAreReminders() {
+    @Test public void reminderCardOpensReminderPageEvenWhenEmpty() {
         ProductionViewModel vm = vmWith("{'reminder_total':2}");
         vm.load();
         vm.onMetricClick(ProductionViewModel.METRIC_REMINDER);
-        assertEquals(Boolean.TRUE, vm.getScrollToReminders().getValue());
+        assertEquals(Boolean.TRUE, vm.getOpenReminders().getValue());
         assertNull(vm.getNavEvent().getValue());
 
         ProductionViewModel empty = vmWith("{'reminder_total':0}");
         empty.load();
         empty.onMetricClick(ProductionViewModel.METRIC_REMINDER);
-        assertNull(empty.getScrollToReminders().getValue());
+        assertEquals(Boolean.TRUE, empty.getOpenReminders().getValue());
         assertNull(empty.getNavEvent().getValue());
-    }
-
-    @Test public void abnormalReportReminderOpensDiagnosisDetailWithReportId() {
-        ProductionViewModel vm = vmWith();
-        ProductionReminderItemVO item = TestRules.parse("{'reminder_type':'ABNORMAL_REPORT','is_warning':true,"
-                + "'tag_text':'待处理','batch_id':3001,'todo_id':7201,'report_id':6001,'route':'I06'}",
-                ProductionReminderItemVO.class);
-        vm.onReminderClick(item);
-        NavTarget target = vm.getNavEvent().getValue();
-        assertEquals(RouterPath.I06, target.getAction());
-        assertEquals(6001L, target.get(RouterPath.EXTRA_REPORT_ID));
-    }
-
-    @Test public void abnormalReportWithoutReportIdFallsBackToTodoDetail() {
-        ProductionViewModel vm = vmWith();
-        ProductionReminderItemVO item = TestRules.parse(
-                "{'reminder_type':'ABNORMAL_REPORT','todo_id':7201,'route':'I06'}", ProductionReminderItemVO.class);
-        vm.onReminderClick(item);
-        NavTarget target = vm.getNavEvent().getValue();
-        assertEquals(RouterPath.T04, target.getAction());
-        assertEquals(7201L, target.get(RouterPath.EXTRA_TODO_ID));
-        assertNull(target.get(RouterPath.EXTRA_REPORT_ID));
-    }
-
-    @Test public void withdrawalReminderStillOpensDrugPageWithBatch() {
-        ProductionViewModel vm = vmWith();
-        ProductionReminderItemVO item = TestRules.parse(
-                "{'reminder_type':'WITHDRAWAL','batch_id':3001,'route':'D05'}", ProductionReminderItemVO.class);
-        vm.onReminderClick(item);
-        NavTarget target = vm.getNavEvent().getValue();
-        assertEquals(RouterPath.D05, target.getAction());
-        assertEquals(3001L, target.get(RouterPath.EXTRA_BATCH_ID));
     }
 }

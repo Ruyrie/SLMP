@@ -13,6 +13,8 @@ import com.zhimu.slmp.base.mvvm.SingleLiveEvent;
 import com.zhimu.slmp.base.mvvm.UiMessage;
 import com.zhimu.slmp.common.data.BaseDataRepository;
 import com.zhimu.slmp.common.data.DictTypes;
+import com.zhimu.slmp.common.farm.FarmContext;
+import com.zhimu.slmp.common.model.vo.FarmContextVO;
 import com.zhimu.slmp.common.model.vo.DictItemVO;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.herd.data.PenRepository;
@@ -52,6 +54,7 @@ public class PenEditViewModel extends BaseViewModel {
 
     private final PenRepository repository;
     private final BaseDataRepository baseData;
+    private final FarmContext farmContext;
 
     private final MutableLiveData<Boolean> editMode = new MutableLiveData<>(false);
     private final MutableLiveData<PenFormOptionsVO> formOptions = new MutableLiveData<>();
@@ -91,9 +94,11 @@ public class PenEditViewModel extends BaseViewModel {
     }
 
     @Inject
-    public PenEditViewModel(@NonNull PenRepository repository, @NonNull BaseDataRepository baseData) {
+    public PenEditViewModel(@NonNull PenRepository repository, @NonNull BaseDataRepository baseData,
+                            @NonNull FarmContext farmContext) {
         this.repository = repository;
         this.baseData = baseData;
+        this.farmContext = farmContext;
         capacityWarning.addSource(capacityText, t -> capacityWarning.setValue(computeWarning()));
         capacityWarning.addSource(editing, p -> capacityWarning.setValue(computeWarning()));
         unitText.addSource(categoryId, id -> unitText.setValue(computeUnit()));
@@ -215,19 +220,47 @@ public class PenEditViewModel extends BaseViewModel {
                 + HerdFormat.qty(d.getStockCount() - cap, unit);
     }
 
+    /** 容量单位：已选品类的单位；编辑时为栏舍原单位；新增还没选品类时按当前养殖场主品类（鸡场“只”），都取不到时“头” */
     @NonNull
-    private String computeUnit() {
+    String computeUnit() {
         PenFormOptionsVO o = formOptions.getValue();
-        Long id = categoryId.getValue();
-        if (o != null && id != null) {
-            for (PenFormOptionsVO.CategoryOption c : o.getCategories()) {
-                if (c.getCategoryId() == id) {
-                    return c.getCountUnitText() != null ? c.getCountUnitText() : HerdFormat.unitOfCode(c.getCountUnit());
-                }
-            }
+        PenFormOptionsVO.CategoryOption picked = categoryOf(o, categoryId.getValue());
+        if (picked != null) {
+            return unitOf(picked);
         }
         PenDetailVO d = editing.getValue();
-        return HerdFormat.unit(d == null ? null : d.getUnitText());
+        if (d != null) {
+            return HerdFormat.unit(d.getUnitText());
+        }
+        FarmContextVO farm = farmContext.current();
+        if (farm != null) {
+            PenFormOptionsVO.CategoryOption main = categoryOf(o, farm.getMainCategoryId());
+            if (main != null) {
+                return unitOf(main);
+            }
+            if (farm.getCountUnit() != null) {
+                return HerdFormat.unitOfCode(farm.getCountUnit());
+            }
+        }
+        return HerdFormat.unit(null);
+    }
+
+    @Nullable
+    private static PenFormOptionsVO.CategoryOption categoryOf(@Nullable PenFormOptionsVO o, @Nullable Long id) {
+        if (o == null || id == null) {
+            return null;
+        }
+        for (PenFormOptionsVO.CategoryOption c : o.getCategories()) {
+            if (c.getCategoryId() == id) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    @NonNull
+    private static String unitOf(@NonNull PenFormOptionsVO.CategoryOption c) {
+        return c.getCountUnitText() != null ? c.getCountUnitText() : HerdFormat.unitOfCode(c.getCountUnit());
     }
 
     // ===== 校验与保存 =====

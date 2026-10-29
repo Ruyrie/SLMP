@@ -59,6 +59,8 @@ public class DrugScrapViewModel extends StockFormViewModel {
 
     private final MutableLiveData<DrugLotDetailVO> lot = new MutableLiveData<>();
     private final MutableLiveData<String> inputQty = new MutableLiveData<>("");
+    /** 数量真的改了才清除数量错误（冲突后按最新结存重填数量时的绑定回写不算） */
+    private final TextChange qtyChange = new TextChange();
     private final MutableLiveData<String> reason = new MutableLiveData<>();
     private final MutableLiveData<String> remark = new MutableLiveData<>("");
     private final MutableLiveData<String> scrapDate = new MutableLiveData<>(DateFormatter.todayString());
@@ -82,7 +84,9 @@ public class DrugScrapViewModel extends StockFormViewModel {
         this.farmContext = farmContext;
         lossText.setValue("—");
         lossText.addSource(inputQty, v -> {
-            clearFieldError(F_QTY);
+            if (qtyChange.update(v)) {
+                clearFieldError(F_QTY);
+            }
             lossText.setValue(StockCalc.money(lossAmount()));
         });
         lossText.addSource(remark, v -> clearFieldError(F_REMARK));

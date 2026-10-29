@@ -49,6 +49,39 @@ public class AiUtilTest {
     }
 
     @Test
+    public void rawModelCitationMarks_neverShownAsText() {
+        assertEquals("休药 20 天。", AiText.stripCitations("休药 20 天[^P3]。"));
+        assertEquals("a b c d", AiText.stripCitations("a[^p2] b[^P1, P2] c［＾P3］ d[^1、2]"));
+        StreamTextBuffer b = new StreamTextBuffer();
+        b.append("先检查饮水[^P");
+        assertEquals("先检查饮水", b.visible());
+        b.append("3]，再看采食[^P1,");
+        assertEquals("先检查饮水，再看采食", b.visible());
+        b.append(" P2]。");
+        assertEquals("先检查饮水，再看采食。", b.visible());
+    }
+
+    @Test
+    public void citationMarks_mapNormalizedAndRawForms() {
+        java.util.List<AiText.CitationMark> plain = AiText.citationMarks("甲[^1]乙[^2,3]丙");
+        assertEquals(2, plain.size());
+        assertEquals(java.util.Collections.singletonList(1), plain.get(0).seqs);
+        assertEquals(java.util.Arrays.asList(2, 3), plain.get(1).seqs);
+        assertEquals("[^1]", "甲[^1]乙[^2,3]丙".substring(plain.get(0).start, plain.get(0).end));
+
+        // 只有原始写法：与服务端规则一致，按 P 编号首次出现顺序编为 1、2
+        java.util.List<AiText.CitationMark> raw = AiText.citationMarks("甲[^P3]乙[^P1]丙[^P3]");
+        assertEquals(java.util.Collections.singletonList(1), raw.get(0).seqs);
+        assertEquals(java.util.Collections.singletonList(2), raw.get(1).seqs);
+        assertEquals(java.util.Collections.singletonList(1), raw.get(2).seqs);
+
+        // 与 [^n] 混在一起对应不上：原始写法只去掉，不给序号
+        java.util.List<AiText.CitationMark> mixed = AiText.citationMarks("甲[^1]乙[^P3]");
+        assertEquals(java.util.Collections.singletonList(1), mixed.get(0).seqs);
+        assertTrue(mixed.get(1).seqs.isEmpty());
+    }
+
+    @Test
     public void answerTypeTag_streamedAcrossChunks() {
         AnswerTypeTag t = new AnswerTypeTag();
         assertEquals("", t.feed("[["));

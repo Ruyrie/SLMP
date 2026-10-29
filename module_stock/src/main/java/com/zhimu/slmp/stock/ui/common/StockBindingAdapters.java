@@ -26,13 +26,20 @@ public final class StockBindingAdapters {
         }
     }
 
-    /** 辅助文字：为空时隐藏 */
+    /**
+     * 辅助文字：为空时隐藏。MDC 设置辅助文字时会把正在显示的错误文字换下去，所以有错误时更新完辅助文字再把错误显示回来
+     * （例如库存冲突后重拉结存，“最多 …”变了，但“库存已变化…”要一直显示到用户改数量或重新提交）。
+     */
     @BindingAdapter("stockHelper")
     public static void setHelper(TextInputLayout layout, @Nullable CharSequence helper) {
         if (TextUtils.equals(layout.getHelperText(), helper)) {
             return;
         }
+        CharSequence error = layout.getError();
         layout.setHelperTextEnabled(!TextUtils.isEmpty(helper));
         layout.setHelperText(TextUtils.isEmpty(helper) ? null : helper);
+        if (!TextUtils.isEmpty(error)) {
+            layout.setError(error);
+        }
     }
 }
