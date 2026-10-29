@@ -459,9 +459,14 @@ public class DisinfectServiceImpl implements DisinfectService {
                 .eq(penId != null, DisinfectTask::getPenId, penId)
                 .orderByAsc(DisinfectTask::getTaskDate).orderByDesc(DisinfectTask::getId));
         LocalDate today = BeijingTime.today();
+        // 页面口径：待执行只列今天和明天（更远的任务在养殖日历查看）；计数与“全部”都按这个口径
+        LocalDate pendingUntil = today.plusDays(1);
         List<DisinfectTask> visible = new ArrayList<>();
         for (DisinfectTask task : tasks) {
             if (support.staffView() && !support.member().canAccessPen(task.getPenId())) {
+                continue;
+            }
+            if (HealthCodes.TASK_PENDING.equals(taskStatus(task)) && task.getTaskDate().isAfter(pendingUntil)) {
                 continue;
             }
             visible.add(task);
@@ -487,7 +492,7 @@ public class DisinfectServiceImpl implements DisinfectService {
                     filtered.add(task);
                 }
             } else if ("PENDING".equals(status)) {
-                if (HealthCodes.TASK_PENDING.equals(s) && !task.getTaskDate().isAfter(today.plusDays(1))) {
+                if (HealthCodes.TASK_PENDING.equals(s)) {
                     filtered.add(task);
                 }
             } else if ("DONE".equals(status)) {

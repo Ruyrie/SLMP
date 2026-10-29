@@ -41,6 +41,8 @@ import java.util.stream.Collectors;
 public class FeedExecutionService {
 
     private static final BigDecimal DEFAULT_THRESHOLD = new BigDecimal("0.1000");
+    /** 取记录时日期放宽的天数（记录日期按任务日期写入；放宽只为兼容平移错位的历史示例数据） */
+    private static final int RECORD_DATE_SLACK_DAYS = 31;
 
     private final FeedTaskMapper taskMapper;
     private final FeedRecordMapper recordMapper;
@@ -52,7 +54,7 @@ public class FeedExecutionService {
         lookup.requireManager("你没有查看饲喂执行情况的权限");
         Range range = resolve(query);
         List<FeedTask> tasks = tasks(range);
-        List<FeedRecord> records = records(range);
+        List<FeedRecord> records = records(range, tasks);
         Map<Long, FeedRecord> recordByTask = records.stream()
                 .collect(Collectors.toMap(FeedRecord::getTaskId, r -> r, (a, b) -> a));
         FeedExecVO.Summary vo = new FeedExecVO.Summary();
@@ -125,7 +127,7 @@ public class FeedExecutionService {
         lookup.requireManager("你没有查看饲喂执行情况的权限");
         Range range = resolve(query);
         List<FeedTask> tasks = tasks(range);
-        List<FeedRecord> records = records(range);
+        List<FeedRecord> records = records(range, tasks);
         LocalDateTime now = BeijingTime.now();
         LocalDate today = BeijingTime.today();
         Map<Long, FeedTask> taskById = tasks.stream().collect(Collectors.toMap(FeedTask::getId, t -> t));
@@ -243,9 +245,9 @@ public class FeedExecutionService {
                 .notIn(FeedTask::getStatus, List.of(FeedCalc.TASK_CANCELLED, FeedCalc.TASK_IGNORED))
                 .orderByAsc(FeedTask::getMealNo)
                 .orderByAsc(FeedTask::getPenId));
-        List<FeedRecord> records = recordMapper.selectList(Wrappers.<FeedRecord>lambdaQuery()
-                .in(FeedRecord::getBatchId, range.batchIds())
-                .eq(FeedRecord::getFeedDate, date)
+        // 按任务取投喂记录：与 G14 柱子同口径，记录日期与任务日期不一致的历史数据也能对上
+        List<FeedRecord> records = tasks.isEmpty() ? List.of() : recordMapper.selectList(Wrappers.<FeedRecord>lambdaQuery()
+                .in(FeedRecord::getTaskId, tasks.stream().map(FeedTask::getId).toList())
                 .eq(FeedRecord::getStatus, "NORMAL"));
         Map<Long, FeedRecord> recordByTask = records.stream()
                 .collect(Collectors.toMap(FeedRecord::getTaskId, r -> r, (a, b) -> a));
@@ -296,8 +298,14 @@ public class FeedExecutionService {
     private List<FeedExecVO.Daily> daily(Range range, List<FeedTask> tasks, List<FeedRecord> records) {
         Map<LocalDate, List<FeedTask>> taskByDate = tasks.stream()
                 .collect(Collectors.groupingBy(FeedTask::getTaskDate));
+        // 投喂记录按所属任务的日期归组（与 G16 单日明细同口径：柱子与明细都以任务为准）
+        Map<Long, LocalDate> taskDate = new HashMap<>();
+        for (FeedTask task : tasks) {
+            taskDate.put(task.getId(), task.getTaskDate());
+        }
         Map<LocalDate, List<FeedRecord>> recordByDate = records.stream()
-                .collect(Collectors.groupingBy(FeedRecord::getFeedDate));
+                .filter(r -> taskDate.containsKey(r.getTaskId()))
+                .collect(Collectors.groupingBy(r -> taskDate.get(r.getTaskId())));
         BigDecimal threshold = range.threshold() == null ? DEFAULT_THRESHOLD : range.threshold();
         List<FeedExecVO.Daily> daily = new ArrayList<>();
         for (LocalDate date = range.start(); !date.isAfter(range.end()); date = date.plusDays(1)) {
@@ -375,16 +383,21 @@ public class FeedExecutionService {
                 .orderByAsc(FeedTask::getMealNo));
     }
 
-    private List<FeedRecord> records(Range range) {
-        if (range.batchIds().isEmpty()) {
+    /** 统计范围内任务的有效投喂记录（只认任务关联，避免记录日期与任务日期不一致时汇总、柱子、明细对不上） */
+    private List<FeedRecord> records(Range range, List<FeedTask> tasks) {
+        if (range.batchIds().isEmpty() || tasks.isEmpty()) {
             return List.of();
         }
+        Set<Long> taskIds = tasks.stream().map(FeedTask::getId).collect(Collectors.toSet());
+        LocalDate from = tasks.stream().map(FeedTask::getTaskDate).min(LocalDate::compareTo).orElse(range.start());
+        LocalDate to = tasks.stream().map(FeedTask::getTaskDate).max(LocalDate::compareTo).orElse(range.end());
         return recordMapper.selectList(Wrappers.<FeedRecord>lambdaQuery()
                 .in(FeedRecord::getBatchId, range.batchIds())
-                .between(FeedRecord::getFeedDate, range.start(), range.end())
+                .between(FeedRecord::getFeedDate, from.minusDays(RECORD_DATE_SLACK_DAYS), to.plusDays(RECORD_DATE_SLACK_DAYS))
                 .eq(FeedRecord::getStatus, "NORMAL")
                 .orderByAsc(FeedRecord::getFeedDate)
-                .orderByAsc(FeedRecord::getMealNo));
+                .orderByAsc(FeedRecord::getMealNo))
+                .stream().filter(r -> taskIds.contains(r.getTaskId())).toList();
     }
 
     private Range resolve(FeedExecQuery query) {

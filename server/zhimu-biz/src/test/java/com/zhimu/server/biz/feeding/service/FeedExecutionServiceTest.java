@@ -111,6 +111,42 @@ class FeedExecutionServiceTest {
     }
 
     @Test
+    void dailyBarsSummaryAndDayDetailUseTheSameTaskBasedRecords() {
+        when(lookup.requireOwnedBatch(3001L)).thenReturn(batch());
+        when(planMapper.selectOne(any())).thenReturn(null);
+        FeedTask done1 = task(70107L, "DONE", 160);
+        FeedTask done2 = task(70108L, "DONE", 160);
+        when(taskMapper.selectList(any())).thenReturn(List.of(done1, done2));
+        // 记录日期与任务日期错开（平移错位的历史数据）+ 一条不属于范围内任务的记录
+        FeedRecord shifted = record(7106L, 70107L, "150.00", "NONE", "-0.0625");
+        shifted.setFeedDate(LocalDate.of(2026, 10, 12));
+        FeedRecord normal = record(7107L, 70108L, "158.00", "NONE", "-0.0125");
+        FeedRecord orphan = record(7199L, 79999L, "310.00", "NONE", "0");
+        orphan.setFeedDate(LocalDate.of(2026, 10, 13));
+        when(recordMapper.selectList(any())).thenReturn(List.of(shifted, normal, orphan));
+
+        FeedExecQuery query = new FeedExecQuery();
+        query.setBatchId(3001L);
+        query.setRange("LAST_7");
+        FeedExecVO.Summary summary = service.summary(query);
+
+        assertThat(summary.getActualQty()).isEqualByComparingTo("308.00");
+        assertThat(summary.getPlanQty()).isEqualByComparingTo("320.00");
+        assertThat(summary.getDeviationRatio()).isEqualByComparingTo("-0.0375");
+        FeedExecVO.Daily day18 = summary.getDaily().stream()
+                .filter(d -> "2026-10-18".equals(d.getDate())).findFirst().orElseThrow();
+        assertThat(day18.getActualQty()).isEqualByComparingTo("308.00");
+        assertThat(summary.getDaily().stream().filter(d -> !"2026-10-18".equals(d.getDate()))
+                .allMatch(d -> d.getActualQty().signum() == 0)).isTrue();
+
+        when(recordMapper.selectList(any())).thenReturn(List.of(shifted, normal));
+        query.setDate(LocalDate.of(2026, 10, 18));
+        FeedExecVO.Day day = service.day(query);
+        assertThat(day.getItems()).hasSize(2);
+        assertThat(day.getActualQty()).isEqualByComparingTo("308.00");
+    }
+
+    @Test
     void staffCallingExecutionGets40303() {
         doThrow(FeedErrors.execForbidden()).when(lookup).requireManager(anyString());
         FeedExecQuery query = new FeedExecQuery();

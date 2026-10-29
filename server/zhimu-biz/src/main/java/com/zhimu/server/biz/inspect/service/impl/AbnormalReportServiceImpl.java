@@ -500,7 +500,9 @@ public class AbnormalReportServiceImpl implements AbnormalReportService {
         DiagnosisHandle handle = handleMapper.selectByReportId(report.getId());
         if (handle != null) {
             vo.setHandle(DiagnosisConvert.handle(handle, support.userName(handle.getHandledBy()),
-                    support.userName(handle.getUpdatedBy()), false, "CLOSED".equals(report.getStatus())));
+                    support.userName(handle.getUpdatedBy()),
+                    support.medicationConverted(report.getFarmId(), report.getId()),
+                    "CLOSED".equals(report.getStatus())));
         }
         AiDiagnosis latest = diagnosisMapper.selectLatestByReportId(report.getId());
         if (latest != null && latest.getFailReason() != null && !"SUCCESS".equals(latest.getStatus())) {

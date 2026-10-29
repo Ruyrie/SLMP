@@ -9,14 +9,11 @@ import com.zhimu.server.biz.inspect.mapper.AiDiagnosisAdviceMapper;
 import com.zhimu.server.biz.inspect.mapper.AiDiagnosisCauseMapper;
 import com.zhimu.server.biz.inspect.mapper.AiDiagnosisMapper;
 import com.zhimu.server.biz.inspect.support.AbnormalWarningTodos;
-import com.zhimu.server.biz.inspect.support.InspectSupport;
 import com.zhimu.server.biz.inspect.support.ParsedDiagnosis;
 import com.zhimu.server.common.util.BeijingTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /** 诊断成功/失败的事务写库（与 AI 调用分开，避免长事务）。 */
 @Service
@@ -27,15 +24,15 @@ public class DiagnosisWriter {
     private final AiDiagnosisCauseMapper causeMapper;
     private final AiDiagnosisAdviceMapper adviceMapper;
     private final AbnormalReportMapper reportMapper;
-    private final InspectSupport support;
     private final AbnormalWarningTodos warningTodos;
 
+    /** 写入成功结果；状态已不是 RUNNING（重复回调）时返回 null，否则返回更新后的上报 */
     @Transactional
-    public void success(Long diagnosisId, String model, long latencyMs, ParsedDiagnosis parsed,
-                        String rawOutput, String notifiedNames) {
+    public AbnormalReport success(Long diagnosisId, String model, long latencyMs, ParsedDiagnosis parsed,
+                                  String rawOutput, String notifiedNames) {
         AiDiagnosis diagnosis = diagnosisMapper.selectById(diagnosisId);
         if (diagnosis == null || !"RUNNING".equals(diagnosis.getStatus())) {
-            return;
+            return null;
         }
         diagnosis.setStatus("SUCCESS");
         diagnosis.setFinishedAt(BeijingTime.now());
@@ -77,7 +74,7 @@ public class DiagnosisWriter {
 
         AbnormalReport report = reportMapper.selectById(diagnosis.getReportId());
         if (report == null) {
-            return;
+            return null;
         }
         report.setStatus("PENDING".equals(report.getStatus()) ? "DIAGNOSED" : report.getStatus());
         report.setAiState("DONE");
@@ -94,13 +91,16 @@ public class DiagnosisWriter {
         reportMapper.updateById(report);
         // 诊断完成：预警待办改为“AI 诊断待处理”并带上疑似病因与紧急程度
         warningTodos.sync(report);
+        return report;
     }
 
+    /** 写入失败结果并记下已通知的人；状态已不是 RUNNING 时返回 null */
     @Transactional
-    public void failure(Long diagnosisId, String failReason, long latencyMs, String rawOutput) {
+    public AbnormalReport failure(Long diagnosisId, String failReason, long latencyMs, String rawOutput,
+                                  String notifiedNames) {
         AiDiagnosis diagnosis = diagnosisMapper.selectById(diagnosisId);
         if (diagnosis == null || !"RUNNING".equals(diagnosis.getStatus())) {
-            return;
+            return null;
         }
         diagnosis.setStatus("TIMEOUT".equals(failReason) ? "TIMEOUT" : "FAILED");
         diagnosis.setFailReason(failReason);
@@ -111,7 +111,7 @@ public class DiagnosisWriter {
 
         AbnormalReport report = reportMapper.selectById(diagnosis.getReportId());
         if (report == null) {
-            return;
+            return null;
         }
         if ("MANUAL_RETRY".equals(diagnosis.getTriggerType())) {
             report.setAutoRetryUsed(true);
@@ -122,21 +122,11 @@ public class DiagnosisWriter {
             report.setAiState("UNAVAILABLE");
             report.setUnavailableSince(BeijingTime.now());
         }
+        if (notifiedNames != null) {
+            report.setNotifiedNames(notifiedNames);
+        }
         reportMapper.updateById(report);
-    }
-
-    public List<String> notificationNames(AbnormalReport report) {
-        java.util.LinkedHashSet<String> names = new java.util.LinkedHashSet<>();
-        String reporter = support.userName(report.getReporterId());
-        if (reporter != null) {
-            names.add(reporter);
-        }
-        for (com.zhimu.server.biz.inspect.query.FarmMemberRow member : support.memberList()) {
-            if ("OWNER".equals(member.getRole()) || "MANAGER".equals(member.getRole())) {
-                names.add(member.getName());
-            }
-        }
-        return new java.util.ArrayList<>(names);
+        return report;
     }
 
     private static String adviceType(String advice) {

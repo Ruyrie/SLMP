@@ -202,6 +202,34 @@ class BreedingRecordServiceImplTest {
     }
 
     @Test
+    void createCheckPositiveWithinEighteenDaysOfMatingIsRejected() {
+        BreedingAnimal animal = animal(4155L, "0155", BreedingCodes.STATUS_MATED, 5155L);
+        when(support.requireAnimal(4155L)).thenReturn(animal);
+        // 妊检日期 10-19，配种 10-02：只隔 17 天
+        when(support.requireCycle(5155L)).thenReturn(cycle(5155L, 4155L, "MATED",
+                LocalDate.of(2026, 10, 2), LocalDate.of(2027, 1, 24)));
+
+        assertThatThrownBy(() -> service.createCheck(checkRequest(4155L, 5155L, "POSITIVE"), "check-early"))
+                .isInstanceOf(BizException.class)
+                .hasMessage("配种后满 18 天才能登记妊检阳性");
+    }
+
+    @Test
+    void createCheckPositiveOnDayEighteenPasses() {
+        BreedingAnimal animal = animal(4155L, "0155", BreedingCodes.STATUS_MATED, 5155L);
+        when(support.requireAnimal(4155L)).thenReturn(animal);
+        when(support.requireCycle(5155L)).thenReturn(cycle(5155L, 4155L, "MATED",
+                LocalDate.of(2026, 10, 1), LocalDate.of(2027, 1, 23)));
+        when(cycleMapper.updateById(any(BreedingCycle.class))).thenReturn(1);
+        when(animalMapper.updateById(any(BreedingAnimal.class))).thenReturn(1);
+
+        // 10-01 配种，10-19 正好满 18 天：阳性可以登记
+        RegisterResultVO result = service.createCheck(checkRequest(4155L, 5155L, "POSITIVE"), "check-18");
+
+        assertThat(result.getAnimalStatus()).isEqualTo("PREGNANT");
+    }
+
+    @Test
     void createFarrowingRejectsDuplicateForSameCycle() {
         BreedingAnimal animal = animal(4131L, "0131", BreedingCodes.STATUS_PREGNANT, 5131L);
         when(support.requireAnimal(4131L)).thenReturn(animal);

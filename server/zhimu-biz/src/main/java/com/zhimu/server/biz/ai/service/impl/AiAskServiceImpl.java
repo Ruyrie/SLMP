@@ -54,7 +54,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -62,8 +64,10 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * API-K06、K07：提问与重新生成（SSE）。
  * <p>
- * 开流前的错误以普通 ApiResponse 返回（HTTP 状态与错误码一致）；开流后的错误只用 error 事件。
+ * 开流前抛出的错误由 AiStreamController 统一写成 error 事件（HTTP 200）；开流后的错误只用 error 事件。
  * SSE 事件：meta → delta… → citation → done，或 meta → … → error；每 15 秒发送注释行心跳。
+ * 客户端断开（点“停止”）时取消上游生成，已生成部分保留，消息记为 INTERRUPTED“已停止生成”；
+ * 对仍在生成的消息重新生成时先取消旧生成再重来。
  */
 @Slf4j
 @Service
@@ -72,6 +76,11 @@ public class AiAskServiceImpl implements AiAskService {
     private static final int MAX_QUESTION = 500;
     private static final int MAX_IMAGES = 9;
     private static final long SSE_TIMEOUT_MS = 125_000L;
+    /** 停止生成后消息的状态说明（App 历史记录按 error_message 显示） */
+    static final String STOPPED_MESSAGE = "已停止生成";
+
+    /** 本实例进行中的生成（message_id → 生成），用于停止与重新生成时取消上游 */
+    private final Map<Long, Generation> running = new ConcurrentHashMap<>();
 
     private final AiSessionMapper sessionMapper;
     private final AiMessageMapper messageMapper;
@@ -188,21 +197,86 @@ public class AiAskServiceImpl implements AiAskService {
             runningGuard.release(userId);
             throw e;
         }
-        SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MS);
-        SseWriter writer = new SseWriter(emitter);
-        emitter.onCompletion(() -> runningGuard.release(userId));
-        emitter.onTimeout(() -> runningGuard.release(userId));
-        emitter.onError(e -> runningGuard.release(userId));
-        writer.startHeartbeat();
         LinkedBatchVO finalBatch = batch;
         String finalCourseTitle = course == null ? null : course.getTitle();
+        return start(userId, round, member, finalBatch, finalCourseTitle);
+    }
+
+    /** 开流：登记进行中的生成，客户端断开（停止）时取消上游并保留已生成部分 */
+    private SseEmitter start(Long userId, AiRound round, FarmContext.FarmMember member, LinkedBatchVO batch,
+                             String courseTitle) {
+        SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MS);
+        SseWriter writer = new SseWriter(emitter);
+        Generation generation = new Generation(round, writer);
+        Generation previous = running.put(round.messageId(), generation);
+        if (previous != null) {
+            stop(previous);
+        }
+        writer.onDisconnect(() -> stop(generation));
+        emitter.onCompletion(() -> {
+            runningGuard.release(userId);
+            stop(generation);
+        });
+        emitter.onTimeout(() -> {
+            runningGuard.release(userId);
+            timeout(generation);
+        });
+        emitter.onError(e -> {
+            runningGuard.release(userId);
+            writer.markDisconnected();
+        });
+        writer.startHeartbeat();
         try {
-            aiExecutor.execute(() -> generate(writer, round, member, finalBatch, finalCourseTitle));
+            aiExecutor.execute(() -> generate(generation, member, batch, courseTitle));
         } catch (RuntimeException e) {
             runningGuard.release(userId);
-            writer.error(ErrorCode.AI_UNAVAILABLE.getCode(), "AI 助手暂时不可用，点按重新生成", AiCodes.STATUS_FAILED);
+            failOnce(generation, AiCodes.STATUS_FAILED, ErrorCode.AI_UNAVAILABLE.getCode(),
+                    "AI 助手暂时不可用，点按重新生成", null);
         }
         return emitter;
+    }
+
+    /**
+     * 停止生成（客户端点“停止”断开、或对同一条消息重新生成）：取消上游请求，保留已生成部分，消息记为“已停止生成”。
+     * 已正常结束或已失败的生成不受影响。
+     */
+    private void stop(Generation generation) {
+        if (!generation.finished.compareAndSet(false, true)) {
+            return;
+        }
+        generation.cancelUpstream();
+        String text = generation.text();
+        try {
+            roundService.fail(generation.round, AiCodes.STATUS_INTERRUPTED, null, STOPPED_MESSAGE, text);
+        } catch (RuntimeException e) {
+            log.warn("保存已停止的回答失败 messageId={}", generation.round.messageId(), e);
+        }
+        generation.writer.error(ErrorCode.STATE_CHANGED.getCode(), STOPPED_MESSAGE, AiCodes.STATUS_INTERRUPTED);
+        running.remove(generation.round.messageId(), generation);
+        log.info("AI 回答已停止 messageId={} chars={}", generation.round.messageId(), text == null ? 0 : text.length());
+    }
+
+    /** SSE 连接到时仍未结束：按超时处理（有部分回答记为中断） */
+    private void timeout(Generation generation) {
+        generation.cancelUpstream();
+        String text = generation.text();
+        boolean partial = text != null;
+        failOnce(generation, partial ? AiCodes.STATUS_INTERRUPTED : AiCodes.STATUS_TIMEOUT,
+                ErrorCode.AI_TIMEOUT.getCode(), partial ? "回答中断，点按重新生成" : "回答超时，点按重新生成", text);
+    }
+
+    /** 失败收尾只执行一次：已停止、已完成的生成不再改写 */
+    private void failOnce(Generation generation, String status, int code, String message, String partialText) {
+        if (!generation.finished.compareAndSet(false, true)) {
+            return;
+        }
+        generation.cancelUpstream();
+        try {
+            roundService.fail(generation.round, status, code, message, partialText);
+        } finally {
+            generation.writer.error(code, message, status);
+            running.remove(generation.round.messageId(), generation);
+        }
     }
 
     @Override
@@ -221,7 +295,12 @@ public class AiAskServiceImpl implements AiAskService {
             return replay(message);
         }
         if (AiCodes.STATUS_ANSWERING.equals(message.getStatus())) {
-            throw AiErrors.stateChanged("回答还在生成中，请稍后");
+            // 停止后立即重新生成：旧的生成可能还没察觉客户端断开，先取消它（保留的部分随后被重置）再重来
+            Generation previous = running.get(messageId);
+            if (previous != null) {
+                stop(previous);
+            }
+            runningGuard.release(userId);
         }
         if (!runningGuard.tryAcquire(userId)) {
             throw new BizException(ErrorCode.TOO_FREQUENT, "上一个问题还在回答中，请稍后再问");
@@ -237,25 +316,17 @@ public class AiAskServiceImpl implements AiAskService {
         if (round.batchId() != null && AiCodes.LINK_VALID.equals(round.batchLinkState())) {
             batch = batchContextService.resolve(member.farmId(), round.batchId(), member.isStaff(), member.penIds());
         }
-        SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MS);
-        SseWriter writer = new SseWriter(emitter);
-        emitter.onCompletion(() -> runningGuard.release(userId));
-        emitter.onTimeout(() -> runningGuard.release(userId));
-        emitter.onError(e -> runningGuard.release(userId));
-        writer.startHeartbeat();
-        LinkedBatchVO finalBatch = batch;
-        try {
-            aiExecutor.execute(() -> generate(writer, round, member, finalBatch, round.contextCourseTitle()));
-        } catch (RuntimeException e) {
-            runningGuard.release(userId);
-            writer.error(ErrorCode.AI_UNAVAILABLE.getCode(), "AI 助手暂时不可用，点按重新生成", AiCodes.STATUS_FAILED);
-        }
-        return emitter;
+        return start(userId, round, member, batch, round.contextCourseTitle());
     }
 
-    private void generate(SseWriter writer, AiRound round, FarmContext.FarmMember member, LinkedBatchVO batch,
+    private void generate(Generation generation, FarmContext.FarmMember member, LinkedBatchVO batch,
                           String courseTitle) {
+        AiRound round = generation.round;
+        SseWriter writer = generation.writer;
         try {
+            if (generation.finished.get()) {
+                return;
+            }
             StreamMetaVO meta = new StreamMetaVO();
             meta.setMessageId(round.messageId());
             meta.setSessionId(round.sessionId());
@@ -266,7 +337,10 @@ public class AiAskServiceImpl implements AiAskService {
 
             String banned = bannedDrugDetector.match(round.questionText());
             if (banned != null) {
-                answerBanned(writer, round, banned);
+                if (generation.finished.compareAndSet(false, true)) {
+                    answerBanned(writer, round, banned);
+                    running.remove(round.messageId(), generation);
+                }
                 return;
             }
             writer.send(AiCodes.SSE_PROGRESS, java.util.Map.of("stage", "CONTEXT", "message",
@@ -283,37 +357,35 @@ public class AiAskServiceImpl implements AiAskService {
             AiChatRequest prompt = promptBuilder.build(round.questionText(), member, batch, courseTitle, hits,
                     history, imageUrls);
             if (!aiGateway.isEnabled()) {
-                roundService.fail(round, AiCodes.STATUS_FAILED, ErrorCode.AI_UNAVAILABLE.getCode(),
+                failOnce(generation, AiCodes.STATUS_FAILED, ErrorCode.AI_UNAVAILABLE.getCode(),
                         "AI 助手暂时不可用，点按重新生成", null);
-                writer.error(ErrorCode.AI_UNAVAILABLE.getCode(), "AI 助手暂时不可用，点按重新生成",
-                        AiCodes.STATUS_FAILED);
+                return;
+            }
+            if (generation.finished.get()) {
+                // 客户端已停止：不再调用模型
                 return;
             }
             writer.send(AiCodes.SSE_PROGRESS, java.util.Map.of("stage", "GENERATING", "message", "正在生成回答"));
-            stream(writer, round, hits, prompt);
+            stream(generation, hits, prompt);
         } catch (BizException e) {
             boolean timeout = e.getCode() == ErrorCode.AI_TIMEOUT.getCode();
             String message = timeout ? "回答超时，点按重新生成" : "AI 助手暂时不可用，点按重新生成";
-            roundService.fail(round, timeout ? AiCodes.STATUS_TIMEOUT : AiCodes.STATUS_FAILED, e.getCode(), message, null);
-            writer.error(e.getCode(), message, timeout ? AiCodes.STATUS_TIMEOUT : AiCodes.STATUS_FAILED);
+            failOnce(generation, timeout ? AiCodes.STATUS_TIMEOUT : AiCodes.STATUS_FAILED, e.getCode(), message,
+                    null);
         } catch (RuntimeException e) {
             log.warn("AI 生成失败 messageId={}", round.messageId(), e);
-            roundService.fail(round, AiCodes.STATUS_FAILED, ErrorCode.SERVER_ERROR.getCode(),
+            failOnce(generation, AiCodes.STATUS_FAILED, ErrorCode.SERVER_ERROR.getCode(),
                     "回答生成失败，点按重新生成", null);
-            writer.error(ErrorCode.SERVER_ERROR.getCode(), "回答生成失败，点按重新生成", AiCodes.STATUS_FAILED);
         } finally {
             runningGuard.release(round.userId());
         }
     }
 
-    private void stream(SseWriter writer, AiRound round, List<RetrievalHit> hits, AiChatRequest prompt) {
+    private void stream(Generation generation, List<RetrievalHit> hits, AiChatRequest prompt) {
+        AiRound round = generation.round;
+        SseWriter writer = generation.writer;
         AiStreamTextProcessor processor = new AiStreamTextProcessor(hits);
-        StringBuilder answer = new StringBuilder();
-        AtomicReference<AiStreamHandle> handle = new AtomicReference<>();
         AtomicReference<AiChatResult> result = new AtomicReference<>();
-        AtomicBoolean finished = new AtomicBoolean(false);
-        String model = null;
-        StringBuilder streamed = new StringBuilder();
 
         AiStreamHandler handler = new AiStreamHandler() {
             @Override
@@ -323,11 +395,14 @@ public class AiAskServiceImpl implements AiAskService {
 
             @Override
             public void onDelta(String text) {
+                if (generation.finished.get()) {
+                    return;
+                }
                 String visible = processor.feed(text);
                 if (visible.isEmpty()) {
                     return;
                 }
-                streamed.append(visible);
+                generation.append(visible);
                 writer.send(AiCodes.SSE_DELTA, new StreamDeltaVO(visible));
             }
 
@@ -338,51 +413,43 @@ public class AiAskServiceImpl implements AiAskService {
 
             @Override
             public void onComplete(String finishReason, String fullText) {
-                if (!finished.compareAndSet(false, true)) {
+                if (!generation.finished.compareAndSet(false, true)) {
                     return;
                 }
-                String tail = processor.flush();
-                if (!tail.isEmpty()) {
-                    streamed.append(tail);
-                    writer.send(AiCodes.SSE_DELTA, new StreamDeltaVO(tail));
+                try {
+                    String tail = processor.flush();
+                    if (!tail.isEmpty()) {
+                        generation.append(tail);
+                        writer.send(AiCodes.SSE_DELTA, new StreamDeltaVO(tail));
+                    }
+                    String answer = generation.text();
+                    completeAnswer(writer, round, processor, hits, answer == null ? "" : answer, finishReason,
+                            result.get());
+                } finally {
+                    running.remove(round.messageId(), generation);
                 }
-                answer.append(streamed);
-                completeAnswer(writer, round, processor, hits, answer.toString(), finishReason, result.get());
             }
 
             @Override
             public void onError(BizException error) {
-                if (!finished.compareAndSet(false, true)) {
-                    return;
-                }
-                AiStreamHandle current = handle.get();
-                if (current != null && !current.isDone()) {
-                    current.cancel();
-                }
-                answer.append(streamed);
-                boolean partial = !answer.isEmpty();
+                String text = generation.text();
+                boolean partial = text != null;
                 boolean timeout = error.getCode() == ErrorCode.AI_TIMEOUT.getCode();
                 String status = partial ? AiCodes.STATUS_INTERRUPTED
                         : (timeout ? AiCodes.STATUS_TIMEOUT : AiCodes.STATUS_FAILED);
                 String message = partial ? "回答中断，点按重新生成"
                         : (timeout ? "回答超时，点按重新生成" : "AI 助手暂时不可用，点按重新生成");
-                String text = answer.isEmpty() ? null : answer.toString();
-                roundService.fail(round, status, error.getCode(), message, text);
-                writer.error(error.getCode(), message, status);
+                failOnce(generation, status, error.getCode(), message, text);
             }
         };
         try {
             AiStreamHandle current = aiGateway.stream(prompt, handler);
-            handle.set(current);
+            generation.attach(current);
         } catch (BizException e) {
-            if (!finished.compareAndSet(false, true)) {
-                return;
-            }
             boolean timeout = e.getCode() == ErrorCode.AI_TIMEOUT.getCode();
             String message = timeout ? "回答超时，点按重新生成" : "AI 助手暂时不可用，点按重新生成";
-            roundService.fail(round, timeout ? AiCodes.STATUS_TIMEOUT : AiCodes.STATUS_FAILED, e.getCode(), message,
+            failOnce(generation, timeout ? AiCodes.STATUS_TIMEOUT : AiCodes.STATUS_FAILED, e.getCode(), message,
                     null);
-            writer.error(e.getCode(), message, timeout ? AiCodes.STATUS_TIMEOUT : AiCodes.STATUS_FAILED);
         }
     }
 
@@ -569,6 +636,44 @@ public class AiAskServiceImpl implements AiAskService {
             }
         }
         return new ArrayList<>(set);
+    }
+
+    /** 一次进行中的生成：上游句柄、已推送给客户端的正文、只收尾一次的标记 */
+    private static final class Generation {
+        final AiRound round;
+        final SseWriter writer;
+        final AtomicBoolean finished = new AtomicBoolean(false);
+        private final AtomicReference<AiStreamHandle> handle = new AtomicReference<>();
+        private final StringBuilder streamed = new StringBuilder();
+
+        Generation(AiRound round, SseWriter writer) {
+            this.round = round;
+            this.writer = writer;
+        }
+
+        void attach(AiStreamHandle current) {
+            handle.set(current);
+            if (finished.get() && current != null && !current.isDone()) {
+                // 开始调用模型前客户端已停止
+                current.cancel();
+            }
+        }
+
+        void cancelUpstream() {
+            AiStreamHandle current = handle.get();
+            if (current != null && !current.isDone()) {
+                current.cancel();
+            }
+        }
+
+        synchronized void append(String text) {
+            streamed.append(text);
+        }
+
+        /** 已推送的正文；没有时为 null */
+        synchronized String text() {
+            return streamed.isEmpty() ? null : streamed.toString();
+        }
     }
 
     private static String clientType() {

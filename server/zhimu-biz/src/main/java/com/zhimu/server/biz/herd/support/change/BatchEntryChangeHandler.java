@@ -204,7 +204,7 @@ public class BatchEntryChangeHandler implements ChangeRequestHandler {
             throw HerdErrors.versionConflict();
         }
         change.updateTimeline(batch.getId(), BizType.BATCH_ENTRY.name(), event.getId(), event.getPenId(), eventDate,
-                "入栏 " + after + " 头", change.breedName(batch.getBreedId()) + " · 入栏日龄 "
+                "入栏 " + change.countText(batch, after), change.breedName(batch.getBreedId()) + " · 入栏日龄 "
                         + batch.getEntryAgeDays() + " 天");
         Map<String, Object> beforeValues = new LinkedHashMap<>();
         Map<String, Object> afterValues = new LinkedHashMap<>();

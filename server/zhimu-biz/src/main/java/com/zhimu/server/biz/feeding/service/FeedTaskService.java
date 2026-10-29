@@ -324,6 +324,14 @@ public class FeedTaskService {
         }
         int created = 0;
         int skipped = 0;
+        // 当天新建的方案从下一餐开始：投喂时间早于方案建立时刻的餐次不生成（补跑、手动生成今日任务同样适用），
+        // 避免一保存就出现逾期任务
+        LocalDateTime planCreatedAt = plan.getCreatedAt();
+        LocalDateTime cutoff = !includePast && now != null ? now : null;
+        if (planCreatedAt != null && date.equals(planCreatedAt.toLocalDate())
+                && (cutoff == null || planCreatedAt.isAfter(cutoff))) {
+            cutoff = planCreatedAt;
+        }
         for (com.zhimu.server.biz.feeding.support.FeedBatchPenRow pen : lookup.batchPens(batch)) {
             Integer headCount = pen.getStockCount();
             if (headCount == null || headCount <= 0) {
@@ -334,7 +342,7 @@ public class FeedTaskService {
                     continue;
                 }
                 LocalDateTime feedAt = LocalDateTime.of(date, meal.getFeedTime());
-                if (!includePast && now != null && !feedAt.isAfter(now)) {
+                if (cutoff != null && !feedAt.isAfter(cutoff)) {
                     continue;
                 }
                 long exists = taskMapper.selectCount(Wrappers.<FeedTask>lambdaQuery()

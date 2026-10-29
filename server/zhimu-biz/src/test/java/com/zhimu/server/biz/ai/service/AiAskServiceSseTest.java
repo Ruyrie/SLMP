@@ -1,6 +1,6 @@
 package com.zhimu.server.biz.ai.service;
 
-import com.zhimu.server.biz.ai.controller.AiMessageController;
+import com.zhimu.server.biz.ai.controller.AiStreamController;
 import com.zhimu.server.biz.ai.convert.AiMessageConvert;
 import com.zhimu.server.biz.ai.entity.AiMessage;
 import com.zhimu.server.biz.ai.entity.AiKnowledge;
@@ -90,8 +90,7 @@ class AiAskServiceSseTest {
         service = new AiAskServiceImpl(sessionMapper, messageMapper, courseMapper, messageConvert, roundService,
                 retrievalService, bannedDrugDetector, promptBuilder, batchContextService, AiRunningGuard.NOOP,
                 aiGateway, bizMediaService, fileMapper, objectStorage, Runnable::run);
-        mvc = TestMvc.builder(new AiMessageController(service, mock(AiMessageService.class),
-                mock(AiSpeechService.class))).build();
+        mvc = TestMvc.builder(new AiStreamController(service)).build();
         UserContext.set(new UserContext.LoginUser(10001L, ClientType.APP_ANDROID, 0, "jti"));
         FarmContext.set(new FarmContext.FarmMember(1001L, "东山猪场", 10001L, 5001L, FarmRole.OWNER,
                 Set.of(), FarmStatus.NORMAL));
@@ -209,12 +208,79 @@ class AiAskServiceSseTest {
     }
 
     @Test
-    void blankIdempotencyKeyIsRejectedBeforeStream() throws Exception {
+    void blankIdempotencyKeyIsRejectedAsSseErrorEvent() throws Exception {
+        String body = mvc.perform(post("/api/v1/ai/messages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.TEXT_EVENT_STREAM)
+                        .content("{\"question_text\":\"你好\"}"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertThat(body).contains("event:error", "\"code\":40001", "缺少请求标识，请重试", "\"status\":\"FAILED\"");
+    }
+
+    @Test
+    void retryOfMissingMessageIsSseErrorNotServerError() throws Exception {
+        when(messageMapper.selectById(5999L)).thenReturn(null);
+        String body = mvc.perform(post("/api/v1/ai/messages/5999/retry").accept(MediaType.TEXT_EVENT_STREAM))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertThat(body).contains("event:error", "\"code\":40401");
+    }
+
+    @Test
+    void clientDisconnectCancelsUpstreamAndRetryRestartsAnsweringMessage() throws Exception {
+        when(bannedDrugDetector.match(anyString())).thenReturn(null);
+        when(retrievalService.search(anyString(), any())).thenReturn(List.of());
+        when(messageMapper.selectContextBefore(1021L, 1, 10)).thenReturn(List.of());
+        AtomicReference<com.zhimu.server.integration.ai.AiStreamHandler> first = new AtomicReference<>();
+        java.util.concurrent.atomic.AtomicBoolean cancelled = new java.util.concurrent.atomic.AtomicBoolean();
+        when(aiGateway.stream(any(AiChatRequest.class), any())).thenAnswer(invocation -> {
+            com.zhimu.server.integration.ai.AiStreamHandler handler = invocation.getArgument(1);
+            if (first.compareAndSet(null, handler)) {
+                handler.onStart("dashscope", "qwen3.8-max", false);
+                handler.onDelta("[[NORMAL]][[TOPIC:FEEDING]]\n先控料");
+                // 不结束：模拟仍在生成
+                return new AiStreamHandle() {
+                    @Override
+                    public void cancel() {
+                        cancelled.set(true);
+                    }
+
+                    @Override
+                    public boolean isDone() {
+                        return cancelled.get();
+                    }
+                };
+            }
+            handler.onDelta("[[NORMAL]][[TOPIC:FEEDING]]\n重新生成的回答");
+            handler.onComplete("STOP", "");
+            return handle();
+        });
         mvc.perform(post("/api/v1/ai/messages")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"question_text\":\"你好\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+                        .header("Idempotency-Key", "ask-stop-1")
+                        .content("{\"question_text\":\"保育猪拉稀怎么办\"}"))
+                .andExpect(request().asyncStarted()).andReturn();
+
+        // 重新生成：消息仍是 ANSWERING，先取消旧生成（保留已生成部分并标“已停止生成”）再重来，不再报错
+        AiMessage answering = AiFixtures.message(5501L, 1021L, 1);
+        answering.setStatus(AiCodes.STATUS_ANSWERING);
+        when(messageMapper.selectById(5501L)).thenReturn(answering);
+        when(sessionMapper.selectById(1021L)).thenReturn(AiFixtures.session(1021L, 10001L));
+        when(roundService.reset(eq(10001L), eq(5501L), any())).thenReturn(round());
+        MvcResult retried = mvc.perform(post("/api/v1/ai/messages/5501/retry").accept(MediaType.TEXT_EVENT_STREAM))
+                .andExpect(request().asyncStarted()).andReturn();
+        String body = mvc.perform(asyncDispatch(retried)).andExpect(status().isOk()).andReturn()
+                .getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertThat(cancelled).isTrue();
+        verify(roundService).fail(any(AiRound.class), eq(AiCodes.STATUS_INTERRUPTED), isNull(), eq("已停止生成"),
+                eq("先控料"));
+        assertThat(body).contains("event:meta", "event:done").doesNotContain("event:error");
+        verify(roundService).finish(any(AiRound.class), any(), eq("重新生成的回答"), any(), any(), any(), any(),
+                any(), any());
     }
 
     @Test

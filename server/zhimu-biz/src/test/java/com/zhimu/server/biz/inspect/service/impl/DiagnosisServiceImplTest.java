@@ -15,6 +15,7 @@ import com.zhimu.server.biz.inspect.mapper.AbnormalReportSymptomMapper;
 import com.zhimu.server.biz.inspect.mapper.AiDiagnosisMapper;
 import com.zhimu.server.biz.inspect.mapper.InspectionItemResultMapper;
 import com.zhimu.server.biz.inspect.mapper.InspectionMapper;
+import com.zhimu.server.biz.inspect.support.DiagnosisNotifier;
 import com.zhimu.server.biz.inspect.support.InspectSupport;
 import com.zhimu.server.common.error.BizException;
 import com.zhimu.server.common.error.ErrorCode;
@@ -69,6 +70,7 @@ class DiagnosisServiceImplTest {
     @Mock private InspectSupport support;
     @Mock private DiagnosisWriter writer;
     @Mock private ObjectProvider<BannedDrugGuard> bannedDrugGuard;
+    @Mock private DiagnosisNotifier notifier;
 
     private DiagnosisServiceImpl service;
     private AiDiagnosis diagnosis;
@@ -79,7 +81,7 @@ class DiagnosisServiceImplTest {
         BeijingTime.setClock(InspectFixtures.CLOCK);
         service = new DiagnosisServiceImpl(aiGateway, reportMapper, symptomMapper, diagnosisMapper,
                 inspectionMapper, itemResultMapper, batchQueryService, baseDataQueryService, breedQueryService,
-                bizMediaService, support, writer, bannedDrugGuard);
+                bizMediaService, support, writer, bannedDrugGuard, notifier);
         diagnosis = InspectFixtures.diagnosis(9901L, 6001L, "RUNNING");
         report = InspectFixtures.report(6001L, "PENDING", "DIAGNOSING", 10003L, 2003L, 3001L, 50121L);
         report.setSickRate(new BigDecimal("0.0600"));
@@ -103,7 +105,10 @@ class DiagnosisServiceImplTest {
         lenient().when(symptomMapper.selectByReportId(6001L)).thenReturn(List.of(symptom));
         lenient().when(bizMediaService.list(any(), eq(6001L))).thenReturn(List.of(
                 MediaItemVO.builder().fileId(9005L).mediaType("IMAGE").url("https://file/1.jpg").build()));
-        lenient().when(writer.notificationNames(any())).thenReturn(List.of("李明", "王建国"));
+        java.util.Map<Long, String> recipients = new java.util.LinkedHashMap<>();
+        recipients.put(10003L, "李明");
+        recipients.put(10001L, "王建国");
+        lenient().when(notifier.recipients(any())).thenReturn(recipients);
         lenient().when(bannedDrugGuard.getIfAvailable()).thenReturn(null);
     }
 
@@ -124,13 +129,34 @@ class DiagnosisServiceImplTest {
     }
 
     @Test
+    void successSendsDiagnosisMessageToNotifiedMembers() {
+        when(aiGateway.chat(any(AiChatRequest.class))).thenReturn(AiChatResult.builder()
+                .content(VALID_JSON).model("qwen3.8-max").provider("dashscope").costMs(1200).build());
+        when(writer.success(eq(9901L), any(), anyLong(), any(), any(), any())).thenReturn(report);
+
+        service.execute(9901L);
+
+        verify(notifier).diagnosed(eq(report), any(), eq("3 号育肥舍"), eq("ZM2610-031"), eq("猪流行性腹泻"));
+    }
+
+    @Test
+    void failureSendsFailedMessageOnce() {
+        when(aiGateway.chat(any(AiChatRequest.class))).thenThrow(new BizException(ErrorCode.AI_TIMEOUT));
+        when(writer.failure(eq(9901L), eq("TIMEOUT"), anyLong(), any(), any())).thenReturn(report);
+
+        service.execute(9901L);
+
+        verify(notifier).failed(eq(report), any(), eq("3 号育肥舍"), eq("ZM2610-031"), any());
+    }
+
+    @Test
     void invalidOutputWritesInvalidOutputFailure() {
         when(aiGateway.chat(any(AiChatRequest.class))).thenReturn(AiChatResult.builder()
                 .content("不是 JSON").model("qwen3.8-max").build());
 
         service.execute(9901L);
 
-        verify(writer).failure(eq(9901L), eq("INVALID_OUTPUT"), anyLong(), eq("不是 JSON"));
+        verify(writer).failure(eq(9901L), eq("INVALID_OUTPUT"), anyLong(), eq("不是 JSON"), eq("李明、王建国"));
     }
 
     @Test
@@ -139,7 +165,7 @@ class DiagnosisServiceImplTest {
 
         service.execute(9901L);
 
-        verify(writer).failure(eq(9901L), eq("TIMEOUT"), anyLong(), any());
+        verify(writer).failure(eq(9901L), eq("TIMEOUT"), anyLong(), any(), any());
     }
 
     @Test
@@ -148,7 +174,7 @@ class DiagnosisServiceImplTest {
 
         service.execute(9901L);
 
-        verify(writer).failure(eq(9901L), eq("SERVICE_UNAVAILABLE"), eq(0L), eq(null));
+        verify(writer).failure(eq(9901L), eq("SERVICE_UNAVAILABLE"), eq(0L), eq(null), eq("李明、王建国"));
     }
 
     @Test
@@ -157,7 +183,7 @@ class DiagnosisServiceImplTest {
 
         service.execute(9901L);
 
-        verify(writer).failure(eq(9901L), eq("SERVICE_UNAVAILABLE"), anyLong(), any());
+        verify(writer).failure(eq(9901L), eq("SERVICE_UNAVAILABLE"), anyLong(), any(), any());
     }
 
     @Test
@@ -166,7 +192,7 @@ class DiagnosisServiceImplTest {
 
         service.execute(9901L);
 
-        verify(writer).failure(eq(9901L), eq("TIMEOUT"), anyLong(), any());
+        verify(writer).failure(eq(9901L), eq("TIMEOUT"), anyLong(), any(), any());
     }
 
     @Test
