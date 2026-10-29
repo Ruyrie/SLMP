@@ -627,7 +627,7 @@ defineExpose({
       </div>
     </div>
 
-    <div v-if="(speedMenu || qualityMenu) && showControls" class="k04-menu-mask" @click="speedMenu = false; qualityMenu = false" />
+    <div v-if="(speedMenu || qualityMenu) && showControls && !failed" class="k04-menu-mask" @click="speedMenu = false; qualityMenu = false" />
   </div>
 </template>
 
@@ -848,9 +848,10 @@ defineExpose({
   color: var(--inverse-primary);
   font-weight: 500;
 }
+/* 菜单在 .k04-ctrl（z-index 4）的层叠上下文里，遮罩必须低于它，否则会盖住菜单项吃掉点击。 */
 .k04-menu-mask {
   position: absolute;
   inset: 0;
-  z-index: 5;
+  z-index: 3;
 }
 </style>
