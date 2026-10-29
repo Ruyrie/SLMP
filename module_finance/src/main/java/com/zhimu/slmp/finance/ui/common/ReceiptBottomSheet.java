@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.zhimu.slmp.base.dialog.BaseBottomSheetDialogFragment;
 import com.zhimu.slmp.base.dialog.DateTimePicker;
 import com.zhimu.slmp.base.util.ClickThrottle;
@@ -37,6 +38,8 @@ public class ReceiptBottomSheet extends BaseBottomSheetDialogFragment {
     private static final String REQ_DATE = "finance_receipt_date";
 
     private FinanceSheetReceiptBinding binding;
+    /** 代码同步勾选状态时为 true，避免把同步当成用户点选 */
+    private boolean syncingMethod;
 
     public static void show(@NonNull FragmentManager fm) {
         if (fm.findFragmentByTag(TAG) != null) {
@@ -100,6 +103,8 @@ public class ReceiptBottomSheet extends BaseBottomSheetDialogFragment {
                 (k, r) -> form.receiptDate.setValue(DateTimePicker.getDate(r)));
         buildMethods(form);
         form.getPaymentMethods().observe(getViewLifecycleOwner(), l -> buildMethods(form));
+        // 上次收款方式（E15）是异步写入的：勾选状态始终跟随表单值，保证看到的就是提交的
+        form.paymentMethod.observe(getViewLifecycleOwner(), this::syncMethodChecked);
         form.getErrors().observe(getViewLifecycleOwner(), this::renderErrors);
         form.getSubmitting().observe(getViewLifecycleOwner(), s -> {
             boolean loading = Boolean.TRUE.equals(s);
@@ -112,16 +117,38 @@ public class ReceiptBottomSheet extends BaseBottomSheetDialogFragment {
     }
 
     private void buildMethods(@NonNull ReceiptFormDelegate form) {
+        syncingMethod = true;
         binding.financeReceiptMethods.removeAllViews();
         for (Map.Entry<String, String> e : form.methodOptions().entrySet()) {
             Chip c = FinanceViews.filterChip(requireContext(), binding.financeReceiptMethods, e.getValue(),
                     e.getKey());
             c.setChecked(e.getKey().equals(form.paymentMethod.getValue()));
             c.setOnCheckedChangeListener((b, checked) -> {
-                if (checked) {
-                    form.paymentMethod.setValue(e.getKey());
+                if (checked && !syncingMethod) {
+                    form.pickPaymentMethod(e.getKey());
                 }
             });
+        }
+        syncingMethod = false;
+    }
+
+    /** 表单值变化（含异步写入的上次方式）时只改勾选，不触发“用户已选”的回调 */
+    private void syncMethodChecked(@Nullable String code) {
+        if (binding == null) {
+            return;
+        }
+        if (code == null) {
+            return;
+        }
+        // 只勾选目标项：单选组会自动取消其他项（必选组不允许直接取消唯一勾选项）
+        ChipGroup group = binding.financeReceiptMethods;
+        for (int i = 0; i < group.getChildCount(); i++) {
+            View v = group.getChildAt(i);
+            if (v instanceof Chip && code.equals(v.getTag()) && !((Chip) v).isChecked()) {
+                syncingMethod = true;
+                ((Chip) v).setChecked(true);
+                syncingMethod = false;
+            }
         }
     }
 

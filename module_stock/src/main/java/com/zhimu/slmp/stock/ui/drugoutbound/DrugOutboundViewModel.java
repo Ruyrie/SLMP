@@ -891,11 +891,13 @@ public class DrugOutboundViewModel extends StockFormViewModel {
             case ErrorCodes.VERSION_CONFLICT: {
                 String cur = e.dataString("current_qty");
                 if (cur != null) {
+                    // 服务端带回当前结存：显示出来，并自动重拉批号 / 上限（取到新的 stock_version），核对后可直接重新提交
                     putFieldError(F_QTY, "库存已变化，当前结存 " + StockQtyFormatter.qty(StockCalc.parse(cur),
-                            unitText.getValue()) + "，请刷新后重试");
-                    DrugOptionVO d = selectedDrug.getValue();
-                    if (d != null && FormMode.NEW.equals(mode.getValue())) {
-                        loadLots(d.drugId, false);
+                            unitText.getValue()) + "，已刷新，请核对后重新提交");
+                    if (FormMode.NEW.equals(mode.getValue())) {
+                        reloadOptions();
+                    } else if (FormMode.EDIT.equals(mode.getValue())) {
+                        refreshEditLimit();
                     }
                 } else {
                     showMessage(UiMessage.withAction(MSG_VERSION, "刷新", ACTION_REFRESH));
@@ -1065,6 +1067,38 @@ public class DrugOutboundViewModel extends StockFormViewModel {
             mode.setValue(FormMode.VIEW);
             launch(repository.getOutbound(recordId), this::applyRecord);
         }
+    }
+
+    /** 冲突提示里的“刷新”：新建时重拉药品与批号结存（已填内容保留），查看 / 修改时重新取记录 */
+    public void refresh() {
+        if (FormMode.NEW.equals(mode.getValue())) {
+            reloadOptions();
+            showMessage(MSG_REFRESHED);
+        } else {
+            reloadRecord();
+        }
+    }
+
+    /** 新建：重拉药品选项（沿用搜索词），已选药品重拉批号；已选批号仍可选时按最新结存与 stock_version 保留 */
+    @VisibleForTesting
+    void reloadOptions() {
+        launch(repository.listDrugOptions(StockEnums.PURPOSE_OUTBOUND, drugKeyword.isEmpty() ? null : drugKeyword),
+                this::applyDrugs);
+        DrugOptionVO d = selectedDrug.getValue();
+        if (d != null) {
+            loadLots(d.drugId, false);
+        }
+    }
+
+    /** 修改中库存变化：只更新记录版本与上限，留在修改状态、已填内容保留 */
+    private void refreshEditLimit() {
+        if (recordId == null) {
+            return;
+        }
+        launch(repository.getOutbound(recordId), r -> {
+            record.setValue(r);
+            maxText.setValue("最多 " + StockQtyFormatter.qty(r.maxQty, unitText.getValue()));
+        });
     }
 
     /** 作废对话框正文：领用写明撤销的批次成本，退货只写结存增加 */

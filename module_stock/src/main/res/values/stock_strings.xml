@@ -188,7 +188,7 @@
     <string name="stock_outbound_return_confirm">确认退货</string>
     <string name="stock_out_type_use">领用</string>
     <string name="stock_out_type_return">退货</string>
-    <string name="stock_out_use_notice">领用不会生成接种、用药或消毒记录，也不计算休药期。用于免疫、治疗和计划消毒的，请在 D03、D04、D08 登记，系统会自动扣减库存。</string>
+    <string name="stock_out_use_notice">领用不会生成接种、用药或消毒记录，也不计算休药期。用于免疫、治疗和计划消毒的，请在“登记接种”“登记用药”“登记消毒”中登记，系统会自动扣减库存。</string>
     <string name="stock_out_return_notice">退货不计入批次成本。退款实际到账后，请在退货单详情中登记退款，系统将自动关联经营收入。</string>
     <string name="stock_refund_title">到账退款</string>
     <string name="stock_refund_register">登记退款</string>

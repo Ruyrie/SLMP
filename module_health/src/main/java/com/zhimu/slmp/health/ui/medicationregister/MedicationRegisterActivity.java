@@ -323,7 +323,7 @@ public class MedicationRegisterActivity extends BaseActivity {
         if (list != null) {
             for (MedicationDrugOptionVO d : list) {
                 items.add(new OptionAdapter.Item(d.getDrugId(), HealthFormat.nonNull(d.getDrugName()),
-                        d.getHintText(), false));
+                        MedicationRegisterViewModel.drugHint(d.getHintText()), false));
             }
         }
         drugAdapter.setItems(items);

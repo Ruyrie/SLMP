@@ -152,6 +152,8 @@ public class BusinessReportActivity extends FinancePageActivity {
     protected void onMessageAction(@NonNull String actionId) {
         if (BusinessReportViewModel.ACTION_OPEN_FILE.equals(actionId)) {
             vm.openExported();
+        } else if (BusinessReportViewModel.ACTION_RETRY_EXPORT.equals(actionId)) {
+            vm.retryExport();
         } else {
             super.onMessageAction(actionId);
         }

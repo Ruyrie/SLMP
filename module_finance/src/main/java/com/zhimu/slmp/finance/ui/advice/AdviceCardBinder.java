@@ -40,7 +40,7 @@ public final class AdviceCardBinder {
                 : a == null || a.getGeneratedAt() == null ? "" : readOnly
                 ? FinanceFormat.monthDay(a.getGeneratedAt()) : DateFormatter.formatDateTime(a.getGeneratedAt());
         b.financeAiTitle.setText(c.getString(R.string.finance_e12_card_title, time));
-        String source = a == null ? null : a.getSourceLabel();
+        String source = a == null ? null : sourceText(a.getSourceLabel());
         b.financeAiSource.setVisibility(source != null && !generating ? View.VISIBLE : View.GONE);
         b.financeAiSource.setText(source);
         b.financeAiSkeleton.setVisibility(generating ? View.VISIBLE : View.GONE);
@@ -114,5 +114,21 @@ public final class AdviceCardBinder {
         row.financeKvKey.setText(key);
         row.financeKvValue.setText(value);
         parent.addView(row.getRoot());
+    }
+
+    /** 来源标签：服务端返回生成方式代码（RULE / AI）时转成中文；测试直连时已是中文模型名，原样显示 */
+    @Nullable
+    static String sourceText(@Nullable String label) {
+        if (label == null || label.trim().isEmpty()) {
+            return null;
+        }
+        switch (label.trim().toUpperCase(java.util.Locale.ROOT)) {
+            case "RULE":
+                return "按规则生成";
+            case "AI":
+                return "AI 模型生成";
+            default:
+                return label;
+        }
     }
 }

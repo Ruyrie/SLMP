@@ -25,6 +25,7 @@ import com.zhimu.slmp.common.farm.FarmContext;
 import com.zhimu.slmp.common.router.RouterPath;
 import com.zhimu.slmp.finance.TestRules;
 import com.zhimu.slmp.finance.data.SaleOrderRepository;
+import com.zhimu.slmp.finance.model.FinanceConst;
 import com.zhimu.slmp.finance.model.vo.SaleOrderDetailVO;
 import com.zhimu.slmp.finance.model.vo.SalePrefillVO;
 import com.zhimu.slmp.finance.ui.common.ReceiptHost;
@@ -68,6 +69,7 @@ public class ReceiptSubmissionViewModelTest {
     private ReceiptHost host;
     private ReceiptFormDelegate form;
     private SaleOrderDetailVO paid;
+    private SaleOrderDetailVO order;
     private final List<Boolean> sheetEvents = new ArrayList<>();
 
     public ReceiptSubmissionViewModelTest(String entryPoint) {
@@ -80,7 +82,7 @@ public class ReceiptSubmissionViewModelTest {
         when(farm.farmIdOrZero()).thenReturn(1001L);
         BaseDataRepository baseData = mock(BaseDataRepository.class);
         when(baseData.getDicts(anyString(), any())).thenReturn(Single.just(Collections.emptyList()));
-        SaleOrderDetailVO order = TestRules.mock("order_9102.json", SaleOrderDetailVO.class);
+        order = TestRules.mock("order_9102.json", SaleOrderDetailVO.class);
         paid = TestRules.mock("receipt_9102_paid.json", SaleOrderDetailVO.class);
         when(repository.getOrderDetail(9102L)).thenReturn(Single.just(order));
         when(repository.getPrefill(any(), any())).thenReturn(
@@ -182,6 +184,57 @@ public class ReceiptSubmissionViewModelTest {
         assertTrue(form.getErrors().getValue().containsKey(ReceiptFormDelegate.F_AMOUNT));
         assertEquals(Collections.singletonList(true), sheetEvents);
         verify(repository, never()).addReceipt(eq(9102L), any(), anyString());
+    }
+
+    /** 重新打开面板，上次收款方式（E15）由测试控制何时返回 */
+    private SingleSubject<SalePrefillVO> reopenWithLatePrefill() {
+        SingleSubject<SalePrefillVO> prefill = SingleSubject.create();
+        when(repository.getPrefill(any(), any())).thenReturn(prefill);
+        if (host instanceof SaleOrderDetailViewModel) {
+            ((SaleOrderDetailViewModel) host).openReceipt();
+        } else {
+            ((ReceivableListViewModel) host).openReceipt(order);
+        }
+        return prefill;
+    }
+
+    private static SalePrefillVO lastMethod(String code) {
+        return com.zhimu.slmp.network.GsonFactory.get().fromJson("{\"last_payment_method\":\"" + code + "\"}",
+                SalePrefillVO.class);
+    }
+
+    private String submittedMethod() {
+        when(repository.addReceipt(eq(9102L), any(), anyString())).thenReturn(Single.just(paid));
+        host.confirmReceipt();
+        ArgumentCaptor<com.zhimu.slmp.finance.model.request.SaleReceiptRequest> req =
+                ArgumentCaptor.forClass(com.zhimu.slmp.finance.model.request.SaleReceiptRequest.class);
+        verify(repository).addReceipt(eq(9102L), req.capture(), anyString());
+        return req.getValue().getPaymentMethod();
+    }
+
+    @Test public void lateLastMethod_isShownAndSubmittedWhenUserDidNotPick() {
+        SingleSubject<SalePrefillVO> prefill = reopenWithLatePrefill();
+        assertEquals(FinanceConst.PAY_BANK, form.paymentMethod.getValue());
+        prefill.onSuccess(lastMethod(FinanceConst.PAY_WECHAT));
+        // 面板按 form.paymentMethod 同步勾选，界面与提交一致
+        assertEquals(FinanceConst.PAY_WECHAT, form.paymentMethod.getValue());
+        assertEquals(FinanceConst.PAY_WECHAT, submittedMethod());
+    }
+
+    @Test public void userPick_isNotOverriddenByLateLastMethod() {
+        SingleSubject<SalePrefillVO> prefill = reopenWithLatePrefill();
+        form.pickPaymentMethod(FinanceConst.PAY_CASH);
+        prefill.onSuccess(lastMethod(FinanceConst.PAY_WECHAT));
+        assertEquals(FinanceConst.PAY_CASH, form.paymentMethod.getValue());
+        assertEquals(FinanceConst.PAY_CASH, submittedMethod());
+    }
+
+    @Test public void dictWithoutCurrentMethod_fallsBackToFirstOption() {
+        com.zhimu.slmp.common.model.vo.DictItemVO cash = com.zhimu.slmp.network.GsonFactory.get().fromJson(
+                "{\"code\":\"CASH\",\"name\":\"现金\"}", com.zhimu.slmp.common.model.vo.DictItemVO.class);
+        form.paymentMethod.setValue(FinanceConst.PAY_WECHAT);
+        form.setPaymentMethods(Collections.singletonList(cash));
+        assertEquals(FinanceConst.PAY_CASH, form.paymentMethod.getValue());
     }
 
     private static final class ActiveOwner implements LifecycleOwner {

@@ -127,6 +127,17 @@ public class DrugOutboundViewModelTest {
     }
 
     @Test
+    public void refreshInNewMode_reloadsDrugsAndLotsAndKeepsSelection() {
+        open(5301L, null);
+        org.mockito.Mockito.clearInvocations(repo);
+        // 没有 current_qty 的 40902 只给“刷新”：新建模式也要重拉药品与批号（取到新的 stock_version）
+        vm.refresh();
+        org.mockito.Mockito.verify(repo).listDrugOptions(eq("OUTBOUND"), isNull());
+        org.mockito.Mockito.verify(repo).listDrugLotOptions(eq(5301L), eq("USE"), isNull());
+        assertEquals(6301, vm.getSelectedLot().getValue().lotId);
+    }
+
+    @Test
     public void presetLotFromM06_keptWhenSwitchingToReturn() {
         open(5301L, 6301L);
         assertFalse(vm.isLotDefault());

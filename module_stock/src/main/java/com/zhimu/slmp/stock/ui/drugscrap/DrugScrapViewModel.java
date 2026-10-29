@@ -366,14 +366,18 @@ public class DrugScrapViewModel extends StockFormViewModel {
                 putFieldError(F_QTY, e.getMessage());
                 return;
             case ErrorCodes.VERSION_CONFLICT: {
-                putFieldError(F_QTY, "库存已变化，请刷新后重新确认");
+                String cur = e.dataString("current_qty");
+                String head = cur == null ? "库存已变化" : "库存已变化，当前结存 "
+                        + StockQtyFormatter.qty(StockCalc.parse(cur), unitText.getValue());
+                putFieldError(F_QTY, head + "，请刷新后重新确认");
                 launch(repository.getDrugLot(lotId), fresh -> {
+                    // 数量按最新结存重填（输入单位可能随之变化，不能沿用旧数字）；原因与说明保留
                     String chosenReason = reason.getValue();
                     String chosenRemark = remark.getValue();
                     apply(new Init(fresh, reasons.getValue() == null ? Collections.emptyList() : reasons.getValue()));
                     reason.setValue(chosenReason);
                     remark.setValue(chosenRemark);
-                    putFieldError(F_QTY, "库存已变化，已刷新结存，请核对后重新确认");
+                    putFieldError(F_QTY, head + "，已刷新结存，请核对后重新确认");
                 });
                 return;
             }

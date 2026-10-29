@@ -169,6 +169,7 @@
                             android:layout_weight="3"
                             android:hint="@string/health_actual_time"
                             app:endIconDrawable="@drawable/ic_schedule"
+                            app:endIconContentDescription="@string/base_cd_pick_time"
                             app:healthError="@{vm.fieldErrors[`actual_time`]}">
 
                             <com.google.android.material.textfield.TextInputEditText
@@ -217,6 +218,7 @@
                         android:layout_marginTop="@dimen/base_space_3"
                         android:hint="@string/health_disinfectant_lot"
                         app:endIconDrawable="@drawable/ic_arrow_drop_down"
+                        app:endIconContentDescription="@string/base_cd_pick_option"
                         app:helperTextEnabled="true">
 
                         <com.google.android.material.textfield.TextInputEditText

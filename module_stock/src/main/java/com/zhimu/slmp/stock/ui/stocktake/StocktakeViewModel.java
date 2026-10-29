@@ -475,7 +475,7 @@ public class StocktakeViewModel extends StockFormViewModel {
                 String cur = e.dataString("current_qty");
                 m.put(F_LOSS_QTY, cur == null ? e.getMessage()
                         : "库存已变化，当前结存 " + StockQtyFormatter.qty(StockCalc.parse(cur), lossUnit())
-                        + "，请刷新后重试");
+                        + "，已刷新，请核对后重新提交");
                 launch(repository.getStocktakeSheet(), this::applySheet);
                 break;
             }

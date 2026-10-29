@@ -108,6 +108,7 @@
                                 android:enabled="@{FormMode.NEW.equals(vm.mode)}"
                                 android:hint="@string/stock_field_drug"
                                 app:endIconDrawable="@drawable/ic_arrow_drop_down"
+                                app:endIconContentDescription="@string/base_cd_pick_option"
                                 app:stockError="@{vm.fieldErrors[`drug_id`]}">
 
                                 <com.google.android.material.textfield.TextInputEditText
@@ -143,6 +144,7 @@
                                 android:enabled="@{FormMode.NEW.equals(vm.mode)}"
                                 android:hint="@string/stock_field_stock_lot"
                                 app:endIconDrawable="@drawable/ic_arrow_drop_down"
+                                app:endIconContentDescription="@string/base_cd_pick_option"
                                 app:stockError="@{vm.fieldErrors[`drug_lot_id`]}"
                                 app:stockHelper="@{vm.lotHelper}">
 
@@ -243,6 +245,7 @@
                                 android:layout_marginTop="@dimen/base_space_4"
                                 android:hint="@{StockEnums.TARGET_PEN.equals(vm.targetType) ? @string/stock_target_pen : @string/stock_target_batch}"
                                 app:endIconDrawable="@drawable/ic_arrow_drop_down"
+                                app:endIconContentDescription="@string/base_cd_pick_option"
                                 app:stockError="@{StockEnums.TARGET_PEN.equals(vm.targetType) ? vm.fieldErrors[`pen_id`] : vm.fieldErrors[`batch_id`]}"
                                 app:stockHelper="@{vm.targetHelper}">
 
@@ -341,6 +344,7 @@
                                 android:layout_weight="1"
                                 android:hint="@string/stock_field_receiver"
                                 app:endIconDrawable="@drawable/ic_arrow_drop_down"
+                                app:endIconContentDescription="@string/base_cd_pick_option"
                                 app:stockError="@{vm.fieldErrors[`receiver_id`]}"
                                 app:stockHelper="@{vm.recorderText}"
                                 app:visibleIf="@{!StockEnums.OUT_RETURN.equals(vm.outType)}">

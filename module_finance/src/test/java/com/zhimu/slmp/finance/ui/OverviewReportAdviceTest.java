@@ -290,4 +290,73 @@ public class OverviewReportAdviceTest {
         assertEquals("已重新生成 AI 摘要", vm.getMessage().getValue().getText());
         verify(files, never()).enqueue(any());
     }
+    private BusinessReportViewModel reportVm(ReportRepository repo, ReportFileHelper files) throws IOException {
+        SettlementRepository settlement = mock(SettlementRepository.class);
+        BaseDataRepository base = mock(BaseDataRepository.class);
+        when(settlement.getOptions(isNull(), anyInt(), anyInt())).thenReturn(Single.just(TestRules.mock(
+                "settlement_options.json", SettlementOptionPageVO.class)));
+        when(base.getCategories()).thenReturn(Single.just(Collections.emptyList()));
+        when(repo.getReport(any())).thenReturn(Single.just(TestRules.mock("report_to_date.json", BusinessReportVO.class)));
+        when(repo.getReportTrend(any())).thenReturn(Single.just(TestRules.mock("trend_stock.json", ReportTrendVO.class)));
+        when(repo.getSummary(any())).thenReturn(Single.just(TestRules.mock("summary_to_date.json", ReportSummaryVO.class)));
+        when(repo.pollSummary(any())).thenCallRealMethod();
+        BusinessReportViewModel vm = new BusinessReportViewModel(repo, settlement, base, files, farm());
+        vm.attachSavedState(new SavedStateHandle());
+        rules.time.advanceTimeBy(0, TimeUnit.SECONDS);
+        return vm;
+    }
+
+    @Test
+    public void report_exportStalled_failsWithRetryAndCancelsDownload() throws IOException {
+        ReportRepository repo = mock(ReportRepository.class);
+        ReportFileHelper files = mock(ReportFileHelper.class);
+        com.zhimu.slmp.finance.model.vo.ReportExportVO vo = GsonFactory.get().fromJson(
+                "{\"file_name\":\"经营报表.xlsx\",\"download_url\":\"http://10.0.2.2:9000/x.xlsx\"}",
+                com.zhimu.slmp.finance.model.vo.ReportExportVO.class);
+        when(repo.exportReport(any())).thenReturn(Single.just(vo));
+        when(files.enqueue(any())).thenReturn(42L);
+        // 系统下载一直卡在 0 字节（模拟器连不上文件主机时为 PAUSED / PENDING）
+        when(files.query(42L)).thenReturn(new ReportFileHelper.Status(ReportFileHelper.Status.RUNNING, 0, null, 0));
+        BusinessReportViewModel vm = reportVm(repo, files);
+        vm.export(FinanceConst.FORMAT_XLSX);
+        assertTrue(vm.getExporting().getValue());
+        rules.time.advanceTimeBy(58, TimeUnit.SECONDS);
+        assertTrue(vm.getExporting().getValue());
+        rules.time.advanceTimeBy(4, TimeUnit.SECONDS);
+        assertFalse(vm.getExporting().getValue());
+        verify(files).cancel(42L);
+        assertEquals("导出失败，请检查网络后重试", vm.getMessage().getValue().getText());
+        // “重试”再导出一次
+        vm.retryExport();
+        assertTrue(vm.getExporting().getValue());
+        verify(repo, org.mockito.Mockito.times(2)).exportReport(any());
+    }
+
+    @Test
+    public void report_exportProgressing_keepsWaitingThenSucceeds() throws IOException {
+        ReportRepository repo = mock(ReportRepository.class);
+        ReportFileHelper files = mock(ReportFileHelper.class);
+        com.zhimu.slmp.finance.model.vo.ReportExportVO vo = GsonFactory.get().fromJson(
+                "{\"file_name\":\"经营报表.xlsx\",\"download_url\":\"http://x/x.xlsx\"}",
+                com.zhimu.slmp.finance.model.vo.ReportExportVO.class);
+        when(repo.exportReport(any())).thenReturn(Single.just(vo));
+        when(files.enqueue(any())).thenReturn(7L);
+        long[] bytes = {0};
+        when(files.query(7L)).thenAnswer(inv -> {
+            bytes[0] += 100;
+            return bytes[0] < 5000 ? new ReportFileHelper.Status(ReportFileHelper.Status.RUNNING, 0, null, bytes[0])
+                    : new ReportFileHelper.Status(ReportFileHelper.Status.SUCCESSFUL, 0,
+                    new com.zhimu.slmp.finance.util.ExportedFile("经营报表.xlsx", "/tmp/x.xlsx",
+                            ReportFileHelper.MIME_XLSX));
+        });
+        BusinessReportViewModel vm = reportVm(repo, files);
+        vm.export(FinanceConst.FORMAT_XLSX);
+        // 一直有进展：超过 60 秒也不判失败，直到下载完成
+        rules.time.advanceTimeBy(80, TimeUnit.SECONDS);
+        assertTrue(vm.getExporting().getValue());
+        rules.time.advanceTimeBy(30, TimeUnit.SECONDS);
+        assertFalse(vm.getExporting().getValue());
+        assertNotNull(vm.getExportedFile().getValue());
+        verify(files, never()).cancel(anyLong());
+    }
 }

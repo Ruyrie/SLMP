@@ -169,7 +169,7 @@ public class FeedOtherOutActivity extends BaseActivity implements PickerHost, Re
                 vm.retrySubmit();
                 break;
             case StockFormViewModel.ACTION_REFRESH:
-                vm.reloadRecord();
+                vm.refresh();
                 break;
             default:
                 break;

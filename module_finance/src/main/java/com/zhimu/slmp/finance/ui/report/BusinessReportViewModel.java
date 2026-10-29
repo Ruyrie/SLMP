@@ -58,6 +58,12 @@ public class BusinessReportViewModel extends FinanceViewModel {
     public static final String PICK_PERIOD = "period";
     public static final String PICK_CHECK_BATCH = "check_batch";
     public static final String ACTION_OPEN_FILE = "finance_open_report";
+    public static final String ACTION_RETRY_EXPORT = "finance_retry_export";
+    static final String MSG_EXPORT_FAILED = "导出失败，请检查网络后重试";
+    /** 系统下载每 2 秒查一次进度；连续 {@link #exportStallSec} 秒没有进展（含 PAUSED 等待重试）按失败处理 */
+    static final long EXPORT_WATCH_INTERVAL_SEC = 2;
+    @androidx.annotation.VisibleForTesting
+    static long exportStallSec = 60;
     static final String KEY_DOWNLOAD_ID = "finance_report_download_id";
     static final String KEY_DOWNLOAD_FORMAT = "finance_report_download_format";
 
@@ -101,6 +107,8 @@ public class BusinessReportViewModel extends FinanceViewModel {
     private final List<SettlementOptionVO> batches = new ArrayList<>();
     @Nullable
     private Disposable summaryPoll;
+    @Nullable
+    private Disposable downloadWatch;
     @Nullable
     private String presetPeriod;
     private boolean regeneratingSummary;
@@ -569,7 +577,10 @@ public class BusinessReportViewModel extends FinanceViewModel {
 
     // ===== 导出 =====
 
-    /** 导出（API-E42，读超时 45 秒）→ 系统下载；下载完成后另存并提示“打开” */
+    /**
+     * 导出（API-E42，读超时 45 秒）→ 系统下载；下载完成后另存并提示“打开”。
+     * 下载失败或 60 秒没有进展时取消下载、恢复按钮，并给出“重试”。
+     */
     public void export(@NonNull String format) {
         if (Boolean.TRUE.equals(exporting.getValue()) || !q().isComplete()) {
             return;
@@ -581,11 +592,19 @@ public class BusinessReportViewModel extends FinanceViewModel {
             getSavedState().set(KEY_DOWNLOAD_ID, id);
             if (id == ReportFileHelper.LOCAL_DONE) {
                 onDownloadComplete(id);
+            } else {
+                watchDownload(id);
             }
         }, e -> {
             exporting.setValue(false);
-            showMessage("导出失败，请稍后重试");
+            exportFailed();
         });
+    }
+
+    /** 失败提示里的“重试”：按上次的格式再导出一次 */
+    public void retryExport() {
+        String format = pendingFormat();
+        export(format == null ? FinanceConst.FORMAT_XLSX : format);
     }
 
     /** 下载完成广播或回到前台时按 downloadId 主动查一次 */
@@ -596,21 +615,85 @@ public class BusinessReportViewModel extends FinanceViewModel {
         }
         launch(Single.fromCallable(() -> files.query(id)), st -> {
             if (st.state == ReportFileHelper.Status.RUNNING) {
+                if (downloadWatch == null || downloadWatch.isDisposed()) {
+                    watchDownload(id);
+                }
                 return;
             }
+            finishDownload(st);
+        }, e -> {
+            stopDownloadWatch();
             getSavedState().set(KEY_DOWNLOAD_ID, null);
             exporting.setValue(false);
-            if (st.state == ReportFileHelper.Status.SUCCESSFUL && st.file != null) {
-                exportedFile.setValue(st.file);
-                openSaveDocument.setValue(st.file);
-                showMessage(UiMessage.withAction("已导出经营报表", "打开", ACTION_OPEN_FILE));
-            } else {
-                showMessage("导出失败，请稍后重试");
-            }
-        }, e -> {
-            exporting.setValue(false);
-            showMessage("导出失败，请稍后重试");
+            exportFailed();
         });
+    }
+
+    /** 轮询系统下载：完成或失败时收尾；已下载字节数连续 exportStallSec 秒不变时取消下载并提示失败 */
+    private void watchDownload(long id) {
+        stopDownloadWatch();
+        final long[] lastBytes = {-1};
+        final long[] idleSec = {0};
+        downloadWatch = io.reactivex.rxjava3.core.Observable
+                .interval(EXPORT_WATCH_INTERVAL_SEC, EXPORT_WATCH_INTERVAL_SEC, java.util.concurrent.TimeUnit.SECONDS)
+                .concatMapSingle(t -> Single.fromCallable(() -> files.query(id)).subscribeOn(Schedulers.io()))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(st -> {
+                    Long pending = getSavedState().get(KEY_DOWNLOAD_ID);
+                    if (pending == null || pending != id) {
+                        stopDownloadWatch();
+                        return;
+                    }
+                    if (st.state != ReportFileHelper.Status.RUNNING) {
+                        finishDownload(st);
+                        return;
+                    }
+                    if (st.bytes > lastBytes[0]) {
+                        lastBytes[0] = st.bytes;
+                        idleSec[0] = 0;
+                    } else {
+                        idleSec[0] += EXPORT_WATCH_INTERVAL_SEC;
+                    }
+                    if (idleSec[0] >= exportStallSec) {
+                        stopDownloadWatch();
+                        getSavedState().set(KEY_DOWNLOAD_ID, null);
+                        disposables.add(Completable.fromAction(() -> files.cancel(id))
+                                .subscribeOn(Schedulers.io()).onErrorComplete().subscribe());
+                        exporting.setValue(false);
+                        exportFailed();
+                    }
+                }, e -> {
+                    stopDownloadWatch();
+                    getSavedState().set(KEY_DOWNLOAD_ID, null);
+                    exporting.setValue(false);
+                    exportFailed();
+                });
+        disposables.add(downloadWatch);
+    }
+
+    private void stopDownloadWatch() {
+        if (downloadWatch != null) {
+            downloadWatch.dispose();
+            disposables.remove(downloadWatch);
+            downloadWatch = null;
+        }
+    }
+
+    private void finishDownload(@NonNull ReportFileHelper.Status st) {
+        stopDownloadWatch();
+        getSavedState().set(KEY_DOWNLOAD_ID, null);
+        exporting.setValue(false);
+        if (st.state == ReportFileHelper.Status.SUCCESSFUL && st.file != null) {
+            exportedFile.setValue(st.file);
+            openSaveDocument.setValue(st.file);
+            showMessage(UiMessage.withAction("已导出经营报表", "打开", ACTION_OPEN_FILE));
+        } else {
+            exportFailed();
+        }
+    }
+
+    private void exportFailed() {
+        showMessage(UiMessage.withAction(MSG_EXPORT_FAILED, "重试", ACTION_RETRY_EXPORT));
     }
 
     public void checkPendingDownload() {

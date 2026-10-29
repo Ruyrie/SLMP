@@ -57,7 +57,8 @@ public final class AnswerRenderer {
             CitationBriefVO c = bySeq.get(seq);
             if (c != null) {
                 int start = sb.length();
-                sb.append('￼');
+                // 被角标覆盖的文字用“[n]”而不是对象占位符 U+FFFC：读屏与界面文字导出时读到的是引用序号
+                sb.append("[").append(String.valueOf(seq)).append("]");
                 sb.setSpan(new CitationBadgeSpan(context, String.valueOf(seq)), start, sb.length(),
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 if (listener != null) {

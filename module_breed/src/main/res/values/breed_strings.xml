@@ -181,7 +181,7 @@
     <string name="breed_field_set_date">入孵日期</string>
     <string name="breed_field_flock">种禽群</string>
     <string name="breed_flock_helper">列出本场用途为种用的在栏禽类批次</string>
-    <string name="breed_flock_empty">没有可以入孵的种禽群。种用批次在 L08 批次入栏时登记（用途选种用）。</string>
+    <string name="breed_flock_empty">没有可以入孵的种禽群。种用批次在“批次入栏”时登记（用途选种用）。</string>
     <string name="breed_field_set_count">入孵蛋数</string>
     <string name="breed_unit_egg">枚</string>
     <string name="breed_unit_bird">只</string>

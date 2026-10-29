@@ -16,6 +16,7 @@
         android:layout_height="wrap_content"
         android:hint="@string/finance_e12_batch"
         app:endIconDrawable="@drawable/ic_arrow_drop_down"
+        app:endIconContentDescription="@string/base_cd_pick_option"
         app:endIconMode="custom"
         app:helperTextEnabled="true">
 

@@ -140,9 +140,9 @@ public class DuePagingAdapter extends PagingDataAdapter<DueRow, RecyclerView.Vie
 
     private void bindFarrow(@NonNull BreedItemRowBinding b, @NonNull DueRow r, @NonNull FarrowDueItemVO i) {
         RowBinder.badge(b, i.getDaysToDue());
-        // 负责员工为空时不再提示“无负责员工”（第三行只显示提醒状态）
+        // 第三行：负责员工 + 提醒状态（没有负责员工时只显示提醒状态）
         RowBinder.text(b, BreedTextFormatter.farrowDueTitle(i), BreedTextFormatter.farrowDueLine2(i),
-                i.getReminderText());
+                BreedTextFormatter.dueLine3(i.getStaffNames(), i.getReminderText()));
         if (!readOnly && i.isCanRegister()) {
             RowBinder.action(b, b.getRoot().getContext().getString(R.string.breed_action_register_farrow),
                     v -> listener.onRegisterFarrow(i));
@@ -153,7 +153,7 @@ public class DuePagingAdapter extends PagingDataAdapter<DueRow, RecyclerView.Vie
     private void bindHatch(@NonNull BreedItemRowBinding b, @NonNull DueRow r, @NonNull HatchDueItemVO i) {
         RowBinder.badge(b, i.getDaysToHatch());
         RowBinder.text(b, BreedTextFormatter.nz(i.getFlockText()), BreedTextFormatter.hatchDueLine2(i),
-                i.getReminderText());
+                BreedTextFormatter.dueLine3(i.getStaffNames(), i.getReminderText()));
         if (!readOnly && i.isCanRegister()) {
             RowBinder.action(b, b.getRoot().getContext().getString(R.string.breed_action_register_hatch),
                     v -> listener.onRegisterHatch(i));

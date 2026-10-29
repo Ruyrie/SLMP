@@ -71,6 +71,7 @@
                         android:layout_marginTop="@dimen/base_space_5"
                         android:hint="@string/stock_field_feed_type"
                         app:endIconDrawable="@drawable/ic_arrow_drop_down"
+                        app:endIconContentDescription="@string/base_cd_pick_option"
                         app:helperText="@string/stock_feed_type_helper"
                         app:helperTextEnabled="true"
                         app:stockError="@{vm.fieldErrors[`feed_type_code`]}">
@@ -131,7 +132,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/base_space_4"
                         android:hint="@string/stock_field_category"
-                        app:endIconDrawable="@drawable/ic_arrow_drop_down">
+                        app:endIconDrawable="@drawable/ic_arrow_drop_down"
+                        app:endIconContentDescription="@string/base_cd_pick_option">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/stock_category_input"

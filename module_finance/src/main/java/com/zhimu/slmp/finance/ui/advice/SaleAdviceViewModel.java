@@ -227,7 +227,7 @@ public class SaleAdviceViewModel extends FinanceListViewModel<String, SaleAdvice
         handleError(e);
     }
 
-    /** API-E36 轮询；90 秒后仍在生成按失败处理 */
+    /** API-E36 轮询；150 秒后仍在生成按失败处理 */
     private void poll(long id) {
         cancelRunning();
         final SaleAdviceVO[] last = new SaleAdviceVO[1];

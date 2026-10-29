@@ -655,15 +655,28 @@ public class MedicationRegisterViewModel extends BaseViewModel {
         return r == null ? "" : HealthFormat.nonNull(r.getDoseUnit());
     }
 
-    /** 药品辅助文字“休药 14 天 · 禁用药不可选” */
+    /** 药品辅助文字：未选时“列表不含禁用药”，已选时“休药 14 天”（不适用时带“不适用于猪”） */
     @Nullable
     public String drugHelper() {
         MedicationDrugOptionVO d = selectedDrug.getValue();
         if (d == null) {
-            return "禁用药不可选";
+            return "列表不含禁用药";
         }
-        return d.getHintText() != null ? d.getHintText() : "休药 " + d.getWithdrawalDays() + " 天" + HealthFormat.DOT
-                + "禁用药不可选";
+        String hint = drugHint(d.getHintText());
+        return hint != null ? hint : "休药 " + d.getWithdrawalDays() + " 天";
+    }
+
+    /**
+     * 药品选项 / 辅助文字：服务端提示里的“禁用药不可选”挂在每个可选药品下会被误读成“这个药是禁用药”，去掉这一段；
+     * 其余（休药天数、“不适用于猪”）原样保留。
+     */
+    @Nullable
+    public static String drugHint(@Nullable String hintText) {
+        if (hintText == null) {
+            return null;
+        }
+        String s = hintText.replace(HealthFormat.DOT + "禁用药不可选", "").replace("禁用药不可选", "").trim();
+        return s.isEmpty() ? null : s;
     }
 
     /** 剂量辅助文字“推荐 0.3 克 / 升水” */

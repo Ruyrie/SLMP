@@ -75,6 +75,8 @@ public class ReceiptFormDelegate {
     /** 打开 / 关闭面板；仅宿主 Activity 消费，面板不能再竞争同一个单次事件。 */
     private final SingleLiveEvent<Boolean> showSheet = new SingleLiveEvent<>();
     private final FinanceIdemKeeper idem = new FinanceIdemKeeper("receipt");
+    /** 本次打开面板后用户是否已手动选过收款方式；选过后异步返回的“上次方式”不再覆盖 */
+    private boolean methodPicked;
 
     public void attach(@NonNull SavedStateHandle handle) {
         idem.attach(handle);
@@ -108,6 +110,12 @@ public class ReceiptFormDelegate {
     /** U10 字典（PAYMENT_METHOD）；加载失败或为空时用四种默认方式 */
     public void setPaymentMethods(@Nullable List<DictItemVO> list) {
         paymentMethods.setValue(list == null || list.isEmpty() ? Collections.emptyList() : list);
+        // 选项变化后当前方式不在选项里时改为第一项，保证界面勾选的就是要提交的
+        Map<String, String> options = methodOptions();
+        String current = paymentMethod.getValue();
+        if (current == null || !options.containsKey(current)) {
+            paymentMethod.setValue(options.keySet().iterator().next());
+        }
     }
 
     /** 可选的收款方式 code → 名称（字典为空时用默认四种） */
@@ -141,13 +149,23 @@ public class ReceiptFormDelegate {
         Map<String, String> options = methodOptions();
         paymentMethod.setValue(lastPaymentMethod != null && options.containsKey(lastPaymentMethod)
                 ? lastPaymentMethod : options.keySet().iterator().next());
+        methodPicked = false;
         errors.setValue(Collections.emptyMap());
         submitting.setValue(false);
         showSheet.setValue(true);
     }
 
+    /** E15 异步返回的上次收款方式：用户已在面板里手动选过时不覆盖 */
     public void setLastPaymentMethod(@Nullable String code) {
-        if (code != null && methodOptions().containsKey(code)) {
+        if (!methodPicked && code != null && methodOptions().containsKey(code)) {
+            paymentMethod.setValue(code);
+        }
+    }
+
+    /** 面板里点选收款方式 */
+    public void pickPaymentMethod(@NonNull String code) {
+        methodPicked = true;
+        if (!code.equals(paymentMethod.getValue())) {
             paymentMethod.setValue(code);
         }
     }
