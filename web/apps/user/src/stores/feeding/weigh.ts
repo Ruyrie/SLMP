@@ -13,6 +13,7 @@ import type {
 } from '@/api/feeding'
 import { feedingApi } from '@/api/feeding'
 import { useUiStore } from '@/stores/ui'
+import { useFarmStore } from '@/stores/farm'
 import { claimFarmScope, currentFarmScope, resetFarmCache } from '@/stores/farmScope'
 import {
   dayAgeAt,
@@ -112,7 +113,7 @@ export const useWeighStore = defineStore('feedingWeigh', {
         batch.pen_names,
         batch.breed_name,
         batch.day_age !== undefined && batch.day_age !== null ? `${batch.day_age} 日龄` : '',
-        batch.current_count ? `存栏 ${batch.current_count} 头` : '',
+        batch.current_count ? `存栏 ${batch.current_count.toLocaleString('en-US')} ${useFarmStore().countUnit}` : '',
         batch.entry_date ? `${formatShort(batch.entry_date)}${batch.entry_age_days ? ` 以 ${batch.entry_age_days} 日龄入栏` : ''}${entry ? `，平均 ${Number(entry).toFixed(Math.abs(Number(entry)) < 1 ? 2 : 1)} 千克` : ''}` : ''
       ].filter(Boolean).join(' · ')
     },

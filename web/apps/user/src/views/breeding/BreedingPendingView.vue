@@ -192,6 +192,17 @@ function selectMatingAnimal(value: unknown): void {
   void store.loadMatingContext()
 }
 
+/** 换入栏栏舍后，上一次的超容量提示按新栏舍重新判断 */
+function selectFarrowPen(value: unknown): void {
+  store.farrowForm.targetPenId = Number(value || 0)
+  store.farrowCapacity = null
+  store.farrowForm.capacityConfirmed = false
+  const errors = { ...store.farrowErrors }
+  delete errors.capacity
+  delete errors.target_pen_id
+  store.farrowErrors = errors
+}
+
 function selectFarrowAnimal(value: unknown): void {
   store.farrowForm.animalId = Number(value || 0)
   store.farrowCapacity = null
@@ -556,11 +567,13 @@ const today = todayISO()
           <zw-desc :cols="2" :label-width="100">
             <zw-desc-item label="入栏栏舍">
               <v-select
-                v-model="store.farrowForm.targetPenId"
+                :model-value="store.farrowForm.targetPenId || null"
                 :items="store.farrowPens.map((pen) => ({ title: `${pen.pen_name} · 在栏 ${pen.stock_count || 0} · 容量 ${pen.capacity || 0}`, value: Number(pen.pen_id) }))"
                 density="compact"
                 hide-details
+                placeholder="请选择入栏栏舍"
                 :error="!!fieldError(store.farrowErrors, 'target_pen_id')"
+                @update:model-value="selectFarrowPen"
               />
             </zw-desc-item>
             <zw-desc-item label="品种">{{ store.farrowContext?.offspringBreed?.breedName || '加载后代品种中' }}</zw-desc-item>

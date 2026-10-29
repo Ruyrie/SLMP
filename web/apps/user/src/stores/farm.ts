@@ -41,6 +41,8 @@ export const useFarmStore = defineStore('farm', {
       return this.role !== 'staff'
     },
     farmName: (state): string => state.farms.find((farm) => farm.farm_id === state.currentFarmId)?.name || '',
+    /** 当前养殖场的计数单位（猪场“头”、鸡场“只”），没有时按“头” */
+    countUnit: (state): string => state.farms.find((farm) => farm.farm_id === state.currentFarmId)?.count_unit_text || '头',
     switchableFarms: (state): FarmBrief[] => state.farms.filter((farm) => farm.can_switch !== false)
   },
   actions: {

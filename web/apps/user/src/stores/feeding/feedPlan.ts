@@ -174,7 +174,7 @@ export const useFeedPlanStore = defineStore('feedingPlan', {  state: () => ({
       const batch = state.plan?.batch
       if (!batch) return '选择批次后设置饲喂方案'
       return [batch.pen_names, batch.breed_name, batch.day_age ? `${batch.day_age} 日龄` : '',
-        batch.current_count ? `存栏 ${batch.current_count} 头` : ''].filter(Boolean).join(' · ')
+        batch.current_count ? `存栏 ${batch.current_count.toLocaleString('en-US')} ${useFarmStore().countUnit}` : ''].filter(Boolean).join(' · ')
     },
     hasPlan(state): boolean {
       return !!state.plan?.has_plan
@@ -213,7 +213,7 @@ export const useFeedPlanStore = defineStore('feedingPlan', {  state: () => ({
       const count = Number(state.plan?.batch?.current_count || 0)
       if (!stage || !count) return ''
       const qty = Number(stage.dailyQtyPerHead || 0)
-      return `${qty} 千克 × 存栏 ${count} 头 · 分 ${stage.mealsPerDay} 餐`
+      return `${qty} 千克 × 存栏 ${count.toLocaleString('en-US')} ${useFarmStore().countUnit} · 分 ${stage.mealsPerDay} 餐`
     },
     dirty(state): boolean {
       return JSON.stringify(snapshotOf({

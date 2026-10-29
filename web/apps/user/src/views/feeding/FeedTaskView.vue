@@ -248,7 +248,7 @@ useFarmReload(async () => {
           <span class="zw-ico-tile zw-ico-tile--primary"><zw-icon name="rice_bowl" :size="18" /></span>
           <div>
             <div class="zw-cell-main">{{ store.form.pen_name }} · {{ store.form.meal_name }} {{ store.form.feed_time }}</div>
-            <div class="zw-cell-sub"><span class="num">{{ store.form.batch_no }}</span> · {{ store.form.breed_name }} · {{ store.form.day_age }} 日龄 · 存栏 {{ formatNumber(store.form.head_count || store.form.batch_stock || 0) }} 头</div>
+            <div class="zw-cell-sub"><span class="num">{{ store.form.batch_no }}</span> · {{ store.form.breed_name }} · {{ store.form.day_age }} 日龄 · 存栏 {{ formatNumber(store.form.head_count || store.form.batch_stock || 0) }} {{ farm.countUnit }}</div>
           </div>
         </div>
 

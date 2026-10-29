@@ -679,8 +679,9 @@ useFarmReload(async () => {
           </zw-form-item>
           <zw-form-item v-if="!isStaff" label="实际执行人" required :error="store.deathErrors.executor_user_id" hint="代员工登记时选择">
             <v-select
-              v-model="store.deathForm.executorUserId"
+              :model-value="store.deathForm.executorUserId || null"
               :items="store.executorItems"
+              @update:model-value="store.deathForm.executorUserId = Number($event || 0)"
               item-title="title"
               item-value="value"
               :loading="store.deathContext.executorsLoading"
