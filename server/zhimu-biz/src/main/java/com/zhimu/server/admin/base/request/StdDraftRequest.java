@@ -27,4 +27,7 @@ public class StdDraftRequest {
 
     /** 已有草稿时必填 */
     private Integer version;
+
+    /** 暂存在草稿上的更新说明（选填，最多 100 字，发布时以发布请求为准） */
+    private String updateNote;
 }

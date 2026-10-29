@@ -113,7 +113,7 @@ public class CategoryAdminController {
     /**
      * ADM-D08 保存标准草稿。weight 与 feed 共用路径，请求体字段按 std_type 取：
      * weight 用 tolerance_rate / suggested_weigh_times / effective_mode / points[]；
-     * feed 用 deviation_rate / stages[]。
+     * feed 用 deviation_rate / stages[]；两者都可带 update_note（暂存的更新说明）。
      */
     @PutMapping("/breeds/{id:\\d+}/standards/{std_type}/draft")
     @AdminPermission("WA-D01:HANDLE")
@@ -126,6 +126,7 @@ public class CategoryAdminController {
             feed.setDeviationRate(request.getDeviationRate());
             feed.setStages(request.getStages() == null ? List.of() : request.getStages());
             feed.setVersion(request.getVersion());
+            feed.setUpdateNote(request.getUpdateNote());
             return ApiResponse.ok(stdService.saveFeedDraft(id, feed));
         }
         StdWeightDraftRequest weight = new StdWeightDraftRequest();
@@ -135,6 +136,7 @@ public class CategoryAdminController {
         weight.setEffectiveDate(request.getEffectiveDate());
         weight.setPoints(request.getPoints() == null ? List.of() : request.getPoints());
         weight.setVersion(request.getVersion());
+        weight.setUpdateNote(request.getUpdateNote());
         return ApiResponse.ok(stdService.saveWeightDraft(id, weight));
     }
 
