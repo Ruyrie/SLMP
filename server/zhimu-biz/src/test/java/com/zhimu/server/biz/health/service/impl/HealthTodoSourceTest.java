@@ -10,6 +10,7 @@ import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.herd.api.BatchQueryService;
 import com.zhimu.server.biz.today.api.TodoSource;
 import com.zhimu.server.biz.today.api.TodoSourceWriteService;
+import com.zhimu.server.common.util.BeijingTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -60,6 +61,33 @@ class HealthTodoSourceTest {
         assertThat(draft.getBatchId()).isEqualTo(3001L);
         assertThat(draft.getDedupKey()).isEqualTo("IMMUNE_PLAN:160101");
         verify(writer).completeFromSource(1001L, "IMMUNIZATION", "IMMUNE_PLAN:160101", "IMMUNE_RECORD", 160201L, 10004L);
+    }
+
+    @Test
+    void generateFirstMarksPlansMissedSevenDaysAfterPlanDate() {
+        // 复测 N3：过了 7 天仍未登记的计划没有任何地方改成漏免；每日任务、启动补齐、计划页查询都会先走这里
+        source.generate(TodoSource.TodoSourceContext.builder().farmId(1001L).date(today).build());
+
+        verify(plans).markMissed(eq(1001L), eq(BeijingTime.today().minusDays(7)), any());
+    }
+
+    @Test
+    void missedPlanTodoCarriesMissedNote() {
+        ImmunePlan plan = new ImmunePlan();
+        plan.setId(9005L);
+        plan.setFarmId(1001L);
+        plan.setPenId(2004L);
+        plan.setPlanDate(today.minusDays(11));
+        plan.setStatus("MISSED");
+        plan.setVaccineName("口蹄疫灭活疫苗");
+        when(plans.selectList(any())).thenReturn(List.of(plan));
+
+        source.generate(TodoSource.TodoSourceContext.builder().farmId(1001L).date(today).build());
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<TodoSource.TodoDraft>> drafts = ArgumentCaptor.forClass(List.class);
+        verify(writer).upsertFromSource(eq(1001L), drafts.capture());
+        assertThat(drafts.getValue().get(0).getStatusNote()).isEqualTo("漏免");
     }
 
     @Test

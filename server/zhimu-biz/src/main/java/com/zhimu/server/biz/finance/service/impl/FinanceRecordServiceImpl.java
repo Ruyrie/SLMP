@@ -121,13 +121,15 @@ public class FinanceRecordServiceImpl implements FinanceRecordService {
         vo.setReceivable(receivable);
         vo.setPriceCard(marketPriceService.priceCard(farmId));
 
+        // 张数与金额同口径：已作废的出栏单都不计
         List<SaleOrder> monthOrders = TenantSkip.call(() -> saleOrderMapper.selectList(Wrappers.<SaleOrder>lambdaQuery()
                 .eq(SaleOrder::getFarmId, farmId)
-                .between(SaleOrder::getSaleDate, monthStart, today)));
+                .between(SaleOrder::getSaleDate, monthStart, today))).stream()
+                .filter(o -> !FinanceConst.PAY_VOIDED.equals(o.getPaymentStatus()))
+                .toList();
         OverviewVos.MonthSales sales = new OverviewVos.MonthSales();
         sales.setOrderCount(monthOrders.size());
         sales.setSaleAmount(FinanceSupport.scale2(monthOrders.stream()
-                .filter(o -> !FinanceConst.PAY_VOIDED.equals(o.getPaymentStatus()))
                 .map(SaleOrder::getSaleAmount).map(FinanceSupport::nz).reduce(BigDecimal.ZERO, BigDecimal::add)));
         vo.setMonthSales(sales);
 

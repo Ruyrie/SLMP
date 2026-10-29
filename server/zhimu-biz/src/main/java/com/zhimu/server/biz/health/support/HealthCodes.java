@@ -27,6 +27,8 @@ public final class HealthCodes {
     public static final String PLAN_MISSED = "MISSED";
     public static final String PLAN_DONE = "DONE";
     public static final String PLAN_CANCELLED = "CANCELLED";
+    /** 计划日期过后 7 天仍未登记标为漏免（今天 − 计划日期 ≥ 7），与 App、Web 页面规则一致 */
+    public static final int MISSED_AFTER_DAYS = 7;
 
     // ===== 取消方式 =====
     public static final String CANCEL_USER_DELETED = "USER_DELETED";

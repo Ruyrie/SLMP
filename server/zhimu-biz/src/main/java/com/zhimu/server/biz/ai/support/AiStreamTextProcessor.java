@@ -14,14 +14,23 @@ import java.util.regex.Pattern;
  * 流式正文处理：
  * <ul>
  *     <li>截获首行的类型/主题标记（[[NORMAL]]、[[TOPIC:MEDICATION]]），不转发给客户端；</li>
- *     <li>把模型输出的 [^P3] 按首次出现顺序改成 [^1]、[^2]，同一条目同一序号；无效编号删除；</li>
- *     <li>末尾未闭合的 "[^P" 暂缓到下一段，避免把半个标记发给客户端。</li>
+ *     <li>把模型输出的 [^P3]（及 [P3]、[^p3]、全角括号、多编号等变体）按首次出现顺序改成客户端认的 [^1]、[^2]，
+ *     同一条目同一序号；无效编号删除；</li>
+ *     <li>末尾未闭合的标记（含只到 "[" 的半个）暂缓到下一段，避免把半个标记发给客户端。</li>
  * </ul>
  */
 public final class AiStreamTextProcessor {
 
     private static final Pattern TAG = Pattern.compile("^\\[\\[([A-Z_]+)(?::([A-Z_]+))?]]");
-    private static final Pattern P_CITATION = Pattern.compile("\\[\\^P(\\d+)]");
+    /** 一个编号：可带 ^、P 前缀，例如 ^P3、P3、^3 */
+    private static final String CITE_ITEM = "(?:\\^\\s*[Pp]?|[Pp])\\s*\\d{1,3}";
+    /** 完整引用标记（半角 / 全角括号，括号内可有多个编号，以逗号、顿号分隔） */
+    private static final Pattern CITATION = Pattern.compile(
+            "[\\[［【]\\s*" + CITE_ITEM + "(?:\\s*[,，、]\\s*\\^?\\s*[Pp]?\\s*\\d{1,3})*\\s*[\\]］】]");
+    private static final Pattern CITATION_NUMBER = Pattern.compile("\\d{1,3}");
+    /** 还没写完的引用标记：左括号开头、只含标记可能出现的字符 */
+    private static final Pattern PARTIAL_CITATION = Pattern.compile("[\\[［【][\\s^Pp\\d,，、]*");
+    private static final int MAX_PARTIAL = 24;
     private static final int MAX_TAG_BUFFER = 96;
 
     private final List<RetrievalHit> hits;
@@ -74,10 +83,7 @@ public final class AiStreamTextProcessor {
             tagBuffer.setLength(0);
             out.append(renumber(body == null ? buffered : body));
         }
-        if (pending.length() > 0) {
-            out.append(pending);
-            pending.setLength(0);
-        }
+        out.append(finishPending());
         return cleanStart(out.toString(), true);
     }
 
@@ -130,47 +136,80 @@ public final class AiStreamTextProcessor {
         };
     }
 
+    /**
+     * 引用标记统一改成客户端认的 [^n]。模型实际会写出的变体都按资料编号处理：[^P3]、[^p3]、[^ P3]、[P3]、[^3]、
+     * 全角［^P3］【^P3】、一个括号里多个编号 [^P1, P3]（拆成 [^1][^2]）。末尾可能还没写完的标记（含只到“[”就被
+     * 切开的增量，如“…疫病 [”+“^P3]。”）先缓存，等下一段再判断，避免把半个标记原样发给客户端。
+     */
     private String renumber(String text) {
         pending.append(text);
         String value = pending.toString();
+        pending.setLength(0);
+        int hold = partialStart(value);
+        if (hold >= 0) {
+            pending.append(value.substring(hold));
+            value = value.substring(0, hold);
+        }
+        return replaceCitations(value);
+    }
+
+    private String replaceCitations(String value) {
+        Matcher matcher = CITATION.matcher(value);
         StringBuilder out = new StringBuilder();
         int index = 0;
-        while (true) {
-            int start = value.indexOf("[^", index);
-            if (start < 0) {
-                out.append(value, index, value.length());
-                break;
-            }
-            Matcher matcher = P_CITATION.matcher(value);
-            matcher.region(start, value.length());
-            if (!matcher.lookingAt()) {
-                // 不是 [^P数字]：原样保留；末尾可能是未闭合标记时缓存
-                int close = value.indexOf(']', start);
-                if (close < 0) {
-                    out.append(value, index, start);
-                    pending.setLength(0);
-                    pending.append(value.substring(start));
-                    return out.toString();
-                }
-                out.append(value, index, close + 1);
-                index = close + 1;
-                continue;
-            }
-            out.append(value, index, start);
-            int p = Integer.parseInt(matcher.group(1));
-            RetrievalHit hit = p >= 1 && p <= hits.size() ? hits.get(p - 1) : null;
-            if (hit != null) {
-                int seq = seqByHit.computeIfAbsent(p, key -> {
-                    int next = seqByHit.size() + 1;
-                    citations.add(toCitation(hit, next));
-                    return next;
-                });
-                out.append("[^").append(seq).append(']');
+        while (matcher.find()) {
+            out.append(value, index, matcher.start());
+            Matcher number = CITATION_NUMBER.matcher(matcher.group());
+            while (number.find()) {
+                out.append(citationMark(Integer.parseInt(number.group())));
             }
             index = matcher.end();
         }
-        pending.setLength(0);
+        out.append(value, index, value.length());
         return out.toString();
+    }
+
+    /** 资料编号 p 对应的 [^n]；无效编号返回空串（删除） */
+    private String citationMark(int p) {
+        RetrievalHit hit = p >= 1 && p <= hits.size() ? hits.get(p - 1) : null;
+        if (hit == null) {
+            return "";
+        }
+        int seq = seqByHit.computeIfAbsent(p, key -> {
+            int next = seqByHit.size() + 1;
+            citations.add(toCitation(hit, next));
+            return next;
+        });
+        return "[^" + seq + "]";
+    }
+
+    /** 末尾从某个左括号起可能是未写完的引用标记时返回该位置，否则 -1 */
+    private static int partialStart(String value) {
+        int open = -1;
+        for (int i = value.length() - 1; i >= 0 && value.length() - i <= MAX_PARTIAL; i--) {
+            char c = value.charAt(i);
+            if (c == '[' || c == '［' || c == '【') {
+                open = i;
+                break;
+            }
+        }
+        if (open < 0) {
+            return -1;
+        }
+        return PARTIAL_CITATION.matcher(value.substring(open)).matches() ? open : -1;
+    }
+
+    /** 流结束时缓存的半个标记：有编号的按已闭合处理，否则原样输出 */
+    private String finishPending() {
+        String tail = pending.toString();
+        pending.setLength(0);
+        if (tail.isEmpty()) {
+            return tail;
+        }
+        if (PARTIAL_CITATION.matcher(tail).matches() && CITATION_NUMBER.matcher(tail).find()) {
+            return replaceCitations(tail.stripTrailing() + "]");
+        }
+        return tail;
     }
 
     private static AiCitation toCitation(RetrievalHit hit, int seq) {
