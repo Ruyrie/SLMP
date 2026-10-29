@@ -129,7 +129,9 @@ export function shortDate(value?: string): string {
 export function monthDayText(value?: string): string {
   if (!value) return '—'
   const d = dayjs(value)
-  return d.isValid() ? d.format('M月D日') : String(value)
+  if (!d.isValid()) return String(value)
+  // 不是今年的日期带上年份，免得去年的日期看着像未来
+  return d.year() === dayjs().year() ? d.format('M月D日') : d.format('YYYY年M月D日')
 }
 
 export function flowTimeText(value?: string): string {

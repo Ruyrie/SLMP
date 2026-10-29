@@ -561,7 +561,8 @@ function normalizePage<T>(page: unknown): Paged<T> {
     page: Number(raw.page || 1),
     size: Number(raw.size || list.length),
     hasMore: Boolean(raw.has_more ?? raw.hasMore),
-    tabCounts: camelize<Record<string, number>>(raw.tab_counts || raw.tabCounts || {})
+    // 页签键是枚举值（如 DUE_7D），不转驼峰
+    tabCounts: { ...((raw.tab_counts || raw.tabCounts || {}) as Record<string, number>) }
   }
 }
 
