@@ -351,7 +351,9 @@ public class DisinfectRegisterViewModel extends BaseViewModel {
                             selectTask(option);
                         } else {
                             taskId.setValue(null);
-                            showMessage("这条消毒任务不在可登记的列表中，请重新选择");
+                            // 员工只能登记今天未逾期的任务（服务端 API-D37 / D38）：从待办点进已逾期的任务时说明原因
+                            showMessage(isStaff() ? "这条消毒任务已逾期，需所有者或场长补录；也可以切换到空栏消毒或紧急消毒临时登记"
+                                    : "这条消毒任务已登记、暂停或取消，请重新选择");
                         }
                     } else if (temp && presetPen != null) {
                         selectPen(presetPen);
