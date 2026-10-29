@@ -81,6 +81,7 @@ public class StockFeedServiceImpl implements StockFeedService {
                 .eq(StockFlow::getMaterialType, StockCodes.MATERIAL_FEED)
                 .and(w -> w.isNull(StockFlow::getVoidReason).or()
                         .ne(StockFlow::getVoidReason, StockCodes.VOID_CORRECTED))
+                .orderByDesc(StockFlow::getBizDate)
                 .orderByDesc(StockFlow::getOccurAt)
                 .orderByDesc(StockFlow::getId)
                 .last("LIMIT 5"));

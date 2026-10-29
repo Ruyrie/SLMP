@@ -455,6 +455,8 @@ public class StockInboundServiceImpl implements StockInboundService {
         flow.setStockAmountAfter(StockQty.amount(move.amountAfter()));
         flow.setBizType(StockCodes.BIZ_INBOUND);
         flow.setBizId(inbound.getId());
+        // 经办人：登记入库的人（流水列表“经办人”列）
+        flow.setOperatorId(inbound.getCreatedBy());
         flow.setOccurAt(BeijingTime.now());
         flow.setBizDate(bizDate);
         flow.setIsBatchCost(false);

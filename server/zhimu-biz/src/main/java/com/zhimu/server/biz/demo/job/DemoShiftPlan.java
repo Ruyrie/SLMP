@@ -60,6 +60,19 @@ public final class DemoShiftPlan {
         return List.of(GROUP_SAMPLE, GROUP_HEALTH_1024, GROUP_MIGRATION_DAY);
     }
 
+    /**
+     * 计划时间列（可以晚于“现在”）：任务的计划时刻、截止 / 补登期限、逾期时刻、提醒时刻、待办排序时刻。
+     * 其余 datetime 列都是“已发生”的时刻（登记、生成、处理、发送、创建 / 更新时间等），平移后不应晚于现在。
+     */
+    private static final Set<String> SCHEDULE_COLUMNS = Set.of("feed_at", "deadline_at", "backfill_end_at",
+            "overdue_at", "remind_at", "expire_at");
+    private static final Set<String> SCHEDULE_TABLE_COLUMNS = Set.of("t_todo.sort_time");
+
+    /** 平移后需要压到“现在”以内的已发生时刻列（只用于 datetime 列） */
+    public static boolean pastOnlyColumn(String table, String column) {
+        return !SCHEDULE_COLUMNS.contains(column) && !SCHEDULE_TABLE_COLUMNS.contains(table + "." + column);
+    }
+
     private static List<TableRule> build() {
         List<TableRule> list = new ArrayList<>();
         // 账号与养殖场

@@ -109,6 +109,24 @@ public final class StockQty {
         return (negative ? "-" : "") + grouped + fraction;
     }
 
+    /** 接口 data 里的数值字符串：最多 3 位小数、去掉末尾 0、不带千分位（2500 / 2.5） */
+    public static String number(BigDecimal value) {
+        if (value == null) {
+            return "0";
+        }
+        BigDecimal scaled = value.setScale(QTY_SCALE, RoundingMode.HALF_UP).stripTrailingZeros();
+        return scaled.signum() == 0 ? "0" : scaled.toPlainString();
+    }
+
+    /** 记账数量换算成录入单位：PACK 且有包装规格时为包装数（可带小数），否则为记账数量 */
+    public static BigDecimal inInputUnit(BigDecimal qty, String inputUnit, BigDecimal packSize) {
+        BigDecimal value = zeroIfNull(qty);
+        if (StockCodes.INPUT_PACK.equals(inputUnit) && packSize != null && packSize.signum() > 0) {
+            return value.divide(packSize, QTY_SCALE, RoundingMode.HALF_UP);
+        }
+        return value;
+    }
+
     /** 1 袋 / 2 桶 的包装数量（没有包装时返回 null） */
     public static Integer packCount(BigDecimal qty, BigDecimal packSize) {
         if (qty == null || packSize == null || packSize.signum() <= 0) {

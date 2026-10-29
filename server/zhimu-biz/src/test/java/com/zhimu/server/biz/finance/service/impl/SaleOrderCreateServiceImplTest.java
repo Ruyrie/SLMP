@@ -41,7 +41,7 @@ class SaleOrderCreateServiceImplTest {
     @Mock private FinanceCategoryMapper categoryMapper;
     @Mock private BatchSettlementMapper settlementMapper;
     @Mock private BatchSettlementSupplementMapper supplementMapper;
-    @Mock private SaleAdviceMapper adviceMapper;
+    @Mock private com.zhimu.server.biz.health.api.WithdrawalQueryService withdrawalQueryService;
     @Mock private BatchSalePort batchSalePort;
     @Mock private BatchQueryService batchQueryService;
     @Mock private MarketPriceService marketPriceService;

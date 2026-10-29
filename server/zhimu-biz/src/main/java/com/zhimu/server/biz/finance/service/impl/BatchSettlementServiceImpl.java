@@ -189,13 +189,13 @@ public class BatchSettlementServiceImpl implements BatchSettlementService {
             throw new BizException(ErrorCode.STATE_CHANGED, "补录已被处理，页面已刷新");
         }
         for (BatchSettlementSupplement supplement : supplements) {
-            // 金额不在这里加：recompute 按 CONFIRMED 补录幂等叠加，避免重算时被来源数据覆盖
             supplement.setStatus(FinanceConst.SUPPLEMENT_CONFIRMED);
             supplement.setConfirmedBy(userId);
             supplement.setConfirmedAt(BeijingTime.now());
             supplementMapper.updateById(supplement);
         }
-        recompute(settlement, batch, true);
+        // 与预览同一口径：锁定快照里的各项成本保留，只叠加本次确认的补录（每条补录只会从 PENDING 确认一次）
+        applySupplements(settlement, batch, supplements);
         if (settlementMapper.updateById(settlement) == 0) {
             throw new BizException(ErrorCode.VERSION_CONFLICT);
         }
@@ -215,46 +215,62 @@ public class BatchSettlementServiceImpl implements BatchSettlementService {
             settlement.setIntroWeightKg(basis.entryAvgWeight() == null || batch.entryCount() == null ? null
                     : basis.entryAvgWeight().multiply(BigDecimal.valueOf(batch.entryCount())));
         }
+        // 按来源重算：来源已含全部有效支出（补录的来源记录本身也在其中），不再叠加已确认补录，避免重复计入
         StockCostPort.BatchCost cost = stockCostPort.costOf(batch.farmId(), batch.batchId());
-        // 已确认补录按成本项幂等叠加：确认后重算不会丢失，重算多次结果一致
-        BigDecimal feedExtra = BigDecimal.ZERO;
-        BigDecimal feedKgExtra = BigDecimal.ZERO;
-        BigDecimal introExtra = BigDecimal.ZERO;
-        BigDecimal drugExtra = BigDecimal.ZERO;
-        BigDecimal otherExtra = BigDecimal.ZERO;
-        for (BatchSettlementSupplement supplement : confirmedSupplements(batch.batchId())) {
-            BigDecimal amount = FinanceSupport.nz(supplement.getAmount());
-            switch (supplement.getCostGroup()) {
-                case FinanceConst.COST_FEED -> {
-                    feedExtra = feedExtra.add(amount);
-                    feedKgExtra = feedKgExtra.add(FinanceSupport.nz(supplement.getQtyDelta()));
-                }
-                case FinanceConst.COST_INTRO -> introExtra = introExtra.add(amount);
-                case FinanceConst.COST_DRUG -> drugExtra = drugExtra.add(amount);
-                default -> otherExtra = otherExtra.add(amount);
-            }
-        }
-        settlement.setCostFeed(FinanceSupport.scale2(FinanceSupport.nz(cost.feed()).add(feedExtra)));
-        settlement.setFeedKg(FinanceSupport.scale2(FinanceSupport.nz(cost.feedKg()).add(feedKgExtra)));
-        settlement.setCostDrug(FinanceSupport.scale2(FinanceSupport.nz(cost.drug()).add(drugExtra)));
+        settlement.setCostFeed(FinanceSupport.scale2(FinanceSupport.nz(cost.feed())));
+        settlement.setFeedKg(FinanceSupport.scale2(FinanceSupport.nz(cost.feedKg())));
+        settlement.setCostDrug(FinanceSupport.scale2(FinanceSupport.nz(cost.drug())));
 
         if (settlement.getIntroUnitPrice() != null && batch.entryCount() != null) {
             settlement.setIntroCount(batch.entryCount());
             settlement.setCostIntro(FinanceSupport.scale2(settlement.getIntroUnitPrice()
-                    .multiply(BigDecimal.valueOf(batch.entryCount())).add(introExtra)));
+                    .multiply(BigDecimal.valueOf(batch.entryCount()))));
         } else {
-            settlement.setCostIntro(FinanceSupport.scale2(introExtra));
+            settlement.setCostIntro(BigDecimal.ZERO.setScale(2));
         }
-        settlement.setCostOther(FinanceSupport.scale2(FinanceSupport.nz(otherCost(batch.batchId()))
-                .add(otherExtra)));
-        BigDecimal total = FinanceSupport.scale2(FinanceSupport.nz(settlement.getCostFeed())
-                .add(FinanceSupport.nz(settlement.getCostIntro()))
-                .add(FinanceSupport.nz(settlement.getCostDrug()))
-                .add(FinanceSupport.nz(settlement.getCostOther())));
-        settlement.setCostTotal(total);
+        settlement.setCostOther(FinanceSupport.scale2(FinanceSupport.nz(otherCost(batch.batchId()))));
+        settlement.setCostTotal(sumCosts(settlement));
         updateMetrics(settlement, batch, locked);
         settlement.setStatus(locked ? FinanceConst.SETTLE_LOCKED : FinanceConst.SETTLE_RUNNING);
         settlement.setSettledAt(locked ? (basis != null && basis.endedAt() != null ? basis.endedAt() : BeijingTime.now()) : null);
+    }
+
+    /**
+     * 确认补录：在锁定快照上按成本项叠加补录金额（作废类补录为负数），收入与锁定时间不变。
+     * 结果与详情页“确认后”预览一致：预览 = 快照 + 待确认补录。
+     */
+    private void applySupplements(BatchSettlement settlement, BatchInfo batch,
+                                  List<BatchSettlementSupplement> supplements) {
+        for (BatchSettlementSupplement supplement : supplements) {
+            BigDecimal amount = FinanceSupport.nz(supplement.getAmount());
+            String group = supplement.getCostGroup() == null ? FinanceConst.COST_OTHER : supplement.getCostGroup();
+            switch (group) {
+                case FinanceConst.COST_FEED -> {
+                    settlement.setCostFeed(FinanceSupport.nz(settlement.getCostFeed()).add(amount));
+                    settlement.setFeedKg(FinanceSupport.nz(settlement.getFeedKg())
+                            .add(FinanceSupport.nz(supplement.getQtyDelta())));
+                }
+                case FinanceConst.COST_INTRO -> settlement.setCostIntro(
+                        FinanceSupport.nz(settlement.getCostIntro()).add(amount));
+                case FinanceConst.COST_DRUG -> settlement.setCostDrug(
+                        FinanceSupport.nz(settlement.getCostDrug()).add(amount));
+                default -> settlement.setCostOther(FinanceSupport.nz(settlement.getCostOther()).add(amount));
+            }
+        }
+        settlement.setCostFeed(FinanceSupport.scale2(FinanceSupport.nz(settlement.getCostFeed())));
+        settlement.setFeedKg(FinanceSupport.scale2(FinanceSupport.nz(settlement.getFeedKg())));
+        settlement.setCostIntro(FinanceSupport.scale2(FinanceSupport.nz(settlement.getCostIntro())));
+        settlement.setCostDrug(FinanceSupport.scale2(FinanceSupport.nz(settlement.getCostDrug())));
+        settlement.setCostOther(FinanceSupport.scale2(FinanceSupport.nz(settlement.getCostOther())));
+        settlement.setCostTotal(sumCosts(settlement));
+        updateMetrics(settlement, batch, true);
+    }
+
+    private static BigDecimal sumCosts(BatchSettlement settlement) {
+        return FinanceSupport.scale2(FinanceSupport.nz(settlement.getCostFeed())
+                .add(FinanceSupport.nz(settlement.getCostIntro()))
+                .add(FinanceSupport.nz(settlement.getCostDrug()))
+                .add(FinanceSupport.nz(settlement.getCostOther())));
     }
 
     private void updateSales(BatchSettlement settlement, BatchInfo batch) {
@@ -285,13 +301,6 @@ public class BatchSettlementServiceImpl implements BatchSettlementService {
         settlement.setFcr(gain == null || gain.signum() <= 0 ? null
                 : FinanceSupport.nz(settlement.getFeedKg()).divide(gain, 2, RoundingMode.HALF_UP));
         settlement.setCalcAt(BeijingTime.now());
-    }
-
-    private List<BatchSettlementSupplement> confirmedSupplements(Long batchId) {
-        return supplementMapper.selectList(Wrappers.<BatchSettlementSupplement>lambdaQuery()
-                .eq(BatchSettlementSupplement::getBatchId, batchId)
-                .eq(BatchSettlementSupplement::getStatus, FinanceConst.SUPPLEMENT_CONFIRMED)
-                .orderByAsc(BatchSettlementSupplement::getBizDate));
     }
 
     private List<BatchSettlementSupplement> recentSupplements(Long batchId) {

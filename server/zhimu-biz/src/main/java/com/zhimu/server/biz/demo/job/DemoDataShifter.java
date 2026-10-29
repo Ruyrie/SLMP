@@ -40,7 +40,8 @@ import java.util.regex.Pattern;
  *     <li>删除与平移后示例行撞唯一键、且未被处理过的生成任务（连同待办）；</li>
  *     <li>两段式更新：先移到远期区间、再移回目标日期，避免示例行之间互相撞唯一键；
  *         目标位置被用户数据占用时整体回滚；</li>
- *     <li>修正待办去重键中的日期、恢复被定时任务按旧日期自动关闭的示例任务，最后更新锚点。</li>
+ *     <li>修正待办去重键中的日期、恢复被定时任务按旧日期自动关闭的示例任务；</li>
+ *     <li>示例行里晚于“现在”的已发生时刻（创建、生成、登记等）压回现在，最后更新锚点。</li>
  * </ol>
  * 全程一个事务，任何失败整体回滚且不推进锚点，不影响服务启动。
  */
@@ -112,7 +113,8 @@ public class DemoDataShifter {
             days.put(group, deltaDays(anchors.get(group), today));
         }
         if (jdbc.queryForObject("SELECT COUNT(*) FROM " + REGISTRY + " WHERE anchor_date < ?", Integer.class, Date.valueOf(today)) == 0) {
-            log.info("演示数据锚点 {} 均不早于今天 {}，无需平移", anchors, today);
+            int clamped = clampPastTimes(tables, now);
+            log.info("演示数据锚点 {} 均不早于今天 {}，无需平移；晚于现在的已发生时刻压回现在 {} 行", anchors, today, clamped);
             return Result.noop(days);
         }
         log.info("演示数据平移开始：今天 {}，锚点 {}，平移天数 {}", today, anchors, days);
@@ -160,6 +162,7 @@ public class DemoDataShifter {
                 + "ON x.batch_id=w.batch_id AND x.farm_id=w.farm_id AND x.rn=1 "
                 + "SET w.release_date=x.withdrawal_end_date,w.decisive_record_id=x.id,w.decisive_drug_name=x.drug_name,"
                 + "w.last_med_date=x.last_date,w.withdrawal_days=x.withdrawal_days,w.recalculated_at=?", Timestamp.valueOf(now));
+        int clamped = clampPastTimes(tables, now);
 
         for (Map.Entry<String, Integer> entry : days.entrySet()) {
             if (entry.getValue() > 0) {
@@ -169,8 +172,9 @@ public class DemoDataShifter {
             }
         }
         jdbc.update("DELETE FROM " + WORK);
-        log.info("演示数据平移完成：天数 {}，平移 {} 行，目标日期被占用跳过 {} 行，清理生成任务 {} 条，恢复自动关闭 {} 条，失败表 {}",
-                days, moved, skipped, cleaned, reopened, List.of());
+        log.info("演示数据平移完成：天数 {}，平移 {} 行，目标日期被占用跳过 {} 行，清理生成任务 {} 条，恢复自动关闭 {} 条，"
+                        + "晚于现在的已发生时刻压回现在 {} 行，失败表 {}",
+                days, moved, skipped, cleaned, reopened, clamped, List.of());
         return new Result(true, days, moved, skipped, cleaned, List.of());
     }
 
@@ -502,6 +506,58 @@ public class DemoDataShifter {
         return count;
     }
 
+    // ===== 已发生时刻不晚于现在 =====
+
+    /**
+     * 示例行里“已发生”的时刻（登记、生成、处理、发送、创建 / 更新时间等）平移后不能晚于现在。
+     * 会落到未来的有三类：按锚点日编写的当天晚些时刻、迁移执行时写入的 NOW()、晚于锚点编写的行
+     * （如 V9_28 把 7303 出栏建议改成 10-25 生成，锚点仍是 10-19）。计划类时刻（任务截止、逾期、提醒）不动。
+     *
+     * @return 改动的行数
+     */
+    int clampPastTimes(Set<String> tables, LocalDateTime now) {
+        Map<String, List<String>> datetimeColumns = datetimeColumns();
+        Timestamp at = Timestamp.valueOf(now);
+        int total = 0;
+        for (DemoShiftPlan.TableRule rule : DemoShiftPlan.tables()) {
+            String table = rule.table();
+            if (!tables.contains(table)) {
+                continue;
+            }
+            List<String> columns = new ArrayList<>();
+            for (String column : datetimeColumns.getOrDefault(table, List.of())) {
+                if (!rule.excludedColumns().contains(column) && DemoShiftPlan.pastOnlyColumn(table, column)) {
+                    columns.add(column);
+                }
+            }
+            if (columns.isEmpty()) {
+                continue;
+            }
+            List<Object> args = new ArrayList<>();
+            args.add(table);
+            for (int i = 0; i < columns.size() * 3; i++) {
+                args.add(at);
+            }
+            total += jdbc.update(clampSql(table, columns), args.toArray());
+        }
+        return total;
+    }
+
+    /** 参数：表名，之后每列 3 个“现在”（SET 两个、WHERE 一个） */
+    static String clampSql(String table, List<String> columns) {
+        StringJoiner set = new StringJoiner(", ");
+        StringJoiner where = new StringJoiner(" OR ", "(", ")");
+        for (String column : columns) {
+            String c = "t." + q(column);
+            set.add(c + " = IF(" + c + " > ?, ?, " + c + ")");
+        }
+        for (String column : columns) {
+            where.add("t." + q(column) + " > ?");
+        }
+        return "UPDATE " + q(table) + " t JOIN " + REGISTRY + " r ON r.table_name = ? AND r.row_id = t.id SET "
+                + set + " WHERE " + where;
+    }
+
     // ===== 元数据 =====
 
     private Set<String> existingTables() {
@@ -513,6 +569,16 @@ public class DemoDataShifter {
         Map<String, List<String>> map = new HashMap<>();
         jdbc.query("SELECT TABLE_NAME, COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() "
                 + "AND DATA_TYPE IN ('date', 'datetime') AND EXTRA NOT LIKE '%VIRTUAL%' AND EXTRA NOT LIKE '%STORED%' "
+                + "ORDER BY TABLE_NAME, ORDINAL_POSITION", (RowCallbackHandler) rs -> {
+                    map.computeIfAbsent(rs.getString(1), k -> new ArrayList<>()).add(rs.getString(2));
+                });
+        return map;
+    }
+
+    private Map<String, List<String>> datetimeColumns() {
+        Map<String, List<String>> map = new HashMap<>();
+        jdbc.query("SELECT TABLE_NAME, COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() "
+                + "AND DATA_TYPE = 'datetime' AND EXTRA NOT LIKE '%VIRTUAL%' AND EXTRA NOT LIKE '%STORED%' "
                 + "ORDER BY TABLE_NAME, ORDINAL_POSITION", (RowCallbackHandler) rs -> {
                     map.computeIfAbsent(rs.getString(1), k -> new ArrayList<>()).add(rs.getString(2));
                 });

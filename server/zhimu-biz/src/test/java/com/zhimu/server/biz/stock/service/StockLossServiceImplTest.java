@@ -100,6 +100,9 @@ class StockLossServiceImplTest {
         assertThat(flow.getQty()).isEqualByComparingTo("3000");
         assertThat(flow.getStockQtyAfter()).isZero();
         assertThat(flow.getStockAmountAfter()).isZero();
+        // 经办人为登记人；关联文字保留“批号 2024118”（App 在客户端去重）
+        assertThat(flow.getOperatorId()).isEqualTo(10L);
+        assertThat(flow.getRelatedDesc()).isEqualTo("批号 2024118");
         assertThat(result.getRemaining().getValue()).isZero();
         assertThat(lot.getStockAmount()).isZero();
         verify(warnings).reconcileDrug(1L, 61L);
@@ -164,6 +167,28 @@ class StockLossServiceImplTest {
         assertThatThrownBy(() -> service.createDrugScrap(stale, "stale"))
                 .isInstanceOf(BizException.class).hasMessageContaining("库存已变化");
         verify(losses, never()).insert(any(StockLoss.class));
+    }
+
+    @Test
+    void staleStockVersionReturnsCurrentQtyInRequestedInputUnit() {
+        // 40902 带 data.current_qty（数值字符串，按请求的录入单位）：3000 克 = 6 袋
+        DrugScrapRequest pack = request("1", "PACK"); pack.setStockVersion(9);
+        BizException byPack = catchBiz(() -> service.createDrugScrap(pack, "stale-pack"));
+        assertThat(byPack.getCode()).isEqualTo(40902);
+        assertThat(byPack.getData()).isEqualTo(java.util.Map.of("current_qty", "6"));
+        DrugScrapRequest measure = request("1", "MEASURE"); measure.setStockVersion(9);
+        BizException byMeasure = catchBiz(() -> service.createDrugScrap(measure, "stale-measure"));
+        assertThat(byMeasure.getData()).isEqualTo(java.util.Map.of("current_qty", "3000"));
+        assertThat(byMeasure.getMessage()).isEqualTo("库存已变化，当前结存 6 袋，请刷新后重试");
+    }
+
+    private static BizException catchBiz(Runnable action) {
+        try {
+            action.run();
+        } catch (BizException e) {
+            return e;
+        }
+        throw new AssertionError("expected BizException");
     }
 
     private DrugScrapRequest request(String qty, String inputUnit) {

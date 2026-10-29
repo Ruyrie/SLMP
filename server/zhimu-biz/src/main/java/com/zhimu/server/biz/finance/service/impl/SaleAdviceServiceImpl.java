@@ -18,6 +18,7 @@ import com.zhimu.server.biz.finance.support.FinanceSupport;
 import com.zhimu.server.biz.finance.vo.SaleAdviceVos;
 import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.herd.api.BatchQueryService;
+import com.zhimu.server.biz.health.api.WithdrawalQueryService;
 import com.zhimu.server.common.api.PageVO;
 import com.zhimu.server.common.context.UserContext;
 import com.zhimu.server.common.error.BizException;
@@ -36,6 +37,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +51,13 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
     private static final int DAILY_REGENERATE_LIMIT = 5;
+    /**
+     * AI 生成的总时限：POST /sale-advices 须在 120 秒内返回（Nginx 150s、客户端 ≥150s），
+     * 扣除最多 10 秒的 AI 并发排队与前后数据库读写，模型调用最多 105 秒；有备用模型时主模型约用 60%。
+     */
+    static final Duration AI_TIMEOUT = Duration.ofSeconds(105);
+    /** 两家都是推理模型：推理过程也计入输出长度，800 会被截断成空答案，留足推理余量 */
+    static final int AI_MAX_TOKENS = 4000;
 
     private final SaleAdviceMapper adviceMapper;
     private final SaleAdviceRiskMapper riskMapper;
@@ -58,6 +67,7 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
     private final AiGateway aiGateway;
     private final FinanceSupport support;
     private final BatchGrowthQueryService growthQueryService;
+    private final WithdrawalQueryService withdrawalQueryService;
 
     @Override
     @Transactional
@@ -132,15 +142,17 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
     // ===== 生成 =====
 
     private SaleAdvice create(BatchInfo batch) {
-        SaleAdvice withdrawal = currentWithdrawal(batch.batchId());
-        if (withdrawal != null) {
+        // 休药状态与出栏单拦截、生产页“休药中”同源：按有效用药记录算出的可出栏日期
+        WithdrawalQueryService.WithdrawalStatus withdrawal =
+                withdrawalQueryService.statusOf(batch.farmId(), batch.batchId(), BeijingTime.today());
+        if (withdrawal != null && withdrawal.releaseDate() != null) {
             return ruleAdvice(batch, withdrawal);
         }
         return aiAdvice(batch);
     }
 
-    private SaleAdvice ruleAdvice(BatchInfo batch, SaleAdvice withdrawal) {
-        LocalDate sellable = withdrawal.getSellableDate();
+    private SaleAdvice ruleAdvice(BatchInfo batch, WithdrawalQueryService.WithdrawalStatus withdrawal) {
+        LocalDate sellable = withdrawal.releaseDate();
         SaleAdvice advice = baseAdvice(batch, "RULE");
         advice.setStatus(FinanceConst.ADVICE_SUCCESS);
         advice.setConclusion(FinanceConst.CONCL_NOT);
@@ -149,12 +161,12 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
         advice.setWithdrawalDaysLeft(Math.max(0, FinanceSupport.daysBetween(BeijingTime.today(), sellable)));
         advice.setWindowStart(sellable);
         advice.setWindowEnd(sellable.plusDays(7));
-        advice.setReasonWithdrawal(withdrawal.getReasonWithdrawal());
+        advice.setReasonWithdrawal(withdrawalReason(withdrawal));
         advice.setReasonAge(ageReason(batch));
         advice.setReasonWeight(weightReason(batch));
-        advice.setReasonPrice(withdrawal.getReasonPrice());
-        advice.setBasisInsufficient(Boolean.TRUE.equals(withdrawal.getBasisInsufficient()));
-        advice.setBasisNote(withdrawal.getBasisNote());
+        advice.setReasonPrice(priceReason(batch));
+        advice.setBasisInsufficient(false);
+        advice.setBasisNote(null);
         advice.setAiModel("rule");
         advice.setPromptVersion("v1");
         advice.setGeneratedAt(BeijingTime.now());
@@ -177,11 +189,11 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
             String prompt = buildPrompt(batch);
             AiChatResult result = aiGateway.chat(AiChatRequest.builder()
                     .scene(AiScene.SALE_ADVICE)
-                    .message(AiMessage.system("你是养猪经营顾问。只输出 JSON，字段：conclusion（SELL_SOON/KEEP_FEEDING/NOT_SELLABLE）、"
-                            + "window_start、window_end（yyyy-MM-dd）、risks（0–3 条，每条不超过 60 字）。"))
+                    .message(AiMessage.system(systemPrompt(batch)))
                     .message(AiMessage.user(prompt))
                     .jsonMode(true)
-                    .maxTokens(800)
+                    .maxTokens(AI_MAX_TOKENS)
+                    .timeout(AI_TIMEOUT)
                     .build());
             JsonNode node = JSON.readTree(result.getContent());
             String conclusion = node.path("conclusion").asText("");
@@ -245,18 +257,55 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
         return advice;
     }
 
+    /** 系统提示词按批次品类（猪、鸡等），不写死某一畜种 */
+    String systemPrompt(BatchInfo batch) {
+        String category = support.categoryName(batch.categoryId());
+        return "你是畜禽养殖经营顾问，当前批次品类为" + (category == null ? "畜禽" : category)
+                + "，请按该品类的生长与出栏规律给出建议。只输出 JSON，字段：conclusion（SELL_SOON/KEEP_FEEDING/NOT_SELLABLE）、"
+                + "window_start、window_end（yyyy-MM-dd，不早于今天）、risks（0–3 条，每条不超过 60 字）。";
+    }
+
     private String buildPrompt(BatchInfo batch) {
         MarketPrice price = marketPriceService.latest(batch.farmId(), batch.categoryId(),
                 FinanceConst.MARKET_SLAUGHTER, BeijingTime.today());
-        return "批次：" + batch.batchNo() + "；品类：" + support.categoryName(batch.categoryId())
+        String unit = unit(batch);
+        return "今天：" + FinanceSupport.format(BeijingTime.today())
+                + "；批次：" + batch.batchNo() + "；品类：" + support.categoryName(batch.categoryId())
                 + "；入栏日期：" + FinanceSupport.format(batch.entryDate())
-                + "；日龄：" + ((batch.entryAgeDays() == null ? 0 : batch.entryAgeDays())
-                + FinanceSupport.daysBetween(batch.entryDate(), BeijingTime.today()))
-                + "；当前存栏：" + batch.currentCount() + "；累计死淘：" + batch.deathCount()
-                + "；已出栏：" + batch.soldCount()
+                + "；日龄：" + dayAge(batch)
+                + "；当前存栏：" + nz(batch.currentCount()) + " " + unit
+                + "；累计死淘：" + nz(batch.deathCount()) + " " + unit
+                + "；已出栏：" + nz(batch.soldCount()) + " " + unit
                 + "；体重：" + weightReason(batch)
                 + (price == null ? "；近期无行情价" : "；今日出栏价：" + price.getPrice() + " 元/千克")
                 + "。请给出是否近期出栏的建议。";
+    }
+
+    /** “氟苯尼考粉末次用药 10月9日，休药期 20 天，10月29日起可出栏。”（不超过 100 字） */
+    static String withdrawalReason(WithdrawalQueryService.WithdrawalStatus withdrawal) {
+        StringBuilder text = new StringBuilder(withdrawal.drugName() == null ? "用药" : withdrawal.drugName());
+        if (withdrawal.lastMedDate() != null) {
+            text.append("末次用药 ").append(monthDay(withdrawal.lastMedDate()));
+        }
+        if (withdrawal.withdrawalDays() != null) {
+            text.append("，休药期 ").append(withdrawal.withdrawalDays()).append(" 天");
+        }
+        text.append("，").append(monthDay(withdrawal.releaseDate())).append("起可出栏。");
+        String value = text.toString();
+        return value.length() > 100 ? value.substring(0, 100) : value;
+    }
+
+    private static String monthDay(LocalDate date) {
+        return date.getMonthValue() + "月" + date.getDayOfMonth() + "日";
+    }
+
+    private String unit(BatchInfo batch) {
+        String unit = support.countUnitText(batch.categoryId());
+        return unit == null || unit.isBlank() ? "头" : unit;
+    }
+
+    private static int nz(Integer value) {
+        return value == null ? 0 : value;
     }
 
     private String snapshot(BatchInfo batch) {
@@ -277,7 +326,7 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
     private String ageReason(BatchInfo batch) {
         int dayAge = (batch.entryAgeDays() == null ? 0 : batch.entryAgeDays())
                 + FinanceSupport.daysBetween(batch.entryDate(), BeijingTime.today());
-        return dayAge + " 日龄，存栏 " + (batch.currentCount() == null ? 0 : batch.currentCount()) + " 头。";
+        return dayAge + " 日龄，存栏 " + (batch.currentCount() == null ? 0 : batch.currentCount()) + " " + unit(batch) + "。";
     }
 
     /** 体重依据：最近一次称重均重与同日龄品种标准对比；没有称重时给当前日龄的标准体重（不超过 100 字） */
@@ -378,17 +427,6 @@ public class SaleAdviceServiceImpl implements SaleAdviceService {
                 .ge(SaleAdvice::getCreatedAt, today.atStartOfDay())
                 .orderByDesc(SaleAdvice::getCreatedAt)
                 .orderByDesc(SaleAdvice::getId));
-    }
-
-    private SaleAdvice currentWithdrawal(Long batchId) {
-        LocalDate today = BeijingTime.today();
-        return adviceMapper.selectList(Wrappers.<SaleAdvice>lambdaQuery()
-                        .eq(SaleAdvice::getBatchId, batchId)
-                        .eq(SaleAdvice::getInWithdrawal, true)
-                        .ge(SaleAdvice::getSellableDate, today)
-                        .orderByDesc(SaleAdvice::getGeneratedAt)
-                        .last("LIMIT 1"))
-                .stream().findFirst().orElse(null);
     }
 
     private SaleAdviceVos.SaleAdviceVO toVo(SaleAdvice advice, BatchInfo batch) {

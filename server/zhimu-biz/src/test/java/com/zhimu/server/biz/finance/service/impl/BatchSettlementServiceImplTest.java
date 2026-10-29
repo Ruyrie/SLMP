@@ -46,7 +46,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * 批次核算口径：收入=未作废出栏单金额，成本=饲料/引种/兽药/其他，其他费用取本批次支出（跳过只标记分类），
- * 已确认补录按成本项幂等叠加；在养按在栏数、锁定按出栏数摊到每头。
+ * 确认补录在锁定快照上按成本项叠加（与预览一致）；在养按在栏数、锁定按出栏数摊到每头。
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -102,8 +102,8 @@ class BatchSettlementServiceImplTest {
         when(recordMapper.selectList(any())).thenReturn(records());
         when(categoryMapper.selectById(108L)).thenReturn(category(false));
         when(categoryMapper.selectById(105L)).thenReturn(category(true));
-        // 第一次：recompute 查已确认补录（无）；第二次：toVo 查待确认补录（1 条 600 元）
-        when(supplementMapper.selectList(any())).thenReturn(List.of(), List.of(pendingSupplement()));
+        // 按来源重算不再查已确认补录：第一次 toVo 查待确认补录（1 条 600 元），第二次查最近成本记录
+        when(supplementMapper.selectList(any())).thenReturn(List.of(pendingSupplement()), List.of());
 
         SettlementVos.BatchSettlementVO vo = service.detail(BATCH_ID);
 
@@ -150,9 +150,9 @@ class BatchSettlementServiceImplTest {
         when(categoryMapper.selectById(108L)).thenReturn(category(false));
         when(categoryMapper.selectById(105L)).thenReturn(category(false));
         BatchSettlementSupplement supplement = pendingSupplement();
-        // 1 次 confirm 查待确认；2 次 recompute 查已确认；3 次 toVo 查待确认（已确认后为空）；4 次查最近成本记录
+        // 1 次 confirm 查待确认；2 次 toVo 查待确认（已确认后为空）；3 次查最近成本记录
         when(supplementMapper.selectList(any()))
-                .thenReturn(List.of(supplement), List.of(supplement), List.of(), List.of(supplement));
+                .thenReturn(List.of(supplement), List.of(), List.of(supplement));
 
         SettlementVos.BatchSettlementVO vo = service.confirm(BATCH_ID, confirmRequest(2));
 
@@ -171,6 +171,63 @@ class BatchSettlementServiceImplTest {
         assertThat(vo.getSupplements()).isEmpty();
         assertThat(vo.getPreviewAfter()).isNull();
         assertThat(vo.getRecentCostRecords()).hasSize(1);
+        // 锁定快照不按来源重建
+        org.mockito.Mockito.verifyNoInteractions(stockCostPort);
+    }
+
+    @Test
+    void confirmKeepsLockedSnapshotAndMatchesPreview() {
+        // 回归 ZM2609-012：快照 185000（饲料 120000、引种 50000、兽药 8000、其他 7000）没有来源明细，
+        // 补 600 元运输费后旧算法按来源重建成 51200；现在预览与确认都是 185600，饲料、兽药成本保留。
+        BatchInfo ended = new BatchInfo(FARM_ID, BATCH_ID, "ZM2609-012", 1101L, 101L, LocalDate.of(2026, 4, 28),
+                0, "ENDED", List.of(2005L), 160, 100, 2, 98, 2005L);
+        when(support.requireBatch(BATCH_ID, FARM_ID)).thenReturn(ended);
+        when(stockCostPort.costOf(FARM_ID, BATCH_ID)).thenReturn(StockCostPort.BatchCost.ZERO);
+        when(recordMapper.selectList(any())).thenReturn(List.of(record(108L, "600")));
+        when(categoryMapper.selectById(108L)).thenReturn(category(false));
+        BatchSettlement settlement = settlement("LOCKED", 2);
+        when(settlementMapper.selectOne(any())).thenReturn(settlement);
+        when(orderMapper.selectList(any())).thenReturn(List.of(order(9102L, 98, "188160", "100000")));
+        BatchSettlementSupplement supplement = pendingSupplement();
+
+        // 预览：详情（锁定且已结束不重算）→ 查待确认、查最近成本记录
+        when(supplementMapper.selectList(any())).thenReturn(List.of(supplement), List.of(supplement));
+        SettlementVos.BatchSettlementVO preview = service.detail(BATCH_ID);
+        assertThat(preview.getPreviewAfter().getCostTotal()).isEqualByComparingTo("185600.00");
+        assertThat(preview.getPreviewAfter().getCostOther()).isEqualByComparingTo("7600.00");
+
+        // 确认：查待确认 → toVo 查待确认（空）→ 最近成本记录
+        when(supplementMapper.selectList(any())).thenReturn(List.of(supplement), List.of(), List.of(supplement));
+        SettlementVos.BatchSettlementVO confirmed = service.confirm(BATCH_ID, confirmRequest(2));
+
+        assertThat(confirmed.getCostTotal()).isEqualByComparingTo(preview.getPreviewAfter().getCostTotal());
+        assertThat(confirmed.getProfit()).isEqualByComparingTo(preview.getPreviewAfter().getProfit());
+        assertThat(confirmed.getCosts()).extracting(SettlementVos.CostItem::getAmount)
+                .usingElementComparator(BigDecimal::compareTo)
+                .containsExactly(new BigDecimal("120000"), new BigDecimal("50000"), new BigDecimal("8000"),
+                        new BigDecimal("7600"));
+        assertThat(settlement.getFeedKg()).isEqualByComparingTo("25930");
+        assertThat(confirmed.getStatus()).isEqualTo("LOCKED");
+        org.mockito.Mockito.verifyNoInteractions(stockCostPort);
+    }
+
+    @Test
+    void runningRecomputeDoesNotAddConfirmedSupplementsOnTopOfTheirSources() {
+        // 已确认补录的来源记录本身在“其他费用”来源里，按来源重算时不能再叠加一次
+        BatchSettlement settlement = settlement("RUNNING", 0);
+        settlement.setIntroUnitPrice(new BigDecimal("500"));
+        when(settlementMapper.selectOne(any())).thenReturn(settlement);
+        when(orderMapper.selectList(any())).thenReturn(List.of());
+        when(recordMapper.selectList(any())).thenReturn(List.of(record(108L, "6000"), record(108L, "600")));
+        when(categoryMapper.selectById(108L)).thenReturn(category(false));
+        BatchSettlementSupplement confirmedSupplement = pendingSupplement();
+        confirmedSupplement.setStatus("CONFIRMED");
+        when(supplementMapper.selectList(any())).thenReturn(List.of(), List.of(confirmedSupplement));
+
+        SettlementVos.BatchSettlementVO vo = service.detail(BATCH_ID);
+
+        // 120000 + 50000 + 8000 + 6600
+        assertThat(vo.getCostTotal()).isEqualByComparingTo("184600.00");
     }
 
     @Test

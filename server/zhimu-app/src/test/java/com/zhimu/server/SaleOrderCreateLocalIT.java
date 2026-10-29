@@ -119,7 +119,7 @@ class SaleOrderCreateLocalIT {
                 200, "ACTIVE", List.of(99001L), 1, 200, 0, 0, 99001L));
         return new SaleOrderServiceImpl(orders, mock(SaleReceiptMapper.class), mock(FinanceRecordMapper.class),
                 mock(FinanceCategoryMapper.class), mock(BatchSettlementMapper.class), mock(BatchSettlementSupplementMapper.class),
-                mock(SaleAdviceMapper.class), port, mock(BatchQueryService.class), prices,
+                mock(com.zhimu.server.biz.health.api.WithdrawalQueryService.class), port, mock(BatchQueryService.class), prices,
                 mock(AccountQueryService.class), support, mock(TodoSourceWriteService.class), mock(com.zhimu.server.biz.finance.service.BatchSettlementService.class),
                 mock(com.zhimu.server.biz.finance.support.ReceivableTodos.class));
     }
