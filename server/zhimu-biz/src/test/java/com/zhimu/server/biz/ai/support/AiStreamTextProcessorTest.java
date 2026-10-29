@@ -49,6 +49,43 @@ class AiStreamTextProcessorTest {
     }
 
     @Test
+    void holdsBracketSplitBeforeCaret() {
+        // 复测 N17：增量恰好在“[”与“^P3]”之间切开时，原样漏出了 [^P3]
+        AiStreamTextProcessor processor = new AiStreamTextProcessor(
+                List.of(hit(8101L, "p1"), hit(8102L, "p2"), hit(8104L, "p3")));
+        assertThat(processor.feed("[[EPIDEMIC]]\n应警惕非洲猪瘟 [")).isEqualTo("应警惕非洲猪瘟 ");
+        assertThat(processor.feed("^P3]。发现疑似")).isEqualTo("[^1]。发现疑似");
+        assertThat(processor.feed("要隔离 [^P3]。") + processor.flush()).isEqualTo("要隔离 [^1]。");
+        assertThat(processor.getCitations()).extracting(AiCitation::getKnowledgeId).containsExactly(8104L);
+    }
+
+    @Test
+    void normalizesCitationVariantsToClientFormat() {
+        AiStreamTextProcessor processor = new AiStreamTextProcessor(
+                List.of(hit(8101L, "p1"), hit(8102L, "p2"), hit(8103L, "p3")));
+        String text = processor.feed("[[NORMAL]]\n甲[P1]乙[^p2]丙［^P3］丁【^P1】戊[^ P2]己[^3]庚[^P1, P2，P9]。")
+                + processor.flush();
+        assertThat(text).isEqualTo("甲[^1]乙[^2]丙[^3]丁[^1]戊[^2]己[^3]庚[^1][^2]。");
+        assertThat(processor.getCitations()).extracting(AiCitation::getSeqNo).containsExactly(1, 2, 3);
+    }
+
+    @Test
+    void unclosedCitationAtEndOfStreamIsStillConverted() {
+        AiStreamTextProcessor processor = new AiStreamTextProcessor(List.of(hit(8101L, "p1")));
+        String text = processor.feed("[[NORMAL]]\n按休药期出栏[^P1") + processor.flush();
+        assertThat(text).isEqualTo("按休药期出栏[^1]");
+    }
+
+    @Test
+    void ordinaryBracketsPassThrough() {
+        AiStreamTextProcessor processor = new AiStreamTextProcessor(List.of(hit(8101L, "p1")));
+        String text = processor.feed("[[NORMAL]]\n见 [") + processor.feed("规范](https://x) 与 [1] 号栏")
+                + processor.feed("，温度 [") + processor.flush();
+        assertThat(text).isEqualTo("见 [规范](https://x) 与 [1] 号栏，温度 [");
+        assertThat(processor.getCitations()).isEmpty();
+    }
+
+    @Test
     void offTopicTypeIsCaptured() {
         AiStreamTextProcessor processor = new AiStreamTextProcessor(List.of());
         processor.feed("[[OFF_TOPIC]]\n这个问题与畜禽养殖无关。");

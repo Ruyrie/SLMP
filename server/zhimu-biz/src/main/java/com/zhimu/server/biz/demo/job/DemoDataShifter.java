@@ -1,5 +1,6 @@
 package com.zhimu.server.biz.demo.job;
 
+import com.zhimu.server.biz.health.support.HealthCodes;
 import com.zhimu.server.biz.inspect.job.InspectionTodoSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -494,6 +495,11 @@ public class DemoDataShifter {
                 + "SET td.status = 'PENDING', td.ignored_at = NULL, td.ignored_by = NULL, td.ignore_reason = NULL, "
                 + "td.ignore_way = NULL WHERE td.status = 'IGNORED' AND td.ignore_way = 'AUTO' AND td.ignore_reason = ? "
                 + "AND t.status IN ('PENDING','OVERDUE')", DemoShiftPlan.FEED_BACKFILL_EXPIRED);
+        // 漏免只由系统按日期标记（计划日期过后 7 天未登记）；平移后又回到阈值内的示例计划恢复为待接种 / 已延期
+        count += jdbc.update("UPDATE t_immune_plan t JOIN " + WORK + " w ON w.table_name = 't_immune_plan' AND w.row_id = t.id "
+                + "SET t.status = IF(t.postponed = 1, 'POSTPONED', 'PENDING'), t.missed_at = NULL, t.missed_notified = 0 "
+                + "WHERE t.status = 'MISSED' AND t.record_id IS NULL AND t.plan_date > ?",
+                Date.valueOf(today.minusDays(HealthCodes.MISSED_AFTER_DAYS)));
         count += jdbc.update("UPDATE t_inspection t JOIN " + WORK + " w ON w.table_name = 't_inspection' AND w.row_id = t.id "
                 + "SET t.inspect_status = 'PENDING' WHERE t.inspect_status = 'MISSED' AND t.registrant_id IS NULL "
                 + "AND t.deleted = 0 AND t.inspect_date >= ?", Date.valueOf(today));

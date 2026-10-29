@@ -52,6 +52,8 @@ public class HealthTodoSource implements TodoSource {
         Long farmId = context.getFarmId();
         LocalDate date = context.getDate() == null ? BeijingTime.today() : context.getDate();
         return TenantSkip.call(() -> {
+            // 漏免由日期推导：每日任务、启动补齐与免疫计划页查询都会走到这里，先把过了阈值的计划补成漏免
+            markMissed(farmId);
             List<Long> result = new ArrayList<>();
             Map<Long, BatchInfo> batches = new HashMap<>();
             for (BatchInfo batch : batchQueryService.listActive(farmId)) {
@@ -87,6 +89,15 @@ public class HealthTodoSource implements TodoSource {
             }
             return result;
         });
+    }
+
+    /** 计划日期过后 {@value HealthCodes#MISSED_AFTER_DAYS} 天（按北京时间今天）仍未登记的待接种 / 已延期计划标为漏免 */
+    public int markMissed(Long farmId) {
+        if (farmId == null) {
+            return 0;
+        }
+        LocalDate lastPlanDate = BeijingTime.today().minusDays(HealthCodes.MISSED_AFTER_DAYS);
+        return TenantSkip.call(() -> planMapper.markMissed(farmId, lastPlanDate, BeijingTime.now()));
     }
 
     public void completeImmune(ImmunePlan plan, Long recordId, Long executorId) {

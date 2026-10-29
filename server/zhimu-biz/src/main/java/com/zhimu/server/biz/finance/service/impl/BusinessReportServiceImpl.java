@@ -25,6 +25,7 @@ import com.zhimu.server.biz.finance.support.FinanceConst;
 import com.zhimu.server.biz.finance.support.FinanceErrors;
 import com.zhimu.server.biz.finance.support.FinanceSupport;
 import com.zhimu.server.biz.finance.support.ReportFeedMetrics;
+import com.zhimu.server.biz.finance.support.ReportSummaryPrompt;
 import com.zhimu.server.biz.finance.vo.ReportVos;
 import com.zhimu.server.biz.herd.api.BatchInfo;
 import com.zhimu.server.biz.herd.api.BatchQueryService;
@@ -272,7 +273,9 @@ public class BusinessReportServiceImpl implements BusinessReportService {
         if (summary == null) {
             summary = createSummary(viewKey, scope, period, rangeType, query.getRangeRefId(), hash);
             generateQuietly(summary, view);
-        } else if (!hash.equals(summary.getDataHash()) && FinanceConst.ADVICE_SUCCESS.equals(summary.getStatus())) {
+        } else if (FinanceConst.ADVICE_SUCCESS.equals(summary.getStatus()) && (!hash.equals(summary.getDataHash())
+                // 旧版提示词的摘要数字是原始格式（0.0181、99380.00），提示可重新生成
+                || !ReportSummaryPrompt.VERSION.equals(summary.getPromptVersion()))) {
             ReportVos.ReportSummaryVO vo = toSummary(summary);
             vo.setOutdated(true);
             return vo;
@@ -568,12 +571,11 @@ public class BusinessReportServiceImpl implements BusinessReportService {
             throw new BizException(ErrorCode.AI_UNAVAILABLE);
         }
         try {
-            String prompt = "经营报表指标（JSON）：" + JSON.writeValueAsString(view.getMetrics())
-                    + "；批次盈亏：" + JSON.writeValueAsString(view.getBatchProfits())
-                    + "。请输出 JSON：{highlight, problem, suggestion}，每段不超过 100 字，数字必须来自输入。";
+            // 数字先按展示格式写好（死亡率 1.81%、99,380.00 元、9,300 只），模型照格式引用
+            String prompt = ReportSummaryPrompt.build(view.getMetrics(), view.getBatchProfits());
             AiChatResult result = aiGateway.chat(AiChatRequest.builder()
                     .scene(AiScene.REPORT_SUMMARY)
-                    .message(AiMessage.system("你是养殖场经营分析助手，只输出 JSON。"))
+                    .message(AiMessage.system(ReportSummaryPrompt.SYSTEM))
                     .message(AiMessage.user(prompt))
                     .jsonMode(true)
                     // 推理模型的推理过程计入输出长度，800 时备用模型常被截断成空答案（与出栏建议同一问题）
@@ -585,7 +587,7 @@ public class BusinessReportServiceImpl implements BusinessReportService {
             summary.setSuggestion(limit(node.path("suggestion").asText(""), 100));
             summary.setStatus(FinanceConst.ADVICE_SUCCESS);
             summary.setAiModel(result.getModel());
-            summary.setPromptVersion("v1");
+            summary.setPromptVersion(ReportSummaryPrompt.VERSION);
             summary.setGeneratedAt(BeijingTime.now());
             summary.setErrorMessage(null);
             summaryMapper.updateById(summary);

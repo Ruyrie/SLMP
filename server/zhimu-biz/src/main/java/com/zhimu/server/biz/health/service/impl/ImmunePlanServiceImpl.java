@@ -182,6 +182,7 @@ public class ImmunePlanServiceImpl implements ImmunePlanService {
         int pageNo = query == null ? 1 : query.pageOrDefault();
         int size = query == null ? 20 : query.sizeOrDefault();
         String keyword = query == null || query.getKeyword() == null ? null : query.getKeyword().trim();
+        todoSource.markMissed(support.farmId());
         List<ImmunePlan> plans = planMapper.selectList(Wrappers.<ImmunePlan>lambdaQuery()
                 .and(w -> w.in(ImmunePlan::getStatus, HealthCodes.PLAN_PENDING, HealthCodes.PLAN_POSTPONED,
                                 HealthCodes.PLAN_MISSED)
