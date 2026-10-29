@@ -272,7 +272,7 @@ useFarmReload(async () => {
         <template v-else>
           <div class="zw-form-2">
             <zw-form-item label="饲料" required style="grid-column: 1 / -1" :error="fieldError('feed_id')" :hint="store.selectedFeed ? `结存 ${formatNumber(store.selectedFeed.stock_qty || 0)} 千克${store.selectedFeed.remaining_days ? ` · 剩余可用 ${store.selectedFeed.remaining_days} 天` : ' · 暂无消耗'}` : ''">
-              <v-select v-model="store.formState.feedId" :items="store.formFeedOptions" item-title="title" item-value="value" :error="!!fieldError('feed_id')">
+              <v-select :model-value="store.formState.feedId || null" :items="store.formFeedOptions" item-title="title" item-value="value" placeholder="请选择饲料" :error="!!fieldError('feed_id')" @update:model-value="store.formState.feedId = Number($event || 0)">
                 <template #item="{ props: itemProps, item }">
                   <v-list-item v-bind="itemProps" :subtitle="item.raw.hint">
                     <template #append><zw-tag v-if="item.raw.low" type="warning" size="small">库存不足</zw-tag></template>
@@ -294,7 +294,7 @@ useFarmReload(async () => {
 
           <div class="zw-form mt-4">
             <zw-form-item v-if="canManage" label="实际执行人" required :error="fieldError('executor_id')" :hint="store.proxyText">
-              <v-select v-model="store.formState.executorId" :items="store.executorItems" item-title="title" item-value="value" :error="!!fieldError('executor_id')" />
+              <v-select :model-value="store.formState.executorId || null" :items="store.executorItems" item-title="title" item-value="value" placeholder="请选择执行人" :error="!!fieldError('executor_id')" @update:model-value="store.formState.executorId = Number($event || 0)" />
             </zw-form-item>
             <div v-else class="g01-registrar">登记人：{{ store.form.current_user?.name || '当前用户' }}</div>
             <zw-form-item label="备注" optional :error="fieldError('remark')" hint="最多 100 字">

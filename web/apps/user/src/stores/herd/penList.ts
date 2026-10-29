@@ -3,6 +3,7 @@ import { ApiError, formatDateTime } from '@zmt/shared'
 import type { PenFormCategory, PenFormOptions, PenStockItem, PenDetail, RecordLog } from '@/api/herd'
 import { herdApi, type PenCreatePayload, type PenUpdatePayload } from '@/api/herd'
 import { useUiStore } from '@/stores/ui'
+import { claimFarmScope, currentFarmScope, resetFarmCache } from '@/stores/farmScope'
 import {
   errorText,
   fieldErrorsOf,
@@ -67,6 +68,7 @@ export const usePenListStore = defineStore('herdPenList', {
     disablePen: null as PenActionTarget | null,
     statusBusy: false,
     loaded: false,
+    farmScope: '',
     requestId: 0
   }),
   getters: {
@@ -163,6 +165,7 @@ export const usePenListStore = defineStore('herdPenList', {
   },
   actions: {
     async load(force = false): Promise<void> {
+      const scope = claimFarmScope(this)
       if (this.loaded && !force) {
         void this.ensurePageDetails()
         return
@@ -172,14 +175,14 @@ export const usePenListStore = defineStore('herdPenList', {
       this.error = ''
       try {
         const page = await herdApi.stockPens({ page: 1, size: 200, sort: 'CODE' })
-        if (requestId !== this.requestId) return
+        if (requestId !== this.requestId || scope !== currentFarmScope()) return
         this.pens = page.list || []
         this.loaded = true
         this.status = this.pens.length ? 'ready' : 'empty'
         if (this.query.page > Math.max(1, Math.ceil(this.total / this.query.size))) this.query.page = 1
         await this.ensurePageDetails()
       } catch (error) {
-        if (requestId !== this.requestId) return
+        if (requestId !== this.requestId || scope !== currentFarmScope()) return
         this.status = statusForError(error)
         this.error = errorText(error, '栏舍加载失败，请稍后重新加载')
       }
@@ -187,10 +190,12 @@ export const usePenListStore = defineStore('herdPenList', {
     async ensurePageDetails(): Promise<void> {
       const missing = this.pagedPens.map((pen) => Number(pen.pen_id)).filter((id): id is number => !!id && !this.details[id] && !this.loadingDetails.includes(id) && !this.detailFailures.includes(id))
       if (!missing.length) return
+      const scope = this.farmScope
       this.loadingDetails.push(...missing)
       await Promise.allSettled(missing.map(async (id) => {
         try {
           const detail = await herdApi.penDetail(id)
+          if (scope !== this.farmScope) return
           this.details[id] = detail
           this.detailFailures = this.detailFailures.filter((item) => item !== id)
         } catch {
@@ -457,7 +462,7 @@ export const usePenListStore = defineStore('herdPenList', {
       return pen.display_status === 'DISABLED'
     },
     reset(): void {
-      this.$reset()
+      resetFarmCache(this)
     }
   }
 })

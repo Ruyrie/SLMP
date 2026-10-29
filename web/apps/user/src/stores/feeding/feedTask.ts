@@ -8,6 +8,7 @@ import type {
 } from '@/api/feeding'
 import { feedingApi } from '@/api/feeding'
 import { useUiStore } from '@/stores/ui'
+import { claimFarmScope, currentFarmScope, resetFarmCache } from '@/stores/farmScope'
 import {
   errorText,
   fieldErrorsOf,
@@ -36,6 +37,7 @@ export const useFeedTaskStore = defineStore('feedingTask', {
     total: 0,
     query: { page: 1, size: 20, status: '', penId: 0 },
     loaded: false,
+    farmScope: '',
     requestId: 0,
 
     drawer: false,
@@ -197,8 +199,14 @@ export const useFeedTaskStore = defineStore('feedingTask', {
     }
   },
   actions: {
+    /** 页面未挂载时也可能切场：使用缓存前先核对归属，不是当前养殖场就清空。 */
+    prepareFarmScope(): string {
+      return claimFarmScope(this)
+    },
     async load(force = false): Promise<void> {
+      const scope = this.prepareFarmScope()
       if (this.loaded && !force) return
+      const requestId = ++this.requestId
       this.status = this.list.length ? this.status : 'loading'
       this.error = ''
       try {
@@ -211,6 +219,7 @@ export const useFeedTaskStore = defineStore('feedingTask', {
             penId: this.query.penId || undefined
           })
         ])
+        if (requestId !== this.requestId || scope !== currentFarmScope()) return
         this.summary = summary
         this.list = page.list || []
         this.total = Number(page.total || 0)
@@ -221,6 +230,7 @@ export const useFeedTaskStore = defineStore('feedingTask', {
           this.status = 'ready'
         }
       } catch (error) {
+        if (requestId !== this.requestId || scope !== currentFarmScope()) return
         this.status = statusForError(error)
         this.error = errorText(error, '饲喂任务加载失败，请稍后重新加载')
       }
@@ -385,7 +395,7 @@ export const useFeedTaskStore = defineStore('feedingTask', {
       }
     },
     reset(): void {
-      this.$reset()
+      resetFarmCache(this)
     }
   }
 })

@@ -8,7 +8,7 @@ import { useFarmReload } from '@/composables/useFarmReload'
 import { queryId, useRouteAction } from '@/composables/useRouteAction'
 import { useUiStore } from '@/stores/ui'
 import { useRole } from '@/composables/useRole'
-import { dayAgeAt, deviationText, monthDay, monthDayWeek, todayISO } from '@/stores/feeding/shared'
+import { deviationText, monthDay, monthDayWeek, todayISO } from '@/stores/feeding/shared'
 import type { WeighRecordRow } from '@/api/feeding'
 import FeedingDateField from './components/FeedingDateField.vue'
 import { growthAgeLabels, growthAgeLabelInterval, growthComparisonNotices, growthWeightDigits, growthWeightRange, standardAt, standardBandAt, standardReferenceDay } from './growthChart'
@@ -191,6 +191,8 @@ function closeDrawer(): void {
 }
 
 async function init(): Promise<void> {
+  // 先核对缓存归属（切场后清空），再判断是否沿用已加载的批次
+  store.prepareFarmScope()
   const queryBatch = queryId(route.query, 'batchId', 'batch_id')
   if (queryBatch && store.loaded && queryBatch !== store.batchId) {
     await store.setBatch(queryBatch)
@@ -425,7 +427,7 @@ useFarmReload(async () => {
           <div class="g03-res-big"><b class="num">{{ store.formAvg === null ? '—' : formatNumber(store.formAvg, 1) }}</b><span class="zw-muted">千克</span></div>
           <div class="body-s zw-faint num" v-if="store.formAvg !== null">{{ store.formState.mode === 'SAMPLE' ? `${formatNumber(store.formState.totalWeight || 0, 1)} 千克 ÷ ${store.formState.sampleCount} 头` : `合计 ${formatNumber(store.formState.items.reduce((sum, item) => sum + (Number(item.weight) || 0), 0), 1)} 千克 ÷ ${store.formState.items.filter((item) => Number(item.weight || 0) > 0).length} 头` }}</div>
           <div class="g03-res-div" />
-          <div class="g03-res-row"><span>标准体重（{{ store.formState.weighDate ? dayAgeAt(store.form.batch?.entry_date, store.formState.weighDate) : store.form.day_age }} 日龄）</span><span class="num">{{ store.formStdWeight === null ? '无数据' : `${formatNumber(store.formStdWeight, 1)} 千克` }}</span></div>
+          <div class="g03-res-row"><span>标准体重（{{ formatNumber(store.formDayAge) }} 日龄）</span><span class="num">{{ store.formStdWeight === null ? '无数据' : `${formatNumber(store.formStdWeight, 1)} 千克` }}</span></div>
           <div class="g03-res-row"><span>偏离标准</span><span class="num" :class="{ 'g03-err': store.formOutOfRange }">{{ store.formDeviation === null ? '—' : deviationText(store.formDeviation) }}（允许 ±{{ Math.round(store.formAllowed * 100) }}%）</span></div>
           <div class="g03-res-row"><span>日增重（与 {{ store.formGainBaseDate ? monthDay(store.formGainBaseDate) : '上次称重' }} 比）</span><span class="num">{{ store.formDailyGain === null ? '—' : `${formatNumber(store.formDailyGain, 2)} 千克` }}</span></div>
           <div v-if="store.form.first_weigh && store.form.batch?.entry_avg_weight === undefined" class="body-s zw-faint mt-1">入栏时没有填写平均体重，首次称重不计算日增重。</div>

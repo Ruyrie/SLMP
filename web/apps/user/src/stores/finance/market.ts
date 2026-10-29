@@ -11,8 +11,12 @@ import {
 } from '@/api/finance'
 import { useUiStore } from '@/stores/ui'
 import type { PageStatus } from '@/stores/finance/shared'
+import { currentFarmScope } from '@/stores/farmScope'
 
 type AdviceStatus = PageStatus | 'unavailable'
+
+/** 出栏建议生成：服务端 120s 内返回、网关 150s；轮询等到同一时限（与请求超时一致）再判超时 */
+const ADVICE_POLL_DEADLINE_MS = 155_000
 
 export const useMarketStore = defineStore('financeMarket', {
   state: () => ({
@@ -50,6 +54,8 @@ export const useMarketStore = defineStore('financeMarket', {
     historyDetailLoading: false,
     pollTimer: 0 as number | undefined,
     touched: false,
+    /** 筛选默认值（省份、品类）和批次都跟养殖场走，切场后要按新场重新取默认值 */
+    farmScope: '',
     scope: 0,
     batchRequest: 0,
     adviceRequest: 0,
@@ -125,6 +131,24 @@ export const useMarketStore = defineStore('financeMarket', {
     async load(preferredBatchId?: number): Promise<void> {
       this.dispose()
       const scope = this.scope
+      const farmScope = currentFarmScope()
+      if (this.farmScope !== farmScope) {
+        // 页面未挂载时也可能切场：上一个场的地区 / 品类默认值、批次、行情都不能沿用
+        this.farmScope = farmScope
+        this.filters = null
+        this.provinceCode = ''
+        this.categoryId = 0
+        this.breedId = 0
+        this.priceType = 'SLAUGHTER'
+        this.touched = false
+        this.trend = null
+        this.trendStatus = 'loading'
+        this.daily = []
+        this.dailyTotal = 0
+        this.dailyPage = 1
+        this.dailyStatus = 'loading'
+        this.batchId = 0
+      }
       this.batchId = preferredBatchId ?? this.batchId
       this.batches = []
       this.advice = null
@@ -370,14 +394,12 @@ export const useMarketStore = defineStore('financeMarket', {
       const request = this.adviceRequest
       const poll = this.pollRequest
       const batchId = this.batchId
-      const deadline = Date.now() + 45_000
+      const deadline = Date.now() + ADVICE_POLL_DEADLINE_MS
       const current = (): boolean => scope === this.scope && request === this.adviceRequest
         && poll === this.pollRequest && batchId === this.batchId
-      let attempts = 0
       const tick = async (): Promise<void> => {
         if (!current()) return
-        attempts += 1
-        if (attempts > 10 || Date.now() >= deadline) {
+        if (Date.now() >= deadline) {
           this.adviceStatus = 'error'
           this.adviceError = '建议生成时间较长，请稍后重试'
           this.stopPoll()
@@ -389,7 +411,7 @@ export const useMarketStore = defineStore('financeMarket', {
           this.advice = advice
           this.applyAdviceStatus(advice)
           if (advice.status === 'GENERATING') {
-            this.pollTimer = window.setTimeout(() => void tick(), 1500)
+            this.pollTimer = window.setTimeout(() => void tick(), 2500)
           } else {
             this.stopPoll()
             if (advice.status === 'SUCCESS') void this.loadHistory()

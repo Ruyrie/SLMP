@@ -5,6 +5,8 @@ export interface PageMeta {
   title: string
   crumbs?: string[]
   roles?: Array<'owner' | 'manager' | 'staff'>
+  /** 按路由参数 farmId 指向的养殖场判断角色（养殖场信息、成员管理） */
+  farmRoles?: Array<'owner' | 'manager' | 'staff'>
   allFarms?: boolean
   public?: boolean
   layout?: 'shell' | 'blank'

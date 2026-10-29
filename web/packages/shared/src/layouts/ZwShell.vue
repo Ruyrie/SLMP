@@ -15,7 +15,8 @@ const props = withDefaults(
     unread?: number
     pad?: boolean
   }>(),
-  { pad: true }
+  // allFarms 不传时要保持 undefined（布尔 prop 缺省会被转成 false），才能回落到全局 shellState.allFarms
+  { pad: true, allFarms: undefined, unread: undefined }
 )
 
 const router = useRouter()

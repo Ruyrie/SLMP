@@ -216,9 +216,15 @@ async function init(): Promise<void> {
     store.error = '你没有查看饲喂方案的权限'
     return
   }
+  // 先核对缓存归属（切场后清空），再写入地址里的批次，避免被清空覆盖
+  store.prepareFarmScope()
   const queryBatch = Number(route.query.batchId || 0)
-  if (queryBatch) store.batchId = queryBatch
-  await store.load()
+  if (queryBatch && store.loaded && queryBatch !== store.batchId) {
+    await store.setBatch(queryBatch)
+  } else {
+    if (queryBatch) store.batchId = queryBatch
+    await store.load()
+  }
   if (route.query.tab === 'exec') await store.setTab('exec')
 }
 
@@ -304,7 +310,7 @@ watch(() => store.tab, (tab) => {
               <div v-if="isExpanded(stage, index)" class="g02-stage-body">
                 <div class="g02-form">
                   <zw-form-item label="饲料" required :error="stageError(index, 'feed')">
-                    <v-select v-model="stage.feedId" :items="store.feedOptionsFor()" item-title="title" item-value="value" :error="!!stageError(index, 'feed')">
+                    <v-select :model-value="stage.feedId || null" :items="store.feedOptionsFor()" item-title="title" item-value="value" placeholder="请选择饲料" :error="!!stageError(index, 'feed')" @update:model-value="stage.feedId = Number($event || 0)">
                       <template #item="{ props: itemProps, item }">
                         <v-list-item v-bind="itemProps" :subtitle="item.raw.hint">
                           <template #append><zw-tag v-if="item.raw.low" type="warning" size="small">库存不足</zw-tag></template>

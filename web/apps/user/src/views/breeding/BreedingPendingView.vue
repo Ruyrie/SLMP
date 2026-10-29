@@ -209,19 +209,23 @@ function onTransferChange(value: unknown): void {
   if (!value) store.farrowForm.capacityConfirmed = false
 }
 
+/** 未选择时 Vuetify 也会拿当前值调用标题函数，非选项对象返回空串，避免显示“· · 第 0 胎” */
 function matingItemTitle(option: BreedingAnimalOption): string {
-  return `${option.earTag || ''} · ${option.breedName || ''} · 第 ${option.parity || 0} 胎`
+  return optionTitle(option)
 }
 
 function matingItemValue(option: BreedingAnimalOption): number {
+  if (!option || typeof option !== 'object') return Number(option || 0)
   return Number(option.animalId || 0)
 }
 
 function optionTitle(option: BreedingAnimalOption): string {
-  return `${option.earTag || ''} · ${option.breedName || ''} · 第 ${option.parity || 0} 胎`
+  if (!option || typeof option !== 'object') return ''
+  return [option.earTag, option.breedName, `第 ${option.parity || 0} 胎`].filter(Boolean).join(' · ')
 }
 
 function optionValue(option: BreedingAnimalOption): number {
+  if (!option || typeof option !== 'object') return Number(option || 0)
   return Number(option.animalId || 0)
 }
 
@@ -416,7 +420,7 @@ const today = todayISO()
       <div class="zw-form-2">
         <zw-form-item label="母猪" required style="grid-column: 1 / -1" :error="fieldError(store.matingErrors, 'animal_id')" hint="只能选择空怀或已配种的母猪，妊娠、哺乳中的不可选">
           <v-select
-            :model-value="store.matingForm.animalId"
+            :model-value="store.matingForm.animalId || null"
             :items="store.matingOptions"
             :item-title="matingItemTitle"
             :item-value="matingItemValue"
@@ -509,7 +513,7 @@ const today = todayISO()
       <div class="zw-form-2">
         <zw-form-item label="母猪" required style="grid-column: 1 / -1" :error="fieldError(store.farrowErrors, 'animal_id')">
           <v-select
-            :model-value="store.farrowForm.animalId"
+            :model-value="store.farrowForm.animalId || null"
             :items="store.farrowingOptions"
             :item-title="optionTitle"
             :item-value="optionValue"
@@ -589,7 +593,7 @@ const today = todayISO()
       <div class="zw-form-2">
         <zw-form-item label="母猪" required style="grid-column: 1 / -1" :error="fieldError(store.weanErrors, 'animal_id')" hint="只列出哺乳中的母猪">
           <v-select
-            :model-value="store.weanForm.animalId"
+            :model-value="store.weanForm.animalId || null"
             :items="store.weaningOptions"
             :item-title="optionTitle"
             :item-value="optionValue"

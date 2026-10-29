@@ -31,7 +31,9 @@ export const useDiagnosisStore = defineStore('diagnosisDetail', {
     pollTimer: 0 as number,
     pollTries: 0,
     reportId: 0,
-    disposed: false
+    disposed: false,
+    requestId: 0,
+    pollToken: 0
   }),
   getters: {
     permissions(state): NonNullable<DiagnosisDetail['permissions']> {
@@ -80,15 +82,22 @@ export const useDiagnosisStore = defineStore('diagnosisDetail', {
   },
   actions: {
     async load(reportId: number): Promise<void> {
+      // 离开上一份详情时 dispose 过：重新进入（含新诊断）必须恢复，否则轮询第一拍就退出
+      this.disposed = false
+      if (reportId !== this.reportId) this.detail = null
       this.reportId = reportId
       this.status = this.detail ? this.status : 'loading'
       this.error = ''
       this.stopPolling()
+      const requestId = ++this.requestId
       try {
-        this.detail = await fetchDiagnosis(reportId)
+        const detail = await fetchDiagnosis(reportId)
+        if (requestId !== this.requestId || this.disposed) return
+        this.detail = detail
         this.status = 'ready'
         if (this.needsPolling) this.startPolling()
       } catch (error) {
+        if (requestId !== this.requestId || this.disposed) return
         const err = error as ApiError
         this.status = err.isForbidden ? 'forbidden' : 'error'
         this.error = err.message || '诊断详情加载失败'
@@ -97,19 +106,25 @@ export const useDiagnosisStore = defineStore('diagnosisDetail', {
     startPolling(): void {
       this.stopPolling()
       this.pollTries = 0
+      const token = ++this.pollToken
+      const reportId = this.reportId
+      // 换了报告、页面离开或重新开始轮询后，旧的计时器不再继续
+      const current = (): boolean => !this.disposed && token === this.pollToken && reportId === this.reportId
       const tick = async (): Promise<void> => {
-        if (this.disposed) return
+        if (!current()) return
         this.pollTries += 1
         try {
-          const state: DiagnosisState = await fetchDiagnosisState(this.reportId)
+          const state: DiagnosisState = await fetchDiagnosisState(reportId)
+          if (!current()) return
           if (state.ai_state !== 'DIAGNOSING' && state.status !== 'PENDING') {
             this.stopPolling()
-            await this.load(this.reportId)
+            await this.load(reportId)
             return
           }
         } catch {
           /* 轮询失败继续，直到上限 */
         }
+        if (!current()) return
         if (this.pollTries >= POLL_MAX_TRIES) {
           this.stopPolling()
           return
@@ -119,6 +134,7 @@ export const useDiagnosisStore = defineStore('diagnosisDetail', {
       this.pollTimer = window.setTimeout(() => void tick(), POLL_INTERVAL)
     },
     stopPolling(): void {
+      this.pollToken += 1
       if (this.pollTimer) {
         window.clearTimeout(this.pollTimer)
         this.pollTimer = 0

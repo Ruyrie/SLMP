@@ -17,6 +17,7 @@ import {
   type RecordLog
 } from '@/api/health'
 import { useUiStore } from '@/stores/ui'
+import { currentFarmScope } from '@/stores/farmScope'
 import {
   dateText,
   errorText,
@@ -95,6 +96,8 @@ export const useDisinfectStore = defineStore('healthDisinfect', {
     planRequestId: 0,
 
     optionsLoaded: false,
+    /** 消毒剂选项来自本场库存，切场后要重新取 */
+    optionsScope: '',
     optionsLoading: false,
     disinfectants: [] as DisinfectantOption[],
     methods: [] as DictItem[],
@@ -559,7 +562,9 @@ export const useDisinfectStore = defineStore('healthDisinfect', {
       }
     },
     async loadOptions(): Promise<void> {
-      if (this.optionsLoaded && (this.disinfectants.length || this.methods.length)) return
+      const scope = currentFarmScope()
+      if (this.optionsLoaded && this.optionsScope === scope && (this.disinfectants.length || this.methods.length)) return
+      this.optionsScope = scope
       this.optionsLoading = true
       try {
         const [disinfectants, methods] = await Promise.all([

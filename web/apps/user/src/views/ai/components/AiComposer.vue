@@ -129,7 +129,8 @@ function addFiles(files: File[]): boolean {
     }
     attachments.value.push(attachment)
     accepted += 1
-    void upload(attachment)
+    // 上传进度、状态要改响应式数组里的那一份；改原始对象界面收不到，发送按钮会一直灰
+    void upload(attachments.value[attachments.value.length - 1])
   }
   return accepted > 0
 }

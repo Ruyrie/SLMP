@@ -13,6 +13,7 @@ import type {
 } from '@/api/feeding'
 import { feedingApi } from '@/api/feeding'
 import { useUiStore } from '@/stores/ui'
+import { claimFarmScope, currentFarmScope, resetFarmCache } from '@/stores/farmScope'
 import {
   dayAgeAt,
   errorText,
@@ -55,6 +56,7 @@ export const useWeighStore = defineStore('feedingWeigh', {
     compareMenu: false,
     compareLoading: false,
     loaded: false,
+    farmScope: '',
 
     drawer: false,
     drawerMode: 'create' as 'create' | 'edit',
@@ -155,15 +157,20 @@ export const useWeighStore = defineStore('feedingWeigh', {
       if (!count || !total) return null
       return total / count
     },
+    /** 称重当天的日龄 = 入栏日龄 + 入栏后天数；没有入栏日期时用表单返回的当前日龄。 */
+    formDayAge(state): number {
+      if (!state.form) return 0
+      const date = state.formState.weighDate
+      const entryAge = Number(state.form.batch?.entry_age_days || 0)
+      return date && state.form.batch?.entry_date
+        ? entryAge + dayAgeAt(state.form.batch.entry_date, date)
+        : Number(state.form.day_age || entryAge)
+    },
     formStdWeight(state): number | null {
       if (!state.form) return null
       const points = (state.form.std_points || []).filter((item) => item.day_age !== undefined && item.std_weight !== undefined)
       if (!points.length) return null
-      const date = state.formState.weighDate
-      const entryAge = Number(state.form?.batch?.entry_age_days || 0)
-      const dayAge = date && state.form?.batch?.entry_date
-        ? entryAge + dayAgeAt(state.form.batch.entry_date, date)
-        : Number(state.form.day_age || entryAge)
+      const dayAge = this.formDayAge
       const sorted = points
         .map((item) => ({ dayAge: Number(item.day_age), std: Number(item.std_weight) }))
         .sort((a, b) => a.dayAge - b.dayAge)
@@ -235,7 +242,12 @@ export const useWeighStore = defineStore('feedingWeigh', {
     }
   },
   actions: {
+    /** 页面未挂载时也可能切场：使用缓存前先核对归属，不是当前养殖场就清空。 */
+    prepareFarmScope(): string {
+      return claimFarmScope(this)
+    },
     async load(force = false): Promise<void> {
+      const scope = this.prepareFarmScope()
       if (this.loaded && !force) return
       const requestId = this.loadRequestId = ++requestSequence
       this.status = 'loading'
@@ -243,7 +255,7 @@ export const useWeighStore = defineStore('feedingWeigh', {
       this.loaded = false
       try {
         if (!this.batchOptions.length && !await this.loadBatchOptions()) return
-        if (requestId !== this.loadRequestId) return
+        if (requestId !== this.loadRequestId || scope !== currentFarmScope()) return
         if (!this.batchId && this.batchOptions.length) {
           const withRecords = this.batchOptions
             .filter((item) => item.last_avg_weight !== null && item.last_avg_weight !== undefined)
@@ -255,11 +267,11 @@ export const useWeighStore = defineStore('feedingWeigh', {
           return
         }
         const [curveReady] = await Promise.all([this.loadCurve(), this.loadRecords(), this.loadCompareOptions()])
-        if (requestId !== this.loadRequestId || !curveReady) return
+        if (requestId !== this.loadRequestId || scope !== currentFarmScope() || !curveReady) return
         this.loaded = true
         this.status = this.curve ? 'ready' : 'empty'
       } catch (error) {
-        if (requestId !== this.loadRequestId) return
+        if (requestId !== this.loadRequestId || scope !== currentFarmScope()) return
         this.status = statusForError(error)
         this.error = errorText(error, '生长曲线加载失败，请稍后重新加载')
       }
@@ -574,7 +586,7 @@ export const useWeighStore = defineStore('feedingWeigh', {
       return `${Number(cycle.per_month || 0)} 次 / 月`
     },
     reset(): void {
-      this.$reset()
+      resetFarmCache(this)
     }
   }
 })

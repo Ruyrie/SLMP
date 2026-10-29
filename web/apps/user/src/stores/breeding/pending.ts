@@ -15,8 +15,10 @@ import type {
 import { breedingApi } from '@/api/breeding'
 import { useFarmStore } from '@/stores/farm'
 import { useUiStore } from '@/stores/ui'
+import { claimFarmScope, currentFarmScope, resetFarmCache } from '@/stores/farmScope'
 import {
   addDays,
+  diffDays,
   errorText,
   fieldErrorsOf,
   isFuture,
@@ -50,6 +52,7 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
     dueTotal: 0,
     hatchTotal: 0,
     loaded: false,
+    farmScope: '',
     requestId: 0,
 
     drawer: '' as PendingDrawer,
@@ -197,32 +200,44 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
     }
   },
   actions: {
+    /** 页面未挂载时也可能切场：使用缓存前先核对归属，不是当前养殖场就清空。 */
+    prepareFarmScope(): string {
+      return claimFarmScope(this)
+    },
     async load(force = false): Promise<void> {
+      this.prepareFarmScope()
       if (this.loaded && !force) return
       await this.loadOverview()
       await this.loadTab(this.tab)
     },
     async loadOverview(): Promise<void> {
+      const scope = this.farmScope
       try {
-        this.overview = await breedingApi.overview()
+        const overview = await breedingApi.overview()
+        if (scope !== currentFarmScope()) return
+        this.overview = overview
       } catch (error) {
+        if (scope !== currentFarmScope()) return
         this.status = statusForError(error)
         this.error = errorText(error, '繁育概况加载失败')
       }
     },
+    /** 不带参数时刷新当前页签（登记后、翻页、搜索都走这里）。 */
     async loadTab(tab?: PendingTab): Promise<void> {
       this.tab = tab || this.tab
+      const current = this.tab
       const requestId = ++this.requestId
+      const scope = this.farmScope
       if (!this.dueList.length && !this.hatchList.length) this.status = 'loading'
       this.error = ''
       try {
-        if (tab === 'due') {
+        if (current === 'due') {
           const data = await breedingApi.farrowDue({
             page: this.query.page,
             size: this.query.size,
             keyword: this.query.keyword.trim() || undefined
           })
-          if (requestId !== this.requestId) return
+          if (requestId !== this.requestId || scope !== currentFarmScope()) return
           this.dueList = data.list || []
           this.dueTotal = Number(data.total || 0)
           this.status = this.dueList.length ? 'ready' : this.query.keyword ? 'filtered_empty' : 'empty'
@@ -232,14 +247,14 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
             size: this.query.size,
             keyword: this.query.keyword.trim() || undefined
           })
-          if (requestId !== this.requestId) return
+          if (requestId !== this.requestId || scope !== currentFarmScope()) return
           this.hatchList = data.list || []
           this.hatchTotal = Number(data.total || 0)
           this.status = this.hatchList.length ? 'ready' : this.query.keyword ? 'filtered_empty' : 'empty'
         }
         this.loaded = true
       } catch (error) {
-        if (requestId !== this.requestId) return
+        if (requestId !== this.requestId || scope !== currentFarmScope()) return
         this.status = statusForError(error)
         this.error = errorText(error, '待产列表加载失败，请稍后重新加载')
       }
@@ -266,12 +281,14 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
       await this.loadOverview()
       await this.loadTab()
     },
+    /** 每次打开登记都重拉栏舍：栏舍改名、停用、在栏数变化后下拉要跟着变；失败时保留已有选项。 */
     async loadPenOptions(): Promise<void> {
-      if (this.pens.length) return
+      const scope = this.farmScope
       try {
-        this.pens = await herdApi.penOptions()
+        const pens = await herdApi.penOptions()
+        if (scope === this.farmScope) this.pens = pens || []
       } catch {
-        this.pens = []
+        if (scope === this.farmScope && !this.pens.length) this.pens = []
       }
     },
     async loadOptions(purpose: 'MATING' | 'FARROWING' | 'WEANING'): Promise<void> {
@@ -354,6 +371,14 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
         this.checkErrors.check_date = `妊检日期不能早于配种日期 ${monthDayWeek(check.firstMatingDate)}`
       }
       if (!this.checkForm.result) this.checkErrors.result = '请选择妊检结果'
+      else if (
+        this.checkForm.result === 'POSITIVE' &&
+        !this.checkErrors.check_date &&
+        check.firstMatingDate &&
+        diffDays(check.firstMatingDate, this.checkForm.checkDate) < 18
+      ) {
+        this.checkErrors.result = '配种后满 18 天才能登记妊检阳性'
+      }
       if (Object.keys(this.checkErrors).length) return false
       this.checkSubmitting = true
       try {
@@ -638,7 +663,7 @@ export const useBreedingPendingStore = defineStore('breedingPending', {
       this.activeCheckId = 0
     },
     reset(): void {
-      this.$reset()
+      resetFarmCache(this)
     }
   }
 })

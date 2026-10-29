@@ -13,6 +13,7 @@ import {
   type RecentIssue
 } from '@/api/inspect'
 import { useUiStore } from '@/stores/ui'
+import { currentFarmScope } from '@/stores/farmScope'
 import { useFarmStore } from '@/stores/farm'
 import type { PageStatus } from '@/api/inspect'
 
@@ -38,6 +39,8 @@ export const useInspectionTodayStore = defineStore('inspectToday', {
     setting: null as InspectionSetting | null,
     settingLoading: false,
     yesterdayDate: '',
+    /** 昨天列表缓存所属的养殖场视角 */
+    yesterdayScope: '',
     yesterdayList: [] as InspectionListItem[],
     yesterdayLoading: false,
     query: {
@@ -145,8 +148,11 @@ export const useInspectionTodayStore = defineStore('inspectToday', {
     },
     async loadYesterday(): Promise<void> {
       const yesterday = dayjs(todayIso()).subtract(1, 'day').format('YYYY-MM-DD')
-      if (this.yesterdayDate === yesterday && this.yesterdayList.length) return
+      // 缓存还要核对养殖场视角：切场后昨天的巡检要按新场重新取
+      const scope = currentFarmScope()
+      if (this.yesterdayDate === yesterday && this.yesterdayScope === scope && this.yesterdayList.length) return
       this.yesterdayDate = yesterday
+      this.yesterdayScope = scope
       this.yesterdayLoading = true
       try {
         const page = await fetchDayList({ date: yesterday, status: 'ALL', page: 1, size: 100 })

@@ -58,7 +58,11 @@ export function installGuards(router: Router): void {
     if (farm.viewAll && !to.meta.allFarms) farm.setViewAll(false)
 
     const roles = to.meta.roles as string[] | undefined
-    if (roles && !roles.includes(farm.role)) {
+    const farmRoles = to.meta.farmRoles as string[] | undefined
+    const targetFarmId = Number(to.params.farmId || 0)
+    const targetFarm = farmRoles && targetFarmId ? farm.farms.find((item) => item.farm_id === targetFarmId) : undefined
+    const targetRole = targetFarm?.role === 'STAFF' ? 'staff' : targetFarm?.role === 'MANAGER' ? 'manager' : 'owner'
+    if ((roles && !roles.includes(farm.role)) || (targetFarm && farmRoles && !farmRoles.includes(targetRole))) {
       return {
         name: 'WU-U02',
         params: { type: 'forbidden' },

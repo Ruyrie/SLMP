@@ -298,7 +298,7 @@ useFarmReload(() => store.load(isStaff.value, true))
             </div>
 
             <div class="l03-kpis">
-              <div><div class="l03-kpi-l">存栏</div><div class="l03-kpi-v num">{{ formatNumber(pen.stock_count || 0) }}<small>头</small></div></div>
+              <div><div class="l03-kpi-l">存栏</div><div class="l03-kpi-v num">{{ formatNumber(pen.stock_count || 0) }}<small>{{ pen.unit_text || '头' }}</small></div></div>
               <div><div class="l03-kpi-l">日龄</div><div class="l03-kpi-v num">{{ penAge(pen) }}<small>天</small></div></div>
               <div><div class="l03-kpi-l">生长阶段</div><div class="l03-kpi-v">{{ penStage(pen) }}</div></div>
             </div>
@@ -387,7 +387,7 @@ useFarmReload(() => store.load(isStaff.value, true))
         </template>
         <template #item.pen="{ item }">
           <div>{{ (item.pens || []).map((pen) => pen.pen_name).join('、') || '—' }}</div>
-          <div v-if="item.pens?.length" class="zw-cell-sub num">在栏 {{ formatNumber(item.pens[0].stock_count || 0) }} 头</div>
+          <div v-if="item.pens?.length" class="zw-cell-sub num">在栏 {{ formatNumber(item.pens[0].stock_count || 0) }} {{ item.unit_text || '头' }}</div>
         </template>
         <template #item.source="{ item }"><zw-tag>{{ sourceText(item.source) }}</zw-tag></template>
         <template #item.entry_date="{ item }">
@@ -399,7 +399,7 @@ useFarmReload(() => store.load(isStaff.value, true))
           <div class="zw-cell-sub">{{ item.stage_name || '—' }}</div>
         </template>
         <template #item.current_count="{ item }">
-          <span v-if="item.status === 'ACTIVE'" class="num">{{ formatNumber(item.current_count || 0) }} 头</span>
+          <span v-if="item.status === 'ACTIVE'" class="num">{{ formatNumber(item.current_count || 0) }} {{ item.unit_text || '头' }}</span>
           <span v-else class="zw-faint">已全部出栏</span>
         </template>
         <template #item.mortality="{ item }"><span class="num">{{ formatPercent(item.mortality_rate, 1) }}</span></template>

@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia'
 import type { BatchListItem, BatchLookup, BaseCategory, MyPens, PenOption } from '@/api/herd'
 import { herdApi } from '@/api/herd'
-import { useFarmStore } from '@/stores/farm'
-import { useAuthStore } from '@/stores/auth'
+import { currentFarmScope } from '@/stores/farmScope'
 import {
   errorText,
   statusForError,
@@ -12,10 +11,6 @@ import {
 export type BatchTab = 'ACTIVE' | 'ENDED' | 'ALL'
 export type LookupState = 'idle' | 'not_found' | 'invalid_format' | 'forbidden' | 'not_batch_qr'
 
-function currentFarmScope(): string {
-  const farm = useFarmStore()
-  return `${useAuthStore().user?.user_id || 0}:${farm.currentFarmId}:${farm.revision}:${farm.role}`
-}
 
 export const useBatchListStore = defineStore('herdBatchList', {
   state: () => ({

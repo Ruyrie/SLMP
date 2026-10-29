@@ -15,6 +15,7 @@ import type {
 } from '@/api/herd'
 import { herdApi, newRequestKey } from '@/api/herd'
 import { useUiStore } from '@/stores/ui'
+import { claimFarmScope, currentFarmScope, resetFarmCache } from '@/stores/farmScope'
 import {
   errorText,
   fieldErrorsOf,
@@ -137,6 +138,7 @@ export const useHerdEntryStore = defineStore('herdEntry', {
     formOptions: null as PenFormOptions | null,
     categories: [] as BaseCategory[],
     loaded: false,
+    farmScope: '',
     requestId: 0,
     // 入栏
     entryOpen: false,
@@ -305,8 +307,17 @@ export const useHerdEntryStore = defineStore('herdEntry', {
     }
   },
   actions: {
+    /** 页面未挂载时也可能切场：使用缓存前先核对归属，不是当前养殖场就清空。 */
+    prepareFarmScope(): string {
+      return claimFarmScope(this)
+    },
     async load(isStaff: boolean, force = false): Promise<void> {
-      if (this.loaded && !force) return
+      const scope = this.prepareFarmScope()
+      if (this.loaded && !force) {
+        // 栏舍可能在别的页面改名、停用、调整容量：带缓存进入时后台刷新一次选项
+        void this.refreshBase(isStaff)
+        return
+      }
       const requestId = ++this.requestId
       this.managerMode = !isStaff
       this.status = this.batches.length ? this.status : 'loading'
@@ -315,7 +326,7 @@ export const useHerdEntryStore = defineStore('herdEntry', {
         if (isStaff) {
           this.tab = 'death'
           const page = await herdApi.batches({ page: 1, size: 100, status: 'ACTIVE' })
-          if (requestId !== this.requestId) return
+          if (requestId !== this.requestId || scope !== currentFarmScope()) return
           this.batches = page.list || []
           this.loaded = true
           this.status = this.batches.length ? 'ready' : 'empty'
@@ -328,7 +339,7 @@ export const useHerdEntryStore = defineStore('herdEntry', {
           herdApi.baseCategories(),
           herdApi.stockPens({ page: 1, size: 200, sort: 'CODE' })
         ])
-        if (requestId !== this.requestId) return
+        if (requestId !== this.requestId || scope !== currentFarmScope()) return
         this.batches = page.list || []
         this.penOptions = pens || []
         this.formOptions = options
@@ -337,25 +348,40 @@ export const useHerdEntryStore = defineStore('herdEntry', {
         this.loaded = true
         this.status = this.batches.length || this.penOptions.length ? 'ready' : 'empty'
       } catch (error) {
-        if (requestId !== this.requestId) return
+        if (requestId !== this.requestId || scope !== currentFarmScope()) return
         this.status = statusForError(error)
         this.error = errorText(error, '登记数据加载失败，请稍后重新加载')
       }
     },
+    /** 刷新批次与栏舍选项（栏舍改名、停用、在栏数变化后下拉要跟着变）；失败保留原数据。 */
     async refreshBase(isStaff: boolean): Promise<void> {
-      try {
-        const jobs: Promise<unknown>[] = [
-          herdApi.batches({ page: 1, size: 100, status: 'ACTIVE', sort: 'ENTRY_DATE' }).then((page) => {
-            this.batches = page.list || []
-          })
-        ]
-        if (!isStaff) {
-          jobs.push(herdApi.penOptions().then((pens) => (this.penOptions = pens || [])))
-          jobs.push(herdApi.stockPens({ page: 1, size: 200, sort: 'CODE' }).then((stocks) => (this.stockPens = stocks.list || [])))
-        }
-        await Promise.allSettled(jobs)
-      } catch {
-        /* 刷新失败不覆盖表单结果 */
+      const scope = this.farmScope
+      const fresh = (): boolean => scope === this.farmScope && scope === currentFarmScope()
+      const jobs: Promise<unknown>[] = [
+        herdApi.batches({ page: 1, size: 100, status: 'ACTIVE', sort: 'ENTRY_DATE' }).then((page) => {
+          if (fresh()) this.batches = page.list || []
+        })
+      ]
+      if (!isStaff) {
+        jobs.push(herdApi.penOptions().then((pens) => {
+          if (fresh()) this.penOptions = pens || []
+        }))
+        jobs.push(herdApi.stockPens({ page: 1, size: 200, sort: 'CODE' }).then((stocks) => {
+          if (fresh()) this.stockPens = stocks.list || []
+        }))
+        jobs.push(herdApi.penFormOptions().then((options) => {
+          if (fresh() && options) this.formOptions = options
+        }))
+      }
+      await Promise.allSettled(jobs)
+      if (!fresh() || !this.entryOpen || !this.entryForm.penId) return
+      const pen = this.penOptions.find((item) => Number(item.pen_id) === this.entryForm.penId)
+      // 已选栏舍被停用或不再可选：清空选择，避免提交到停用栏舍
+      if (!pen || pen.disabled) {
+        this.entryForm.penId = 0
+        this.entryForm.breedId = 0
+        this.entryForm.capacityConfirmed = false
+        this.entryServerOver = null
       }
     },
     setTab(tab: HerdActionTab): void {
@@ -371,7 +397,10 @@ export const useHerdEntryStore = defineStore('herdEntry', {
       this.entryServerOver = null
       this.entryRequestKey = ''
       this.entryOpen = true
-      if (this.penOptions.length === 1) this.chooseEntryPen(Number(this.penOptions[0].pen_id || 0))
+      const selectable = this.penOptions.filter((pen) => !pen.disabled)
+      if (selectable.length === 1) this.chooseEntryPen(Number(selectable[0].pen_id || 0))
+      // 打开表单时重拉栏舍：改名、停用后下拉立即跟上
+      await this.refreshBase(false)
     },
     chooseEntryPen(penId: number): void {
       this.entryForm.penId = Number(penId || 0)
@@ -553,30 +582,31 @@ export const useHerdEntryStore = defineStore('herdEntry', {
     },
     async loadContext(kind: 'transfer' | 'death', batchId: number): Promise<void> {
       if (!batchId) return
-      const ctx = kind === 'transfer' ? this.transferContext : this.deathContext
-      if (ctx.batchId === batchId && ctx.batch) return
-      const target = emptyContext()
-      target.batchId = batchId
-      target.loading = true
-      if (kind === 'transfer') this.transferContext = target
-      else this.deathContext = target
+      const current = (): BatchContext => (kind === 'transfer' ? this.transferContext : this.deathContext)
+      const assign = (next: BatchContext): void => {
+        if (kind === 'transfer') this.transferContext = next
+        else this.deathContext = next
+      }
+      if (current().batchId === batchId && current().batch) return
+      // 每一步都换成新对象再赋值：先赋给响应式 state 再改原始对象，界面收不到变化会一直骨架屏
+      const pending: BatchContext = { ...emptyContext(), batchId, loading: true }
+      assign(pending)
+      const scope = this.farmScope
+      // 期间又换了批次 / 养殖场：旧请求的结果直接丢弃
+      const stale = (): boolean => current().batchId !== batchId || !current().loading || scope !== this.farmScope
       try {
         const [batch, pens] = await Promise.all([herdApi.batchDetail(batchId), herdApi.batchPenStocks(batchId)])
-        target.batch = batch
-        target.pens = pens || []
-        target.loading = false
-        if (kind === 'transfer') {
-          this.transferContext = target
-          this.syncTransferFromContext()
-        } else {
-          this.deathContext = target
-          this.syncDeathFromContext()
-        }
+        if (stale()) return
+        assign({ ...emptyContext(), batchId, batch, pens: pens || [] })
+        if (kind === 'transfer') this.syncTransferFromContext()
+        else this.syncDeathFromContext()
       } catch (error) {
-        target.error = errorText(error, kind === 'transfer' ? '转栏批次加载失败' : '死淘批次加载失败')
-        target.loading = false
-        if (kind === 'transfer') this.transferContext = target
-        else this.deathContext = target
+        if (stale()) return
+        assign({
+          ...emptyContext(),
+          batchId,
+          error: errorText(error, kind === 'transfer' ? '转栏批次加载失败' : '死淘批次加载失败')
+        })
       }
     },
     syncTransferFromContext(): void {
@@ -872,7 +902,7 @@ export const useHerdEntryStore = defineStore('herdEntry', {
       this.deathResult = null
     },
     reset(): void {
-      this.$reset()
+      resetFarmCache(this)
     }
   }
 })

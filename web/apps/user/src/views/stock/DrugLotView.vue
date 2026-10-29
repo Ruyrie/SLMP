@@ -60,7 +60,7 @@ const banner = computed(() => {
       type: 'error',
       icon: 'block',
       title: '该批号已被平台停用：',
-      text: `原因是${detail.value.recall_reason || '平台停用'}。该批号不能出库，登记接种时也选不到，只能报废。`
+      text: `原因是${detail.value.recall_reason || '平台停用'}。该批号不能出库，${detail.value.category === 'VACCINE' ? '登记接种' : detail.value.category === 'DISINFECTANT' ? '登记消毒' : '登记用药'}时也选不到，只能报废。`
     }
   }
   if (store.isExpired) {

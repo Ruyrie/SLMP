@@ -64,7 +64,12 @@ export const useFarmStore = defineStore('farm', {
       if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(FARM_KEY, String(farmId))
     },
     async switchTo(farmId: number): Promise<void> {
-      if (this.switching || farmId === this.currentFarmId) return
+      if (this.switching) return
+      if (farmId === this.currentFarmId) {
+        // “全部养殖场”视角下点当前场：退回单场视角
+        if (this.viewAll) this.setViewAll(false)
+        return
+      }
       this.switching = true
       try {
         await http().post(`/farms/${farmId}/switch`)

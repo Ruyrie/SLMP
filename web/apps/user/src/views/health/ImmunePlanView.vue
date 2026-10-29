@@ -3,7 +3,7 @@ import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { DataTableHeader } from 'vuetify'
 import { formatNumber } from '@zmt/shared'
-import type { ImmunePlan, PreEntryItem } from '@/api/health'
+import type { ImmunePlan, ImmunePlanOption, PreEntryItem } from '@/api/health'
 import { useImmunePlanStore, type ImmuneTab } from '@/stores/health/immune'
 import { useFarmReload } from '@/composables/useFarmReload'
 import { queryId, useRouteAction } from '@/composables/useRouteAction'
@@ -61,10 +61,23 @@ const registerTitle = computed(() => {
   return '登记接种'
 })
 
-const planOptionItems = computed(() => store.registerPlanOptions.map((item) => ({
-  title: `${item.pen_name || ''} · ${item.vaccine_name || ''}${item.immune_round ? ` ${item.immune_round}` : ''} · ${item.status_text || ''}`,
-  value: Number(item.plan_id || 0)
-})))
+function planOptionItem(item: ImmunePlanOption): { title: string; value: number } {
+  return {
+    title: `${item.pen_name || ''} · ${item.vaccine_name || ''}${item.immune_round ? ` ${item.immune_round}` : ''} · ${item.status_text || ''}`,
+    value: Number(item.plan_id || 0)
+  }
+}
+/** 从计划表 / 待办带入的计划可能不在“今天可登记”列表里：把已加载的这条也放进选项，下拉不再显示原始 ID */
+const planOptionItems = computed(() => {
+  const items = store.registerPlanOptions.map(planOptionItem)
+  const current = store.registerForm?.plan
+  if (current?.plan_id && !items.some((item) => item.value === Number(current.plan_id))) items.unshift(planOptionItem(current))
+  return items
+})
+const selectedPlanValue = computed(() => {
+  const planId = Number(store.registerModel.planId || 0)
+  return planId && planOptionItems.value.some((item) => item.value === planId) ? planId : undefined
+})
 
 const vaccineItems = computed(() => store.registerVaccines.map((item) => ({
   title: `${item.name || ''}${item.no_stock ? '（暂无库存）' : ''}`,
@@ -499,7 +512,7 @@ useFarmReload(async () => {
               :hint="registerPlanHint || '从计划表或待办进入时已预填'"
             >
               <v-select
-                :model-value="store.registerModel.planId || undefined"
+                :model-value="selectedPlanValue"
                 :items="planOptionItems"
                 item-title="title"
                 item-value="value"

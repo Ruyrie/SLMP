@@ -36,12 +36,17 @@ const showDeclaration = computed(
   () => isAnswered.value || (!!answerText.value && props.message.status !== 'ANSWERING')
 )
 const showText = computed(() => isAnswered.value || isStreamingText.value || !!answerText.value)
+/** 服务端把“停止”落库为已停止（保留已生成部分）时，刷新后也按停止展示 */
+const stopped = computed(() => !!props.message.local_stopped || props.message.status === 'STOPPED')
 const stateText = computed(() => {
-  if (props.message.local_stopped) return '已停止生成'
+  if (stopped.value) return '已停止生成'
   const status = props.message.status
   if (status === 'TIMEOUT') return '回答超时，点击重新生成'
   if (status === 'INTERRUPTED' || status === 'ANSWERING') return '回答中断，点击重新生成'
   if (status === 'FAILED') {
+    // SSE 错误事件带回的原因（如服务繁忙）原样显示
+    const reason = (props.message.error_message || '').trim().replace(/[。.]$/, '')
+    if (reason) return `${reason}，点击重新生成`
     return answerText.value ? '回答中断，点击重新生成' : 'AI 助手暂时不可用，点击重新生成'
   }
   return '回答中断，点击重新生成'
@@ -50,7 +55,7 @@ const showStateRow = computed(
   () => !isAnswered.value && !props.streaming && !isThinking.value && props.message.status !== 'ANSWERED'
 )
 const retryable = computed(() => {
-  if (props.message.local_stopped) return true
+  if (stopped.value) return true
   return ['TIMEOUT', 'INTERRUPTED', 'FAILED', 'ANSWERING'].includes(props.message.status || '')
 })
 const retryTarget = computed(() => props.message.local_server_id || props.message.id)
@@ -171,7 +176,7 @@ function onRate(rating: 'USEFUL' | 'USELESS'): void {
         </template>
 
         <template v-if="showStateRow">
-          <div v-if="message.local_stopped" class="k01-state k01-state--stopped">
+          <div v-if="stopped" class="k01-state k01-state--stopped">
             <span>已停止生成</span>
             <button type="button" class="k01-regen" :disabled="retryDisabled || !canRetry" @click="emit('retry', retryTarget)">
               <zw-icon name="refresh" :size="16" />重新生成

@@ -12,6 +12,14 @@ export function qtyValue(qty?: Qty | null): number {
   return numberValue(qty?.value)
 }
 
+const MEASURE_UNIT_TEXT: Record<string, string> = { KG: '千克', DOSE: '头份', G: '克', ML: '毫升', L: '升' }
+
+/** 记账单位编码转中文（与服务端 StockCodes.unitText 一致），未知编码原样返回。 */
+export function measureUnitText(unit?: string | null): string {
+  if (!unit) return ''
+  return MEASURE_UNIT_TEXT[unit] || unit
+}
+
 export function qtyUnit(qty?: Qty | null, fallback = ''): string {
   return qty?.unit_text || fallback
 }
@@ -81,6 +89,14 @@ export function categoryText(category?: string): string {
   if (category === 'DISINFECTANT') return '消毒剂'
   if (category === 'VET_DRUG') return '兽药'
   return ''
+}
+
+/** “优先出库”批号的说明：按类别写清在哪里默认选中（疫苗是登记接种，兽药是登记用药，消毒剂是登记消毒）。 */
+export function priorityOutNote(category?: string): string {
+  if (category === 'VACCINE') return '登记接种、出库时默认选择这个批号'
+  if (category === 'VET_DRUG') return '登记用药、出库时默认选择这个批号'
+  if (category === 'DISINFECTANT') return '登记消毒、出库时默认选择这个批号'
+  return '出库时默认选择这个批号'
 }
 
 export function lotStatusTag(status?: string): { type: string; icon: string; text: string } {

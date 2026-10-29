@@ -1,16 +1,11 @@
 import { defineStore } from 'pinia'
 import type { BatchListItem, CategoryStock, PenStockItem, ProductionOverview, ProductionReminder, StockSummary } from '@/api/herd'
 import { herdApi } from '@/api/herd'
-import { useFarmStore } from '@/stores/farm'
-import { useAuthStore } from '@/stores/auth'
+import { currentFarmScope } from '@/stores/farmScope'
 import { errorText, statusForError, type PageStatus } from './shared'
 
 type OverviewTab = 'pen' | 'category' | 'batch'
 
-function currentFarmScope(): string {
-  const farm = useFarmStore()
-  return `${useAuthStore().user?.user_id || 0}:${farm.currentFarmId}:${farm.revision}:${farm.role}`
-}
 
 export const useStockOverviewStore = defineStore('herdStockOverview', {
   state: () => ({
@@ -126,7 +121,7 @@ export const useStockOverviewStore = defineStore('herdStockOverview', {
     capacityFoot(): string {
       const count = this.summary?.commercial_pen_count || 0
       const capacity = Number(this.summary?.capacity_total || 0).toLocaleString('en-US')
-      return `${count} 个商品猪栏舍 · 容量 ${capacity} ${this.unit}`
+      return `${count} 个商品栏舍 · 容量 ${capacity} ${this.unit}`
     },
     batchFoot(): string {
       const withdrawal = this.summary?.withdrawal_batch_count || 0

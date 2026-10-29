@@ -53,7 +53,9 @@ import {
   packQtyText,
   qtyText,
   qtyUnit,
-  qtyValue
+  qtyValue,
+  measureUnitText,
+  priorityOutNote
 } from '@/views/stock/stock'
 
 const store = useDrugStockStore()
@@ -867,7 +869,7 @@ function statusTagText(item: DrugLotItem): { type: string; icon: string; text: s
                     <zw-tag v-if="item.priority_out" size="small">优先出库</zw-tag>
                     <span v-else class="zw-faint">正常</span>
                   </td>
-                  <td class="zw-muted">{{ item.priority_out ? '登记接种时默认选择这个批号' : item.status_note || '' }}</td>
+                  <td class="zw-muted">{{ item.priority_out ? priorityOutNote(item.category) : item.status_note || '' }}</td>
                   <td class="text-end">
                     <span class="zw-cell-actions">
                       <a @click.stop="openOutbound(item.drug_id, item.lot_id)">出库</a>
@@ -906,7 +908,7 @@ function statusTagText(item: DrugLotItem): { type: string; icon: string; text: s
           </zw-form-item>
         </div>
         <div class="zw-form-2 mt-3">
-          <zw-form-item label="数量" required :error="inboundErrors.qty" :hint="`必须大于 0${inboundDrug?.pack_size ? `，按目录每${inboundDrug.pack_unit} ${inboundDrug.pack_size} ${inboundDrug.unit === 'DOSE' ? '头份' : inboundDrug.unit === 'G' ? '克' : '毫升'}换算` : ''}`">
+          <zw-form-item label="数量" required :error="inboundErrors.qty" :hint="`必须大于 0${inboundDrug?.pack_size ? `，按目录每${inboundDrug.pack_unit} ${inboundDrug.pack_size} ${inboundDrug.usable?.unit_text || measureUnitText(inboundDrug.unit)}换算` : ''}`">
             <v-text-field v-model.number="inboundForm.qty" type="number" min="0" :suffix="inboundUnit" :error="!!inboundErrors.qty" />
           </zw-form-item>
           <zw-form-item label="单价" required :error="inboundErrors.price" hint="必须大于 0">

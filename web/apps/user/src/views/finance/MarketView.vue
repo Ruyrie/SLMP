@@ -316,7 +316,7 @@ useFarmReload(() => {
         <div class="e06-right">
           <zw-ai
             title="AI 出栏建议"
-            :sub="store.advice?.status === 'GENERATING' ? '正在生成' : store.advice?.generatedAt ? `${dateTimeText(store.advice.generatedAt)} 生成` : ''"
+            :sub="store.adviceGenerating || store.advice?.status === 'GENERATING' ? '正在生成' : store.advice?.generatedAt ? `${dateTimeText(store.advice.generatedAt)} 生成` : ''"
             disclaimer="仅供参考，不构成交易建议"
           >
             <template #extra>
@@ -350,7 +350,9 @@ useFarmReload(() => {
             </div>
 
             <div v-else-if="store.adviceStatus === 'loading'">
-              <div v-if="store.batchStatus === 'ready'" class="zw-faint body-s">正在获取出栏建议，首次生成可能需要约一分钟。</div>
+              <div v-if="store.batchStatus === 'ready'" class="zw-faint body-s">
+                {{ store.adviceGenerating || store.advice?.status === 'GENERATING' ? '正在生成出栏建议，最长约需 2 分钟，请稍候。' : '正在获取出栏建议，首次生成最长约需 2 分钟。' }}
+              </div>
               <v-skeleton-loader type="article, list-item-two-line@3" />
             </div>
 

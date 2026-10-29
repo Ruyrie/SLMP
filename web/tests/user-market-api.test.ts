@@ -26,7 +26,8 @@ describe('market API contract', () => {
   it('allows the server AI deadline while retaining finite request timeouts', async () => {
     expect((await financeApi.saleAdviceLatest(301)).conclusionText).toBe('继续饲养')
     await financeApi.regenerateSaleAdvice(301)
-    expect(requests.map((request) => request.timeout)).toEqual([90_000, 90_000])
+    // 服务端 120s 内返回、Nginx 150s：客户端超时不低于 150s（跨端约定）
+    expect(requests.map((request) => request.timeout)).toEqual([155_000, 155_000])
     expect(requests[0].params).toEqual({ batch_id: 301 })
     expect(JSON.parse(requests[1].data)).toEqual({ batch_id: 301 })
   })
